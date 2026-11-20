@@ -1,0 +1,82 @@
+name: Veraphify v0.0.9 adoption
+
+on:
+  push:
+    branches: ["readme-hq"]
+    paths:
+      - ".github/workflows/veraphify-adoption.yml"
+      - "graphify-hq/README.md"
+  pull_request:
+    branches: ["readme-hq"]
+    paths:
+      - ".github/workflows/veraphify-adoption.yml"
+      - "graphify-hq/README.md"
+
+
+permissions:
+  contents: read
+
+jobs:
+  archive:
+    name: Build, archive, verify, and cite the pinned source
+    if: github.event.repository.private == false
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    env:
+      VERAPHIFY_SHA: ed5650085e33cf142a37de695757a4df999a7cf3
+      PRODUCER_SHA: 6af3c2025be3f51e02dca4e4502088c526aae6d1
+      ADOPTER_SHA: "f50e3749dab90ddfe35894284d1660097a1fb1a8"
+      ADOPTER_FILE: "tools/check_readme_hq.py"
+      ADOPTER_ANCHOR: "def check_registry("
+      ADOPTER_REFERENCES: "{\"documented_in\":[{\"path\":\"README.md\",\"anchor\":\"python3 tools/check_readme_hq.py\"}],\"changed_in\":[{\"path\":\"README-GUIDE.md\",\"anchor\":\"The [technique library](techniques/README.md) holds reusable practices\"}],\"tested_by\":[{\"path\":\".github/workflows/readme-hq.yml\",\"anchor\":\"run: python3 tools/check_readme_hq.py\"}]}"
+      GRAPHIFY_QUERY_LOG_DISABLE: '1'
+      PYTHONHASHSEED: '0'
+    steps:
+      - name: Check out the pinned adopter source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          repository: vixttha/README-HQ
+          ref: "f50e3749dab90ddfe35894284d1660097a1fb1a8"
+          path: adopter
+          persist-credentials: false
+      - name: Check out Veraphify v0.0.9
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          repository: vixttha/Veraphify
+          ref: ed5650085e33cf142a37de695757a4df999a7cf3
+          path: veraphify
+          persist-credentials: false
+      - name: Check out the frozen Graphify producer
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          repository: vixttha/Blender-Agent-Refinement-Toolkit
+          ref: 6af3c2025be3f51e02dca4e4502088c526aae6d1
+          path: producer
+          persist-credentials: false
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: '24.22.3'
+          package-manager-cache: false
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
+        with:
+          python-version: '3.12'
+      - name: Install the producer's hash-locked dependencies
+        run: |
+          python -m pip install --require-hashes --no-deps --only-binary=:all: -r producer/versions/v0.0.8/requirements.txt
+          python -m pip check
+      - name: Check out the shared adoption verifier
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          repository: vixttha/Veraphify
+          ref: ffbd1df937a0d11acc7edf391f289e877b4d48d8
+          path: adoption-tools
+          persist-credentials: false
+      - name: Build the pinned evidence map and verify the archive and citation
+        run: python adoption-tools/tools/verify-adoption.py
+      - name: Retain the public adoption receipt
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: veraphify-adoption-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/veraphify-adoption/adoption.json
+          if-no-files-found: error
+          retention-days: 7

@@ -1,0 +1,58 @@
+{
+  "schema_version": 1,
+  "template_version": "v0.0.8",
+  "repository": "vixttha/README-HQ",
+  "source_commit": "d8c4517c7e43fce02b132c3abd82b8da93e75e3e",
+  "pull_request": null,
+  "scope": "feature-evidence",
+  "graphify_version": "0.9.109",
+  "graph_sha256": "19a2fbe752f73d0d3137ee00a359080f92f70751ce45ddcaa664d2c759246249",
+  "nodes": 28,
+  "edges": 41,
+  "feature_links": {
+    "feature:aldervale-homepage-v0-0-3": {
+      "documented_in": 2,
+      "changed_in": 1,
+      "tested_by": 1
+    },
+    "feature:aldervale-hq-v0-0-3": {
+      "documented_in": 3,
+      "changed_in": 1,
+      "tested_by": 1
+    },
+    "feature:bart-homepage-v0-0-3": {
+      "documented_in": 3,
+      "changed_in": 1,
+      "tested_by": 1
+    }
+  },
+  "source_files": [
+    "history/aldervale/published-v0.0.3/README.md",
+    "history/aldervale/readme-hq/Graphify HQ/v0.0.3/README.md",
+    "history/aldervale/readme-hq/readme-hq/versions/v0.0.3/CHANGELOG.md",
+    "history/aldervale/readme-hq/readme-hq/versions/v0.0.3/GUIDE.md",
+    "history/aldervale/readme-hq/readme-hq/versions/v0.0.3/README.md",
+    "history/aldervale/readme-hq/versions/v0.0.3/CHANGELOG.md",
+    "history/aldervale/readme-hq/versions/v0.0.3/README.md",
+    "history/bart/published-v0.0.3/README.md",
+    "history/bart/visual-v0.0.3/workspace/v0.0.3/CHANGELOG.md",
+    "history/bart/visual-v0.0.3/workspace/v0.0.3/DRAFT.md",
+    "history/bart/visual-v0.0.3/workspace/v0.0.3/REVIEW.md",
+    "tools/check_readme_hq.py"
+  ],
+  "source_sha256": {
+    "history/aldervale/published-v0.0.3/README.md": "6df0f3b299f2e8477731722082492e7ac5cc2ae5e877ff653de1ba16a928d704",
+    "history/aldervale/readme-hq/Graphify HQ/v0.0.3/README.md": "a1aa00d2429068055cbe84c7c33275211e5acdc3345c187d85923449be9c515b",
+    "history/aldervale/readme-hq/readme-hq/versions/v0.0.3/CHANGELOG.md": "a9541b71adf7b74dab45a3dfab9686993e6427a736c1dadadc5de346d2a488e2",
+    "history/aldervale/readme-hq/readme-hq/versions/v0.0.3/GUIDE.md": "265a2abeac893c409e4a0a12690d0b48dff5dc314c0749b73b94a9abba871e74",
+    "history/aldervale/readme-hq/readme-hq/versions/v0.0.3/README.md": "0d9a6fa6da3b3ab2b905ad7b873327d186c7180f6c9120c9841c4525d702c116",
+    "history/aldervale/readme-hq/versions/v0.0.3/CHANGELOG.md": "ed137a80a19b757f4df2b4828e5405e556760bb3b1d1208fddf06bccd9c75ddc",
+    "history/aldervale/readme-hq/versions/v0.0.3/README.md": "6df0f3b299f2e8477731722082492e7ac5cc2ae5e877ff653de1ba16a928d704",
+    "history/bart/published-v0.0.3/README.md": "b416ea76fe5d826a669ffcbb7fd34f938dd0271b880bf0bcf557a82392ad1eff",
+    "history/bart/visual-v0.0.3/workspace/v0.0.3/CHANGELOG.md": "5ce61533a387f65e229456554a61e9243530dfceec4046bab90f724eef0fcab6",
+    "history/bart/visual-v0.0.3/workspace/v0.0.3/DRAFT.md": "50d95dc249d59fab993f12f406cecf3d124c5cce2d01349e4cc968fa1a584987",
+    "history/bart/visual-v0.0.3/workspace/v0.0.3/REVIEW.md": "b7bc32eafffe91731b98ef79d31611dc068620393a30f179a62594f2ea4274aa",
+    "tools/check_readme_hq.py": "4a74111bd01a4929081f076e7f8aa50320774b680f37e7230c629e764ecacf52"
+  },
+  "mcp_verified": true
+}

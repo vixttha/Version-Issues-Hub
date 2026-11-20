@@ -1,0 +1,102 @@
+{
+  "repository": "vixttha/README-HQ",
+  "source_commit": "d8c4517c7e43fce02b132c3abd82b8da93e75e3e",
+  "title": "README HQ v0.0.2 version history",
+  "source_files": [
+    "history/aldervale/published-v0.0.2/README.md",
+    "history/aldervale/readme-hq/Graphify HQ/v0.0.2/README.md",
+    "history/aldervale/readme-hq/readme-hq/versions/v0.0.2/CHANGELOG.md",
+    "history/aldervale/readme-hq/readme-hq/versions/v0.0.2/GUIDE.md",
+    "history/aldervale/readme-hq/readme-hq/versions/v0.0.2/README.md",
+    "history/aldervale/readme-hq/versions/v0.0.2/CHANGELOG.md",
+    "history/aldervale/readme-hq/versions/v0.0.2/README.md",
+    "history/bart/published-v0.0.2/README.md",
+    "history/bart/readme-hq/versions/v0.0.2/CHANGELOG.md",
+    "history/bart/readme-hq/versions/v0.0.2/README.md",
+    "tools/check_readme_hq.py"
+  ],
+  "features": [
+    {
+      "id": "aldervale-hq-v0-0-2",
+      "label": "AlderVale README HQ v0.0.2 approved guide",
+      "documented_in": [
+        {
+          "path": "history/aldervale/readme-hq/readme-hq/versions/v0.0.2/README.md",
+          "anchor": "# README HQ"
+        },
+        {
+          "path": "history/aldervale/readme-hq/readme-hq/versions/v0.0.2/GUIDE.md",
+          "anchor": "# README HQ Folder Guide"
+        },
+        {
+          "path": "history/aldervale/readme-hq/Graphify HQ/v0.0.2/README.md",
+          "anchor": "# README HQ template v0.0.2"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "history/aldervale/readme-hq/readme-hq/versions/v0.0.2/CHANGELOG.md",
+          "anchor": "- Identifies v0.0.2 as the current approved HQ version on `readme-hq`."
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tools/check_readme_hq.py",
+          "anchor": "def check_history(errors):"
+        }
+      ]
+    },
+    {
+      "id": "aldervale-homepage-v0-0-2",
+      "label": "AlderVale homepage v0.0.2",
+      "documented_in": [
+        {
+          "path": "history/aldervale/readme-hq/versions/v0.0.2/README.md",
+          "anchor": "# AlderVale: Pact of Ten"
+        },
+        {
+          "path": "history/aldervale/published-v0.0.2/README.md",
+          "anchor": "# AlderVale: Pact of Ten"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "history/aldervale/readme-hq/versions/v0.0.2/CHANGELOG.md",
+          "anchor": "- Reframes the opening around the playable guest journey and keeps the clone-and-run commands, recovery guidance, and GitHub Issues link."
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tools/check_readme_hq.py",
+          "anchor": "def check_history(errors):"
+        }
+      ]
+    },
+    {
+      "id": "bart-homepage-v0-0-2",
+      "label": "BART homepage v0.0.2 published README",
+      "documented_in": [
+        {
+          "path": "history/bart/published-v0.0.2/README.md",
+          "anchor": "# Blender-Agent"
+        },
+        {
+          "path": "history/bart/readme-hq/versions/v0.0.2/README.md",
+          "anchor": "# Blender-Agent"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "history/bart/readme-hq/versions/v0.0.2/CHANGELOG.md",
+          "anchor": "- Adapted the README HQ draft in [PR #4](https://github.com/vixttha/Blender-Agent/pull/4) for the audited foundation."
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tools/check_readme_hq.py",
+          "anchor": "def check_history(errors):"
+        }
+      ]
+    }
+  ]
+}

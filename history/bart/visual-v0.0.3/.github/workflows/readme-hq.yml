@@ -1,0 +1,65 @@
+name: README HQ validation
+
+on:
+  push:
+    branches: [readme-hq]
+  pull_request:
+    branches: [readme-hq]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  documentation:
+    if: github.event.repository.private == false
+    name: Archived pages, links, draft gates and regression checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout pinned action
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - name: Validate README HQ
+        run: python3 tools/check_readme_hq.py
+      - name: Negative regression tests
+        run: python3 -m unittest discover -s tests -p 'test_readme_hq.py' -v
+
+  walkthrough:
+    if: github.event.repository.private == false
+    name: README walkthrough / ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 12
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    steps:
+      - name: Checkout pinned action
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - name: Set up Python 3.12
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: "3.12"
+      - name: Run the documented CLI and MCP triangle walkthrough
+        run: python tools/check_readme_walkthrough.py
+
+  rendered-preview:
+    if: github.event.repository.private == false
+    name: GitHub preview on mobile and desktop
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout pinned action
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - name: Prepare browser verifier
+        run: npm install --prefix "$RUNNER_TEMP/readme-visual" --no-audit --no-fund --ignore-scripts playwright@1.58.1
+      - name: Check GitHub's rendered preview in light and dark modes
+        env:
+          README_PREVIEW_URL: ${{ github.server_url }}/${{ github.repository }}/blob/${{ github.event.pull_request.head.sha || github.sha }}/workspace/v0.0.3/DRAFT.md
+        run: NODE_PATH="$RUNNER_TEMP/readme-visual/node_modules" node tools/check_readme_render.cjs

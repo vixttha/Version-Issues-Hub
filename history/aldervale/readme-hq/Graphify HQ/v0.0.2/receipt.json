@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "template_version": "v0.0.2",
+  "source_ref": "refs/heads/readme-hq",
+  "graphify_version": "0.9.109",
+  "graph_sha256": "e943b4859ea7549e8ae2deb105d077d0942e945b61aa21ef602906c00ab8a236",
+  "nodes": 24,
+  "edges": 26,
+  "sources": {
+    "README.md": {
+      "archive_path": "readme-hq/versions/v0.0.2/README.md",
+      "blob_sha1": "ed2bb637148e5f0b946eae5eecc8a83ac3d6593a",
+      "source_commit": "3508db0ad131da50aa39b9d095ff2bf1a7ae52f4",
+      "source_path": "readme-hq/workspace/v0.0.2/DRAFT.md"
+    },
+    "GUIDE.md": {
+      "archive_path": "readme-hq/versions/v0.0.2/GUIDE.md",
+      "blob_sha1": "620e1e0c4765049972d1d81fadd04180c562ed6d",
+      "source_commit": "3508db0ad131da50aa39b9d095ff2bf1a7ae52f4",
+      "source_path": "readme-hq/workspace/v0.0.2/GUIDE.md"
+    },
+    "CHANGELOG.md": {
+      "archive_path": "readme-hq/versions/v0.0.2/CHANGELOG.md",
+      "blob_sha1": "3edb6e6bbc44ed2a37c9011e2501a36818a44be8"
+    }
+  }
+}

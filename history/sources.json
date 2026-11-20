@@ -1,0 +1,721 @@
+{
+  "schema": 1,
+  "snapshots": [
+    {
+      "repository": "vixttha/AlderVale-Pact-of-Ten",
+      "commit": "007617884c75b9f422fc0feda031042da62962eb",
+      "observed_ref": "readme-hq",
+      "directory": "history/aldervale/readme-hq",
+      "files": [
+        {
+          "path": ".github/workflows/readme-hq-graphify.yml",
+          "blob": "808d305d5c24c89a1ac2bd7035c5a52cf03335a0"
+        },
+        {
+          "path": ".github/workflows/readme-hq.yml",
+          "blob": "28bd76701d272e8d0b8e241b889d1900e75befbd"
+        },
+        {
+          "path": "Graphify HQ/README.md",
+          "blob": "6da4048131b7ec80b97659dc421aa1cb8706c0b4"
+        },
+        {
+          "path": "Graphify HQ/v0.0.1/README.md",
+          "blob": "97c2acf9de332ce62b64446e4287ae313833db93"
+        },
+        {
+          "path": "Graphify HQ/v0.0.1/graph.json",
+          "blob": "c0b89d11fb4cb119c995706e9b18ea372cb4cb6d"
+        },
+        {
+          "path": "Graphify HQ/v0.0.1/receipt.json",
+          "blob": "c0311e226f4794dc370179798492392d007bbe86"
+        },
+        {
+          "path": "Graphify HQ/v0.0.2/README.md",
+          "blob": "b87a857cf2c7962227892d0e5c8cc18b45c0cd10"
+        },
+        {
+          "path": "Graphify HQ/v0.0.2/graph.json",
+          "blob": "82951c9ba2d9ee924b73f19e97627dcd0c5fbb35"
+        },
+        {
+          "path": "Graphify HQ/v0.0.2/receipt.json",
+          "blob": "1a3ac4b759a17cd6220ae3ba4952e8fe86df6b95"
+        },
+        {
+          "path": "Graphify HQ/v0.0.3/README.md",
+          "blob": "ca98ff5a21a1ee09f0c8efebaf1b451aa86bc374"
+        },
+        {
+          "path": "Graphify HQ/v0.0.3/graph.json",
+          "blob": "b66ab1ae85eca3479a002dcd1d955bed815c9d39"
+        },
+        {
+          "path": "Graphify HQ/v0.0.3/receipt.json",
+          "blob": "373fb401b7f855a10727b8f2f7ffb57a0aa71687"
+        },
+        {
+          "path": "Graphify HQ/v0.0.4/README.md",
+          "blob": "3668997dbca762f7d7a03efd69f748b5bc097303"
+        },
+        {
+          "path": "Graphify HQ/v0.0.4/graph.json",
+          "blob": "6719b4cfd97f9a846aecec4bf2711cb440740751"
+        },
+        {
+          "path": "Graphify HQ/v0.0.4/receipt.json",
+          "blob": "35433a97b008ff7770e2453da6d4e316a4750042"
+        },
+        {
+          "path": "Graphify HQ/v0.0.5/README.md",
+          "blob": "a2a6ec86845b1d15cbbac31dd43720e071796483"
+        },
+        {
+          "path": "Graphify HQ/v0.0.5/graph.json",
+          "blob": "6b65ca4f6964b283c7f6383278c87d464ab41c73"
+        },
+        {
+          "path": "Graphify HQ/v0.0.5/receipt.json",
+          "blob": "6c2dbce5a6ed2940db2087d6c6cb301a6aebf723"
+        },
+        {
+          "path": "Graphify HQ/v0.0.6/README.md",
+          "blob": "194980c6dd54f137ef6bcad5f5b81ce237488c1b"
+        },
+        {
+          "path": "Graphify HQ/v0.0.6/graph.json",
+          "blob": "4cb88d4739ed2f18c1050b1dff1597f399a2d451"
+        },
+        {
+          "path": "Graphify HQ/v0.0.6/receipt.json",
+          "blob": "4bd86e357086f8573d1f529749d3a673d1a1ecf9"
+        },
+        {
+          "path": "README.md",
+          "blob": "2f3d7cd3ee07e50d73e1e3f1968ca6d70cf73f07"
+        },
+        {
+          "path": "readme-hq/README.md",
+          "blob": "f1c3de3c3ab6986e91b0d20a2b41e97a597c72ea"
+        },
+        {
+          "path": "readme-hq/versions/README.md",
+          "blob": "50c42337001a718e3d96fe8f80f59fcafbea8c05"
+        },
+        {
+          "path": "readme-hq/versions/v0.0.1/CHANGELOG.md",
+          "blob": "0eee62b5aeb059b1e309096b4f91e85cd618b854"
+        },
+        {
+          "path": "readme-hq/versions/v0.0.1/GUIDE.md",
+          "blob": "a8655ce124c348dffa30c35dc451762d1d8fbd18"
+        },
+        {
+          "path": "readme-hq/versions/v0.0.1/README.md",
+          "blob": "1f9b917469f7f79a40d55edd45171fba492154af"
+        },
+        {
+          "path": "readme-hq/versions/v0.0.2/CHANGELOG.md",
+          "blob": "3edb6e6bbc44ed2a37c9011e2501a36818a44be8"
+        },
+        {
+          "path": "readme-hq/versions/v0.0.2/GUIDE.md",
+          "blob": "620e1e0c4765049972d1d81fadd04180c562ed6d"
+        },
+        {
+          "path": "readme-hq/versions/v0.0.2/README.md",
+          "blob": "ed2bb637148e5f0b946eae5eecc8a83ac3d6593a"
+        },
+        {
+          "path": "readme-hq/versions/v0.0.3/CHANGELOG.md",
+          "blob": "c91b22df981863e14062e2ddb5c7035a7db1a7d6"
+        },
+        {
+          "path": "readme-hq/versions/v0.0.3/GUIDE.md",
+          "blob": "f7fc0229c1d5cfb5b30e47c2d309ffdb48a4eb06"
+        },
+        {
+          "path": "readme-hq/versions/v0.0.3/README.md",
+          "blob": "77a9f97b48aa3b707faf0147a5aa9b5354e75f15"
+        },
+        {
+          "path": "readme-hq/versions/v0.0.4/CHANGELOG.md",
+          "blob": "a2898259db615ea60c961b41ef750f702180d380"
+        },
+        {
+          "path": "readme-hq/versions/v0.0.4/GUIDE.md",
+          "blob": "843b78205b000de045e95b582e9fa74add0659f0"
+        },
+        {
+          "path": "readme-hq/versions/v0.0.4/README.md",
+          "blob": "6992c6588d7deadaf7a5c1fec1ccfc76a32b9d0d"
+        },
+        {
+          "path": "readme-hq/versions/v0.0.5/CHANGELOG.md",
+          "blob": "8bd42ebfc6cafce2be233026d9be56c340ca3f4c"
+        },
+        {
+          "path": "readme-hq/versions/v0.0.5/GUIDE.md",
+          "blob": "d02926f4e3334ed37cc47763cc871d607dd905da"
+        },
+        {
+          "path": "readme-hq/versions/v0.0.5/README.md",
+          "blob": "0121816d4b2e1c8ce282607c14689a328e9ac0a2"
+        },
+        {
+          "path": "readme-hq/versions/v0.0.6/CHANGELOG.md",
+          "blob": "1e71391b570f4a10bacc86d903ffdcfd889e871e"
+        },
+        {
+          "path": "readme-hq/versions/v0.0.6/GUIDE.md",
+          "blob": "f1c3de3c3ab6986e91b0d20a2b41e97a597c72ea"
+        },
+        {
+          "path": "readme-hq/versions/v0.0.6/README.md",
+          "blob": "2f3d7cd3ee07e50d73e1e3f1968ca6d70cf73f07"
+        },
+        {
+          "path": "readme-hq/workspace/README.md",
+          "blob": "fc733321c426dce7dc88b25b6576fd89b352df36"
+        },
+        {
+          "path": "readme-hq/workspace/v0.0.1/README.md",
+          "blob": "2384501f1963682bf8705a81ebc5791fe6f76138"
+        },
+        {
+          "path": "readme-hq/workspace/v0.0.2/DRAFT.md",
+          "blob": "ed2bb637148e5f0b946eae5eecc8a83ac3d6593a"
+        },
+        {
+          "path": "readme-hq/workspace/v0.0.2/GUIDE.md",
+          "blob": "620e1e0c4765049972d1d81fadd04180c562ed6d"
+        },
+        {
+          "path": "readme-hq/workspace/v0.0.2/README.md",
+          "blob": "f4294ea6b8b3b5c4cebab8fec5071e7b09c2f9f5"
+        },
+        {
+          "path": "readme-hq/workspace/v0.0.3/CHANGELOG.md",
+          "blob": "c91b22df981863e14062e2ddb5c7035a7db1a7d6"
+        },
+        {
+          "path": "readme-hq/workspace/v0.0.3/DRAFT.md",
+          "blob": "77a9f97b48aa3b707faf0147a5aa9b5354e75f15"
+        },
+        {
+          "path": "readme-hq/workspace/v0.0.3/GUIDE.md",
+          "blob": "f7fc0229c1d5cfb5b30e47c2d309ffdb48a4eb06"
+        },
+        {
+          "path": "readme-hq/workspace/v0.0.3/README.md",
+          "blob": "52b08f3d4e59ec38c3b2ce263b50a7ab13f024ef"
+        },
+        {
+          "path": "readme-hq/workspace/v0.0.4/CHANGELOG.md",
+          "blob": "afd9868723e3ea2f6390249f56792d566725e335"
+        },
+        {
+          "path": "readme-hq/workspace/v0.0.4/DRAFT.md",
+          "blob": "6992c6588d7deadaf7a5c1fec1ccfc76a32b9d0d"
+        },
+        {
+          "path": "readme-hq/workspace/v0.0.4/GUIDE.md",
+          "blob": "843b78205b000de045e95b582e9fa74add0659f0"
+        },
+        {
+          "path": "readme-hq/workspace/v0.0.4/README.md",
+          "blob": "1cadbb78527f2bf554516f9e13ae38c9ef40e3b0"
+        },
+        {
+          "path": "readme-hq/workspace/v0.0.5/CHANGELOG.md",
+          "blob": "b5709dce97e0840c2c6e98fe6f8a304ff209203f"
+        },
+        {
+          "path": "readme-hq/workspace/v0.0.5/DRAFT.md",
+          "blob": "0121816d4b2e1c8ce282607c14689a328e9ac0a2"
+        },
+        {
+          "path": "readme-hq/workspace/v0.0.5/GUIDE.md",
+          "blob": "d02926f4e3334ed37cc47763cc871d607dd905da"
+        },
+        {
+          "path": "readme-hq/workspace/v0.0.5/README.md",
+          "blob": "f9aeb6b8ea659c268e6f8bdc25cfc4b1be2d6c55"
+        },
+        {
+          "path": "readme-hq/workspace/v0.0.6/CHANGELOG.md",
+          "blob": "c67fd593dc97acb31d91085e0db01ff8400c119e"
+        },
+        {
+          "path": "readme-hq/workspace/v0.0.6/DRAFT.md",
+          "blob": "2f3d7cd3ee07e50d73e1e3f1968ca6d70cf73f07"
+        },
+        {
+          "path": "readme-hq/workspace/v0.0.6/GUIDE.md",
+          "blob": "f1c3de3c3ab6986e91b0d20a2b41e97a597c72ea"
+        },
+        {
+          "path": "readme-hq/workspace/v0.0.6/README.md",
+          "blob": "fa1dd1f5ced33aa772da2148638e0c11dde5d949"
+        },
+        {
+          "path": "tools/check_readme_hq.py",
+          "blob": "a7b83fc2981085e8b8620e45870b1e79d04990b5"
+        },
+        {
+          "path": "tools/graphify/README.md",
+          "blob": "cfd021e06d9e1bfcbbb5be7f5e55964916952e94"
+        },
+        {
+          "path": "tools/graphify/requirements.txt",
+          "blob": "d8b3a107d7beb9ec2b4bc21fed4c33221970d262"
+        },
+        {
+          "path": "tools/graphify/version_maps.py",
+          "blob": "77fa70a69170b79ffea78757f7cc01161f384641"
+        },
+        {
+          "path": "tools/readme_hq_baselines.json",
+          "blob": "76ce00cd579c8b384da790c56c008c8fc39bb9bf"
+        },
+        {
+          "path": "versions/README.md",
+          "blob": "793f87469586952f642ba054656fd07ba86c16e5"
+        },
+        {
+          "path": "versions/v0.0.1/CHANGELOG.md",
+          "blob": "d5dce831be35c3d95e7816be153e1c98967cc899"
+        },
+        {
+          "path": "versions/v0.0.1/README.md",
+          "blob": "317cd107088d823c7677f0afd9a51b496fa1bd54"
+        },
+        {
+          "path": "versions/v0.0.2/CHANGELOG.md",
+          "blob": "5ba4c027fac7afb24692299c7edf6be95ebec54f"
+        },
+        {
+          "path": "versions/v0.0.2/README.md",
+          "blob": "b6fe2eeb2eeaf01110596231c08cf538b97524e2"
+        },
+        {
+          "path": "versions/v0.0.2/assets/breeze-campus.webp",
+          "blob": "d3b7ef2b5a3df1b39223f717191db83ab35d09c9"
+        },
+        {
+          "path": "versions/v0.0.2/assets/breeze-first-spark-duel.webp",
+          "blob": "8344c65c4652d792a6f14cf3e849ade383e1c1cf"
+        },
+        {
+          "path": "versions/v0.0.3/CHANGELOG.md",
+          "blob": "7c194db98437a1e5da7e93b660e1627181fdfec6"
+        },
+        {
+          "path": "versions/v0.0.3/README.md",
+          "blob": "a73b157800a86a5daea69523e8acd4d863aa0ff1"
+        },
+        {
+          "path": "versions/v0.0.3/assets/aldervale-workmark-v1.webp",
+          "blob": "766fcea8f0e2838efb94f4fe4547e6dad4d98f0d"
+        },
+        {
+          "path": "versions/v0.0.3/assets/breeze-campus.webp",
+          "blob": "d3b7ef2b5a3df1b39223f717191db83ab35d09c9"
+        },
+        {
+          "path": "versions/v0.0.3/assets/breeze-first-spark-duel.webp",
+          "blob": "8344c65c4652d792a6f14cf3e849ade383e1c1cf"
+        },
+        {
+          "path": "versions/v0.0.4/CHANGELOG.md",
+          "blob": "184967004bc0c3912688459c3ffef79fb9392691"
+        },
+        {
+          "path": "versions/v0.0.4/README.md",
+          "blob": "5a985415260e0859a6e52a368c19043ae6160d30"
+        },
+        {
+          "path": "versions/v0.0.4/assets/aldervale-workmark-v1.webp",
+          "blob": "766fcea8f0e2838efb94f4fe4547e6dad4d98f0d"
+        },
+        {
+          "path": "versions/v0.0.4/assets/breeze-campus.webp",
+          "blob": "d3b7ef2b5a3df1b39223f717191db83ab35d09c9"
+        },
+        {
+          "path": "versions/v0.0.4/assets/breeze-first-spark-duel.webp",
+          "blob": "8344c65c4652d792a6f14cf3e849ade383e1c1cf"
+        },
+        {
+          "path": "workspace/README.md",
+          "blob": "c0d96f84f5ce0aca281512ce3f5dee538fee5c93"
+        },
+        {
+          "path": "workspace/v0.0.1/README.md",
+          "blob": "9ea1eccd8b9ac26afc4d338527c351d35eacaf28"
+        },
+        {
+          "path": "workspace/v0.0.2/DRAFT.md",
+          "blob": "b6fe2eeb2eeaf01110596231c08cf538b97524e2"
+        },
+        {
+          "path": "workspace/v0.0.2/README.md",
+          "blob": "f750d93feea2bcb0a68511495996dd0a9644d05c"
+        },
+        {
+          "path": "workspace/v0.0.2/assets/breeze-campus.webp",
+          "blob": "d3b7ef2b5a3df1b39223f717191db83ab35d09c9"
+        },
+        {
+          "path": "workspace/v0.0.2/assets/breeze-first-spark-duel.webp",
+          "blob": "8344c65c4652d792a6f14cf3e849ade383e1c1cf"
+        },
+        {
+          "path": "workspace/v0.0.3/DRAFT.md",
+          "blob": "a73b157800a86a5daea69523e8acd4d863aa0ff1"
+        },
+        {
+          "path": "workspace/v0.0.3/README.md",
+          "blob": "02d34d3890ac2717564f265bee8a2269fa07ff18"
+        },
+        {
+          "path": "workspace/v0.0.3/assets/aldervale-workmark-v1.webp",
+          "blob": "766fcea8f0e2838efb94f4fe4547e6dad4d98f0d"
+        },
+        {
+          "path": "workspace/v0.0.3/assets/breeze-campus.webp",
+          "blob": "d3b7ef2b5a3df1b39223f717191db83ab35d09c9"
+        },
+        {
+          "path": "workspace/v0.0.3/assets/breeze-first-spark-duel.webp",
+          "blob": "8344c65c4652d792a6f14cf3e849ade383e1c1cf"
+        },
+        {
+          "path": "workspace/v0.0.4/CHANGELOG.md",
+          "blob": "bd262da4a84f0f152642bfe522dd754b38e6dbbe"
+        },
+        {
+          "path": "workspace/v0.0.4/DRAFT.md",
+          "blob": "5a985415260e0859a6e52a368c19043ae6160d30"
+        },
+        {
+          "path": "workspace/v0.0.4/README.md",
+          "blob": "fb74879a57dec2a7608bede2e43c44a8f79a09a5"
+        },
+        {
+          "path": "workspace/v0.0.4/assets/aldervale-workmark-v1.webp",
+          "blob": "766fcea8f0e2838efb94f4fe4547e6dad4d98f0d"
+        },
+        {
+          "path": "workspace/v0.0.4/assets/breeze-campus.webp",
+          "blob": "d3b7ef2b5a3df1b39223f717191db83ab35d09c9"
+        },
+        {
+          "path": "workspace/v0.0.4/assets/breeze-first-spark-duel.webp",
+          "blob": "8344c65c4652d792a6f14cf3e849ade383e1c1cf"
+        }
+      ]
+    },
+    {
+      "repository": "vixttha/Blender-Agent-Refinement-Toolkit",
+      "commit": "a1a5010b02ee39bdea3fa3ad3aff2e0ed5c270d8",
+      "observed_ref": "readme-hq",
+      "directory": "history/bart/readme-hq",
+      "files": [
+        {
+          "path": ".github/workflows/readme-hq.yml",
+          "blob": "c940409e896804ac89cb82c0510af42f5ce8aa39"
+        },
+        {
+          "path": "README.md",
+          "blob": "9661d1c8533ee5553d7c496f7ab833a433981601"
+        },
+        {
+          "path": "graphify/README.md",
+          "blob": "553b59e91622b96c5eb4f332671fce1d6046f68f"
+        },
+        {
+          "path": "readme-hq/README.md",
+          "blob": "1e5e2c375d445dcd31e2ad27dedc8fe1ad2271d8"
+        },
+        {
+          "path": "readme-hq/versions/README.md",
+          "blob": "293b41fc1dfbf0e37d65d98d50a5e9c1b5a5be6b"
+        },
+        {
+          "path": "readme-hq/versions/v0.0.1/CHANGELOG.md",
+          "blob": "b1445c773659f80dfb8668fb7b33f9741c3c5e4c"
+        },
+        {
+          "path": "readme-hq/versions/v0.0.1/GUIDE.md",
+          "blob": "cc84d5c41d62de91ee82fb08b8ebdc5ce32421e6"
+        },
+        {
+          "path": "readme-hq/versions/v0.0.1/README.md",
+          "blob": "326d609adcfcab36b00f1e04c7e2d39b6b587307"
+        },
+        {
+          "path": "readme-hq/workspace/README.md",
+          "blob": "94bdbc50860267adef52340c38305ae4efc32cc8"
+        },
+        {
+          "path": "readme-hq/workspace/v0.0.1/README.md",
+          "blob": "d8b1aa239e8bef7b2278056d872ad2f77d9f30a5"
+        },
+        {
+          "path": "tests/test_readme_hq.py",
+          "blob": "188df71e1a488080998066e217594bc3e4430a2b"
+        },
+        {
+          "path": "tools/check_readme_hq.py",
+          "blob": "0e8dee4fb510dae12840082dd2c2c6a1c430c621"
+        },
+        {
+          "path": "versions/README.md",
+          "blob": "a3ae2ae4d73a05e0422312b89aac0900c83142a0"
+        },
+        {
+          "path": "versions/v0.0.2/CHANGELOG.md",
+          "blob": "84a8dadc6382aa26658c1e2ff81d204cd5c8cd89"
+        },
+        {
+          "path": "versions/v0.0.2/README.md",
+          "blob": "bcf44ad75d81de99ef0a5549a6f28f350de45ddc"
+        },
+        {
+          "path": "workspace/README.md",
+          "blob": "4ac5d62149895df70a34827f09dbbeba3b93204e"
+        },
+        {
+          "path": "workspace/v0.0.1/CHANGELOG.md",
+          "blob": "ce953b5ed1759e4fee1d8e12415e16cf05084b50"
+        },
+        {
+          "path": "workspace/v0.0.1/DRAFT.md",
+          "blob": "823f649714f5b73a86518aa202fbcde6afad2a51"
+        },
+        {
+          "path": "workspace/v0.0.1/README.md",
+          "blob": "c2cfa0a28d357d4e57d6d63a5c17d55890a5ce90"
+        },
+        {
+          "path": "workspace/v0.0.1/REVIEW.md",
+          "blob": "455b481dd31087f4c270c9ee0b587162ca4df59c"
+        },
+        {
+          "path": "workspace/v0.0.4/CHANGELOG.md",
+          "blob": "32ec4549c68dc361b7844978202cffc9d36b84aa"
+        },
+        {
+          "path": "workspace/v0.0.4/DRAFT.md",
+          "blob": "e88435f1f01905f16f3fdf40afc2d79d1cebdcef"
+        },
+        {
+          "path": "workspace/v0.0.4/README.md",
+          "blob": "c46494bcf93c797562e01bb391fed05ea2e40aae"
+        },
+        {
+          "path": "workspace/v0.0.4/REVIEW.md",
+          "blob": "8cd59501ae4b6b22e86e6a9b5cb10c21b09f1d6d"
+        }
+      ]
+    },
+    {
+      "repository": "vixttha/Blender-Agent-Refinement-Toolkit",
+      "commit": "01995820c9e51e2f35462c5031a33cefd7b7613d",
+      "observed_ref": "docs/readme-v0.0.3-visual",
+      "directory": "history/bart/visual-v0.0.3",
+      "files": [
+        {
+          "path": ".github/workflows/readme-hq.yml",
+          "blob": "ae99b418fc21afc5efd351d240996732e978f9ac"
+        },
+        {
+          "path": "tools/check_readme_render.cjs",
+          "blob": "fb163ffecaf9ceb3c3043cbf6a4e4a0b705b58df"
+        },
+        {
+          "path": "tools/check_readme_walkthrough.py",
+          "blob": "98bd06d5563a2fda7b2c7f5de2e90884e951a159"
+        },
+        {
+          "path": "workspace/v0.0.3/CHANGELOG.md",
+          "blob": "a3e265aeea057377ee035d1473a3fb4be2fc86dc"
+        },
+        {
+          "path": "workspace/v0.0.3/DRAFT.md",
+          "blob": "1ae17c3cdc9011e31412ed00485dfd0c6ab34014"
+        },
+        {
+          "path": "workspace/v0.0.3/README.md",
+          "blob": "96dc96b0376738edfb1c743bb91466918c6b13dc"
+        },
+        {
+          "path": "workspace/v0.0.3/REVIEW.md",
+          "blob": "0b8819749b72fe33cb4707009b08f12b4a3e4646"
+        },
+        {
+          "path": "workspace/v0.0.3/assets/triangle-inspection.webp",
+          "blob": "72537ad8c5dce314c5cd32b2b260e79fa90a066b"
+        },
+        {
+          "path": "workspace/v0.0.3/assets/wireframe-cube.webp",
+          "blob": "315a56b138b105aaa2afd0d5937d057b4fcf31a7"
+        }
+      ]
+    },
+    {
+      "repository": "vixttha/Blender-Agent-Refinement-Toolkit",
+      "commit": "386e7670c3efb7e89f9e35321efabbfb39826579",
+      "observed_ref": "386e7670c3efb7e89f9e35321efabbfb39826579",
+      "directory": "history/bart/published-v0.0.3",
+      "files": [
+        {
+          "path": "LICENSE",
+          "blob": "3a31b6b1dcedea9bb0ca27243d3d7b0cb504a4f5"
+        },
+        {
+          "path": "README.md",
+          "blob": "1f1c29898b5a0bb0e987cccc59d8e7568e3a8668"
+        },
+        {
+          "path": "assets/triangle-inspection.webp",
+          "blob": "72537ad8c5dce314c5cd32b2b260e79fa90a066b"
+        },
+        {
+          "path": "assets/wireframe-cube.webp",
+          "blob": "315a56b138b105aaa2afd0d5937d057b4fcf31a7"
+        },
+        {
+          "path": "tools/check_readme_walkthrough.py",
+          "blob": "3995fdb7cfc389f87b416e386810d34fa75a7e9a"
+        }
+      ]
+    },
+    {
+      "repository": "vixttha/Blender-Agent-Refinement-Toolkit",
+      "commit": "3e7f9e02e61739825b56bcafecebbd0221cc9657",
+      "observed_ref": "main",
+      "directory": "history/bart/main-rebrand-v0.0.4",
+      "files": [
+        {
+          "path": "LICENSE",
+          "blob": "3a31b6b1dcedea9bb0ca27243d3d7b0cb504a4f5"
+        },
+        {
+          "path": "README.md",
+          "blob": "e88435f1f01905f16f3fdf40afc2d79d1cebdcef"
+        },
+        {
+          "path": "assets/triangle-inspection.webp",
+          "blob": "72537ad8c5dce314c5cd32b2b260e79fa90a066b"
+        },
+        {
+          "path": "assets/wireframe-cube.webp",
+          "blob": "315a56b138b105aaa2afd0d5937d057b4fcf31a7"
+        }
+      ]
+    },
+    {
+      "repository": "vixttha/Blender-Agent-Refinement-Toolkit",
+      "commit": "dde71a7b4299500fb742b6e1bdbadae519fb4c29",
+      "observed_ref": "docs/public-readme-v0.0.1",
+      "directory": "history/bart/publication-candidate-v0.0.1",
+      "files": [
+        {
+          "path": "LICENSE",
+          "blob": "3a31b6b1dcedea9bb0ca27243d3d7b0cb504a4f5"
+        },
+        {
+          "path": "README.md",
+          "blob": "bcf44ad75d81de99ef0a5549a6f28f350de45ddc"
+        }
+      ]
+    },
+    {
+      "repository": "vixttha/AlderVale-Pact-of-Ten",
+      "commit": "5a7d0438e46582e625fc101efb6aa0f9e637c55e",
+      "observed_ref": "5a7d0438e46582e625fc101efb6aa0f9e637c55e",
+      "directory": "history/aldervale/published-v0.0.4",
+      "files": [
+        {
+          "path": "README.md",
+          "blob": "5a985415260e0859a6e52a368c19043ae6160d30"
+        },
+        {
+          "path": "assets/aldervale-workmark-v1.webp",
+          "blob": "766fcea8f0e2838efb94f4fe4547e6dad4d98f0d"
+        },
+        {
+          "path": "assets/breeze-campus.webp",
+          "blob": "d3b7ef2b5a3df1b39223f717191db83ab35d09c9"
+        },
+        {
+          "path": "assets/breeze-first-spark-duel.webp",
+          "blob": "8344c65c4652d792a6f14cf3e849ade383e1c1cf"
+        }
+      ]
+    },
+    {
+      "repository": "vixttha/AlderVale-Pact-of-Ten",
+      "commit": "ed8c7b30c9bbc0497fd27eb6ce7c34757ed3b0c1",
+      "observed_ref": "ed8c7b30c9bbc0497fd27eb6ce7c34757ed3b0c1",
+      "directory": "history/aldervale/published-v0.0.2",
+      "files": [
+        {
+          "path": "README.md",
+          "blob": "b6fe2eeb2eeaf01110596231c08cf538b97524e2"
+        },
+        {
+          "path": "assets/breeze-campus.webp",
+          "blob": "d3b7ef2b5a3df1b39223f717191db83ab35d09c9"
+        },
+        {
+          "path": "assets/breeze-first-spark-duel.webp",
+          "blob": "8344c65c4652d792a6f14cf3e849ade383e1c1cf"
+        }
+      ]
+    },
+    {
+      "repository": "vixttha/AlderVale-Pact-of-Ten",
+      "commit": "fced4038c1dfa655c223d1bcbbdf3c18593b1e1f",
+      "observed_ref": "fced4038c1dfa655c223d1bcbbdf3c18593b1e1f",
+      "directory": "history/aldervale/published-v0.0.3",
+      "files": [
+        {
+          "path": "README.md",
+          "blob": "a73b157800a86a5daea69523e8acd4d863aa0ff1"
+        },
+        {
+          "path": "assets/aldervale-workmark-v1.webp",
+          "blob": "766fcea8f0e2838efb94f4fe4547e6dad4d98f0d"
+        },
+        {
+          "path": "assets/breeze-campus.webp",
+          "blob": "d3b7ef2b5a3df1b39223f717191db83ab35d09c9"
+        },
+        {
+          "path": "assets/breeze-first-spark-duel.webp",
+          "blob": "8344c65c4652d792a6f14cf3e849ade383e1c1cf"
+        }
+      ]
+    },
+    {
+      "repository": "vixttha/Blender-Agent-Refinement-Toolkit",
+      "commit": "cb945bd8531ee425615c1968612ab6503849369d",
+      "observed_ref": "cb945bd8531ee425615c1968612ab6503849369d",
+      "directory": "history/bart/published-v0.0.2",
+      "files": [
+        {
+          "path": "LICENSE",
+          "blob": "3a31b6b1dcedea9bb0ca27243d3d7b0cb504a4f5"
+        },
+        {
+          "path": "README.md",
+          "blob": "bcf44ad75d81de99ef0a5549a6f28f350de45ddc"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,43 @@
+name: README HQ
+on:
+  push:
+    branches: [readme-hq]
+  pull_request:
+    branches: [readme-hq]
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - run: python3 tools/check_readme_hq.py
+
+  graphify:
+    name: Rebuild and query the README HQ Graphify maps
+    if: github.event.repository.private == false
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      PIP_DISABLE_PIP_VERSION_CHECK: '1'
+      PYTHONDONTWRITEBYTECODE: '1'
+      PYTHONHASHSEED: '0'
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
+        with:
+          python-version: '3.12'
+      - name: Install the pinned Graphify template dependencies
+        run: |
+          python -m pip install --require-hashes --no-cache-dir --only-binary=:all: --no-deps -r graphify-hq/template/v0.0.8/requirements.txt
+          python -m pip check
+      - name: Verify the template and version maps
+        run: |
+          python -m unittest discover -s graphify-hq/template/v0.0.8 -p 'test_*.py' -v
+          git fetch --no-tags --depth=1 https://github.com/vixttha/README-HQ.git $(cat graphify-hq/source-commit.txt)
+          python graphify-hq/version_maps.py --check

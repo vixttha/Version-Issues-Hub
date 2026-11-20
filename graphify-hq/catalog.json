@@ -1,0 +1,194 @@
+{
+  "schema": 1,
+  "repository": "vixttha/README-HQ",
+  "versions": {
+    "v0.0.1": [
+      {
+        "id": "aldervale-hq",
+        "title": "AlderVale README HQ v0.0.1 approved guide",
+        "summary": "Introduces the HQ front page, version archive, and draft-to-publication route.",
+        "documented_in": [
+          "history/aldervale/readme-hq/readme-hq/versions/v0.0.1/README.md",
+          "history/aldervale/readme-hq/readme-hq/versions/v0.0.1/GUIDE.md",
+          "history/aldervale/readme-hq/Graphify HQ/v0.0.1/README.md"
+        ],
+        "changed_in": "history/aldervale/readme-hq/readme-hq/versions/v0.0.1/CHANGELOG.md"
+      },
+      {
+        "id": "standalone-hq",
+        "title": "Standalone README HQ v0.0.1 initial candidate",
+        "summary": "Introduces the standalone project, audit, and technique registry.",
+        "documented_in": [
+          "versions/v0.0.1/README.md"
+        ],
+        "changed_in": "versions/v0.0.1/CHANGELOG.md"
+      },
+      {
+        "id": "bart-hq",
+        "title": "BART README HQ v0.0.1 archived guide",
+        "summary": "Defines the BART README preparation, archive, and publication workflow.",
+        "documented_in": [
+          "history/bart/readme-hq/readme-hq/versions/v0.0.1/README.md",
+          "history/bart/readme-hq/readme-hq/versions/v0.0.1/GUIDE.md"
+        ],
+        "changed_in": "history/bart/readme-hq/readme-hq/versions/v0.0.1/CHANGELOG.md"
+      },
+      {
+        "id": "aldervale-homepage",
+        "title": "AlderVale homepage v0.0.1",
+        "summary": "Approved first-playable archive with setup, gameplay, recovery, and test routes.",
+        "documented_in": [
+          "history/aldervale/readme-hq/versions/v0.0.1/README.md"
+        ],
+        "changed_in": "history/aldervale/readme-hq/versions/v0.0.1/CHANGELOG.md"
+      },
+      {
+        "id": "bart-homepage",
+        "title": "BART homepage v0.0.1 publication candidate",
+        "summary": "Preserves the initial project README draft and its later publication candidate.",
+        "documented_in": [
+          "history/bart/readme-hq/workspace/v0.0.1/DRAFT.md",
+          "history/bart/publication-candidate-v0.0.1/README.md",
+          "history/bart/readme-hq/workspace/v0.0.1/REVIEW.md"
+        ],
+        "changed_in": "history/bart/readme-hq/workspace/v0.0.1/CHANGELOG.md"
+      }
+    ],
+    "v0.0.2": [
+      {
+        "id": "aldervale-hq",
+        "title": "AlderVale README HQ v0.0.2 approved guide",
+        "summary": "Clarifies archived homepage status, draft routes, and validator coverage.",
+        "documented_in": [
+          "history/aldervale/readme-hq/readme-hq/versions/v0.0.2/README.md",
+          "history/aldervale/readme-hq/readme-hq/versions/v0.0.2/GUIDE.md",
+          "history/aldervale/readme-hq/Graphify HQ/v0.0.2/README.md"
+        ],
+        "changed_in": "history/aldervale/readme-hq/readme-hq/versions/v0.0.2/CHANGELOG.md"
+      },
+      {
+        "id": "aldervale-homepage",
+        "title": "AlderVale homepage v0.0.2",
+        "summary": "Published README adds the local guest build and verified Breeze media.",
+        "documented_in": [
+          "history/aldervale/readme-hq/versions/v0.0.2/README.md",
+          "history/aldervale/published-v0.0.2/README.md"
+        ],
+        "changed_in": "history/aldervale/readme-hq/versions/v0.0.2/CHANGELOG.md"
+      },
+      {
+        "id": "bart-homepage",
+        "title": "BART homepage v0.0.2 published README",
+        "summary": "Preserves the published pre-alpha quick start and its source archive.",
+        "documented_in": [
+          "history/bart/published-v0.0.2/README.md",
+          "history/bart/readme-hq/versions/v0.0.2/README.md"
+        ],
+        "changed_in": "history/bart/readme-hq/versions/v0.0.2/CHANGELOG.md"
+      }
+    ],
+    "v0.0.3": [
+      {
+        "id": "aldervale-hq",
+        "title": "AlderVale README HQ v0.0.3 approved guide",
+        "summary": "Extends archive checks for source provenance, headings, and external links.",
+        "documented_in": [
+          "history/aldervale/readme-hq/readme-hq/versions/v0.0.3/README.md",
+          "history/aldervale/readme-hq/readme-hq/versions/v0.0.3/GUIDE.md",
+          "history/aldervale/readme-hq/Graphify HQ/v0.0.3/README.md"
+        ],
+        "changed_in": "history/aldervale/readme-hq/readme-hq/versions/v0.0.3/CHANGELOG.md"
+      },
+      {
+        "id": "aldervale-homepage",
+        "title": "AlderVale homepage v0.0.3",
+        "summary": "Published README expands Windows launch, branding, and bug reporting.",
+        "documented_in": [
+          "history/aldervale/readme-hq/versions/v0.0.3/README.md",
+          "history/aldervale/published-v0.0.3/README.md"
+        ],
+        "changed_in": "history/aldervale/readme-hq/versions/v0.0.3/CHANGELOG.md"
+      },
+      {
+        "id": "bart-homepage",
+        "title": "BART homepage v0.0.3 published README",
+        "summary": "Connects the published triangle walkthrough to the visual draft and its review.",
+        "documented_in": [
+          "history/bart/published-v0.0.3/README.md",
+          "history/bart/visual-v0.0.3/workspace/v0.0.3/DRAFT.md",
+          "history/bart/visual-v0.0.3/workspace/v0.0.3/REVIEW.md"
+        ],
+        "changed_in": "history/bart/visual-v0.0.3/workspace/v0.0.3/CHANGELOG.md"
+      }
+    ],
+    "v0.0.4": [
+      {
+        "id": "aldervale-hq",
+        "title": "AlderVale README HQ v0.0.4 approved guide",
+        "summary": "Connects the HQ guide to the published game README v0.0.2.",
+        "documented_in": [
+          "history/aldervale/readme-hq/readme-hq/versions/v0.0.4/README.md",
+          "history/aldervale/readme-hq/readme-hq/versions/v0.0.4/GUIDE.md",
+          "history/aldervale/readme-hq/Graphify HQ/v0.0.4/README.md"
+        ],
+        "changed_in": "history/aldervale/readme-hq/readme-hq/versions/v0.0.4/CHANGELOG.md"
+      },
+      {
+        "id": "aldervale-homepage",
+        "title": "AlderVale homepage v0.0.4",
+        "summary": "Published README adds the signed-in Bazaar buying and listing guide.",
+        "documented_in": [
+          "history/aldervale/readme-hq/versions/v0.0.4/README.md",
+          "history/aldervale/published-v0.0.4/README.md"
+        ],
+        "changed_in": "history/aldervale/readme-hq/versions/v0.0.4/CHANGELOG.md"
+      },
+      {
+        "id": "bart-homepage",
+        "title": "BART homepage v0.0.4 rebrand draft and main snapshot",
+        "summary": "Records the HQ rebrand draft and the identical README on BART main.",
+        "documented_in": [
+          "history/bart/readme-hq/workspace/v0.0.4/DRAFT.md",
+          "history/bart/main-rebrand-v0.0.4/README.md",
+          "history/bart/readme-hq/workspace/v0.0.4/REVIEW.md"
+        ],
+        "changed_in": "history/bart/readme-hq/workspace/v0.0.4/CHANGELOG.md"
+      }
+    ],
+    "v0.0.5": [
+      {
+        "id": "aldervale-hq",
+        "title": "AlderVale README HQ v0.0.5 approved guide",
+        "summary": "Records the game README v0.0.3 publication.",
+        "documented_in": [
+          "history/aldervale/readme-hq/readme-hq/versions/v0.0.5/README.md",
+          "history/aldervale/readme-hq/readme-hq/versions/v0.0.5/GUIDE.md",
+          "history/aldervale/readme-hq/Graphify HQ/v0.0.5/README.md"
+        ],
+        "changed_in": "history/aldervale/readme-hq/readme-hq/versions/v0.0.5/CHANGELOG.md"
+      }
+    ],
+    "v0.0.6": [
+      {
+        "id": "aldervale-hq",
+        "title": "AlderVale README HQ v0.0.6 approved guide",
+        "summary": "Adds Graphify navigation, an archive checklist, and links to frozen headings.",
+        "documented_in": [
+          "history/aldervale/readme-hq/readme-hq/versions/v0.0.6/README.md",
+          "history/aldervale/readme-hq/readme-hq/versions/v0.0.6/GUIDE.md",
+          "history/aldervale/readme-hq/Graphify HQ/v0.0.6/README.md"
+        ],
+        "changed_in": "history/aldervale/readme-hq/readme-hq/versions/v0.0.6/CHANGELOG.md"
+      },
+      {
+        "id": "standalone-hq",
+        "title": "Standalone README HQ v0.0.6 continuation",
+        "summary": "Continues the inherited version line and adds source-pinned maps.",
+        "documented_in": [
+          "versions/v0.0.6/README.md"
+        ],
+        "changed_in": "versions/v0.0.6/CHANGELOG.md"
+      }
+    ]
+  }
+}

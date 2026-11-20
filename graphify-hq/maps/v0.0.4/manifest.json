@@ -1,0 +1,107 @@
+{
+  "repository": "vixttha/README-HQ",
+  "source_commit": "d8c4517c7e43fce02b132c3abd82b8da93e75e3e",
+  "title": "README HQ v0.0.4 version history",
+  "source_files": [
+    "history/aldervale/published-v0.0.4/README.md",
+    "history/aldervale/readme-hq/Graphify HQ/v0.0.4/README.md",
+    "history/aldervale/readme-hq/readme-hq/versions/v0.0.4/CHANGELOG.md",
+    "history/aldervale/readme-hq/readme-hq/versions/v0.0.4/GUIDE.md",
+    "history/aldervale/readme-hq/readme-hq/versions/v0.0.4/README.md",
+    "history/aldervale/readme-hq/versions/v0.0.4/CHANGELOG.md",
+    "history/aldervale/readme-hq/versions/v0.0.4/README.md",
+    "history/bart/main-rebrand-v0.0.4/README.md",
+    "history/bart/readme-hq/workspace/v0.0.4/CHANGELOG.md",
+    "history/bart/readme-hq/workspace/v0.0.4/DRAFT.md",
+    "history/bart/readme-hq/workspace/v0.0.4/REVIEW.md",
+    "tools/check_readme_hq.py"
+  ],
+  "features": [
+    {
+      "id": "aldervale-hq-v0-0-4",
+      "label": "AlderVale README HQ v0.0.4 approved guide",
+      "documented_in": [
+        {
+          "path": "history/aldervale/readme-hq/readme-hq/versions/v0.0.4/README.md",
+          "anchor": "# README HQ"
+        },
+        {
+          "path": "history/aldervale/readme-hq/readme-hq/versions/v0.0.4/GUIDE.md",
+          "anchor": "# README HQ Folder Guide"
+        },
+        {
+          "path": "history/aldervale/readme-hq/Graphify HQ/v0.0.4/README.md",
+          "anchor": "# README HQ template v0.0.4"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "history/aldervale/readme-hq/readme-hq/versions/v0.0.4/CHANGELOG.md",
+          "anchor": "- Link to the published public game README v0.0.2, its archived copy and changelog, and its publication PR."
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tools/check_readme_hq.py",
+          "anchor": "def check_history(errors):"
+        }
+      ]
+    },
+    {
+      "id": "aldervale-homepage-v0-0-4",
+      "label": "AlderVale homepage v0.0.4",
+      "documented_in": [
+        {
+          "path": "history/aldervale/readme-hq/versions/v0.0.4/README.md",
+          "anchor": "# AlderVale: Pact of Ten"
+        },
+        {
+          "path": "history/aldervale/published-v0.0.4/README.md",
+          "anchor": "# AlderVale: Pact of Ten"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "history/aldervale/readme-hq/versions/v0.0.4/CHANGELOG.md",
+          "anchor": "- Add the Bazaar quick link and a short signed-in-player guide for buying, listing, and cancelling gear listings."
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tools/check_readme_hq.py",
+          "anchor": "def check_history(errors):"
+        }
+      ]
+    },
+    {
+      "id": "bart-homepage-v0-0-4",
+      "label": "BART homepage v0.0.4 rebrand draft and main snapshot",
+      "documented_in": [
+        {
+          "path": "history/bart/readme-hq/workspace/v0.0.4/DRAFT.md",
+          "anchor": "<h1 align=\"center\">Blender-Agent Refinement Toolkit</h1>"
+        },
+        {
+          "path": "history/bart/main-rebrand-v0.0.4/README.md",
+          "anchor": "<h1 align=\"center\">Blender-Agent Refinement Toolkit</h1>"
+        },
+        {
+          "path": "history/bart/readme-hq/workspace/v0.0.4/REVIEW.md",
+          "anchor": "# Public README v0.0.4 review"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "history/bart/readme-hq/workspace/v0.0.4/CHANGELOG.md",
+          "anchor": "- Introduce Blender-Agent Refinement Toolkit, BART, and \u201cGive shape to an idea.\u201d"
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tools/check_readme_hq.py",
+          "anchor": "def check_history(errors):"
+        }
+      ]
+    }
+  ]
+}

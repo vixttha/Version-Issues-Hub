@@ -1,0 +1,136 @@
+{
+  "schema_version": 1,
+  "purpose": "Pins the source commit and Git blob SHA-1 for every frozen README or GUIDE snapshot. Add entries only when an approved version is archived.",
+  "public_readme": {
+    "v0.0.1": {
+      "source_commits": {
+        "README.md": "a8c5656929be2fcb30d9d3818245aa7501b0bf59"
+      },
+      "source_paths": {
+        "README.md": "README.md"
+      },
+      "snapshots": {
+        "README.md": "317cd107088d823c7677f0afd9a51b496fa1bd54"
+      }
+    },
+    "v0.0.2": {
+      "source_commits": {
+        "README.md": "7b2bb737357a1d29b546d83ae6f7cfe9f7aa52e2"
+      },
+      "source_paths": {
+        "README.md": "workspace/v0.0.2/DRAFT.md"
+      },
+      "snapshots": {
+        "README.md": "b6fe2eeb2eeaf01110596231c08cf538b97524e2"
+      }
+    },
+    "v0.0.3": {
+      "source_commits": {
+        "README.md": "737f5fdd41fbc9694d3001727d023ef91efe421d"
+      },
+      "source_paths": {
+        "README.md": "workspace/v0.0.3/DRAFT.md"
+      },
+      "snapshots": {
+        "README.md": "a73b157800a86a5daea69523e8acd4d863aa0ff1"
+      }
+    },
+    "v0.0.4": {
+      "source_commits": {
+        "README.md": "58fd11f7483aeaa0d44b79d3142337eb239aabd2"
+      },
+      "source_paths": {
+        "README.md": "workspace/v0.0.4/DRAFT.md"
+      },
+      "snapshots": {
+        "README.md": "5a985415260e0859a6e52a368c19043ae6160d30"
+      }
+    }
+  },
+  "readme_hq": {
+    "v0.0.1": {
+      "source_commits": {
+        "README.md": "ece2b1fe1fd3780e1905b948b976e2d01cff19f3",
+        "GUIDE.md": "1b83bfd5cfe757cee5d3be72128b4f3c9abf3c26"
+      },
+      "source_paths": {
+        "README.md": "README.md",
+        "GUIDE.md": "readme-hq/README.md"
+      },
+      "snapshots": {
+        "README.md": "1f9b917469f7f79a40d55edd45171fba492154af",
+        "GUIDE.md": "a8655ce124c348dffa30c35dc451762d1d8fbd18"
+      }
+    },
+    "v0.0.2": {
+      "source_commits": {
+        "README.md": "3508db0ad131da50aa39b9d095ff2bf1a7ae52f4",
+        "GUIDE.md": "3508db0ad131da50aa39b9d095ff2bf1a7ae52f4"
+      },
+      "source_paths": {
+        "README.md": "readme-hq/workspace/v0.0.2/DRAFT.md",
+        "GUIDE.md": "readme-hq/workspace/v0.0.2/GUIDE.md"
+      },
+      "snapshots": {
+        "README.md": "ed2bb637148e5f0b946eae5eecc8a83ac3d6593a",
+        "GUIDE.md": "620e1e0c4765049972d1d81fadd04180c562ed6d"
+      }
+    },
+    "v0.0.3": {
+      "source_commits": {
+        "README.md": "8d5b5a09eab08338badc92d71158d6c9f38ce836",
+        "GUIDE.md": "8d5b5a09eab08338badc92d71158d6c9f38ce836"
+      },
+      "source_paths": {
+        "README.md": "readme-hq/workspace/v0.0.3/DRAFT.md",
+        "GUIDE.md": "readme-hq/workspace/v0.0.3/GUIDE.md"
+      },
+      "snapshots": {
+        "README.md": "77a9f97b48aa3b707faf0147a5aa9b5354e75f15",
+        "GUIDE.md": "f7fc0229c1d5cfb5b30e47c2d309ffdb48a4eb06"
+      }
+    },
+    "v0.0.4": {
+      "source_commits": {
+        "README.md": "775477d2c3741cdb6586c8268dac6b1e3b3087ef",
+        "GUIDE.md": "775477d2c3741cdb6586c8268dac6b1e3b3087ef"
+      },
+      "source_paths": {
+        "README.md": "readme-hq/workspace/v0.0.4/DRAFT.md",
+        "GUIDE.md": "readme-hq/workspace/v0.0.4/GUIDE.md"
+      },
+      "snapshots": {
+        "README.md": "6992c6588d7deadaf7a5c1fec1ccfc76a32b9d0d",
+        "GUIDE.md": "843b78205b000de045e95b582e9fa74add0659f0"
+      }
+    },
+    "v0.0.5": {
+      "source_commits": {
+        "README.md": "5eeaaf8ca86bb6d4a24258f4cdde35ea6db2fd45",
+        "GUIDE.md": "5eeaaf8ca86bb6d4a24258f4cdde35ea6db2fd45"
+      },
+      "source_paths": {
+        "README.md": "readme-hq/workspace/v0.0.5/DRAFT.md",
+        "GUIDE.md": "readme-hq/workspace/v0.0.5/GUIDE.md"
+      },
+      "snapshots": {
+        "README.md": "0121816d4b2e1c8ce282607c14689a328e9ac0a2",
+        "GUIDE.md": "d02926f4e3334ed37cc47763cc871d607dd905da"
+      }
+    },
+    "v0.0.6": {
+      "source_commits": {
+        "README.md": "9a7405171cf64b844d426a63bbd53153dace66c9",
+        "GUIDE.md": "9a7405171cf64b844d426a63bbd53153dace66c9"
+      },
+      "source_paths": {
+        "README.md": "readme-hq/workspace/v0.0.6/DRAFT.md",
+        "GUIDE.md": "readme-hq/workspace/v0.0.6/GUIDE.md"
+      },
+      "snapshots": {
+        "README.md": "2f3d7cd3ee07e50d73e1e3f1968ca6d70cf73f07",
+        "GUIDE.md": "f1c3de3c3ab6986e91b0d20a2b41e97a597c72ea"
+      }
+    }
+  }
+}

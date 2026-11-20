@@ -1,0 +1,371 @@
+{
+  "schema": 1,
+  "techniques": [
+    {
+      "id": "role-based-entry-points",
+      "title": "Route by reader task",
+      "outcome_key": "choose-reader-route",
+      "aliases": [
+        "audience routing"
+      ],
+      "status": "active",
+      "problem": "Readers with different goals all enter through the same homepage.",
+      "practice": "Lead with the common task and offer concise routes for other roles, platforms, or access levels.",
+      "outcome": "A first-time reader can choose a route without reading the whole page.",
+      "evidence": [
+        {
+          "url": "https://github.com/vixttha/AlderVale-Pact-of-Ten/blob/a6c2060b8175f505cc6327ccb5658cc00a458b24/README.md",
+          "status": "observed"
+        },
+        {
+          "url": "https://github.com/vixttha/Blender-Agent-Refinement-Toolkit/blob/3e7f9e02e61739825b56bcafecebbd0221cc9657/README.md",
+          "status": "observed"
+        }
+      ]
+    },
+    {
+      "id": "first-success-milestone",
+      "title": "Show a recognizable first result",
+      "outcome_key": "recognize-first-success",
+      "aliases": [
+        "first-use milestone"
+      ],
+      "status": "active",
+      "problem": "Setup commands end without telling the reader what success looks like.",
+      "practice": "Pair the first real task with a visible artifact, output, or milestone a new user can recognize.",
+      "outcome": "The reader can distinguish success from a partial run.",
+      "evidence": [
+        {
+          "url": "https://github.com/vixttha/AlderVale-Pact-of-Ten/blob/a6c2060b8175f505cc6327ccb5658cc00a458b24/README.md",
+          "status": "observed"
+        },
+        {
+          "url": "https://github.com/vixttha/Blender-Agent-Refinement-Toolkit/blob/3e7f9e02e61739825b56bcafecebbd0221cc9657/README.md",
+          "status": "observed"
+        }
+      ]
+    },
+    {
+      "id": "exact-revision-walkthrough",
+      "title": "Execute the documented walkthrough",
+      "outcome_key": "prove-documented-commands",
+      "aliases": [
+        "copy-and-run test"
+      ],
+      "status": "active",
+      "problem": "Quick-start snippets drift away from the supported build.",
+      "practice": "Extract the documented commands and run them from a clean checkout at the advertised ref. Verify the inputs, outputs, and supported platform.",
+      "outcome": "A run receipt proves that the actual published commands worked at a named ref.",
+      "evidence": [
+        {
+          "url": "https://github.com/vixttha/Blender-Agent-Refinement-Toolkit/blob/01995820c9e51e2f35462c5031a33cefd7b7613d/tools/check_readme_walkthrough.py",
+          "status": "observed"
+        },
+        {
+          "url": "https://github.com/vixttha/Blender-Agent-Refinement-Toolkit/blob/01995820c9e51e2f35462c5031a33cefd7b7613d/.github/workflows/readme-hq.yml",
+          "status": "observed"
+        }
+      ]
+    },
+    {
+      "id": "platform-specific-commands",
+      "title": "Show separate platform commands",
+      "outcome_key": "copy-platform-commands",
+      "aliases": [
+        "shell-specific quick start"
+      ],
+      "status": "active",
+      "problem": "Shell syntax, paths, or launchers vary across supported environments.",
+      "practice": "Present copyable commands with their platform and shell next to the relevant prerequisites.",
+      "outcome": "A reader can copy the appropriate block without translating it.",
+      "evidence": [
+        {
+          "url": "https://github.com/vixttha/Blender-Agent-Refinement-Toolkit/blob/3e7f9e02e61739825b56bcafecebbd0221cc9657/README.md",
+          "status": "observed"
+        },
+        {
+          "url": "https://github.com/vixttha/AlderVale-Pact-of-Ten/blob/a6c2060b8175f505cc6327ccb5658cc00a458b24/README.md",
+          "status": "observed"
+        }
+      ]
+    },
+    {
+      "id": "agent-instruction-pointer",
+      "title": "Link authoritative agent instructions",
+      "outcome_key": "resolve-agent-instructions",
+      "aliases": [
+        "agent entry point"
+      ],
+      "status": "active",
+      "problem": "An agent starts in product documentation and may miss repository-specific workflow rules.",
+      "practice": "Give the README a short route to the applicable AGENTS.md or equivalent and keep policy in that canonical file.",
+      "outcome": "The agent can find the correct instructions before making changes.",
+      "evidence": [
+        {
+          "url": "https://github.com/vixttha/Brand-Identity-Template/blob/87d0f9aedbe69ca4b16815d6b3329efcf5889da9/README.md",
+          "status": "observed"
+        },
+        {
+          "url": "https://github.com/vixttha/AlderVale-Pact-of-Ten/blob/a6c2060b8175f505cc6327ccb5658cc00a458b24/AGENTS.md",
+          "status": "observed"
+        }
+      ]
+    },
+    {
+      "id": "claim-scope-labels",
+      "title": "Label the scope of compatibility evidence",
+      "outcome_key": "trace-compatibility-scope",
+      "aliases": [
+        "release and development evidence"
+      ],
+      "status": "active",
+      "problem": "Readers may assume a development check applies to a published release.",
+      "practice": "Label compatibility with the version or ref, platform, feature, and actual verification scope.",
+      "outcome": "The reader can tell which combinations have evidence.",
+      "evidence": [
+        {
+          "url": "https://github.com/vixttha/Blender-Agent-Refinement-Toolkit/blob/3e7f9e02e61739825b56bcafecebbd0221cc9657/README.md",
+          "status": "observed"
+        },
+        {
+          "url": "https://github.com/vixttha/Blender-Agent-Refinement-Toolkit/blob/01995820c9e51e2f35462c5031a33cefd7b7613d/workspace/v0.0.3/REVIEW.md",
+          "status": "observed"
+        }
+      ]
+    },
+    {
+      "id": "separate-readme-promotion",
+      "title": "Separate drafting, archiving, and publication",
+      "outcome_key": "trace-readme-lifecycle",
+      "aliases": [
+        "publication staging"
+      ],
+      "status": "active",
+      "problem": "Editing the homepage directly makes acceptance and release history hard to reconstruct.",
+      "practice": "Use versioned workspaces, freeze accepted files, and record a distinct homepage publication change.",
+      "outcome": "A reader can determine the candidate, accepted archive, and current homepage independently.",
+      "evidence": [
+        {
+          "url": "https://github.com/vixttha/AlderVale-Pact-of-Ten/blob/007617884c75b9f422fc0feda031042da62962eb/README.md",
+          "status": "observed"
+        },
+        {
+          "url": "https://github.com/vixttha/AlderVale-Pact-of-Ten/blob/007617884c75b9f422fc0feda031042da62962eb/workspace/README.md",
+          "status": "observed"
+        }
+      ]
+    },
+    {
+      "id": "independent-version-lines",
+      "title": "Name the collection alongside the version",
+      "outcome_key": "resolve-version-namespace",
+      "aliases": [
+        "version namespace"
+      ],
+      "status": "active",
+      "problem": "Product, homepage, and template versions can have the same number.",
+      "practice": "Tag each version with its project and collection and index the collections independently.",
+      "outcome": "A reader can identify which artifact a version refers to.",
+      "evidence": [
+        {
+          "url": "https://github.com/vixttha/AlderVale-Pact-of-Ten/blob/007617884c75b9f422fc0feda031042da62962eb/readme-hq/versions/README.md",
+          "status": "observed"
+        },
+        {
+          "url": "https://github.com/vixttha/AlderVale-Pact-of-Ten/blob/007617884c75b9f422fc0feda031042da62962eb/versions/README.md",
+          "status": "observed"
+        }
+      ]
+    },
+    {
+      "id": "byte-pinned-archive",
+      "title": "Pin archive bytes to source evidence",
+      "outcome_key": "verify-frozen-source-copy",
+      "aliases": [
+        "archive integrity manifest"
+      ],
+      "status": "active",
+      "problem": "An archive can change silently or lose its source context.",
+      "practice": "Record the full source commit and content digest for the frozen README and companion assets.",
+      "outcome": "An offline check can detect drift in an archived copy.",
+      "evidence": [
+        {
+          "url": "https://github.com/vixttha/AlderVale-Pact-of-Ten/blob/007617884c75b9f422fc0feda031042da62962eb/tools/readme_hq_baselines.json",
+          "status": "observed"
+        }
+      ]
+    },
+    {
+      "id": "versioned-section-map",
+      "title": "Index archived sections by version",
+      "outcome_key": "navigate-versioned-doc-sections",
+      "aliases": [
+        "versioned documentation graph"
+      ],
+      "status": "active",
+      "problem": "Readers and agents have difficulty finding a particular section in long version history.",
+      "practice": "Attach a searchable map to each accepted version and pin its inputs in a receipt.",
+      "outcome": "The map can locate an archived section and identify the version it summarizes.",
+      "evidence": [
+        {
+          "url": "https://github.com/vixttha/AlderVale-Pact-of-Ten/blob/007617884c75b9f422fc0feda031042da62962eb/Graphify%20HQ/README.md",
+          "status": "observed"
+        },
+        {
+          "url": "https://github.com/vixttha/AlderVale-Pact-of-Ten/blob/007617884c75b9f422fc0feda031042da62962eb/Graphify%20HQ/v0.0.6/receipt.json",
+          "status": "observed"
+        }
+      ]
+    },
+    {
+      "id": "render-at-two-widths",
+      "title": "Review the rendered README at two widths",
+      "outcome_key": "catch-render-layout-regressions",
+      "aliases": [
+        "desktop and mobile README check"
+      ],
+      "status": "active",
+      "problem": "A Markdown source review misses clipped images and long code blocks.",
+      "practice": "Inspect representative desktop and narrow layouts with the opening navigation, images, and commands in view.",
+      "outcome": "The reviewer can identify layout failures before publication.",
+      "evidence": [
+        {
+          "url": "https://github.com/vixttha/Blender-Agent-Refinement-Toolkit/blob/01995820c9e51e2f35462c5031a33cefd7b7613d/tools/check_readme_render.cjs",
+          "status": "observed"
+        },
+        {
+          "url": "https://github.com/vixttha/Blender-Agent-Refinement-Toolkit/blob/01995820c9e51e2f35462c5031a33cefd7b7613d/workspace/v0.0.3/REVIEW.md",
+          "status": "observed"
+        }
+      ]
+    },
+    {
+      "id": "promotion-path-check",
+      "title": "Validate links at the destination path",
+      "outcome_key": "preserve-promoted-local-links",
+      "aliases": [
+        "publication path verification"
+      ],
+      "status": "active",
+      "problem": "Relative links and images may work in the draft folder and break from the homepage.",
+      "practice": "Resolve every local destination from the staged publication path and verify its accompanying assets.",
+      "outcome": "The homepage links and media still work after relocation.",
+      "evidence": [
+        {
+          "url": "https://github.com/vixttha/Blender-Agent-Refinement-Toolkit/blob/01995820c9e51e2f35462c5031a33cefd7b7613d/workspace/v0.0.3/README.md",
+          "status": "observed"
+        },
+        {
+          "url": "https://github.com/vixttha/AlderVale-Pact-of-Ten/blob/007617884c75b9f422fc0feda031042da62962eb/tools/check_readme_hq.py",
+          "status": "observed"
+        }
+      ]
+    },
+    {
+      "id": "clean-consumer-adoption",
+      "title": "Test the copy-in path in a clean consumer",
+      "outcome_key": "prove-template-consumption",
+      "aliases": [
+        "downstream adoption smoke"
+      ],
+      "status": "active",
+      "problem": "A template can pass its own checks while its documented installation omits required files.",
+      "practice": "Exercise the README's copy and initialization steps in a fresh consumer and run the verifier there.",
+      "outcome": "The consumer can install and use what the README promises.",
+      "evidence": [
+        {
+          "url": "https://github.com/vixttha/Brand-Identity-Template/blob/87d0f9aedbe69ca4b16815d6b3329efcf5889da9/README.md",
+          "status": "observed"
+        },
+        {
+          "url": "https://github.com/vixttha/Brand-Identity-Template/blob/87d0f9aedbe69ca4b16815d6b3329efcf5889da9/.github/scripts/smoke_adoption.py",
+          "status": "observed"
+        }
+      ]
+    },
+    {
+      "id": "combined-commit-receipt",
+      "title": "Bind merge review to the combined commit",
+      "outcome_key": "prove-reviewed-merge-combination",
+      "aliases": [
+        "exact merge commit evidence"
+      ],
+      "status": "active",
+      "problem": "Passing source-branch checks can go stale when the base or head changes.",
+      "practice": "Record both PR parents and the tested combined SHA in the job receipt, then compare them at merge review.",
+      "outcome": "The review can establish that the current combination received the checks.",
+      "evidence": [
+        {
+          "url": "https://github.com/vixttha/Brand-Identity-Template/blob/87d0f9aedbe69ca4b16815d6b3329efcf5889da9/.github/workflows/brand-identity.yml",
+          "status": "observed"
+        }
+      ]
+    },
+    {
+      "id": "declared-versus-observed-evidence",
+      "title": "Distinguish intended checks from results",
+      "outcome_key": "distinguish-claims-from-runs",
+      "aliases": [
+        "verification status"
+      ],
+      "status": "active",
+      "problem": "A catalog of planned checks can look like a record of successful execution.",
+      "practice": "Keep the definition or static observation separate from the checkout, environment, and result of a run.",
+      "outcome": "Readers can identify which claims have actually been exercised.",
+      "evidence": [
+        {
+          "url": "https://github.com/vixttha/Lydite-Test-Vault-Template/blob/fe7b00aa17862d7a01dfd15481594be837bc6d9f/README.md",
+          "status": "observed"
+        },
+        {
+          "url": "https://github.com/vixttha/Lydite-Test-Vault-Template/blob/fe7b00aa17862d7a01dfd15481594be837bc6d9f/docs/testing.md",
+          "status": "observed"
+        }
+      ]
+    },
+    {
+      "id": "inventory-with-reader-guide",
+      "title": "Pair a structured inventory with a human guide",
+      "outcome_key": "search-inventory-and-read-guide",
+      "aliases": [
+        "machine-readable inventory"
+      ],
+      "status": "active",
+      "problem": "Neither lists of files nor prose alone answer both quick lookup and operating questions.",
+      "practice": "Use predictable structured fields for discovery and a short linked guide for interpretation, with a check for consistency.",
+      "outcome": "Agents can query records and humans can understand how to apply them.",
+      "evidence": [
+        {
+          "url": "https://github.com/vixttha/Lydite-Test-Vault-Template/blob/fe7b00aa17862d7a01dfd15481594be837bc6d9f/README.md",
+          "status": "observed"
+        },
+        {
+          "url": "https://github.com/vixttha/Lydite-Test-Vault-Template/blob/fe7b00aa17862d7a01dfd15481594be837bc6d9f/docs/testing.md",
+          "status": "observed"
+        }
+      ]
+    },
+    {
+      "id": "recovery-at-point-of-failure",
+      "title": "Put recovery beside the first failed step",
+      "outcome_key": "unblock-first-use",
+      "aliases": [
+        "task-linked troubleshooting"
+      ],
+      "status": "active",
+      "problem": "A reader whose first attempt fails has no next step.",
+      "practice": "Map recognizable symptoms to safe recovery actions immediately after the tasks that can produce them.",
+      "outcome": "A blocked reader can select a concrete recovery action.",
+      "evidence": [
+        {
+          "url": "https://github.com/vixttha/AlderVale-Pact-of-Ten/blob/a6c2060b8175f505cc6327ccb5658cc00a458b24/README.md",
+          "status": "observed"
+        },
+        {
+          "url": "https://github.com/vixttha/Blender-Agent-Refinement-Toolkit/blob/3e7f9e02e61739825b56bcafecebbd0221cc9657/README.md",
+          "status": "observed"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,107 @@
+{
+  "repository": "vixttha/README-HQ",
+  "source_commit": "d8c4517c7e43fce02b132c3abd82b8da93e75e3e",
+  "title": "README HQ v0.0.3 version history",
+  "source_files": [
+    "history/aldervale/published-v0.0.3/README.md",
+    "history/aldervale/readme-hq/Graphify HQ/v0.0.3/README.md",
+    "history/aldervale/readme-hq/readme-hq/versions/v0.0.3/CHANGELOG.md",
+    "history/aldervale/readme-hq/readme-hq/versions/v0.0.3/GUIDE.md",
+    "history/aldervale/readme-hq/readme-hq/versions/v0.0.3/README.md",
+    "history/aldervale/readme-hq/versions/v0.0.3/CHANGELOG.md",
+    "history/aldervale/readme-hq/versions/v0.0.3/README.md",
+    "history/bart/published-v0.0.3/README.md",
+    "history/bart/visual-v0.0.3/workspace/v0.0.3/CHANGELOG.md",
+    "history/bart/visual-v0.0.3/workspace/v0.0.3/DRAFT.md",
+    "history/bart/visual-v0.0.3/workspace/v0.0.3/REVIEW.md",
+    "tools/check_readme_hq.py"
+  ],
+  "features": [
+    {
+      "id": "aldervale-hq-v0-0-3",
+      "label": "AlderVale README HQ v0.0.3 approved guide",
+      "documented_in": [
+        {
+          "path": "history/aldervale/readme-hq/readme-hq/versions/v0.0.3/README.md",
+          "anchor": "# README HQ"
+        },
+        {
+          "path": "history/aldervale/readme-hq/readme-hq/versions/v0.0.3/GUIDE.md",
+          "anchor": "# README HQ Folder Guide"
+        },
+        {
+          "path": "history/aldervale/readme-hq/Graphify HQ/v0.0.3/README.md",
+          "anchor": "# README HQ template v0.0.3"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "history/aldervale/readme-hq/readme-hq/versions/v0.0.3/CHANGELOG.md",
+          "anchor": "- Replaces the stale v0.0.2 validator limitations with the behavior implemented by the current validator."
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tools/check_readme_hq.py",
+          "anchor": "def check_history(errors):"
+        }
+      ]
+    },
+    {
+      "id": "aldervale-homepage-v0-0-3",
+      "label": "AlderVale homepage v0.0.3",
+      "documented_in": [
+        {
+          "path": "history/aldervale/readme-hq/versions/v0.0.3/README.md",
+          "anchor": "# AlderVale: Pact of Ten"
+        },
+        {
+          "path": "history/aldervale/published-v0.0.3/README.md",
+          "anchor": "# AlderVale: Pact of Ten"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "history/aldervale/readme-hq/versions/v0.0.3/CHANGELOG.md",
+          "anchor": "- Adds the approved Workmark v1 at the top of the README."
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tools/check_readme_hq.py",
+          "anchor": "def check_history(errors):"
+        }
+      ]
+    },
+    {
+      "id": "bart-homepage-v0-0-3",
+      "label": "BART homepage v0.0.3 published README",
+      "documented_in": [
+        {
+          "path": "history/bart/published-v0.0.3/README.md",
+          "anchor": "# Blender-Agent"
+        },
+        {
+          "path": "history/bart/visual-v0.0.3/workspace/v0.0.3/DRAFT.md",
+          "anchor": "# Blender-Agent"
+        },
+        {
+          "path": "history/bart/visual-v0.0.3/workspace/v0.0.3/REVIEW.md",
+          "anchor": "# README visual and source audit"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "history/bart/visual-v0.0.3/workspace/v0.0.3/CHANGELOG.md",
+          "anchor": "- Put the published pre-release and separate development status near the introduction."
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tools/check_readme_hq.py",
+          "anchor": "def check_history(errors):"
+        }
+      ]
+    }
+  ]
+}

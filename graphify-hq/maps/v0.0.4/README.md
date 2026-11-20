@@ -1,0 +1,11 @@
+# README HQ v0.0.4 map
+
+3 records · 28 nodes · 41 edges
+
+[Source commit](https://github.com/vixttha/README-HQ/commit/d8c4517c7e43fce02b132c3abd82b8da93e75e3e) · [Graph](graph.json) · [Receipt](receipt.json) · [Map index](../../README.md)
+
+| Record | What changed | Source evidence |
+| --- | --- | --- |
+| AlderVale README HQ v0.0.4 approved guide | Connects the HQ guide to the published game README v0.0.2. | [Source 1](https://github.com/vixttha/README-HQ/blob/d8c4517c7e43fce02b132c3abd82b8da93e75e3e/history/aldervale/readme-hq/readme-hq/versions/v0.0.4/README.md#L1) · [Source 2](https://github.com/vixttha/README-HQ/blob/d8c4517c7e43fce02b132c3abd82b8da93e75e3e/history/aldervale/readme-hq/readme-hq/versions/v0.0.4/GUIDE.md#L1) · [Source 3](https://github.com/vixttha/README-HQ/blob/d8c4517c7e43fce02b132c3abd82b8da93e75e3e/history/aldervale/readme-hq/Graphify%20HQ/v0.0.4/README.md#L1) · [Change record](https://github.com/vixttha/README-HQ/blob/d8c4517c7e43fce02b132c3abd82b8da93e75e3e/history/aldervale/readme-hq/readme-hq/versions/v0.0.4/CHANGELOG.md#L7) |
+| AlderVale homepage v0.0.4 | Published README adds the signed-in Bazaar buying and listing guide. | [Source 1](https://github.com/vixttha/README-HQ/blob/d8c4517c7e43fce02b132c3abd82b8da93e75e3e/history/aldervale/readme-hq/versions/v0.0.4/README.md#L1) · [Source 2](https://github.com/vixttha/README-HQ/blob/d8c4517c7e43fce02b132c3abd82b8da93e75e3e/history/aldervale/published-v0.0.4/README.md#L1) · [Change record](https://github.com/vixttha/README-HQ/blob/d8c4517c7e43fce02b132c3abd82b8da93e75e3e/history/aldervale/readme-hq/versions/v0.0.4/CHANGELOG.md#L5) |
+| BART homepage v0.0.4 rebrand draft and main snapshot | Records the HQ rebrand draft and the identical README on BART main. | [Source 1](https://github.com/vixttha/README-HQ/blob/d8c4517c7e43fce02b132c3abd82b8da93e75e3e/history/bart/readme-hq/workspace/v0.0.4/DRAFT.md#L1) · [Source 2](https://github.com/vixttha/README-HQ/blob/d8c4517c7e43fce02b132c3abd82b8da93e75e3e/history/bart/main-rebrand-v0.0.4/README.md#L1) · [Source 3](https://github.com/vixttha/README-HQ/blob/d8c4517c7e43fce02b132c3abd82b8da93e75e3e/history/bart/readme-hq/workspace/v0.0.4/REVIEW.md#L1) · [Change record](https://github.com/vixttha/README-HQ/blob/d8c4517c7e43fce02b132c3abd82b8da93e75e3e/history/bart/readme-hq/workspace/v0.0.4/CHANGELOG.md#L3) |

@@ -1,0 +1,48 @@
+name: README HQ Graphify
+
+on:
+  push:
+    branches: [readme-hq]
+  pull_request:
+    branches: [readme-hq]
+    paths:
+      - '.github/workflows/readme-hq-graphify.yml'
+      - 'Graphify HQ/**'
+      - 'readme-hq/versions/**'
+      - 'tools/check_readme_hq.py'
+      - 'tools/readme_hq_baselines.json'
+      - 'tools/graphify/**'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: readme-hq-graphify-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PIP_DISABLE_PIP_VERSION_CHECK: '1'
+  PYTHONHASHSEED: '0'
+
+jobs:
+  versions:
+    name: Rebuild and query the template version maps
+    if: github.event.repository.private == false && github.event.deleted != true
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        with:
+          python-version: '3.12'
+      - name: Install locked Graphify packages
+        run: >-
+          python -m pip install --no-cache-dir --only-binary=:all: --no-deps -r tools/graphify/requirements.txt
+      - name: Check committed maps against the approved archives
+        run: |
+          set -o pipefail
+          printf 'Graphify validation checkout `%s`\n\n' "$(git rev-parse HEAD)" >> "$GITHUB_STEP_SUMMARY"
+          python tools/graphify/version_maps.py "$RUNNER_TEMP/readme-hq-maps" --check

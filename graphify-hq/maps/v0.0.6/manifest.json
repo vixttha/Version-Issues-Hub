@@ -1,0 +1,68 @@
+{
+  "repository": "vixttha/README-HQ",
+  "source_commit": "d8c4517c7e43fce02b132c3abd82b8da93e75e3e",
+  "title": "README HQ v0.0.6 version history",
+  "source_files": [
+    "history/aldervale/readme-hq/Graphify HQ/v0.0.6/README.md",
+    "history/aldervale/readme-hq/readme-hq/versions/v0.0.6/CHANGELOG.md",
+    "history/aldervale/readme-hq/readme-hq/versions/v0.0.6/GUIDE.md",
+    "history/aldervale/readme-hq/readme-hq/versions/v0.0.6/README.md",
+    "tools/check_readme_hq.py",
+    "versions/v0.0.6/CHANGELOG.md",
+    "versions/v0.0.6/README.md"
+  ],
+  "features": [
+    {
+      "id": "aldervale-hq-v0-0-6",
+      "label": "AlderVale README HQ v0.0.6 approved guide",
+      "documented_in": [
+        {
+          "path": "history/aldervale/readme-hq/readme-hq/versions/v0.0.6/README.md",
+          "anchor": "# README HQ"
+        },
+        {
+          "path": "history/aldervale/readme-hq/readme-hq/versions/v0.0.6/GUIDE.md",
+          "anchor": "# README HQ Folder Guide"
+        },
+        {
+          "path": "history/aldervale/readme-hq/Graphify HQ/v0.0.6/README.md",
+          "anchor": "# README HQ template v0.0.6"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "history/aldervale/readme-hq/readme-hq/versions/v0.0.6/CHANGELOG.md",
+          "anchor": "- Add Graphify HQ to the landing page and replace the v0.0.3 spotlight with the latest approved archive link."
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tools/check_readme_hq.py",
+          "anchor": "def check_history(errors):"
+        }
+      ]
+    },
+    {
+      "id": "standalone-hq-v0-0-6",
+      "label": "Standalone README HQ v0.0.6 continuation",
+      "documented_in": [
+        {
+          "path": "versions/v0.0.6/README.md",
+          "anchor": "# README HQ v0.0.6"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "versions/v0.0.6/CHANGELOG.md",
+          "anchor": "- Continue the standalone version line from the accepted AlderVale README HQ v0.0.6 baseline."
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tools/check_readme_hq.py",
+          "anchor": "def check_history(errors):"
+        }
+      ]
+    }
+  ]
+}

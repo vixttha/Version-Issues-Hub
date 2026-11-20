@@ -1,0 +1,129 @@
+{
+  "title": "Graphify HQ v0.0.8 template self-map",
+  "source_files": [
+    ".github/workflows/graphify-hq-template.yml",
+    "README.md",
+    "tools/verify_archive.py",
+    "versions/v0.0.8/CHANGELOG.md",
+    "versions/v0.0.8/README.md",
+    "versions/v0.0.8/evidence_map.py",
+    "versions/v0.0.8/github_provenance.py",
+    "versions/v0.0.8/requirements.txt",
+    "versions/v0.0.8/self-map.json",
+    "versions/v0.0.8/test_evidence_map.py"
+  ],
+  "features": [
+    {
+      "id": "source-provenance",
+      "label": "Git source and PR provenance",
+      "documented_in": [
+        {
+          "path": "versions/v0.0.8/README.md",
+          "anchor": "## Source and pull request provenance"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "versions/v0.0.8/CHANGELOG.md",
+          "anchor": "## Source and verification"
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "versions/v0.0.8/test_evidence_map.py",
+          "anchor": "def test_historical_commit_requires_github_membership(self):"
+        },
+        {
+          "path": "versions/v0.0.8/test_evidence_map.py",
+          "anchor": "def test_superseded_and_later_commit_approvals_are_excluded(self):"
+        }
+      ],
+      "implemented_in": [
+        {
+          "path": "versions/v0.0.8/evidence_map.py",
+          "anchor": "def source_lines(commit, path):"
+        },
+        {
+          "path": "versions/v0.0.8/github_provenance.py",
+          "anchor": "def verify_pull_request(repository, source, expected, fetch=None):"
+        }
+      ]
+    },
+    {
+      "id": "feature-evidence",
+      "label": "Feature evidence and source inventory",
+      "documented_in": [
+        {
+          "path": "versions/v0.0.8/README.md",
+          "anchor": "## Feature evidence links"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "versions/v0.0.8/CHANGELOG.md",
+          "anchor": "## Implementation and source inventory"
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "versions/v0.0.8/test_evidence_map.py",
+          "anchor": "def test_existing_manifest_needs_no_inventory_or_implementation_links(self):"
+        },
+        {
+          "path": "versions/v0.0.8/test_evidence_map.py",
+          "anchor": "def test_inventory_rejects_invalid_paths_and_duplicates(self):"
+        },
+        {
+          "path": "versions/v0.0.8/test_evidence_map.py",
+          "anchor": "def test_implementation_anchor_connects_feature_to_inventory_file(self):"
+        }
+      ],
+      "implemented_in": [
+        {
+          "path": "versions/v0.0.8/evidence_map.py",
+          "anchor": "def validate_manifest(data):"
+        },
+        {
+          "path": "versions/v0.0.8/evidence_map.py",
+          "anchor": "def build(manifest, folder):"
+        }
+      ]
+    },
+    {
+      "id": "archive-verification",
+      "label": "Reproducible Graphify archive",
+      "documented_in": [
+        {
+          "path": "versions/v0.0.8/README.md",
+          "anchor": "## Reproducible build and MCP verification"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "versions/v0.0.8/CHANGELOG.md",
+          "anchor": "## Standalone template archive"
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "versions/v0.0.8/test_evidence_map.py",
+          "anchor": "def test_anchor_resolves_to_one_exact_line(self):"
+        }
+      ],
+      "implemented_in": [
+        {
+          "path": "versions/v0.0.8/evidence_map.py",
+          "anchor": "async def verify_mcp(graph, receipt):"
+        },
+        {
+          "path": "tools/verify_archive.py",
+          "anchor": "def verify_version(version, entry, head, staging):"
+        },
+        {
+          "path": ".github/workflows/graphify-hq-template.yml",
+          "anchor": "run: python tools/verify_archive.py"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,34 @@
+{
+  "schema_version": 1,
+  "template_version": "v0.0.8",
+  "repository": "vixttha/README-HQ",
+  "source_commit": "d8c4517c7e43fce02b132c3abd82b8da93e75e3e",
+  "pull_request": null,
+  "scope": "feature-evidence",
+  "graphify_version": "0.9.109",
+  "graph_sha256": "d251f6368b83061ea193b11c0f86af7b4910cb843e98182905d6a20bcb5e46d2",
+  "nodes": 12,
+  "edges": 16,
+  "feature_links": {
+    "feature:aldervale-hq-v0-0-5": {
+      "documented_in": 3,
+      "changed_in": 1,
+      "tested_by": 1
+    }
+  },
+  "source_files": [
+    "history/aldervale/readme-hq/Graphify HQ/v0.0.5/README.md",
+    "history/aldervale/readme-hq/readme-hq/versions/v0.0.5/CHANGELOG.md",
+    "history/aldervale/readme-hq/readme-hq/versions/v0.0.5/GUIDE.md",
+    "history/aldervale/readme-hq/readme-hq/versions/v0.0.5/README.md",
+    "tools/check_readme_hq.py"
+  ],
+  "source_sha256": {
+    "history/aldervale/readme-hq/Graphify HQ/v0.0.5/README.md": "6e992e144cc574ecf3358455c5790fb063968a2ec649c40cbc3d16521712c7d2",
+    "history/aldervale/readme-hq/readme-hq/versions/v0.0.5/CHANGELOG.md": "72668db790ab539ab8db50ddd621c62c64449df7cce1a0bc762198548908fd6c",
+    "history/aldervale/readme-hq/readme-hq/versions/v0.0.5/GUIDE.md": "09427382bedeeccf01d2c17f0ac3518c97645f98933cccc34f2486a76aace482",
+    "history/aldervale/readme-hq/readme-hq/versions/v0.0.5/README.md": "0114c54efdb3a6e72e3b01f69a53d4fe928ac7243df933a5d54f21f8ed3d215e",
+    "tools/check_readme_hq.py": "4a74111bd01a4929081f076e7f8aa50320774b680f37e7230c629e764ecacf52"
+  },
+  "mcp_verified": true
+}

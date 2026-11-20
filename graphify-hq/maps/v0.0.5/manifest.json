@@ -1,0 +1,44 @@
+{
+  "repository": "vixttha/README-HQ",
+  "source_commit": "d8c4517c7e43fce02b132c3abd82b8da93e75e3e",
+  "title": "README HQ v0.0.5 version history",
+  "source_files": [
+    "history/aldervale/readme-hq/Graphify HQ/v0.0.5/README.md",
+    "history/aldervale/readme-hq/readme-hq/versions/v0.0.5/CHANGELOG.md",
+    "history/aldervale/readme-hq/readme-hq/versions/v0.0.5/GUIDE.md",
+    "history/aldervale/readme-hq/readme-hq/versions/v0.0.5/README.md",
+    "tools/check_readme_hq.py"
+  ],
+  "features": [
+    {
+      "id": "aldervale-hq-v0-0-5",
+      "label": "AlderVale README HQ v0.0.5 approved guide",
+      "documented_in": [
+        {
+          "path": "history/aldervale/readme-hq/readme-hq/versions/v0.0.5/README.md",
+          "anchor": "# README HQ"
+        },
+        {
+          "path": "history/aldervale/readme-hq/readme-hq/versions/v0.0.5/GUIDE.md",
+          "anchor": "# README HQ Folder Guide"
+        },
+        {
+          "path": "history/aldervale/readme-hq/Graphify HQ/v0.0.5/README.md",
+          "anchor": "# README HQ template v0.0.5"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "history/aldervale/readme-hq/readme-hq/versions/v0.0.5/CHANGELOG.md",
+          "anchor": "- Update the landing page\u2019s publication record to public game README v0.0.3. Link to the live README, its archived copy and changelog, and publication PR #124."
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tools/check_readme_hq.py",
+          "anchor": "def check_history(errors):"
+        }
+      ]
+    }
+  ]
+}

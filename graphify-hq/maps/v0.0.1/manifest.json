@@ -1,0 +1,155 @@
+{
+  "repository": "vixttha/README-HQ",
+  "source_commit": "d8c4517c7e43fce02b132c3abd82b8da93e75e3e",
+  "title": "README HQ v0.0.1 version history",
+  "source_files": [
+    "history/aldervale/readme-hq/Graphify HQ/v0.0.1/README.md",
+    "history/aldervale/readme-hq/readme-hq/versions/v0.0.1/CHANGELOG.md",
+    "history/aldervale/readme-hq/readme-hq/versions/v0.0.1/GUIDE.md",
+    "history/aldervale/readme-hq/readme-hq/versions/v0.0.1/README.md",
+    "history/aldervale/readme-hq/versions/v0.0.1/CHANGELOG.md",
+    "history/aldervale/readme-hq/versions/v0.0.1/README.md",
+    "history/bart/publication-candidate-v0.0.1/README.md",
+    "history/bart/readme-hq/readme-hq/versions/v0.0.1/CHANGELOG.md",
+    "history/bart/readme-hq/readme-hq/versions/v0.0.1/GUIDE.md",
+    "history/bart/readme-hq/readme-hq/versions/v0.0.1/README.md",
+    "history/bart/readme-hq/workspace/v0.0.1/CHANGELOG.md",
+    "history/bart/readme-hq/workspace/v0.0.1/DRAFT.md",
+    "history/bart/readme-hq/workspace/v0.0.1/REVIEW.md",
+    "tools/check_readme_hq.py",
+    "versions/v0.0.1/CHANGELOG.md",
+    "versions/v0.0.1/README.md"
+  ],
+  "features": [
+    {
+      "id": "aldervale-hq-v0-0-1",
+      "label": "AlderVale README HQ v0.0.1 approved guide",
+      "documented_in": [
+        {
+          "path": "history/aldervale/readme-hq/readme-hq/versions/v0.0.1/README.md",
+          "anchor": "# README HQ"
+        },
+        {
+          "path": "history/aldervale/readme-hq/readme-hq/versions/v0.0.1/GUIDE.md",
+          "anchor": "# README HQ Folder Guide"
+        },
+        {
+          "path": "history/aldervale/readme-hq/Graphify HQ/v0.0.1/README.md",
+          "anchor": "# README HQ template v0.0.1"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "history/aldervale/readme-hq/readme-hq/versions/v0.0.1/CHANGELOG.md",
+          "anchor": "- A front page with entry points for game README history, game README workspaces, and HQ\u2019s own records."
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tools/check_readme_hq.py",
+          "anchor": "def check_history(errors):"
+        }
+      ]
+    },
+    {
+      "id": "standalone-hq-v0-0-1",
+      "label": "Standalone README HQ v0.0.1 initial candidate",
+      "documented_in": [
+        {
+          "path": "versions/v0.0.1/README.md",
+          "anchor": "# README HQ v0.0.1"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "versions/v0.0.1/CHANGELOG.md",
+          "anchor": "- Imported both public README HQ branch trees, including version workspaces, their original validators, and AlderVale's six Graphify maps."
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tools/check_readme_hq.py",
+          "anchor": "def check_history(errors):"
+        }
+      ]
+    },
+    {
+      "id": "bart-hq-v0-0-1",
+      "label": "BART README HQ v0.0.1 archived guide",
+      "documented_in": [
+        {
+          "path": "history/bart/readme-hq/readme-hq/versions/v0.0.1/README.md",
+          "anchor": "# Blender-Agent \u2014 README HQ"
+        },
+        {
+          "path": "history/bart/readme-hq/readme-hq/versions/v0.0.1/GUIDE.md",
+          "anchor": "# README HQ operating guide"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "history/bart/readme-hq/readme-hq/versions/v0.0.1/CHANGELOG.md",
+          "anchor": "- Establish an independent, durable README HQ branch tailored to Blender-Agent."
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tools/check_readme_hq.py",
+          "anchor": "def check_history(errors):"
+        }
+      ]
+    },
+    {
+      "id": "aldervale-homepage-v0-0-1",
+      "label": "AlderVale homepage v0.0.1",
+      "documented_in": [
+        {
+          "path": "history/aldervale/readme-hq/versions/v0.0.1/README.md",
+          "anchor": "# AlderVale: Pact of Ten"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "history/aldervale/readme-hq/versions/v0.0.1/CHANGELOG.md",
+          "anchor": "- A game overview and the current first-playable scope."
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tools/check_readme_hq.py",
+          "anchor": "def check_history(errors):"
+        }
+      ]
+    },
+    {
+      "id": "bart-homepage-v0-0-1",
+      "label": "BART homepage v0.0.1 publication candidate",
+      "documented_in": [
+        {
+          "path": "history/bart/readme-hq/workspace/v0.0.1/DRAFT.md",
+          "anchor": "# Blender-Agent"
+        },
+        {
+          "path": "history/bart/publication-candidate-v0.0.1/README.md",
+          "anchor": "# Blender-Agent"
+        },
+        {
+          "path": "history/bart/readme-hq/workspace/v0.0.1/REVIEW.md",
+          "anchor": "# Public README v0.0.1 publication checklist"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "history/bart/readme-hq/workspace/v0.0.1/CHANGELOG.md",
+          "anchor": "- Clear, usable pre-alpha positioning and explicit development status."
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tools/check_readme_hq.py",
+          "anchor": "def check_history(errors):"
+        }
+      ]
+    }
+  ]
+}
