@@ -1,0 +1,34 @@
+name: Veraphify verification
+
+on:
+  push:
+    branches: [Veraphify]
+  pull_request:
+    branches: [Veraphify]
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    if: github.event.repository.private == false
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: '24.22.3'
+          package-manager-cache: false
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
+        with:
+          python-version: '3.12'
+      - name: Verify the CLI and replay the two-version walkthrough
+        run: |
+          node veraphifiy.mjs --help
+          script=$(mktemp)
+          awk '/^```bash$/{copy=1;next} /^```$/{if(copy)exit} copy' docs/adopter-walkthrough.md > "$script"
+          test -s "$script"
+          bash "$script"

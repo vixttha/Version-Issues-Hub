@@ -1,0 +1,2 @@
+# Lydite v2 signs the exact case-plan bytes across runner checkouts.
+test-vault/javascript/case.json -text
