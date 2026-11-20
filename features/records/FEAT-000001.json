@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "id": "FEAT-000001",
+  "title": "Issue-version ledger",
+  "summary": "Record the issue-to-version binding, acceptance criteria, and current disposition.",
+  "kind": "capability",
+  "lifecycle_status": "planned",
+  "implementation_status": "planned",
+  "idea_ids": [
+    "IDEA-000001",
+    "IDEA-000005"
+  ],
+  "acceptance_criteria": [
+    "A new issue receives the next available number and repeat registration preserves its mapping.",
+    "The ledger distinguishes issue identity from suffix and orders .9, .10, and .150 numerically.",
+    "Duplicate and retired assignments are recorded without reusing an identifier."
+  ],
+  "testing": {
+    "status": "planned"
+  },
+  "evidence": [
+    {
+      "kind": "other",
+      "claim": "Draft design and acceptance criteria only.",
+      "source_sha": "a7e4528740b6a72d16a58b53eefa53f521051950",
+      "source_path": "docs/v0.0.0.1.md",
+      "receipt": "https://github.com/vixttha/Version-Issues-Hub/pull/2"
+    }
+  ],
+  "release_membership": "NOT_ASSERTED"
+}

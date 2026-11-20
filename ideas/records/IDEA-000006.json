@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "id": "IDEA-000006",
+  "title": "Derive an evidence map from project records",
+  "summary": "Use Graphify to help people and agents move between the checkpoint plan, linked ideas, and planned capabilities. Extend it to actual fix and CI evidence when available.",
+  "kind": "feature",
+  "origin": {
+    "created_by": "joint",
+    "source": "Version-Issues-Hub planning, 2026-11-20, https://github.com/vixttha/Version-Issues-Hub/issues/1"
+  },
+  "lifecycle_status": "captured",
+  "implementation_status": "not_planned",
+  "testing": {
+    "status": "untested"
+  },
+  "importance": "medium",
+  "complexity": "unknown",
+  "categories": [
+    "navigation"
+  ],
+  "benefits": [
+    "A fresh session can recover project context quickly."
+  ],
+  "risks": [
+    "A graph edge can be misread as proof of implementation if its scope is unclear."
+  ],
+  "related_ideas": [],
+  "evidence": [
+    {
+      "relation": "context",
+      "claim": "The draft workflow records this design direction.",
+      "repository": "vixttha/Version-Issues-Hub",
+      "commit": "a7e4528740b6a72d16a58b53eefa53f521051950",
+      "path": "docs/v0.0.0.1.md"
+    }
+  ]
+}

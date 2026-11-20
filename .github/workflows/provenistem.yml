@@ -1,0 +1,82 @@
+name: Provenistem catalog
+on:
+  push:
+    branches: [Provenistem]
+  pull_request:
+    branches: [Provenistem]
+permissions:
+  contents: read
+env:
+  PYTHONDONTWRITEBYTECODE: '1'
+jobs:
+  catalog:
+    if: github.event.repository.private == false
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 8
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          path: catalog
+          persist-credentials: false
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          repository: vixttha/Provenistem
+          ref: e36fcd6d12633395e9b573228c0797ade9e775b0
+          path: upstream
+          persist-credentials: false
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
+        with:
+          python-version: '3.12'
+      - name: Verify the blank starter and its regression suite
+        working-directory: upstream/packages/provenistem
+        run: |
+          python tools/library.py check --expect-empty
+          python -m unittest discover -s tests -v
+      - name: Verify the populated project catalog
+        working-directory: catalog
+        run: python tools/library.py check
+      - name: Verify that the catalog checkout stayed clean
+        working-directory: catalog
+        shell: bash
+        run: test -z "$(git status --porcelain)"
+  graphify:
+    if: github.event.repository.private == false
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      GRAPHIFY_QUERY_LOG_DISABLE: '1'
+      PYTHONHASHSEED: '0'
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          path: catalog
+          persist-credentials: false
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          repository: vixttha/README-HQ
+          ref: 788f2127d3cf004ac5615d21364f5b56e4f7dd31
+          path: graphify-kit
+          persist-credentials: false
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
+        with:
+          python-version: '3.12'
+      - name: Build and verify the pinned catalog graph
+        working-directory: catalog
+        shell: bash
+        run: |
+          kit=../graphify-kit/graphify-hq/template/v0.0.8
+          python -m pip install --require-hashes --no-deps --only-binary=:all: -r "$kit/requirements.txt"
+          python -m pip check
+          output="$RUNNER_TEMP/provenistem-graph"
+          mkdir -p "$output"
+          python tools/catalog_graph.py "$output/manifest.json"
+          python "$kit/evidence_map.py" "$output/manifest.json" "$output"
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: provenistem-catalog-graph-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/provenistem-graph
+          if-no-files-found: error

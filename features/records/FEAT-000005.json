@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "id": "FEAT-000005",
+  "title": "Owner-controlled integration and release record",
+  "summary": "Record the owner's integration and publication decisions with the corresponding revision and published version when applicable.",
+  "kind": "workflow",
+  "lifecycle_status": "planned",
+  "implementation_status": "planned",
+  "idea_ids": [
+    "IDEA-000002",
+    "IDEA-000005"
+  ],
+  "acceptance_criteria": [
+    "The record distinguishes verification, integration and publication.",
+    "A public-ready release references an explicit owner decision and an exact revision."
+  ],
+  "testing": {
+    "status": "planned"
+  },
+  "evidence": [
+    {
+      "kind": "other",
+      "claim": "Draft design and acceptance criteria only.",
+      "source_sha": "a7e4528740b6a72d16a58b53eefa53f521051950",
+      "source_path": "docs/v0.0.0.1.md",
+      "receipt": "https://github.com/vixttha/Version-Issues-Hub/pull/2"
+    }
+  ],
+  "release_membership": "NOT_ASSERTED"
+}

@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "id": "FEAT-000004",
+  "title": "GitHub required-check pilot",
+  "summary": "Demonstrate merge behavior using a disposable target and its actual ruleset.",
+  "kind": "integration",
+  "lifecycle_status": "planned",
+  "implementation_status": "planned",
+  "idea_ids": [
+    "IDEA-000003",
+    "IDEA-000004"
+  ],
+  "acceptance_criteria": [
+    "A correctly evidenced batched PR is eligible to merge.",
+    "GitHub blocks missing, duplicate, stale, or skipped required evidence in the defined controls."
+  ],
+  "testing": {
+    "status": "planned"
+  },
+  "evidence": [
+    {
+      "kind": "other",
+      "claim": "Draft design and acceptance criteria only.",
+      "source_sha": "a7e4528740b6a72d16a58b53eefa53f521051950",
+      "source_path": "docs/v0.0.0.1.md",
+      "receipt": "https://github.com/vixttha/Version-Issues-Hub/pull/2"
+    }
+  ],
+  "release_membership": "NOT_ASSERTED"
+}

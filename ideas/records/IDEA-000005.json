@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "id": "IDEA-000005",
+  "title": "Keep public development and product readiness distinct",
+  "summary": "Use v0.0.x development lines with four-part issue versions. Use a public-ready v0.x release only after the owner's readiness decision.",
+  "kind": "product",
+  "origin": {
+    "created_by": "joint",
+    "source": "Version-Issues-Hub planning, 2026-11-20, https://github.com/vixttha/Version-Issues-Hub/issues/1"
+  },
+  "lifecycle_status": "captured",
+  "implementation_status": "not_planned",
+  "testing": {
+    "status": "untested"
+  },
+  "importance": "high",
+  "complexity": "unknown",
+  "categories": [
+    "release"
+  ],
+  "benefits": [
+    "Public-runner use does not imply product readiness."
+  ],
+  "risks": [
+    "Version labels can be confused with release approval unless recorded explicitly."
+  ],
+  "related_ideas": [],
+  "evidence": [
+    {
+      "relation": "context",
+      "claim": "The draft workflow records this design direction.",
+      "repository": "vixttha/Version-Issues-Hub",
+      "commit": "a7e4528740b6a72d16a58b53eefa53f521051950",
+      "path": "docs/v0.0.0.1.md"
+    }
+  ]
+}

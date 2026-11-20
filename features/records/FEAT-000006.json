@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "id": "FEAT-000006",
+  "title": "Read-only Provenistem and Graphify navigation",
+  "summary": "Provide a browsable Ideas and Features catalog and a graph linked to the design checkpoint.",
+  "kind": "integration",
+  "lifecycle_status": "planned",
+  "implementation_status": "planned",
+  "idea_ids": [
+    "IDEA-000001",
+    "IDEA-000003",
+    "IDEA-000006"
+  ],
+  "acceptance_criteria": [
+    "Every planned feature links to existing idea IDs and its design evidence.",
+    "A pinned graph receipt identifies the source and the planning scope without asserting delivery."
+  ],
+  "testing": {
+    "status": "planned"
+  },
+  "evidence": [
+    {
+      "kind": "other",
+      "claim": "Draft design and acceptance criteria only.",
+      "source_sha": "a7e4528740b6a72d16a58b53eefa53f521051950",
+      "source_path": "docs/v0.0.0.1.md",
+      "receipt": "https://github.com/vixttha/Version-Issues-Hub/pull/2"
+    }
+  ],
+  "release_membership": "NOT_ASSERTED"
+}

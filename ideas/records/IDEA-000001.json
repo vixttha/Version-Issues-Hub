@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "id": "IDEA-000001",
+  "title": "One stable version per accepted GitHub issue",
+  "summary": "Assign a stable four-part development version when the issue enters scope. Keep issue identity independent from the numeric suffix and preserve assignments through retries.",
+  "kind": "process",
+  "origin": {
+    "created_by": "joint",
+    "source": "Version-Issues-Hub planning, 2026-11-20, https://github.com/vixttha/Version-Issues-Hub/issues/1"
+  },
+  "lifecycle_status": "captured",
+  "implementation_status": "not_planned",
+  "testing": {
+    "status": "untested"
+  },
+  "importance": "high",
+  "complexity": "unknown",
+  "categories": [
+    "versioning"
+  ],
+  "benefits": [
+    "Find issue, revision and outcome from a single development version."
+  ],
+  "risks": [
+    "Uncoordinated allocation can duplicate or reuse a number."
+  ],
+  "related_ideas": [],
+  "evidence": [
+    {
+      "relation": "context",
+      "claim": "The draft workflow records this design direction.",
+      "repository": "vixttha/Version-Issues-Hub",
+      "commit": "a7e4528740b6a72d16a58b53eefa53f521051950",
+      "path": "docs/v0.0.0.1.md"
+    }
+  ]
+}

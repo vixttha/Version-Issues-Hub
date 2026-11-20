@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "id": "IDEA-000003",
+  "title": "Tie acceptance evidence to the tested revision",
+  "summary": "Record the original behavior, acceptance case, effective checkout, CI result and run attempt by issue version, including issues sharing a batch.",
+  "kind": "process",
+  "origin": {
+    "created_by": "joint",
+    "source": "Version-Issues-Hub planning, 2026-11-20, https://github.com/vixttha/Version-Issues-Hub/issues/1"
+  },
+  "lifecycle_status": "captured",
+  "implementation_status": "not_planned",
+  "testing": {
+    "status": "untested"
+  },
+  "importance": "high",
+  "complexity": "unknown",
+  "categories": [
+    "verification"
+  ],
+  "benefits": [
+    "A green result remains traceable after a PR changes."
+  ],
+  "risks": [
+    "Branch checks, proposed-merge checks, and final merged commits can be confused."
+  ],
+  "related_ideas": [],
+  "evidence": [
+    {
+      "relation": "context",
+      "claim": "The draft workflow records this design direction.",
+      "repository": "vixttha/Version-Issues-Hub",
+      "commit": "a7e4528740b6a72d16a58b53eefa53f521051950",
+      "path": "docs/v0.0.0.1.md"
+    }
+  ]
+}

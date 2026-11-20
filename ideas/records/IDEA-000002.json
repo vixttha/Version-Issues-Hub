@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "id": "IDEA-000002",
+  "title": "One active VIB writer across hosts",
+  "summary": "Use the same Head, Worker, Validate, Internal Auditor and Head sequence from ChatGPT or another harness, using GitHub records as the handoff.",
+  "kind": "process",
+  "origin": {
+    "created_by": "joint",
+    "source": "Version-Issues-Hub planning, 2026-11-20, https://github.com/vixttha/Version-Issues-Hub/issues/1"
+  },
+  "lifecycle_status": "captured",
+  "implementation_status": "not_planned",
+  "testing": {
+    "status": "untested"
+  },
+  "importance": "high",
+  "complexity": "unknown",
+  "categories": [
+    "workflow"
+  ],
+  "benefits": [
+    "A solo owner can authorize a batch and review the results together."
+  ],
+  "risks": [
+    "An unclear handoff can make two sessions act on the same assignment."
+  ],
+  "related_ideas": [],
+  "evidence": [
+    {
+      "relation": "context",
+      "claim": "The draft workflow records this design direction.",
+      "repository": "vixttha/Version-Issues-Hub",
+      "commit": "a7e4528740b6a72d16a58b53eefa53f521051950",
+      "path": "docs/v0.0.0.1.md"
+    }
+  ]
+}
