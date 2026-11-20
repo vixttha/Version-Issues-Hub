@@ -1,0 +1,107 @@
+import copy
+from pathlib import Path
+import unittest
+
+from tools import checkpoint
+
+
+def ledger_with(*records):
+    return {
+        "schema_version": 1,
+        "repository": "vixttha/Version-Issues-Hub",
+        "issues": list(records),
+    }
+
+
+def row(issue, version, state="assigned"):
+    return {"issue": issue, "version": version, "state": state, "acceptance": ["Check the fix."]}
+
+
+class LedgerTests(unittest.TestCase):
+    def test_first_live_issue_is_stable_on_registration_retry(self):
+        ledger = checkpoint.parse_json(Path(checkpoint.LEDGER).read_text(encoding="utf-8"))
+        original = copy.deepcopy(ledger)
+        self.assertEqual(checkpoint.bindings(ledger)[1], "v0.0.0.1")
+        self.assertEqual(checkpoint.register(ledger, 1, "v0.0.0", []), ("v0.0.0.1", False))
+        self.assertEqual(ledger, original)
+        with self.assertRaisesRegex(ValueError, "already belongs"):
+            checkpoint.register(ledger, 1, "v0.0.1", ["A changed line."])
+
+    def test_allocation_is_numeric_and_keeps_retired_versions_reserved(self):
+        ledger = ledger_with(row(10, "v0.0.2.10"), row(9, "v0.0.2.9"),
+                             row(150, "v0.0.2.150", "retired"), row(151, "v0.0.3.1"))
+        self.assertEqual(checkpoint.register(ledger, 500, "v0.0.2", ["Check the fix."]),
+                         ("v0.0.2.151", True))
+        self.assertEqual([r["issue"] for r in ledger["issues"]], [9, 10, 150, 500, 151])
+
+    def test_rejects_duplicate_assignments_and_invalid_records(self):
+        examples = (
+            (ledger_with(row(1, "v0.0.0.1"), row(2, "v0.0.0.1")), "Duplicate version"),
+            (ledger_with(row(1, "v0.0.0.1"), row(1, "v0.0.0.2")), "Duplicate issue"),
+            (ledger_with(row(1, "v0.0.0.01")), "Invalid issue version"),
+            (ledger_with(row(True, "v0.0.0.1")), "Invalid GitHub issue"),
+        )
+        for ledger, message in examples:
+            with self.subTest(message=message), self.assertRaisesRegex(ValueError, message):
+                checkpoint.bindings(ledger)
+        with self.assertRaisesRegex(ValueError, "Duplicate JSON key"):
+            checkpoint.parse_json('{"issue": 1, "issue": 2}')
+
+    def test_allows_state_changes_but_rejects_deletion_and_renumbering(self):
+        before = ledger_with(row(1, "v0.0.0.1"))
+        checkpoint.check_history(ledger_with(row(1, "v0.0.0.1", "retired")), before)
+        for after in (ledger_with(), ledger_with(row(1, "v0.0.0.2"))):
+            with self.assertRaisesRegex(ValueError, "Historical assignment changed"):
+                checkpoint.check_history(after, before)
+
+
+class ReceiptTests(unittest.TestCase):
+    def setUp(self):
+        self.ledger = ledger_with(row(1, "v0.0.0.1"))
+        self.event = {"repository": {"full_name": self.ledger["repository"]}}
+        self.tested = "a" * 40
+        self.env = {
+            "GITHUB_REPOSITORY": self.ledger["repository"],
+            "GITHUB_SHA": self.tested,
+            "GITHUB_RUN_ID": "100",
+            "GITHUB_RUN_ATTEMPT": "2",
+            "GITHUB_WORKFLOW": "Verify issue checkpoint",
+            "GITHUB_JOB": "verify",
+        }
+
+    def test_push_receipt_links_issue_checkout_and_attempt(self):
+        self.env["GITHUB_EVENT_NAME"] = "push"
+        self.event["after"] = self.tested
+        result = checkpoint.receipt(self.ledger, "v0.0.0.1", self.tested, self.env, self.event)
+        self.assertEqual(result["issue"], 1)
+        self.assertEqual(result["issue_url"],
+                         "https://github.com/vixttha/Version-Issues-Hub/issues/1")
+        self.assertEqual(result["fix_sha"], self.tested)
+        self.assertEqual(result["tested_sha"], self.tested)
+        self.assertEqual(result["attempt"], 2)
+        self.assertTrue(result["run_url"].endswith("/runs/100/attempts/2"))
+
+    def test_pr_receipt_distinguishes_candidate_base_and_tested_commit(self):
+        self.env["GITHUB_EVENT_NAME"] = "pull_request"
+        self.event["pull_request"] = {"number": 2, "head": {"sha": "b" * 40},
+                                      "base": {"sha": "c" * 40}}
+        with self.assertRaisesRegex(ValueError, "expected base and head parents"):
+            checkpoint.receipt(self.ledger, "v0.0.0.1", self.tested, self.env, self.event)
+        result = checkpoint.receipt(
+            self.ledger, "v0.0.0.1", self.tested, self.env, self.event, ["c" * 40, "b" * 40]
+        )
+        self.assertEqual(result["pull_request"], 2)
+        self.assertEqual(result["fix_sha"], "b" * 40)
+        self.assertEqual(result["base_sha"], "c" * 40)
+        self.assertEqual(result["tested_sha"], self.tested)
+
+    def test_refuses_a_wrong_checkout_and_wrong_repository(self):
+        with self.assertRaisesRegex(ValueError, "does not match GITHUB_SHA"):
+            checkpoint.receipt(self.ledger, "v0.0.0.1", "f" * 40, self.env, self.event)
+        self.event["repository"]["full_name"] = "example/another"
+        with self.assertRaisesRegex(ValueError, "repository does not match"):
+            checkpoint.receipt(self.ledger, "v0.0.0.1", self.tested, self.env, self.event)
+
+
+if __name__ == "__main__":
+    unittest.main()
