@@ -74,12 +74,29 @@ class ReceiptTests(unittest.TestCase):
         self.event["after"] = self.tested
         result = checkpoint.receipt(self.ledger, "v0.0.0.1", self.tested, self.env, self.event)
         self.assertEqual(result["issue"], 1)
+        self.assertEqual(result["baseline_version"], "v0.0.0")
+        self.assertEqual(result["target_version"], "v0.0.1")
         self.assertEqual(result["issue_url"],
                          "https://github.com/vixttha/Version-Issues-Hub/issues/1")
         self.assertEqual(result["fix_sha"], self.tested)
         self.assertEqual(result["tested_sha"], self.tested)
         self.assertEqual(result["attempt"], 2)
         self.assertTrue(result["run_url"].endswith("/runs/100/attempts/2"))
+
+    def test_receipt_targets_the_next_project_version_on_each_baseline(self):
+        self.env["GITHUB_EVENT_NAME"] = "push"
+        self.event["after"] = self.tested
+        for version, baseline, target in (
+            ("v0.0.1.1", "v0.0.1", "v0.0.2"),
+            ("v0.0.1.150", "v0.0.1", "v0.0.2"),
+            ("v0.0.9.3", "v0.0.9", "v0.0.10"),
+        ):
+            with self.subTest(version=version):
+                result = checkpoint.receipt(
+                    ledger_with(row(1, version)), version, self.tested, self.env, self.event
+                )
+                self.assertEqual(result["baseline_version"], baseline)
+                self.assertEqual(result["target_version"], target)
 
     def test_pr_receipt_distinguishes_candidate_base_and_tested_commit(self):
         self.env["GITHUB_EVENT_NAME"] = "pull_request"

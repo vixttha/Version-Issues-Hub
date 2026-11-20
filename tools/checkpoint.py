@@ -157,6 +157,8 @@ def receipt(ledger, version, checkout, env, event, parents=()):
         "issue": record["issue"],
         "issue_url": f"https://github.com/{repo}/issues/{record['issue']}",
         "version": version,
+        "baseline_version": version.rsplit(".", 1)[0],
+        "target_version": f"v0.0.{version_number(version)[2] + 1}",
         "acceptance": record["acceptance"],
         "scope": "issue-version ledger and receipt validation",
         "outcome": "pass",
@@ -187,7 +189,7 @@ def main():
     check.add_argument("--previous-ref", help="previous Git revision of this ledger")
     new = commands.add_parser("register", help="assign a version with one active writer")
     new.add_argument("issue", type=int)
-    new.add_argument("line")
+    new.add_argument("line", help="starting project version, such as v0.0.0 for work toward v0.0.1")
     new.add_argument("--acceptance", action="append", default=[])
     proof = commands.add_parser("receipt", help="write a receipt in a GitHub Actions job")
     proof.add_argument("version")
