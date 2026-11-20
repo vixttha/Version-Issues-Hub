@@ -1,0 +1,51 @@
+name: Brand identity checks
+
+on:
+  push:
+    branches: [Brand-Identity]
+  workflow_dispatch:
+  pull_request:
+    branches: [Brand-Identity]
+
+permissions:
+  contents: read
+
+env:
+  BRAND_CHECKOUT_SHA: ${{ github.sha }}
+  BRAND_PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+  BRAND_PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+  PYTHONHASHSEED: '0'
+
+jobs:
+  kit:
+    name: Verify brand kit and PNGs
+    if: github.event.repository.private == false
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          ref: ${{ env.BRAND_CHECKOUT_SHA }}
+          persist-credentials: false
+      - name: Verify and record checkout provenance
+        run: |
+          test "$(git rev-parse HEAD)" = "$BRAND_CHECKOUT_SHA"
+          if [[ "$GITHUB_EVENT_NAME" == pull_request ]]; then
+            mapfile -t parents < <(git cat-file -p HEAD | sed -n '/^$/q; s/^parent //p')
+            test "${#parents[@]}" -eq 2
+            test "${parents[0]}" = "$BRAND_PR_BASE_SHA"
+            test "${parents[1]}" = "$BRAND_PR_HEAD_SHA"
+            printf 'PR merge checkout: %s\n\n- Base: %s\n- Head: %s\n' \
+              "$BRAND_CHECKOUT_SHA" "$BRAND_PR_BASE_SHA" "$BRAND_PR_HEAD_SHA" >> "$GITHUB_STEP_SUMMARY"
+          else
+            printf 'Source checkout: %s\n' "$BRAND_CHECKOUT_SHA" >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Verify the kit inventory
+        run: python3 brand-identity/verify.py
+
+      - name: Test the creative direction gate
+        run: python3 -m unittest discover -s brand-identity -p 'test_*.py' -v
+
+      - name: Exercise adoption in a separate Git repository
+        run: python3 .github/scripts/smoke_adoption.py
