@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "repository": "vixttha/Version-Issues-Hub",
+  "issues": [
+    {
+      "issue": 1,
+      "version": "v0.0.0.1",
+      "state": "in_progress",
+      "acceptance": [
+        "Resolve GitHub issue #1 to v0.0.0.1 and retain that mapping through repeated registration.",
+        "Reject duplicate, deleted, or changed issue-version assignments.",
+        "Publish a public CI receipt for issue #1 with the fix revision, tested checkout, and exact run attempt."
+      ]
+    }
+  ]
+}

@@ -1,0 +1,36 @@
+name: Verify issue checkpoint
+
+on:
+  push:
+    branches: [plan/v0.0.0.1, main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      PREVIOUS_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
+        with:
+          python-version: '3.12'
+      - name: Check the ledger and verify the receipt contract
+        run: |
+          python tools/checkpoint.py check --previous-ref "$PREVIOUS_SHA"
+          python -B -m unittest discover -s tests -v
+      - name: Write the issue verification receipt
+        run: python tools/checkpoint.py receipt v0.0.0.1 "$RUNNER_TEMP/v0.0.0.1-receipt.json"
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: issue-v0.0.0.1-${{ github.event_name }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/v0.0.0.1-receipt.json
+          if-no-files-found: error
