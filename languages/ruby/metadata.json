@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "language": "Ruby",
+  "runtime": "Ruby / standalone script",
+  "runner": "ubuntu-24.04",
+  "runtime_probe": ["ruby", "--version"],
+  "cases": [
+    {
+      "id": "RUBY-001",
+      "purpose": "Content records require a nonempty title.",
+      "test": "tests/contract.rb",
+      "support": [],
+      "commands": [
+        [
+          "ruby",
+          "tests/contract.rb"
+        ]
+      ]
+    }
+  ]
+}

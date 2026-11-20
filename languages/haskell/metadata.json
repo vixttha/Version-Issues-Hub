@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "language": "Haskell",
+  "runtime": "GHC / runghc",
+  "runner": "ubuntu-24.04",
+  "runtime_probe": ["ghc", "--version"],
+  "cases": [
+    {
+      "id": "HASKELL-001",
+      "purpose": "Drawing a bounded prefix preserves order and handles an empty input.",
+      "test": "tests/Contract.hs",
+      "support": [],
+      "commands": [
+        [
+          "runghc",
+          "tests/Contract.hs"
+        ]
+      ]
+    }
+  ]
+}

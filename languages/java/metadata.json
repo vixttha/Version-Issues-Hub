@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "language": "Java",
+  "runtime": "Java 21 / source-file launcher",
+  "runner": "ubuntu-24.04",
+  "runtime_probe": ["java", "-version"],
+  "cases": [
+    {
+      "id": "JAVA-001",
+      "purpose": "A byte-oriented UTF-8 round trip preserves a non-ASCII value.",
+      "test": "tests/ContractCheck.java",
+      "support": [],
+      "commands": [
+        [
+          "java",
+          "tests/ContractCheck.java"
+        ]
+      ]
+    }
+  ]
+}

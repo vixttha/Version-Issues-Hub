@@ -1,0 +1,53 @@
+name: Test Vault
+
+on:
+  pull_request:
+  merge_group:
+  push:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: test-vault-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name != 'merge_group' }}
+
+jobs:
+  catalog:
+    name: Test Vault catalog
+    if: >-
+      (github.event.repository.private == false || vars.TEST_VAULT_ENABLE_PRIVATE == 'true') &&
+      (github.event_name != 'push' || github.ref_name == github.event.repository.default_branch)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        with:
+          python-version: '3.12'
+      - name: Validate catalog and write receipt
+        shell: bash
+        env:
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.merge_group.base_sha }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.event.merge_group.head_sha }}
+        run: |
+          set -o pipefail
+          {
+            printf 'Checkout: %s\n' "$(git rev-parse HEAD)"
+            printf 'Event: %s\n' "$GITHUB_EVENT_NAME"
+            printf 'Run / attempt: %s / %s\n' "$GITHUB_RUN_ID" "$GITHUB_RUN_ATTEMPT"
+            printf 'Base: %s\nHead: %s\n' "${PR_BASE_SHA:-n/a}" "${PR_HEAD_SHA:-n/a}"
+            catalog_args=()
+            if [[ -e test-vault/topics.json || -L test-vault/topics.json ]]; then
+              catalog_args+=(--topics test-vault/topics.json)
+            fi
+            if python3 test-vault/validate_catalog.py "${catalog_args[@]}"; then
+              printf 'Catalog result: PASS\n'
+            else
+              printf 'Catalog result: FAIL\n'
+              exit 1
+            fi
+          } 2>&1 | tee -a "$GITHUB_STEP_SUMMARY"

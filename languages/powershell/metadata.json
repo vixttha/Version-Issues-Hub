@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "language": "PowerShell",
+  "runtime": "PowerShell 7 / pwsh",
+  "runner": "windows-latest",
+  "runtime_probe": ["pwsh", "--version"],
+  "cases": [
+    {
+      "id": "POWERSHELL-001",
+      "purpose": "A Windows path with spaces and brackets can be read back literally.",
+      "test": "tests/contract.ps1",
+      "support": [],
+      "commands": [
+        [
+          "pwsh",
+          "-NoProfile",
+          "-File",
+          "tests/contract.ps1",
+          "{tmp}"
+        ]
+      ]
+    }
+  ]
+}

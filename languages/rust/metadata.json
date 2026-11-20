@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "language": "Rust",
+  "runtime": "Rust / stable rustc test harness",
+  "runner": "ubuntu-24.04",
+  "runtime_probe": [
+    "rustc",
+    "--version"
+  ],
+  "cases": [
+    {
+      "id": "RUST-001",
+      "purpose": "A length-prefixed reader accepts an exact payload and rejects truncation.",
+      "test": "tests/contract.rs",
+      "support": [],
+      "native_runner": "rust-libtest",
+      "commands": [
+        [
+          "rustc",
+          "--test",
+          "tests/contract.rs",
+          "-o",
+          "{tmp}/rust-contract"
+        ],
+        [
+          "{tmp}/rust-contract"
+        ]
+      ],
+      "native_test": "rejects_truncated_payload"
+    }
+  ]
+}

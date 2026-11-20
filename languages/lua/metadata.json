@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "language": "Lua",
+  "runtime": "Lua 5.4",
+  "runner": "ubuntu-24.04",
+  "runtime_probe": ["lua5.4", "-v"],
+  "cases": [
+    {
+      "id": "LUA-001",
+      "purpose": "Clamping movement respects separate horizontal and vertical bounds.",
+      "test": "tests/contract.lua",
+      "support": [],
+      "commands": [
+        [
+          "lua5.4",
+          "tests/contract.lua"
+        ]
+      ]
+    }
+  ]
+}

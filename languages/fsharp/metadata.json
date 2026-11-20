@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "language": "F#",
+  "runtime": ".NET 8 / F# Interactive",
+  "runner": "ubuntu-24.04",
+  "runtime_probe": ["dotnet", "--version"],
+  "cases": [
+    {
+      "id": "FSHARP-001",
+      "purpose": "Replaying a completed event leaves the completion count unchanged.",
+      "test": "tests/contract.fsx",
+      "support": [],
+      "commands": [
+        [
+          "dotnet",
+          "fsi",
+          "--exec",
+          "tests/contract.fsx"
+        ]
+      ]
+    }
+  ]
+}

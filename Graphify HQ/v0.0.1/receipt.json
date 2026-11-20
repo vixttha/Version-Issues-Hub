@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "template_version": "v0.0.1",
+  "source_commit": "9e030719ebfbe9c261e68aa7941f9438e363d6e3",
+  "source_path": "docs/test-vault/public-template",
+  "graphify_version": "0.9.109",
+  "graph_sha256": "103be3af904ad49a29fda7990e9b13f1e0f5f0bcb7d699612c1440530c9ca97a",
+  "nodes": 20,
+  "edges": 24,
+  "sources": {
+    "README.md": {
+      "archive_path": "versions/v0.0.1/README.md",
+      "blob_sha1": "fe6ba9655071531eb70e0061a7ba7f3943be41c3"
+    },
+    "case-and-receipt.md": {
+      "archive_path": "versions/v0.0.1/case-and-receipt.md",
+      "blob_sha1": "4c315a34f2f78ef4698f348bbc93acd87cf28f9d"
+    },
+    "case-catalog.md": {
+      "archive_path": "versions/v0.0.1/case-catalog.md",
+      "blob_sha1": "e99092d8ff54c824e3ed1dda4dcaaca11679bd8e"
+    },
+    "language-matrix.md": {
+      "archive_path": "versions/v0.0.1/language-matrix.md",
+      "blob_sha1": "06cdc2a26d9b8b74592120e254cecbc63a33afa6"
+    },
+    "validate_catalog.py": {
+      "archive_path": "versions/v0.0.1/validate_catalog.py",
+      "blob_sha1": "738e55c6100e32b02241344e10aec47e3716a9b5"
+    }
+  }
+}

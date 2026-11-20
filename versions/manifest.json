@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "current": "v0.0.3",
+  "versions": {
+    "v0.0.1": {
+      "source_commit": "9e030719ebfbe9c261e68aa7941f9438e363d6e3",
+      "source_path": "docs/test-vault/public-template"
+    },
+    "v0.0.2": {
+      "source_commit": "29105a580b4d570103f5cca2fe3bd87561a85567",
+      "source_path": "docs/test-vault/public-template"
+    },
+    "v0.0.3": {
+      "source_commit": "dafb72e042b61b5b24217d1f2fc1d3231d8c0f29",
+      "source_path": "starter"
+    }
+  }
+}

@@ -1,0 +1,209 @@
+name: Lydite validation
+
+on:
+  push:
+    branches: [Lydite-Test-Vault]
+  pull_request:
+    branches: [Lydite-Test-Vault]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: lydite-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  inventory-and-adoption:
+    name: Inventory and starter adoption
+    if: github.event.repository.private == false
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '24'
+      - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5.6.0
+        with:
+          go-version: '1.25.5'
+          cache: false
+      - name: Verify inventory and adoption
+        shell: bash
+        run: |
+          set -o pipefail
+          {
+            printf 'Checkout: %s\n\n' "$(git rev-parse HEAD)"
+            python tools/inventory.py
+          } | tee -a "$GITHUB_STEP_SUMMARY"
+          python tools/check_doc_links.py
+          python -m unittest discover -s tools -p 'test_inventory.py' -v
+          python tools/verify_adoption.py --fixture python-cli
+          python tools/verify_adoption.py --fixture go-api
+          python tools/verify_adoption.py --fixture docs-only
+          python tools/verify_evidence_adoption.py
+          python tools/verify_full_adoption.py --evidence-dir "$RUNNER_TEMP/lydite-adoption"
+      - name: Upload disposable install evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: lydite-adoption-attempt-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/lydite-adoption/
+          if-no-files-found: error
+          retention-days: 30
+
+  examples:
+    name: Language examples (${{ matrix.runner }})
+    if: github.event.repository.private == false
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [ubuntu-24.04, windows-latest]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        if: runner.os == 'Linux'
+        with:
+          node-version: '24'
+      - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5.6.0
+        if: runner.os == 'Linux'
+        with:
+          go-version: '1.25.5'
+          cache: false
+      - uses: actions/setup-dotnet@2016bd2012dba4e32de620c46fe006a3ac9f0602 # v5.0.1
+        if: runner.os == 'Linux'
+        with:
+          dotnet-version: '8.0.x'
+      - uses: actions/setup-java@cf277c60eb25467037889841efdb72551f06f6c3 # v4
+        if: runner.os == 'Linux'
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Set up Lua and report hosted toolchains
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends lua5.4
+          bash --version
+          for language in csharp fsharp; do
+            sdk="$(cd "languages/$language" && dotnet --version)"
+            [[ "$sdk" == 8.0.* ]]
+            printf '%s selected .NET SDK %s\n' "$language" "$sdk"
+          done
+          g++ --version
+          ghc --version
+          go version
+          java -version
+          lua5.4 -v
+          node --version
+          python --version
+          ruby --version
+          rustc --version
+      - name: Run language examples
+        shell: bash
+        env:
+          LYDITE_RUNNER: ${{ matrix.runner }}
+        run: |
+          set -o pipefail
+          python tools/inventory.py --runner "$LYDITE_RUNNER" \
+             --evidence "$RUNNER_TEMP/lydite-cases/examples.json" | tee -a "$GITHUB_STEP_SUMMARY"
+      - name: Upload per-case evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: lydite-cases-${{ matrix.runner }}-attempt-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/lydite-cases/
+          if-no-files-found: error
+          retention-days: 30
+
+  graphify:
+    name: Rebuild and verify archived Graphify maps
+    if: github.event.repository.private == false
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    env:
+      PYTHONHASHSEED: '0'
+      PIP_DISABLE_PIP_VERSION_CHECK: '1'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        with:
+          python-version: '3.12'
+      - name: Install locked Graphify and MCP packages
+        run: >-
+          python -m pip install --no-cache-dir --only-binary=:all: --no-deps
+          -r tools/graphify/requirements.txt
+      - name: Resolve upstream pins and verify archived maps
+        shell: bash
+        run: |
+          python tools/graphify/version_maps.py "$RUNNER_TEMP/lydite-maps" --fetch-upstream --check |
+            tee -a "$GITHUB_STEP_SUMMARY"
+      - name: Verify changed archive modes and archive or graph bytes fail
+        shell: bash
+        run: |
+          archive=versions/v0.0.3/test-vault/README.md
+          map="Graphify HQ/v0.0.3/graph.json"
+          trap 'git restore --source=HEAD --staged --worktree -- "$archive" "$map"' EXIT
+          git update-index --chmod=+x -- "$archive"
+          log="$RUNNER_TEMP/lydite-map-drift.log"
+          if python tools/graphify/version_maps.py "$RUNNER_TEMP/lydite-bad-mode" --check > "$log" 2>&1; then
+            exit 1
+          fi
+          grep -F "archived Git mode differs for test-vault/README.md (expected 100644, found 100755)" "$log"
+          git restore --source=HEAD --staged --worktree -- "$archive"
+          printf '\nSynthetic archive drift\n' >> "$archive"
+          if python tools/graphify/version_maps.py "$RUNNER_TEMP/lydite-bad-archive" --check > "$log" 2>&1; then
+            exit 1
+          fi
+          grep -F "archived bytes differ for test-vault/README.md" "$log"
+          git restore -- "$archive"
+          printf '\n' >> "$map"
+          if python tools/graphify/version_maps.py "$RUNNER_TEMP/lydite-bad-map" --check > "$log" 2>&1; then
+            exit 1
+          fi
+          grep -F "Changed: Graphify HQ/v0.0.3/graph.json" "$log"
+
+  release-candidate:
+    name: Record candidate source and validation
+    if: github.repository == 'vixttha/Lydite-Test-Vault-Template' && github.event.repository.private == false
+    needs: [inventory-and-adoption, examples, graphify]
+    permissions:
+      actions: read
+      contents: read
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        with:
+          python-version: '3.12'
+      - name: Record the validated candidate
+        env:
+          CANDIDATE_PR_HEAD: ${{ github.event.pull_request.head.sha }}
+          GH_TOKEN: ${{ github.token }}
+        run: python tools/release_record.py "${{ runner.temp }}/lydite-release/candidate.json"
+      - name: Upload candidate receipt
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: lydite-release-candidate-attempt-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/lydite-release/
+          if-no-files-found: error
+          retention-days: 30

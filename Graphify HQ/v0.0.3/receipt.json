@@ -1,0 +1,68 @@
+{
+  "schema_version": 1,
+  "template_version": "v0.0.3",
+  "source_commit": "dafb72e042b61b5b24217d1f2fc1d3231d8c0f29",
+  "source_path": "starter",
+  "graphify_version": "0.9.109",
+  "graph_sha256": "897010f60ca9fb38ae6ee6e50dc50b4ff26b51f2421693940981a4e962f2c1e1",
+  "nodes": 44,
+  "edges": 51,
+  "sources": {
+    ".github/workflows/test-vault.yml": {
+      "archive_path": "versions/v0.0.3/.github/workflows/test-vault.yml",
+      "blob_sha1": "14d021d4ad7ada04d9caf37a05cc53dab466aa8e"
+    },
+    "test-vault/CHANGELOG.md": {
+      "archive_path": "versions/v0.0.3/test-vault/CHANGELOG.md",
+      "blob_sha1": "0130479bd9e286a7c96cd0ac2f1c5dcfef246f23"
+    },
+    "test-vault/README.md": {
+      "archive_path": "versions/v0.0.3/test-vault/README.md",
+      "blob_sha1": "b3f426da0a87e40329e1afdfdea61d9971133555"
+    },
+    "test-vault/UPGRADE.md": {
+      "archive_path": "versions/v0.0.3/test-vault/UPGRADE.md",
+      "blob_sha1": "d613423189968f01445220afdef7029d6b16b08f"
+    },
+    "test-vault/case-and-receipt.md": {
+      "archive_path": "versions/v0.0.3/test-vault/case-and-receipt.md",
+      "blob_sha1": "36b450234cb3f59d3fdcccaeaac13cf26e9572b1"
+    },
+    "test-vault/cases.md": {
+      "archive_path": "versions/v0.0.3/test-vault/cases.md",
+      "blob_sha1": "2a2bf6dd95c2c3cc5cfe8d25e4e013d1d90204e4"
+    },
+    "test-vault/evidence.md": {
+      "archive_path": "versions/v0.0.3/test-vault/evidence.md",
+      "blob_sha1": "bfcfdbd60a17c67eb2ea7b414fc4a056e8dbeaa6"
+    },
+    "test-vault/examples/shared-evidence/README.md": {
+      "archive_path": "versions/v0.0.3/test-vault/examples/shared-evidence/README.md",
+      "blob_sha1": "3cdabb0f3ee1e34b52d05dc757afb3a847f8a05f"
+    },
+    "test-vault/examples/shared-evidence/app.mjs": {
+      "archive_path": "versions/v0.0.3/test-vault/examples/shared-evidence/app.mjs",
+      "blob_sha1": "321455fff1f2c12a7ada97175cff4edbf73b1e69"
+    },
+    "test-vault/examples/shared-evidence/app.test.mjs": {
+      "archive_path": "versions/v0.0.3/test-vault/examples/shared-evidence/app.test.mjs",
+      "blob_sha1": "dc4c1f22409007455fafd420dcee7f80046228ad"
+    },
+    "test-vault/examples/shared-evidence/case.json": {
+      "archive_path": "versions/v0.0.3/test-vault/examples/shared-evidence/case.json",
+      "blob_sha1": "02dd5c32442f954471df47d56614311c2adf53b7"
+    },
+    "test-vault/examples/shared-evidence/check.py": {
+      "archive_path": "versions/v0.0.3/test-vault/examples/shared-evidence/check.py",
+      "blob_sha1": "0deee42a53676116670620efd5af8b126666cbd4"
+    },
+    "test-vault/validate_catalog.py": {
+      "archive_path": "versions/v0.0.3/test-vault/validate_catalog.py",
+      "blob_sha1": "81b76e899ca838ee4eec592d4f5dfd141a0d65a2"
+    },
+    "test-vault/verify_receipts.py": {
+      "archive_path": "versions/v0.0.3/test-vault/verify_receipts.py",
+      "blob_sha1": "da3c57514bdf3226509f0fb7630d85da6933805f"
+    }
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "language": "Go",
+  "runtime": "Go 1.25.5 / go test",
+  "runner": "ubuntu-24.04",
+  "runtime_probe": [
+    "go",
+    "version"
+  ],
+  "cases": [
+    {
+      "id": "GO-001",
+      "purpose": "A health endpoint returns the expected HTTP status and payload.",
+      "test": "tests/contract_test.go",
+      "support": [],
+      "native_runner": "go-json",
+      "commands": [
+        [
+          "go",
+          "test",
+          "-count=1",
+          "-json",
+          "tests/contract_test.go"
+        ]
+      ],
+      "native_test": "TestHealthContract"
+    }
+  ]
+}

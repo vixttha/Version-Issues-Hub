@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "language": "Bash",
+  "runtime": "Bash",
+  "runner": "ubuntu-24.04",
+  "runtime_probe": ["bash", "--version"],
+  "cases": [
+    {
+      "id": "BASH-001",
+      "purpose": "A path with spaces survives a quoted file write and read.",
+      "test": "tests/contract.sh",
+      "support": [],
+      "commands": [
+        [
+          "bash",
+          "tests/contract.sh",
+          "{tmp}"
+        ]
+      ]
+    }
+  ]
+}

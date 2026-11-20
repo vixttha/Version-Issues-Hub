@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "language": "TypeScript",
+  "runtime": "Node.js 24 / node:test with type stripping",
+  "runner": "ubuntu-24.04",
+  "runtime_probe": [
+    "node",
+    "--version"
+  ],
+  "cases": [
+    {
+      "id": "TYPESCRIPT-001",
+      "purpose": "Unknown payloads accept integer counts and reject incompatible types.",
+      "test": "tests/contract.test.mts",
+      "support": [],
+      "native_runner": "node-tap",
+      "commands": [
+        [
+          "node",
+          "--test",
+          "--test-reporter=tap",
+          "tests/contract.test.mts"
+        ]
+      ],
+      "native_test": "unknown counts follow the runtime contract"
+    }
+  ]
+}

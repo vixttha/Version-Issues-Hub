@@ -1,0 +1,56 @@
+{
+  "schema_version": 1,
+  "template_version": "v0.0.2",
+  "source_commit": "29105a580b4d570103f5cca2fe3bd87561a85567",
+  "source_path": "docs/test-vault/public-template",
+  "graphify_version": "0.9.109",
+  "graph_sha256": "0b2ba28d1b47077ededcd1be34fb3d50a8a6fa44872c99ebee053495b99e45f6",
+  "nodes": 41,
+  "edges": 47,
+  "sources": {
+    "README.md": {
+      "archive_path": "versions/v0.0.2/README.md",
+      "blob_sha1": "9e0ef163c5b17975810f11979d06ed5c7d394a45"
+    },
+    "case-and-receipt.md": {
+      "archive_path": "versions/v0.0.2/case-and-receipt.md",
+      "blob_sha1": "4c315a34f2f78ef4698f348bbc93acd87cf28f9d"
+    },
+    "case-catalog.md": {
+      "archive_path": "versions/v0.0.2/case-catalog.md",
+      "blob_sha1": "e99092d8ff54c824e3ed1dda4dcaaca11679bd8e"
+    },
+    "language-matrix.md": {
+      "archive_path": "versions/v0.0.2/language-matrix.md",
+      "blob_sha1": "05a8f8e6a419aacc03903e25e36c1af24a80d251"
+    },
+    "starter/.github/workflows/test-vault.yml": {
+      "archive_path": "versions/v0.0.2/starter/.github/workflows/test-vault.yml",
+      "blob_sha1": "14d021d4ad7ada04d9caf37a05cc53dab466aa8e"
+    },
+    "starter/test-vault/README.md": {
+      "archive_path": "versions/v0.0.2/starter/test-vault/README.md",
+      "blob_sha1": "13619758f5a5a646e689014241362e31b8f79b85"
+    },
+    "starter/test-vault/case-and-receipt.md": {
+      "archive_path": "versions/v0.0.2/starter/test-vault/case-and-receipt.md",
+      "blob_sha1": "36b450234cb3f59d3fdcccaeaac13cf26e9572b1"
+    },
+    "starter/test-vault/cases.md": {
+      "archive_path": "versions/v0.0.2/starter/test-vault/cases.md",
+      "blob_sha1": "2a2bf6dd95c2c3cc5cfe8d25e4e013d1d90204e4"
+    },
+    "starter/test-vault/validate_catalog.py": {
+      "archive_path": "versions/v0.0.2/starter/test-vault/validate_catalog.py",
+      "blob_sha1": "81b76e899ca838ee4eec592d4f5dfd141a0d65a2"
+    },
+    "validate_catalog.py": {
+      "archive_path": "versions/v0.0.2/validate_catalog.py",
+      "blob_sha1": "738e55c6100e32b02241344e10aec47e3716a9b5"
+    },
+    "verify_adoption.py": {
+      "archive_path": "versions/v0.0.2/verify_adoption.py",
+      "blob_sha1": "a5e81a17f9b14aa0344e2855a7877c92f3b42a8d"
+    }
+  }
+}
