@@ -15,6 +15,7 @@ REPOSITORY = re.compile(r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+")
 SHA = re.compile(r"[0-9a-f]{40}")
 STATES = {"assigned", "in_progress", "blocked", "deferred", "verified", "integrated", "retired"}
 LEDGER = Path("ledger/issue-versions.json")
+RECEIPT_SCOPE = Path("ledger/receipt-scope.json")
 
 
 def unique_keys(pairs):
@@ -118,7 +119,40 @@ def previous_at(commit, path):
     return parse_json(git("show", f"{commit}:{path.as_posix()}"))
 
 
-def receipt(ledger, version, checkout, env, event, parents=()):
+def check_receipt_scope(ledger, scope, previous=None):
+    known_versions = set(bindings(ledger).values())
+    if (not isinstance(scope, dict) or set(scope) != {"fixes", "versions"}
+            or not isinstance(scope["fixes"], dict) or not isinstance(scope["versions"], list)
+            or not scope["versions"]):
+        raise ValueError("Receipt scope needs fix revisions and at least one selected version")
+    fixes = scope["fixes"]
+    for version, fix in fixes.items():
+        require(VERSION, version, "issue version")
+        if version not in known_versions:
+            raise ValueError(f"Issue version {version} is absent from the ledger")
+        require(SHA, fix, f"fix revision for {version}")
+    selected = scope["versions"]
+    for version in selected:
+        require(VERSION, version, "selected issue version")
+        if version not in fixes:
+            raise ValueError(f"No fix revision for {version}")
+    if len(set(selected)) != len(selected):
+        raise ValueError("Receipt scope contains duplicate versions")
+    if previous is not None:
+        for version, fix in previous["fixes"].items():
+            if fixes.get(version) != fix:
+                raise ValueError(f"Historical fix revision changed: {version} was {fix}")
+
+
+def verify_fix_ancestry(version, fix, candidate):
+    if git("cat-file", "-t", fix) != "commit":
+        raise ValueError(f"Fix revision for {version} is not a commit")
+    result = subprocess.run(["git", "merge-base", "--is-ancestor", fix, candidate], check=False)
+    if result.returncode != 0:
+        raise ValueError(f"Fix revision for {version} is not in candidate history: {fix}")
+
+
+def receipt(ledger, version, checkout, env, event, parents=(), *, fix_sha):
     bindings(ledger)
     require(VERSION, version, "issue version")
     record = next((row for row in ledger["issues"] if row["version"] == version), None)
@@ -131,20 +165,21 @@ def receipt(ledger, version, checkout, env, event, parents=()):
            (env["GITHUB_REPOSITORY"], event["repository"]["full_name"])):
         raise ValueError("Ledger repository does not match the workflow event")
     name = env["GITHUB_EVENT_NAME"]
+    require(SHA, fix_sha, "fix revision")
     base_sha = None
     pr = None
     if name == "pull_request":
         change = event["pull_request"]
-        fix_sha = require(SHA, change["head"]["sha"], "PR head revision")
+        candidate_sha = require(SHA, change["head"]["sha"], "PR head revision")
         base_sha = require(SHA, change["base"]["sha"], "PR base revision")
         pr = change["number"]
         if type(pr) is not int or pr <= 0:
             raise ValueError("Invalid pull request number")
-        if list(parents) != [base_sha, fix_sha]:
+        if list(parents) != [base_sha, candidate_sha]:
             raise ValueError("Tested PR checkout does not have the expected base and head parents")
     elif name == "push":
-        fix_sha = require(SHA, event["after"], "pushed revision")
-        if fix_sha != checkout:
+        candidate_sha = require(SHA, event["after"], "pushed revision")
+        if candidate_sha != checkout:
             raise ValueError("Pushed revision does not match the checkout")
     else:
         raise ValueError(f"Unsupported workflow event: {name}")
@@ -163,6 +198,7 @@ def receipt(ledger, version, checkout, env, event, parents=()):
         "scope": "issue-version ledger and receipt validation",
         "outcome": "pass",
         "fix_sha": fix_sha,
+        "candidate_sha": candidate_sha,
         "tested_sha": checkout,
         "base_sha": base_sha,
         "pull_request": pr,
@@ -182,6 +218,20 @@ def write_json(path, data):
         staged.replace(path)
 
 
+def receipts(ledger, scope, checkout, env, event, parents=(), *, versions=None, previous=None):
+    check_receipt_scope(ledger, scope, previous)
+    records = []
+    for version in scope["versions"] if versions is None else versions:
+        require(VERSION, version, "issue version")
+        if version not in scope["fixes"]:
+            raise ValueError(f"No fix revision for {version}")
+        record = receipt(ledger, version, checkout, env, event, parents,
+                         fix_sha=scope["fixes"][version])
+        verify_fix_ancestry(version, record["fix_sha"], record["candidate_sha"])
+        records.append(record)
+    return records
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     commands = parser.add_subparsers(dest="command", required=True)
@@ -194,6 +244,8 @@ def main():
     proof = commands.add_parser("receipt", help="write a receipt in a GitHub Actions job")
     proof.add_argument("version")
     proof.add_argument("output", type=Path)
+    batch = commands.add_parser("receipts", help="write the selected issue receipts in a new directory")
+    batch.add_argument("output", type=Path)
     args = parser.parse_args()
 
     try:
@@ -210,9 +262,20 @@ def main():
             event = parse_json(Path(os.environ["GITHUB_EVENT_PATH"]).read_text(encoding="utf-8"))
             checkout = git("rev-parse", "HEAD")
             parents = git("show", "-s", "--format=%P", checkout).split()
-            result = receipt(ledger, args.version, checkout, os.environ, event, parents)
-            write_json(args.output, result)
-            print(f"{result['version']} verified on {result['tested_sha']} in {result['run_url']}")
+            scope = parse_json(RECEIPT_SCOPE.read_text(encoding="utf-8"))
+            previous_sha = (event["pull_request"]["base"]["sha"]
+                            if os.environ["GITHUB_EVENT_NAME"] == "pull_request" else event.get("before"))
+            results = receipts(ledger, scope, checkout, os.environ, event, parents,
+                               versions=[args.version] if args.command == "receipt" else None,
+                               previous=previous_at(previous_sha, RECEIPT_SCOPE))
+            if args.command == "receipts":
+                args.output.mkdir()
+            for result in results:
+                output = args.output
+                if args.command == "receipts":
+                    output /= f"{result['version']}-receipt.json"
+                write_json(output, result)
+                print(f"{result['version']} verified on {result['tested_sha']} in {result['run_url']}")
     except (KeyError, OSError, ValueError, subprocess.CalledProcessError) as error:
         parser.exit(1, f"Checkpoint error: {error}\n")
 

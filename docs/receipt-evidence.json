@@ -1,0 +1,21 @@
+{
+  "title": "Version-Issues-Hub checkpoint evidence",
+  "features": [
+    {
+      "id": "v0-0-0-1",
+      "label": "Issue #1 · issue-version ledger",
+      "documented_in": [{"path": "docs/v0.0.0.1.md", "anchor": "## Version and evidence record"}],
+      "changed_in": [{"path": "ledger/issue-versions.json", "anchor": "\"issue\": 1,"}],
+      "implemented_in": [{"path": "tools/checkpoint.py", "anchor": "def register(ledger, issue, line, criteria):"}],
+      "tested_by": [{"path": "tests/test_checkpoint.py", "anchor": "def test_first_live_issue_is_stable_on_registration_retry(self):"}]
+    },
+    {
+      "id": "v0-0-0-2",
+      "label": "Issue #7 · stable per-issue receipts",
+      "documented_in": [{"path": "docs/v0.0.0.2.md", "anchor": "## Batch receipts"}],
+      "changed_in": [{"path": "ledger/issue-versions.json", "anchor": "\"issue\": 7,"}],
+      "implemented_in": [{"path": ".github/workflows/verify-checkpoint.yml", "anchor": "- name: Write the selected issue verification receipts"}],
+      "tested_by": [{"path": "tests/test_checkpoint.py", "anchor": "def test_batch_keeps_both_issue_fix_pairs_when_the_candidate_changes(self, check_ancestry):"}]
+    }
+  ]
+}

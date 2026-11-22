@@ -11,6 +11,16 @@
         "Reject duplicate, deleted, or changed issue-version assignments.",
         "Publish a public CI receipt for issue #1 with the fix revision, tested checkout, and exact run attempt."
       ]
+    },
+    {
+      "issue": 7,
+      "version": "v0.0.0.2",
+      "state": "assigned",
+      "acceptance": [
+        "The combined draft PR produces exactly two receipts, one per checkpoint.",
+        "Each receipt identifies its own GitHub issue and the corresponding fix commit.",
+        "A docs-only commit changes candidate and tested revisions while preserving both fix commits."
+      ]
     }
   ]
 }

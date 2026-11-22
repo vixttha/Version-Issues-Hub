@@ -1,6 +1,7 @@
 import copy
 from pathlib import Path
 import unittest
+from unittest.mock import patch
 
 from tools import checkpoint
 
@@ -60,6 +61,7 @@ class ReceiptTests(unittest.TestCase):
         self.ledger = ledger_with(row(1, "v0.0.0.1"))
         self.event = {"repository": {"full_name": self.ledger["repository"]}}
         self.tested = "a" * 40
+        self.fix = "d" * 40
         self.env = {
             "GITHUB_REPOSITORY": self.ledger["repository"],
             "GITHUB_SHA": self.tested,
@@ -72,13 +74,15 @@ class ReceiptTests(unittest.TestCase):
     def test_push_receipt_links_issue_checkout_and_attempt(self):
         self.env["GITHUB_EVENT_NAME"] = "push"
         self.event["after"] = self.tested
-        result = checkpoint.receipt(self.ledger, "v0.0.0.1", self.tested, self.env, self.event)
+        result = checkpoint.receipt(self.ledger, "v0.0.0.1", self.tested, self.env, self.event,
+                                    fix_sha=self.fix)
         self.assertEqual(result["issue"], 1)
         self.assertEqual(result["baseline_version"], "v0.0.0")
         self.assertEqual(result["target_version"], "v0.0.1")
         self.assertEqual(result["issue_url"],
                          "https://github.com/vixttha/Version-Issues-Hub/issues/1")
-        self.assertEqual(result["fix_sha"], self.tested)
+        self.assertEqual(result["fix_sha"], self.fix)
+        self.assertEqual(result["candidate_sha"], self.tested)
         self.assertEqual(result["tested_sha"], self.tested)
         self.assertEqual(result["attempt"], 2)
         self.assertTrue(result["run_url"].endswith("/runs/100/attempts/2"))
@@ -93,7 +97,8 @@ class ReceiptTests(unittest.TestCase):
         ):
             with self.subTest(version=version):
                 result = checkpoint.receipt(
-                    ledger_with(row(1, version)), version, self.tested, self.env, self.event
+                    ledger_with(row(1, version)), version, self.tested, self.env, self.event,
+                    fix_sha=self.fix,
                 )
                 self.assertEqual(result["baseline_version"], baseline)
                 self.assertEqual(result["target_version"], target)
@@ -103,21 +108,59 @@ class ReceiptTests(unittest.TestCase):
         self.event["pull_request"] = {"number": 2, "head": {"sha": "b" * 40},
                                       "base": {"sha": "c" * 40}}
         with self.assertRaisesRegex(ValueError, "expected base and head parents"):
-            checkpoint.receipt(self.ledger, "v0.0.0.1", self.tested, self.env, self.event)
+            checkpoint.receipt(self.ledger, "v0.0.0.1", self.tested, self.env, self.event,
+                               fix_sha=self.fix)
         result = checkpoint.receipt(
-            self.ledger, "v0.0.0.1", self.tested, self.env, self.event, ["c" * 40, "b" * 40]
+            self.ledger, "v0.0.0.1", self.tested, self.env, self.event, ["c" * 40, "b" * 40],
+            fix_sha=self.fix,
         )
         self.assertEqual(result["pull_request"], 2)
-        self.assertEqual(result["fix_sha"], "b" * 40)
+        self.assertEqual(result["fix_sha"], self.fix)
+        self.assertEqual(result["candidate_sha"], "b" * 40)
         self.assertEqual(result["base_sha"], "c" * 40)
         self.assertEqual(result["tested_sha"], self.tested)
 
     def test_refuses_a_wrong_checkout_and_wrong_repository(self):
         with self.assertRaisesRegex(ValueError, "does not match GITHUB_SHA"):
-            checkpoint.receipt(self.ledger, "v0.0.0.1", "f" * 40, self.env, self.event)
+            checkpoint.receipt(self.ledger, "v0.0.0.1", "f" * 40, self.env, self.event,
+                               fix_sha=self.fix)
         self.event["repository"]["full_name"] = "example/another"
         with self.assertRaisesRegex(ValueError, "repository does not match"):
-            checkpoint.receipt(self.ledger, "v0.0.0.1", self.tested, self.env, self.event)
+            checkpoint.receipt(self.ledger, "v0.0.0.1", self.tested, self.env, self.event,
+                               fix_sha=self.fix)
+
+    @patch.object(checkpoint, "verify_fix_ancestry")
+    def test_batch_keeps_both_issue_fix_pairs_when_the_candidate_changes(self, check_ancestry):
+        self.ledger["issues"].append(row(7, "v0.0.0.2"))
+        fixes = {"v0.0.0.1": self.fix, "v0.0.0.2": "e" * 40}
+        scope = {"fixes": fixes, "versions": list(fixes)}
+        self.env["GITHUB_EVENT_NAME"] = "pull_request"
+        for candidate, checkout in (("b" * 40, self.tested), ("1" * 40, "2" * 40)):
+            base = "c" * 40
+            self.event["pull_request"] = {
+                "number": 2, "head": {"sha": candidate}, "base": {"sha": base},
+            }
+            self.env["GITHUB_SHA"] = checkout
+            records = checkpoint.receipts(self.ledger, scope, checkout, self.env, self.event,
+                                          [base, candidate], previous=scope)
+            self.assertEqual([(r["issue"], r["version"], r["fix_sha"]) for r in records],
+                             [(1, "v0.0.0.1", self.fix), (7, "v0.0.0.2", "e" * 40)])
+            self.assertEqual({r["candidate_sha"] for r in records}, {candidate})
+            self.assertEqual({r["tested_sha"] for r in records}, {checkout})
+            for version, fix in fixes.items():
+                check_ancestry.assert_any_call(version, fix, candidate)
+        self.assertEqual(check_ancestry.call_count, 4)
+
+    def test_scope_rejects_missing_duplicate_and_reassigned_fixes(self):
+        version = "v0.0.0.1"
+        previous = {"fixes": {version: self.fix}, "versions": [version]}
+        for scope, message in (
+            ({"fixes": {}, "versions": [version]}, "No fix revision"),
+            ({"fixes": {version: self.fix}, "versions": [version, version]}, "duplicate versions"),
+            ({"fixes": {version: "e" * 40}, "versions": [version]}, "Historical fix revision changed"),
+        ):
+            with self.subTest(message=message), self.assertRaisesRegex(ValueError, message):
+                checkpoint.check_receipt_scope(self.ledger, scope, previous)
 
 
 if __name__ == "__main__":

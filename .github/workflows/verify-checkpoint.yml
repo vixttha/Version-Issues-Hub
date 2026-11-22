@@ -2,7 +2,7 @@ name: Verify issue checkpoint
 
 on:
   push:
-    branches: [plan/v0.0.0.1, main]
+    branches: ['plan/**', main]
   pull_request:
     branches: [main]
 
@@ -27,10 +27,56 @@ jobs:
         run: |
           python tools/checkpoint.py check --previous-ref "$PREVIOUS_SHA"
           python -B -m unittest discover -s tests -v
-      - name: Write the issue verification receipt
-        run: python tools/checkpoint.py receipt v0.0.0.1 "$RUNNER_TEMP/v0.0.0.1-receipt.json"
+      - name: Write the selected issue verification receipts
+        run: python tools/checkpoint.py receipts "$RUNNER_TEMP/issue-receipts"
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         with:
-          name: issue-v0.0.0.1-${{ github.event_name }}-${{ github.run_id }}-${{ github.run_attempt }}
-          path: ${{ runner.temp }}/v0.0.0.1-receipt.json
+          name: issue-receipts-${{ github.event_name }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/issue-receipts
+          if-no-files-found: error
+
+  graphify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      GRAPHIFY_QUERY_LOG_DISABLE: '1'
+      PYTHONHASHSEED: '0'
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          path: vib
+          persist-credentials: false
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          repository: vixttha/README-HQ
+          ref: 788f2127d3cf004ac5615d21364f5b56e4f7dd31
+          path: graphify-kit
+          persist-credentials: false
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
+        with:
+          python-version: '3.12'
+      - name: Map VIB issue evidence at the tested checkout
+        working-directory: vib
+        run: |
+          kit=../graphify-kit/graphify-hq/template/v0.0.8
+          python -m pip install --require-hashes --no-deps --only-binary=:all: -r "$kit/requirements.txt"
+          python -m pip check
+          output="$RUNNER_TEMP/vib-evidence"
+          mkdir -p "$output"
+          python - "$output/manifest.json" <<'PY'
+          import json
+          import os
+          from pathlib import Path
+          import sys
+
+          manifest = json.loads(Path('docs/receipt-evidence.json').read_text())
+          manifest['repository'] = os.environ['GITHUB_REPOSITORY']
+          manifest['source_commit'] = os.environ['GITHUB_SHA']
+          Path(sys.argv[1]).write_text(json.dumps(manifest, indent=2) + '\n')
+          PY
+          python "$kit/evidence_map.py" "$output/manifest.json" "$output"
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: vib-evidence-${{ github.event_name }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/vib-evidence
           if-no-files-found: error
