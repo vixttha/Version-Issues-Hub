@@ -10,3 +10,4 @@
 | FEAT-000004 | GitHub required-check pilot | planned | planned |
 | FEAT-000005 | Owner-controlled integration and release record | planned | planned |
 | FEAT-000006 | Read-only Provenistem and Graphify navigation | planned | planned |
+| FEAT-000007 | Install VIB on a dedicated GitHub branch | planned | planned |

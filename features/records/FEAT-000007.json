@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "id": "FEAT-000007",
+  "title": "Install VIB on a dedicated GitHub branch",
+  "summary": "Let repository owners install the VIB package on a separate Version-Issues-Hub branch, use the solo workflow across agent hosts, and opt into GitHub enforcement for product pull requests.",
+  "kind": "integration",
+  "lifecycle_status": "planned",
+  "implementation_status": "planned",
+  "idea_ids": [
+    "IDEA-000001",
+    "IDEA-000002",
+    "IDEA-000003",
+    "IDEA-000004"
+  ],
+  "acceptance_criteria": [
+    "A human and a GitHub-capable agent can independently install a pinned VIB package on a dedicated branch in a new repository and in an existing repository. The install preserves the product tree and existing repository instructions and refuses an occupied branch without an explicit upgrade decision.",
+    "A fresh ChatGPT session and a separate agent harness can load the same installed contract using the repository and pinned branch revision. Each can recover an accepted issue, its stable checkpoint, the active Worker, required evidence, and the next Head decision from GitHub.",
+    "A compliant two-checkpoint product PR on GitHub-hosted public runners produces two receipts with its own issue and stable fix SHA per checkpoint. An unrelated commit changes the candidate and tested revisions while preserving both fix SHAs.",
+    "A ruleset on a disposable public product branch requires a trusted VIB check for the current candidate. GitHub allows a compliant PR when other requirements pass and blocks missing, stale, mismatched, and skipped evidence. Changing the candidate cannot rewrite the policy or publish the required result.",
+    "The owner controls activation, upgrade, removal, integration, and release. Removing the package restores the prior integration settings and preserves product history, GitHub issues, and their evidence links."
+  ],
+  "testing": {
+    "status": "planned"
+  },
+  "evidence": [
+    {
+      "kind": "other",
+      "claim": "The source dogfood run proves stable batch receipts on a public runner. Fresh adoption and live merge enforcement are acceptance criteria for this feature.",
+      "source_sha": "624cb8fdb34b87af0c1f9dad06437d9ff42998d9",
+      "source_path": "docs/v0.0.0.2.md",
+      "receipt": "https://github.com/vixttha/Version-Issues-Hub/actions/runs/44995877172/attempts/1"
+    }
+  ],
+  "release_membership": "NOT_ASSERTED"
+}
