@@ -1,0 +1,54 @@
+name: VIB candidate archive
+on:
+  push:
+    branches: [Veraphify]
+  pull_request:
+    branches: [Veraphify]
+permissions:
+  contents: read
+jobs:
+  archive:
+    if: github.event.repository.private == false
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      VIB_SOURCE: 'ee64cdd7019c3cd279213c490226eb3f89f5fb49'
+      PRODUCER_SHA: '6af3c2025be3f51e02dca4e4502088c526aae6d1'
+      GRAPHIFY_QUERY_LOG_DISABLE: '1'
+      PYTHONHASHSEED: '0'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          path: veraphify
+          persist-credentials: false
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          repository: vixttha/Version-Issues-Hub
+          ref: 'ee64cdd7019c3cd279213c490226eb3f89f5fb49'
+          path: vib
+          persist-credentials: false
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          repository: vixttha/Blender-Agent-Refinement-Toolkit
+          ref: '6af3c2025be3f51e02dca4e4502088c526aae6d1'
+          path: producer
+          persist-credentials: false
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: '24.22.3'
+          package-manager-cache: false
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
+        with:
+          python-version: '3.12'
+      - name: Install pinned producer dependencies
+        run: |
+          python -m pip install --require-hashes --no-deps --only-binary=:all: -r producer/versions/v0.0.8/requirements.txt
+          python -m pip check
+      - name: Archive and verify five VIB implementation citations
+        run: python veraphify/tools/verify-vib-candidate.py
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: vib-candidate-archive-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/vib-candidate-archive
+          retention-days: 90
+          if-no-files-found: error

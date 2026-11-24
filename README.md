@@ -4,6 +4,10 @@
 
 **v0.0.9 preview** · [Try the two-version walkthrough](https://github.com/vixttha/Veraphify/blob/66e822b56528c5f3e7b7730709d4b472ae2d5f1e/docs/adopter-walkthrough.md) · [Verification evidence](docs/verification.md) · [Release tracker](https://github.com/vixttha/Veraphify/issues/21)
 
+## Version-Issues-Hub installation
+
+See the [project evidence workspace](PROJECT.md) for the pinned VIB candidate and archive workflow. The upstream preview walkthrough remains separate.
+
 ## Quickstart
 
 From a checkout of the `Veraphify` branch, use Git, Bash, and Node.js 24.
