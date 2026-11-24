@@ -33,9 +33,22 @@ PACKAGE = {
 }
 
 class ApiError(RuntimeError):
-    def __init__(self, status):
-        super().__init__(f"GitHub API returned HTTP {status}")
+    def __init__(self, status, method=None, operation=None):
+        context = f" ({method} {operation})" if method and operation else ""
+        super().__init__(f"GitHub API returned HTTP {status}{context}")
         self.status = status
+
+def api_operation(path):
+    """Classify endpoint without logging repository names, filenames, query strings or bodies."""
+    parts = path.split("?", 1)[0].split("/")
+    tail = parts[4:] if len(parts) >= 4 and parts[1] == "repos" else []
+    if not tail:
+        return "repository"
+    if tail[0] == "git" and len(tail) >= 2 and tail[1] in ("trees", "commits", "refs", "ref", "blobs"):
+        return "git/" + tail[1]
+    if tail[0] in ("compare", "contents", "issues", "pulls", "actions", "check-runs", "commits"):
+        return tail[0]
+    return "other"
 
 class NoRedirect(HTTPRedirectHandler):
     def redirect_request(self, req, fp, code, msg, headers, newurl):
@@ -54,11 +67,18 @@ class GitHub:
         if data is not None:
             headers["Content-Type"] = "application/json"
         req = Request("https://api.github.com" + path, data=data, headers=headers, method=method)
-        try:
-            with self.opener.open(req, timeout=30) as response:
-                return json.load(response)
-        except HTTPError as exc:
-            raise ApiError(exc.code) from None
+        delays = (0, 0.5, 1.5) if method == "GET" else (0,)
+        for attempt, delay in enumerate(delays):
+            if delay:
+                time.sleep(delay)
+            try:
+                with self.opener.open(req, timeout=30) as response:
+                    return json.load(response)
+            except HTTPError as exc:
+                code = exc.code
+                exc.close()
+                if code not in (500, 502, 503, 504) or attempt == len(delays) - 1:
+                    raise ApiError(code, method, api_operation(path)) from None
 
 def require(pattern, value, name):
     if not isinstance(value, str) or not pattern.fullmatch(value):

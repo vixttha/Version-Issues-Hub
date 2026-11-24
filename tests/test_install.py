@@ -1,6 +1,8 @@
 import base64
 import hashlib
 import json
+import io
+from urllib.error import HTTPError
 import unittest
 from unittest.mock import patch
 from tools import install, checkpoint
@@ -163,6 +165,36 @@ class InstallerTests(unittest.TestCase):
                 install.wait_ref(self.api,PREFIX,install.BRANCH,INSTALLED)
             self.assertEqual(read.call_count,6)
         self.assertEqual(self.api.writes,[])
+
+
+    def test_api_transient_get_retries_and_recovers(self):
+        api = install.GitHub("fixture-secret")
+        err = HTTPError("https://api.github.com/private",503,"unavailable",{},io.BytesIO(b"secret"))
+        with patch.object(api.opener,"open",side_effect=[err,io.BytesIO(b'{"ok":true}')]) as req, \
+             patch.object(install.time,"sleep") as delay:
+            self.assertEqual(api.request("GET",PREFIX+"/git/ref/heads/Version-Issues-Hub"),{"ok":True})
+            self.assertEqual(req.call_count,2)
+            delay.assert_called_once_with(0.5)
+
+    def test_api_exhaustion_redacts_path_and_query(self):
+        api = install.GitHub("fixture-secret")
+        errors=[HTTPError("https://api.github.com/private",500,"secret",{},io.BytesIO(b"secret")) for _ in range(3)]
+        with patch.object(api.opener,"open",side_effect=errors) as req, patch.object(install.time,"sleep"):
+            with self.assertRaises(install.ApiError) as raised:
+                api.request("GET",PREFIX+"/contents/private-file?ref=secret")
+            self.assertEqual(req.call_count,3)
+            self.assertEqual(str(raised.exception),"GitHub API returned HTTP 500 (GET contents)")
+
+    def test_api_mutating_request_never_retried(self):
+        api = install.GitHub("fixture-secret")
+        for method in ("POST","PATCH","DELETE"):
+            err=HTTPError("https://api.github.com/private",500,"secret",{},io.BytesIO(b"secret"))
+            with patch.object(api.opener,"open",side_effect=err) as req, patch.object(install.time,"sleep") as delay:
+                with self.assertRaises(install.ApiError) as raised:
+                    api.request(method,PREFIX+"/git/refs/heads/private",{"secret":"hidden"})
+                self.assertEqual(req.call_count,1)
+                self.assertEqual(str(raised.exception),f"GitHub API returned HTTP 500 ({method} git/refs)")
+                delay.assert_not_called()
 
 if __name__ == "__main__":
     unittest.main()

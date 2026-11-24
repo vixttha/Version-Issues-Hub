@@ -420,6 +420,34 @@
           "anchor": "def test_wait_ref_tolerates_only_expected_previous_state(self):"
         }
       ]
+    },
+    {
+      "id": "v0-0-0-16",
+      "label": "Issue #31 · safe GitHub API diagnostics",
+      "documented_in": [
+        {
+          "path": "docs/v0.0.0.16.md",
+          "anchor": "## Diagnose without repeating mutations"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "ledger/issue-versions.json",
+          "anchor": "\"issue\": 31,"
+        }
+      ],
+      "implemented_in": [
+        {
+          "path": "tools/install.py",
+          "anchor": "def api_operation(path):"
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tests/test_install.py",
+          "anchor": "def test_api_mutating_request_never_retried(self):"
+        }
+      ]
     }
   ]
 }

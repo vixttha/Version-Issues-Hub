@@ -151,6 +151,16 @@
         "Reject divergent and exhausted readback without repeating writes; public-runner regression.",
         "Resume exact existing pilot installation and prove actual upgrade/archive without recreating or deleting live refs."
       ]
+    },
+    {
+      "issue": 31,
+      "version": "v0.0.0.16",
+      "state": "in_progress",
+      "acceptance": [
+        "Report operation-class context for GitHub HTTP errors without logging secrets, bodies, or arbitrary paths.",
+        "Retry only transient GET 5xx within a fixed bound; never retry POST/PATCH/DELETE.",
+        "Repeat exact isolated pilot recovery once and capture live upgrade/archive outcome, retaining original failures."
+      ]
     }
   ]
 }
