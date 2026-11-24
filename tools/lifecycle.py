@@ -105,6 +105,7 @@ def upgrade(api, target, expected_sha, source_sha, *, apply=False, owner_approve
         raise ValueError("Proposed upgrade tree changed unrelated paths")
     current(api,state)
     api.request("PATCH",prefix+"/git/refs/heads/"+install.BRANCH,{"sha":commit,"force":False})
+    install.wait_ref(api,prefix,install.BRANCH,commit,expected_sha)
     observed = session.load(api,target,commit)
     if observed["manifest"] != new_manifest or observed["ledger"] != state["ledger"] or observed["handoff"] != state["handoff"]:
         raise ValueError("Upgrade readback mismatch; stop and inspect")
@@ -131,8 +132,7 @@ def prepare_retirement(api, target, expected_sha, *, apply=False, owner_approved
     current(api,state)
     if existing is None:
         api.request("POST",prefix+"/git/refs",{"ref":"refs/heads/"+archive,"sha":expected_sha})
-    if install.read_ref(api,prefix,archive) != expected_sha:
-        raise ValueError("Archive verification failed")
+    install.wait_ref(api,prefix,archive,expected_sha)
     current(api,state)
     return {**plan,"status":"archive_verified"}
 
