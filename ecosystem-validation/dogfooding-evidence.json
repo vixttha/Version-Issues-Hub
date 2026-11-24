@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "as_of": "2026-11-24",
-  "method": "Retrospective audit; exact source blobs, independently queried Actions run metadata, selected logs and PR dispositions. Historical source and workflow checkout may differ; relationship stated in each case. A successful run may deliberately reproduce a bug. Not a causal benchmark.",
+  "method": "Retrospective audit; exact source blobs, independently queried Actions run metadata, selected logs and PR dispositions. Historical source and workflow checkout may differ; relationship stated in each case. A successful run may deliberately reproduce a bug. Not a causal benchmark. Source-byte public readback is separate from connector-verified historical Actions metadata; first anonymous API attempt rate-limited.",
   "cases": [
     {
       "id": "D01",
@@ -532,13 +532,37 @@
         "https://github.com/vixttha/Blender-Agent-Refinement-Toolkit/pull/108",
         "https://github.com/vixttha/Blender-Agent-Refinement-Toolkit/pull/109"
       ]
+    },
+    {
+      "id": "D23",
+      "provider": "Provenistem",
+      "beneficiary": "Veraphify",
+      "classification": "adopter-use",
+      "scope": "Real catalog-derived map and separately tested preview; not upstream reusable generator",
+      "source": {
+        "repository": "vixttha/Veraphify",
+        "commit": "046697b9babf215b8cf1950644c5d8b8d9ba0d65",
+        "path": "docs/USE-THE-PROJECT-MAP.md",
+        "blob": "08b465096ce00bf96e3b6db461bd86cec9d7a4c0"
+      },
+      "run": {
+        "repository": "vixttha/Veraphify",
+        "id": 44676425237,
+        "head": "2ebd1cf71cd2ec8ad7950dae47883194690fd9fd",
+        "attempt": 1,
+        "conclusion": "success"
+      },
+      "outcome": "Catalog-derived map organizes actual ideas and features and preserves their directed source relationships. Separate browser preview run passed branch pages, directed links and mobile layout. Guide and preview are distinct revisions; no claim of a generally released Provenistem map.",
+      "refs": [
+        "https://github.com/vixttha/Veraphify/blob/2ebd1cf71cd2ec8ad7950dae47883194690fd9fd/qa/map-preview/test_veraphify_redesign.py"
+      ]
     }
   ],
   "counts": {
-    "cases": 22,
-    "source_pins": 21,
-    "distinct_runs": 20,
-    "internal_cross_product_operational_edges": 13,
+    "cases": 23,
+    "source_pins": 22,
+    "distinct_runs": 21,
+    "internal_cross_product_operational_edges": 14,
     "external_adopter_cases": 1
   }
 }

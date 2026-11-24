@@ -2,6 +2,10 @@ name: Six-tool discovery compatibility
 on:
   push:
     branches: ['test/ecosystem-discovery-v1']
+    paths:
+      - 'ecosystem-validation/discovery.py'
+      - 'ecosystem-validation/pins.json'
+      - '.github/workflows/ecosystem-discovery.yml'
 permissions:
   contents: read
 jobs:
