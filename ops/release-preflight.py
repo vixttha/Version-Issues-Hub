@@ -36,16 +36,17 @@ def leaves(sha):
 
 def receipt(group, spec):
     count = 0
+    attempt = spec.get("attempt", 1)
     for run_id in spec["runs"]:
         run = api("/actions/runs/" + str(run_id))
         check(f"{group} run {run_id} exact head", run["head_sha"] == spec["head"])
-        check(f"{group} run {run_id} attempt 1 success",
-              run["run_attempt"] == 1 and run["status"] == "completed" and run["conclusion"] == "success")
-        jobs = api(f"/actions/runs/{run_id}/attempts/1/jobs?per_page=100")
+        check(f"{group} run {run_id} attempt {attempt} success",
+              run["run_attempt"] == attempt and run["status"] == "completed" and run["conclusion"] == "success")
+        jobs = api(f"/actions/runs/{run_id}/attempts/{attempt}/jobs?per_page=100")
         check(f"{group} run {run_id} full job list", jobs["total_count"] == len(jobs["jobs"]))
         for job in jobs["jobs"]:
             check(f"{group} {job['name']} success", job["status"] == "completed" and job["conclusion"] == "success")
-            check(f"{group} {job['name']} hosted", any(x in ("ubuntu-latest", "windows-latest", "macos-latest") for x in job["labels"]) and "self-hosted" not in job["labels"])
+            check(f"{group} {job['name']} hosted", job["runner_group_name"] == "GitHub Actions" and any(x in ("ubuntu-latest", "ubuntu-24.04", "windows-latest", "macos-latest") for x in job["labels"]) and "self-hosted" not in job["labels"])
         count += len(jobs["jobs"])
     check(group + " exact job count", count == spec["jobs"])
     if "pr" in spec:
@@ -65,7 +66,7 @@ def main():
     check("accepted README frozen", branch("readme-hq") == M["readme"])
     check("homepage branch pinned", branch("review/vib-homepage-preflight") == M["homepage"]["head"])
     check("self state pinned", branch("Version-Issues-Hub") == M["installed_state"])
-    for key in ("engineering", "licensing_review", "homepage"):
+    for key in ("engineering", "licensing_review", "homepage", "archive"):
         receipt(key, M[key])
     original = leaves(M["readme"])
     derivative = leaves(M["homepage"]["head"])
