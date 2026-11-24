@@ -1,5 +1,12 @@
-# Visual system — preliminary direction
+# Visual system — Cobalt Precision
 
-One-color-first identity with a restrained technical/editorial feel. Candidate palette (not approved): ink #172B3A, paper #F7FAFC, slate #516575, teal #176C71. Teal is an accent, not a status indicator. On dark surfaces prefer pale ink treatment. Use standard system sans for reading; system monospace for hashes and code. No required fonts or font downloads. Contrast and final pairings must be measured against actual placements before rollout.
+Approved foundation VIB-BRAND-FOUNDATION-001 (2026-11-24).
 
-Avoid decorative circuitry and complex graph diagrams in the mark. Use simple rules, consistent spacing, and short evidence labels in documentation. Product UI and source code are out of scope.
+| Token | Hex | Intended role |
+| --- | --- | --- |
+| Midnight | `#111827` | Dark field / dark ink |
+| Cobalt | `#315BCD` | Primary brand accent |
+| Steel Blue | `#879BC4` | Secondary accents on dark surfaces |
+| Ice White | `#F3F6FC` | Light field / light ink |
+
+One-color-first; flat color, no gradients, glow or decorative circuitry. Use system sans for prose and monospace for hashes and code. Check actual contrast pairings, small-size silhouette and accessible text before rollout; no claim of verified accessibility yet. Palette is approved, final proportions and applications remain pending.

@@ -16,7 +16,7 @@ The pull request check runs on GitHub's combined base and head commit. The Actio
 
 ## VIB project workspace
 
-[Creative brief](brand-identity/01-strategy/brief.md) · [Decision record](brand-identity/01-strategy/creative-decision.json). Name, slogan and concept remain proposals. No artwork approved.
+[Creative brief](brand-identity/01-strategy/brief.md) · [Decision record](brand-identity/01-strategy/creative-decision.json). Foundation approved under VIB-BRAND-FOUNDATION-001: Version-Issues-Hub-Branch / VIB, Cobalt Precision, hybrid monogram + path, dual slogans. Five mockups authorized; final artwork not approved. Repository and install refs unchanged.
 
 ## Engineering ecosystem
 

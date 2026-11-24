@@ -1,6 +1,6 @@
 # VIB strategy and creative brief
 
-Status: proposal, not owner-approved. Product candidate v0.0.0.19, [pinned source](https://github.com/vixttha/Version-Issues-Hub/tree/4fc9ac47462101b941ea2f78fc939d42a9de0032). Brand kit v0.0.1 is separate from product versioning.
+Status: foundation owner-approved under VIB-BRAND-FOUNDATION-001 (2026-11-24); artwork selection pending. Product candidate v0.0.0.19, [pinned source](https://github.com/vixttha/Version-Issues-Hub/tree/4fc9ac47462101b941ea2f78fc939d42a9de0032). Brand kit v0.0.1 is separate from product versioning.
 
 ## Product and audience
 
@@ -14,6 +14,6 @@ First size targets: 24–32 px symbol and 160–240 px lockup; these are propose
 
 ## References and boundaries
 
-[Product workflow](https://github.com/vixttha/Version-Issues-Hub/blob/4fc9ac47462101b941ea2f78fc939d42a9de0032/install/branch/WORKFLOW.md), [engineering laws](https://github.com/vixttha/Version-Issues-Hub/blob/4fc9ac47462101b941ea2f78fc939d42a9de0032/ENGINEERING-LAWS.md), [Standard validation](https://github.com/vixttha/Version-Issues-Hub/blob/4fc9ac47462101b941ea2f78fc939d42a9de0032/install/branch/STANDARD.md), [closure issue](https://github.com/vixttha/Version-Issues-Hub/issues/37). VIB is not an AI model, hosted CI service, mandatory enforcement system, or a central coordinator. Do not imply universal harness compatibility or release status. Existing naming is Version-Issues-Hub / VIB; exact wordmark requires confirmation. Naming clearance and visual similarity searches remain pending. No outside artwork copied.
+[Product workflow](https://github.com/vixttha/Version-Issues-Hub/blob/4fc9ac47462101b941ea2f78fc939d42a9de0032/install/branch/WORKFLOW.md), [engineering laws](https://github.com/vixttha/Version-Issues-Hub/blob/4fc9ac47462101b941ea2f78fc939d42a9de0032/ENGINEERING-LAWS.md), [Standard validation](https://github.com/vixttha/Version-Issues-Hub/blob/4fc9ac47462101b941ea2f78fc939d42a9de0032/install/branch/STANDARD.md), [closure issue](https://github.com/vixttha/Version-Issues-Hub/issues/37). VIB is not an AI model, hosted CI service, mandatory enforcement system, or a central coordinator. Do not imply universal harness compatibility or release status. Approved brand name is Version-Issues-Hub-Branch / VIB; existing repository and installed branch names remain unchanged. Naming clearance and visual similarity searches remain pending. No outside artwork copied.
 
-[Creative decision](creative-decision.json) contains three written concepts and scores. No assets generated.
+[Creative decision](creative-decision.json) contains five hybrid concepts and scores. Cobalt Precision is the approved palette; dual slogans are approved. No final artwork selected.

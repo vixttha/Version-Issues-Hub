@@ -1,13 +1,13 @@
 # Review and decisions
 
-Status: creative strategy drafted, no artwork approved. The working full name is Version-Issues-Hub and short identity VIB. The exact wordmark VIB, proposed slogan and lead concept require owner confirmation. [Scored decision](../01-strategy/creative-decision.json).
+VIB-BRAND-FOUNDATION-001 (2026-11-24): owner approved exact product name Version-Issues-Hub-Branch, exact wordmark VIB, Cobalt Precision, hybrid Version Monogram + Version Path, primary slogan Every issue. A checkpoint., secondary slogan Build. Verify. Advance., and five separate draft mockups.
 
-| Concept | Score / 100 | Status |
+| Concept | Written score / 100 | Status |
 | --- | --- | --- |
-| Checkpoint Spine | 90 | Agent recommendation |
-| Folded Ledger | 80 | Alternative |
-| Version Monogram | 80 | Alternative |
+| Version Circuit | 87 | Draft exploration |
+| Checkpoint Monogram | 95 | Agent working lead |
+| Cobalt Sequence | 83 | Draft exploration |
+| Branch Signature | 87 | Draft exploration |
+| Version Relay | 92 | Draft exploration |
 
-Weights: brand fit 35%, artistic character 25%, distinctiveness 25%, versatility 15%. No owner selection or legal clearance inferred. No image generation, asset approval, visual test, or rollout performed. Inventory validation may pass while readiness-for-artwork is intentionally blocked by confirmation=null.
-
-README HQ is a separate workspace and may use the factual descriptor without requiring Brand Identity. The brand kit never changes VIB product code, checkpoint ledger, or release status. Final asset manifest remains empty until approved artwork exists. Review final assets for exact lettering, silhouette, contrast, transparency, provenance and rights before handoff.
+Weights: brand fit 35%, artistic character 25%, distinctiveness 25%, versatility 15%. [Decision record](../01-strategy/creative-decision.json). Scores evaluate written concepts, not rendered artwork. Final logo, wordmark artwork, production assets, legal clearance, repository rename and release remain unapproved. Original proposal preserved in Git history. Asset manifest stays truthful: only register actual files. Review readability at 24/32 px, silhouette, contrast, transparency, SVG feasibility, provenance and rights. README HQ is separate and follows after artwork selection and validation. Do not automatically merge other workspaces or change product code.

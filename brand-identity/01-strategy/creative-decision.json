@@ -1,70 +1,112 @@
 {
-  "initial_category": "combination mark",
-  "art_style": "Geometric, one-color-first vector-compatible construction with clear negative space",
+  "initial_category": "lettermark",
+  "art_style": "Precise geometric one-color-first VIB monogram with integral version path; consistent stroke widths and negative space; no gradients or generic Git icons",
   "category_fit": {
+    "lettermark": {
+      "fits": true,
+      "reason": "VIB is the approved exact wordmark; integrated checkpoint path makes it meaningful."
+    },
     "combination mark": {
       "fits": true,
-      "reason": "Full product name and recognizable compact mark are useful on GitHub and docs."
+      "reason": "An integrated monogram can be paired with accessible full name and dual-line slogans."
     },
     "abstract mark": {
       "fits": true,
-      "reason": "Checkpoint and ledger concepts can be conveyed without letters."
-    },
-    "lettermark": {
-      "fits": true,
-      "reason": "VIB is the established short name; short text suits compact surfaces."
+      "reason": "Version path expresses workflow, but a standalone abstract symbol would weaken acronym recognition."
     },
     "mascot": {
       "fits": false,
-      "reason": "Adds personality but obscures engineering purpose at small sizes."
+      "reason": "Does not communicate structured engineering or small-size legibility."
     }
   },
   "concepts": [
     {
-      "id": "checkpoint-spine",
-      "category": "combination mark",
-      "art_style": "Geometric, one-color-first, cut negative space; restrained angular corners",
-      "example": "Three offset horizontal checkpoint bars joined by a vertical spine. The final bar stops short to leave a visible owner-decision gap. Pair with the letters VIB.",
-      "rationale": "Brand fit 5: numbered checkpoints and durable handoff. Character 4: deliberate proportions and negative space. Distinctiveness 4: avoid generic checkmark, branch or shield. Versatility 5: compact one-color construction; test at 24 px.",
+      "id": "version-circuit",
+      "category": "lettermark",
+      "art_style": "One-color-first custom angular vector geometry; flat Cobalt Precision accent only after silhouette",
+      "example": "A single angular ribbon forms readable V, I and B with three integral checkpoint nodes; an open terminal implies advance.",
+      "rationale": "Strong continuity; nodes must stay legible without looking like electronics.",
       "scores": {
         "brand_fit": 5,
+        "artistic_character": 4,
+        "distinctiveness": 4,
+        "versatility": 4
+      }
+    },
+    {
+      "id": "checkpoint-monogram",
+      "category": "lettermark",
+      "art_style": "One-color-first custom angular vector geometry; flat Cobalt Precision accent only after silhouette",
+      "example": "Custom interlocking V, I and B share stems; a restrained rectangular cut and an open endpoint form an issue-to-checkpoint path.",
+      "rationale": "Best connection to name and checkpoint mechanism; avoid ambiguous letter overlaps.",
+      "scores": {
+        "brand_fit": 5,
+        "artistic_character": 5,
+        "distinctiveness": 4,
+        "versatility": 5
+      }
+    },
+    {
+      "id": "cobalt-sequence",
+      "category": "lettermark",
+      "art_style": "One-color-first custom angular vector geometry; flat Cobalt Precision accent only after silhouette",
+      "example": "Three distinct angular letterforms align on a stepped baseline; negative-space transitions trace ordered progress.",
+      "rationale": "Ordered progress and a robust silhouette; keep steps from resembling a bar chart.",
+      "scores": {
+        "brand_fit": 4,
         "artistic_character": 4,
         "distinctiveness": 4,
         "versatility": 5
       }
     },
     {
-      "id": "folded-ledger",
-      "category": "abstract mark",
-      "art_style": "Geometric folded bands, no gradients, solid silhouette",
-      "example": "Two opposing folded bands frame a narrow central ledger slit. Three notches along one edge suggest recorded issue history.",
-      "rationale": "Brand fit 4: ledger and persistence, less explicit workflow. Character 4: physical fold motif. Distinctiveness 4: avoid book/document icon. Versatility 4: internal notches could disappear below 24 px.",
+      "id": "branch-signature",
+      "category": "lettermark",
+      "art_style": "One-color-first custom angular vector geometry; flat Cobalt Precision accent only after silhouette",
+      "example": "The V is an asymmetric fork that leads into I and B through a single connected geometry; one small endpoint marks the decision.",
+      "rationale": "Expresses branch architecture; avoid generic Git branch imagery.",
       "scores": {
-        "brand_fit": 4,
+        "brand_fit": 5,
         "artistic_character": 4,
         "distinctiveness": 4,
         "versatility": 4
       }
     },
     {
-      "id": "version-monogram",
+      "id": "version-relay",
       "category": "lettermark",
-      "art_style": "Custom monoline-inspired solid letter construction; compact, optically balanced",
-      "example": "Interlocking V and I built from one uninterrupted rectangular ribbon with a separated terminal block implying B and the next checkpoint.",
-      "rationale": "Brand fit 4: recognizable acronym, weaker evidence meaning. Character 5: custom lettering can provide identity. Distinctiveness 3: crowded V-letter mark category. Versatility 4: small-size readability needs testing.",
+      "art_style": "One-color-first custom angular vector geometry; flat Cobalt Precision accent only after silhouette",
+      "example": "Three independent but visually linked geometric V, I and B glyphs pass a checkpoint along the same axis, with a final open terminal.",
+      "rationale": "Build, Verify, Advance in three stages; maintain visual unity at avatar size.",
       "scores": {
-        "brand_fit": 4,
+        "brand_fit": 5,
         "artistic_character": 5,
-        "distinctiveness": 3,
+        "distinctiveness": 4,
         "versatility": 4
       }
     }
   ],
-  "selected_concept": "checkpoint-spine",
-  "selection_reason": "Proposed lead 90/100 vs 80/100 for each alternative; clearest connection to durable numbered checkpoints and smallest surface. Not owner-approved. No artwork until exact name confirmation.",
+  "selected_concept": "checkpoint-monogram",
+  "selection_reason": "Agent-ranked working lead 95/100; Version Relay 92/100. Owner approved exploration of the hybrid direction and all five separate mockups, not a final logo; scores are written-concept judgments only.",
   "names": {
-    "product": "Version-Issues-Hub",
+    "product": "Version-Issues-Hub-Branch",
     "wordmark": "VIB"
   },
-  "confirmation": null
+  "confirmation": {
+    "product": "Version-Issues-Hub-Branch",
+    "wordmark": "VIB",
+    "reference": "VIB-BRAND-FOUNDATION-001 — explicit owner approval, 2026-11-24, of the proposed naming, Cobalt Precision, hybrid Version Monogram + Version Path, and dual-line slogans."
+  },
+  "palette": {
+    "name": "Cobalt Precision",
+    "midnight": "#111827",
+    "cobalt": "#315BCD",
+    "steel_blue": "#879BC4",
+    "ice_white": "#F3F6FC"
+  },
+  "slogans": {
+    "primary": "Every issue. A checkpoint.",
+    "secondary": "Build. Verify. Advance."
+  },
+  "approval_scope": "Foundation and five draft mockups only; final artwork, rights clearance, repo rename, rollout and product release not approved."
 }

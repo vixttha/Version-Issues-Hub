@@ -42,7 +42,7 @@ jobs:
           fi
 
       - name: Verify the kit inventory
-        run: python3 brand-identity/verify.py
+        run: python3 brand-identity/verify.py --ready-for-artwork
 
       - name: Test the creative direction gate
         run: python3 -m unittest discover -s brand-identity -p 'test_*.py' -v
