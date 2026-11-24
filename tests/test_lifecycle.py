@@ -154,11 +154,11 @@ class LifecycleTests(unittest.TestCase):
                 lifecycle.upgrade(api, REPO, collided, NEW)
             self.assertEqual(api.writes, [])
 
-    def test_review_notice_preserves_shared_law_exclusions_and_mit_text(self):
+    def test_approved_notice_preserves_shared_law_exclusions_and_mit_text(self):
         root = Path(__file__).resolve().parents[1]
-        notice = (root / "docs/licensing/VIB-NOTICE-REVIEW.md").read_text(encoding="utf-8")
-        self.assertIn("REVIEW_ONLY_NOT_A_GRANT", notice)
-        self.assertIn("excluded from the proposed restrictive grant", notice)
+        notice = (root / "VIB-NOTICE.md").read_text(encoding="utf-8")
+        self.assertIn("VIB_LICENSE_TERMS_APPROVED", notice)
+        self.assertIn("excluded from the restrictive grant", notice)
         self.assertIn("Prior licensed revisions", notice)
         self.assertIn("Ownership and separate lawful permission", notice)
         # Verify embedded, verbatim MIT texts against immutable upstream Git blob IDs.
@@ -173,20 +173,17 @@ class LifecycleTests(unittest.TestCase):
         for name in ("README.md", "AGENTS.md"):
             self.assertIn(shared, (root / "install/branch" / name).read_text(encoding="utf-8"))
 
-    def test_simulated_approved_legal_package_fresh_install_and_upgrade(self):
-        # Test-only simulation of post-approval copying. No GitHub API calls:
-        # GitApi writes exclusively to a disposable local bare repository.
-        # Production refusal remains intact and separately tested.
+    def test_approved_legal_package_fresh_install_and_upgrade(self):
+        # Real installer and lifecycle with disposable Git objects; no live GitHub writes.
         api = self.api
         root = Path(__file__).resolve().parents[1]
         package = {dest: (root / src).read_text(encoding="utf-8")
                    for src, dest in install.PACKAGE.items()}
         self.assertEqual(len(package), 14)
-        self.assertIn("REVIEW_ONLY_NOT_A_GRANT", package["VIB-NOTICE.md"])
+        self.assertIn("VIB_LICENSE_TERMS_APPROVED", package["VIB-NOTICE.md"])
         self.assertNotIn("LICENSE", package)
         with patch.object(install, "source_files", side_effect=lambda api, sha:
-                          dict({OLD: OLD_FILES, NEW: package}[sha])), \
-             patch.object(install, "require_publishable_package") as fixture_only:
+                          dict({OLD: OLD_FILES, NEW: package}[sha])):
             pin = self.change("LICENSE", "adopter-owned license\n")
             before = {p: api.read(pin, p) for p in
                       ("LICENSE", session.LEDGER, session.HANDOFF, "notes/custom.md")}
@@ -209,10 +206,7 @@ class LifecycleTests(unittest.TestCase):
             self.assertEqual(observed["ledger"]["issues"], [])
             for path, content in package.items():
                 self.assertEqual(api.read(fresh, path), content)
-            self.assertEqual(fixture_only.call_count, 2)
-        # Real production guard still refuses the draft package.
-        with self.assertRaisesRegex(ValueError, "not authorized"):
-            install.require_publishable_package(package)
+        install.require_publishable_package(package)
 
     def test_upgrade_requires_owner_and_current_revision(self):
         api=self.api

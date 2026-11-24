@@ -24,3 +24,8 @@ Agent package: [v0.0.0.4](docs/v0.0.0.4.md), including batched handoffs in [WORK
 A compatible agent may enumerate the target repository's branch refs, resolve this branch to a commit, and read its entry point at that exact commit. Read-only discovery confers no execution, write, integration or release authority. If this branch or marker is absent, the tool is absent or legacy/unverified; continue independently. Check the target's own instructions and owner scope before any action. The marker describes a capability, not a required registry or package version.
 
 Installation convention: human or agent selects a reviewed exact source SHA, checks the dedicated target branch and collisions, follows this product's own installation guide, and records source/target SHA and preserved product state. Never merge a template workspace wholesale into product source. Existing installations require explicit reviewed upgrades; preserve local records and prior receipts. Optional evidence links do not authorize writes. No mandatory coordinator or other ecosystem tool.
+
+
+## Licensing
+
+See [LICENSE](LICENSE) and [VIB-NOTICE.md](VIB-NOTICE.md) together for PolyForm Strict 1.0.0 scope, exclusions and supplemental unchanged-installation permission. These terms cover only the specified original licensable VIB package portions to the extent rights are held by the licensor. Prior MIT grants and third-party rights are preserved. This is a licensing candidate; v0.0.1 remains unreleased. No stable release, brand permission or owner integration decision is implied.

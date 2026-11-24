@@ -3,6 +3,7 @@ import hashlib
 import json
 import io
 from urllib.error import HTTPError, URLError
+from pathlib import Path
 import unittest
 from unittest.mock import patch
 from tools import install, checkpoint
@@ -54,8 +55,14 @@ class FakeGitHub:
             return {"sha": PIN}
         if path.startswith(source + "/contents/"):
             name, ref = path.removeprefix(source + "/contents/").split("?ref=")
-            assert ref == PIN and name in install.PACKAGE
-            raw = (("PACKAGE = " + repr(self.package) + "\n") if name == "tools/install.py" else ("sample " + name + "\n")).encode()
+            assert ref == PIN and name in self.package
+            if name == "tools/install.py":
+                content = "PACKAGE = " + repr(self.package) + "\n"
+            elif name in {"LICENSE", "VIB-NOTICE.md"}:
+                content = (Path(__file__).resolve().parents[1] / name).read_text(encoding="utf-8")
+            else:
+                content = "sample " + name + "\n"
+            raw = content.encode()
             sha = hashlib.sha1(b"blob " + str(len(raw)).encode() + b"\0" + raw).hexdigest()
             return {"type": "file", "path": name, "encoding": "base64",
                     "content": base64.b64encode(raw).decode(), "sha": "0" * 40 if self.bad_blob else sha}
@@ -82,7 +89,7 @@ class InstallerTests(unittest.TestCase):
             self.assertEqual(hashlib.sha256(self.api.entries[name].encode()).hexdigest(), digest)
 
     def test_review_legal_paths_are_hashed_and_apply_is_refused(self):
-        self.api.package = dict(install.PACKAGE)
+        self.api.package.update(install.HISTORICAL_LEGAL_PATHS)
         plan = install.install(self.api, TARGET, PIN, "v0.0.0")
         self.assertEqual(len(plan["manifest"]["package_files_sha256"]), 14)
         for name in ("VIB-LICENSE.md", "VIB-NOTICE.md"):
@@ -94,6 +101,29 @@ class InstallerTests(unittest.TestCase):
         self.assertEqual(self.api.writes, [])
         self.assertEqual(self.api.refs, {"trunk": PRODUCT})
 
+    def test_approved_license_package_installs_and_preserves_notice_bytes(self):
+        self.api.package = dict(install.PACKAGE)
+        result = install.install(self.api, TARGET, PIN, "v0.0.0", True)
+        root = Path(__file__).resolve().parents[1]
+        for name, source in (("VIB-LICENSE.md", "LICENSE"), ("VIB-NOTICE.md", "VIB-NOTICE.md")):
+            expected = (root / source).read_text(encoding="utf-8")
+            self.assertEqual(self.api.entries[name], expected)
+            self.assertEqual(result["manifest"]["package_files_sha256"][name],
+                             hashlib.sha256(expected.encode()).hexdigest())
+        self.assertNotIn("LICENSE", self.api.entries)
+        self.assertEqual(self.api.refs["trunk"], PRODUCT)
+    
+    def test_incomplete_or_tampered_legal_pair_refused(self):
+        root = Path(__file__).resolve().parents[1]
+        license_text = (root / "LICENSE").read_text(encoding="utf-8")
+        notice = (root / "VIB-NOTICE.md").read_text(encoding="utf-8")
+        for files in ({"VIB-LICENSE.md": license_text}, {"VIB-NOTICE.md": notice},
+                      {"VIB-LICENSE.md": license_text + "changed", "VIB-NOTICE.md": notice},
+                      {"VIB-LICENSE.md": license_text, "VIB-NOTICE.md": "REVIEW_ONLY_NOT_A_GRANT"}):
+            with self.subTest(files=list(files)), self.assertRaisesRegex(ValueError, "not authorized"):
+                install.require_publishable_package(files)
+        self.assertEqual(self.api.writes, [])
+    
     def test_dry_run_has_no_writes(self):
         self.assertEqual(install.install(self.api, TARGET, PIN, "v0.0.0")["status"], "planned")
         self.assertEqual(self.api.writes, [])

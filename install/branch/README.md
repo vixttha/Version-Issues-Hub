@@ -36,6 +36,6 @@ A compatible agent may enumerate the target repository's branch refs, resolve th
 Installation convention: human or agent selects a reviewed exact source SHA, checks the dedicated target branch and collisions, follows this product's own installation guide, and records source/target SHA and preserved product state. Never merge a template workspace wholesale into product source. Existing installations require explicit reviewed upgrades; preserve local records and prior receipts. Optional evidence links do not authorize writes. No mandatory coordinator or other ecosystem tool.
 
 
-## Licensing review branch only
+## Licensing
 
-The proposed legal reference and notice are not operative terms. The review package can be planned, but cannot be installed or upgraded using its review-only entry points. Do not treat this as distribution approval; see issue #47. Historical pins and product release remain unchanged.
+This candidate carries VIB-LICENSE.md and VIB-NOTICE.md in its standalone package. Read both before use. The original license text is unchanged, and the supplemental permission covers authorized unchanged dedicated-branch installations. Existing MIT and third-party rights remain intact. This candidate is not the stable v0.0.1 release; owner approval and verified source selection remain required for installation. No mandatory license server or paid execution.

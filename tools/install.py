@@ -30,6 +30,11 @@ PACKAGE = {
     "install/branch/STANDARD.md": "STANDARD.md",
     "install/branch/GATE.md": "GATE.md",
     "install/branch/AGENTS.md": "AGENTS.md",
+    "LICENSE": "VIB-LICENSE.md",
+    "VIB-NOTICE.md": "VIB-NOTICE.md",
+}
+
+HISTORICAL_LEGAL_PATHS = {
     "docs/licensing/reference/PolyForm-Strict-1.0.0.md": "VIB-LICENSE.md",
     "docs/licensing/VIB-NOTICE-REVIEW.md": "VIB-NOTICE.md",
 }
@@ -164,7 +169,7 @@ def pinned_package(source_text):
         raise ValueError("Invalid pinned package declaration") from exc
     required = {"install/branch/README.md", "install/branch/WORKFLOW.md", "tools/checkpoint.py"}
     if (not required.issubset(package) or
-            any(not isinstance(k, str) or not isinstance(v, str) or PACKAGE.get(k) != v
+            any(not isinstance(k, str) or not isinstance(v, str) or {**PACKAGE, **HISTORICAL_LEGAL_PATHS}.get(k) != v
                 for k, v in package.items()) or len(set(package.values())) != len(package)):
         raise ValueError("Pinned package has unsupported or missing paths")
     return package
@@ -184,8 +189,18 @@ def render(data):
     return json.dumps(data, indent=2, sort_keys=True) + "\n"
 
 def require_publishable_package(files):
-    """Review branch only: refuse distribution of either draft legal path."""
-    if {"VIB-LICENSE.md", "VIB-NOTICE.md"}.intersection(files):
+    """Reject incomplete or review-only legal packages; not a license enforcement service."""
+    names = {"VIB-LICENSE.md", "VIB-NOTICE.md"}
+    if not names.intersection(files):
+        return  # Historical pins remain readable and compatible.
+    if not names.issubset(files):
+        raise ValueError("Incomplete legal package is not authorized for installation or upgrade")
+    raw = files["VIB-LICENSE.md"].encode("utf-8")
+    blob = hashlib.sha1(b"blob " + str(len(raw)).encode() + b"\0" + raw).hexdigest()
+    notice = files["VIB-NOTICE.md"]
+    if (blob != "90abd0e6c64a135f42451762337a397bf27f4862"
+            or "VIB_LICENSE_TERMS_APPROVED" not in notice.splitlines()
+            or "REVIEW_ONLY_NOT_A_GRANT" in notice):
         raise ValueError("Legal review package is not authorized for installation or upgrade")
 
 
