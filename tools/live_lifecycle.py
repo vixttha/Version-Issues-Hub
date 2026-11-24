@@ -5,6 +5,7 @@ import os
 import subprocess
 import sys
 from tools import install, session, lifecycle
+from tools.pilot_refs import ensure_recovery_ref
 
 TARGET = "vixttha/clouds"
 TARGET_ID = 1468365268
@@ -109,10 +110,7 @@ def main():
     assert install.read_ref(api,prefix,install.BRANCH) == final
     assert install.read_ref(api,prefix,"main") == PRODUCT
     # Prove the archived commit can be restored under a separate pilot-only ref, never delete the install.
-    recovery = "archive/vib-recovery/" + final
-    assert install.read_ref(api,prefix,recovery) is None
-    api.request("POST",prefix+"/git/refs",{"ref":"refs/heads/"+recovery,"sha":final})
-    install.wait_ref(api,prefix,recovery,final)
+    recovery = ensure_recovery_ref(api, prefix, final)
     assert lifecycle.tree_entries(api,prefix,final)[0] == lifecycle.tree_entries(api,prefix,install.read_ref(api,prefix,recovery))[0]
     resumed = cli("tools.session","--expected-sha",final,"inspect")
     assert resumed["installed_sha"] == final and resumed["status"] == "head_scope_required"

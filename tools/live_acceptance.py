@@ -7,6 +7,7 @@ import subprocess
 import sys
 from tools import install, session
 from tools.acceptance_snapshot import recover_stable
+from tools.pilot_refs import verify_self_install
 
 class ReadOnlyGitHub(install.GitHub):
     def request(self, method, path, body=None):
@@ -83,13 +84,9 @@ api = ReadOnlyGitHub(os.environ.get("GH_TOKEN"))
 repo = install.SOURCE
 prefix = install.repo_path(repo)
 source = os.environ["VIB_TEST_SOURCE"]
-# Existing product with no VIB installation: exercise real GitHub reads and package digests.
-before = install.read_ref(api, prefix, "main")
-plan = install.install(api, repo, source, "v0.0.0")
-assert plan["status"] == "planned" and plan["manifest"]["product_baseline_sha"] == before
-assert plan["manifest"]["enforcement"] == "disabled"
-assert install.read_ref(api, prefix, install.BRANCH) is None
-assert install.read_ref(api, prefix, "main") == before
+# The successful fresh self-install pilot may have occupied the previously empty slot.
+# Verify its historical package without overwriting it or claiming a new install plan.
+self_install = verify_self_install(api, repo, source)
 bart = "vixttha/Blender-Agent-Refinement-Toolkit"
 state, report = recover_stable(api, bart)
 # Historical actual BART install is not a new write trial; verify its parent and package pin.
@@ -132,12 +129,13 @@ assert "Lydite Test Vault" in read("README.md", pins["Lydite"])
 assert "Verify execution receipts" in read("starter/test-vault/README.md", pins["Lydite"])
 assert len(read("starter/test-vault/verify_receipts.py", pins["Lydite"])) > 0
 assert "Provenistem" in read("install/branch/AGENTS.md", source)
-assert all(not path.startswith(("provenistem/", "veraphify/", "test-vault/")) for path in plan["paths"])
+assert all(not path.startswith(("provenistem/", "veraphify/", "test-vault/")) for path in self_install["candidate_package_paths"])
 print(json.dumps({
     "kind": "read_only_live_acceptance",
     "readme_hq_cli_plan": verify_live_cli_plan(api, source),
     "aldervale": verify_aldervale_install(api),
-    "source": source, "install_plan_paths": plan["paths"],
+    "source": source, "install_plan_paths": self_install["install_plan_paths"],
+    "self_install": self_install,
     "existing_adopter": bart, "adopter_installed_sha": state["ref"],
     "historical_install_sha": first_install, "historical_product_parent": original["product_baseline_sha"],
     "adopter_package_sha": state["manifest"]["source_sha"],
