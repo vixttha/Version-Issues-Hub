@@ -175,7 +175,7 @@
       "documented_in": [
         {
           "path": "docs/v0.0.0.2.md",
-          "anchor": "The historical two-checkpoint dogfood test"
+          "anchor": "## Historical two-checkpoint pilot"
         }
       ],
       "changed_in": [
