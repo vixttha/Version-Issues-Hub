@@ -1,0 +1,28 @@
+name: VIB public adopter audit
+on:
+  push:
+    branches: ['ops/vib-adopter-audit-20261124']
+permissions:
+  contents: read
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
+        with:
+          python-version: '3.12'
+      - name: Verify pins and reproduce audit findings without writes
+        run: |
+          set -o pipefail
+          python -m tools.adopter_audit | tee "$RUNNER_TEMP/vib-adopter-audit.json"
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: vib-adopter-audit-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/vib-adopter-audit.json
+          if-no-files-found: error
