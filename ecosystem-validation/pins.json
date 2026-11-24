@@ -1,0 +1,50 @@
+[
+  {
+    "id": "vib",
+    "repo": "vixttha/Version-Issues-Hub",
+    "sha": "0bc5e739e245fa9c04ba856a850503f0f473c707",
+    "branch": "Version-Issues-Hub",
+    "entry": "AGENTS.md",
+    "layout": "vib"
+  },
+  {
+    "id": "provenistem",
+    "repo": "vixttha/Provenistem",
+    "sha": "ad952a9e4bcb6b00d66377935a252d1c8109f6f9",
+    "branch": "Provenistem",
+    "entry": "LIBRARY-AGENT-GUIDE.md",
+    "layout": "packages/provenistem"
+  },
+  {
+    "id": "lydite",
+    "repo": "vixttha/Lydite-Test-Vault-Template",
+    "sha": "270fb2f4fa1a5c4d00834fcce1f7cfb58d8cf471",
+    "branch": "Lydite-Test-Vault",
+    "entry": "README.md",
+    "layout": "root"
+  },
+  {
+    "id": "veraphify",
+    "repo": "vixttha/Veraphify",
+    "sha": "35ae726dde904c92f3b26f953f2d6688b442ecf6",
+    "branch": "Veraphify",
+    "entry": "README.md",
+    "layout": "root"
+  },
+  {
+    "id": "readme-hq",
+    "repo": "vixttha/README-HQ",
+    "sha": "d1ccfe33fb988c06c70dcb607f03aa6beaee3bdb",
+    "branch": "readme-hq",
+    "entry": "AGENTS.md",
+    "layout": "root"
+  },
+  {
+    "id": "brand-identity",
+    "repo": "vixttha/Brand-Identity-Template",
+    "sha": "97f2aa59b7945bc9e454e6311f08e4abcf70bad2",
+    "branch": "Brand-Identity",
+    "entry": "README.md",
+    "layout": "root"
+  }
+]
