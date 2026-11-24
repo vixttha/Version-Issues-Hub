@@ -2,12 +2,14 @@
   "active": {
     "issue": 40,
     "version": "v0.0.0.23",
-    "phase": "Validate",
-    "next_action": "Verify exact public mechanical run 45420692986 attempt 1 and review evidence; release approval remains separate.",
+    "phase": "Internal Auditor",
+    "next_action": "Audit 87 mechanical checks, historical state preservation, exact pins and pending release decisions; review not equal to release approval.",
     "fix_sha": "f6dc3fae91a73bdead758ea8427308c191a73ade",
     "candidate_sha": "f6dc3fae91a73bdead758ea8427308c191a73ade",
     "pull_request": 49,
-    "evidence": []
+    "evidence": [
+      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45420692986/attempts/1"
+    ]
   },
   "history": [],
   "schema_version": 1
