@@ -52,3 +52,6 @@ jobs:
 
       - name: Verify Circuit Industrial draft SVGs
         run: python3 brand-identity/08-review/circuit-industrial-v2/verify.py
+
+      - name: Verify owner-locked artwork bytes and foundation
+        run: python3 brand-identity/08-review/verify_lock.py

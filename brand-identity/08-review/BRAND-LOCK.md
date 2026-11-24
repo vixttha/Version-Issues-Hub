@@ -1,0 +1,11 @@
+# VIB — locked visual baseline
+
+**VIB-BRAND-LOCK-001 | Owner approved | 2026-11-24**
+
+The owner's instruction to lock everything made and approved in Brand Identity freezes Circuit Industrial v2, including the exact reconstructed eight SVGs, eight PNG exports, inspection boards and design history. Version-Issues-Hub-Branch / VIB, Cobalt Precision (#111827, #315BCD, #879BC4, #F3F6FC), Every issue. A checkpoint. / Build. Verify. Advance. remain fixed. This decision supersedes all previous candidate/working-lead wording without altering the historical records or selected artwork bytes. The previous template creative-decision scoring remains historical, not the final visual selection.
+
+[Locked asset directory](circuit-industrial-v2/) · [Machine-readable lock](brand-lock.json) · [Prior exact source](https://github.com/vixttha/Version-Issues-Hub/tree/db876fc660752e09a4f01774c098533e09a1d42f) · [Prior public runner](https://github.com/vixttha/Version-Issues-Hub/actions/runs/45395417658).
+
+The full 26,074,809-byte archive VIB-Brand-Identity-locked-archive.zip (SHA-256 d5b7e9af846898392ff0ac16b9352467dbbca0e39a04358487ba501f7b726ed4) was CRC and SHA-256 checked locally and uploaded successfully to the owner's ChatGPT persistent Library at /VIB-Brand-Identity-locked-archive.zip. It contains 43 source files (20 exact previous package files plus 23 historical files), an archive manifest and lock note. Earlier concepts, user references, generated images and audit board are preserved as history, not alternative approved logos. The archive is not a GitHub blob; the Notion binary upload could not reach its host. The eight SVGs remain canonically committed. The pre-existing @Images PNG-only manifest remains empty rather than misrepresenting vector-rendered exports; the separate lock registry records the approved SVGs and archive. No formal template PNG handoff claim.
+
+Legal/trademark clearance remains pending; Inter Bold licensing previously reviewed, no font files distributed. No favicon approval, no product release, public rollout, README HQ changes, or template adoption PR merge. No branch protection or ruleset changes. The lock is a documented owner decision and integrity test, not mechanical access control. Changes require explicit owner approval; any later lock supersedes this one without rewriting history.

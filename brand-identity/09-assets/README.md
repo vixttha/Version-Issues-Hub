@@ -5,3 +5,7 @@ Use @Images for every brand image created through this kit. Save project PNGs he
 Save PNG exports directly in this directory with lowercase `.png` extensions. Use filenames with a stable role and revision. Record the review state and any usage conditions before distributing the imagery. Images shared solely as evidence or references can remain linked from the brief.
 
 Before creating or registering new artwork, verify the [creative direction and name confirmation](../01-strategy/creative-direction.md) with `python3 brand-identity/verify.py --ready-for-artwork`.
+
+## VIB locked vector asset registry
+
+Use [VIB-BRAND-LOCK-001](../08-review/BRAND-LOCK.md) and [its exact asset registry](../08-review/brand-lock.json) as the current visual source of truth. The original PNG-only kit manifest remains unchanged; it is not the vector registry. The archived PNG exports are vector renders, not new @Images outputs. Do not substitute earlier mockups or infer release clearance.

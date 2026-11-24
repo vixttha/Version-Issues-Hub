@@ -16,7 +16,7 @@ The pull request check runs on GitHub's combined base and head commit. The Actio
 
 ## VIB project workspace
 
-[Creative brief](brand-identity/01-strategy/brief.md) · [Decision record](brand-identity/01-strategy/creative-decision.json). Foundation approved under VIB-BRAND-FOUNDATION-001: Version-Issues-Hub-Branch / VIB, Cobalt Precision, hybrid monogram + path, dual slogans. Five mockups authorized; final artwork not approved. Repository and install refs unchanged.
+[Creative brief](brand-identity/01-strategy/brief.md) · [Decision record](brand-identity/01-strategy/creative-decision.json). Foundation approved under VIB-BRAND-FOUNDATION-001: Version-Issues-Hub-Branch / VIB, Cobalt Precision, hybrid monogram + path, dual slogans. Circuit Industrial v2 is now the owner-approved visual master under [VIB-BRAND-LOCK-001](brand-identity/08-review/BRAND-LOCK.md). Earlier concepts are archived. Repository and install refs unchanged; commercial clearance and rollout remain separate.
 
 ## Engineering ecosystem
 
