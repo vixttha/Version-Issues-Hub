@@ -1,0 +1,211 @@
+name: VIB aggregate candidate rehearsal
+on:
+  push:
+    branches: [review/vib-v0.0.1-aggregate]
+permissions:
+  contents: read
+  actions: read
+  checks: read
+  pull-requests: read
+  issues: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      PREVIOUS_SHA: d1e8e1a922446d137a793d1fded105f427122ec5
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
+        with:
+          python-version: '3.12'
+      - name: Check the ledger and verify the receipt contract
+        run: |
+          python tools/checkpoint.py check --previous-ref "$PREVIOUS_SHA"
+          python -B -m unittest discover -s tests -v
+      - name: Write the selected issue verification receipts
+        run: python tools/checkpoint.py receipts "$RUNNER_TEMP/issue-receipts"
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: issue-receipts-${{ github.event_name }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/issue-receipts
+          if-no-files-found: error
+
+  graphify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      GRAPHIFY_QUERY_LOG_DISABLE: '1'
+      PYTHONHASHSEED: '0'
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          path: vib
+          persist-credentials: false
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          repository: vixttha/README-HQ
+          ref: 788f2127d3cf004ac5615d21364f5b56e4f7dd31
+          path: graphify-kit
+          persist-credentials: false
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
+        with:
+          python-version: '3.12'
+      - name: Map VIB issue evidence at the tested checkout
+        working-directory: vib
+        run: |
+          kit=../graphify-kit/graphify-hq/template/v0.0.8
+          python -m pip install --require-hashes --no-deps --only-binary=:all: -r "$kit/requirements.txt"
+          python -m pip check
+          output="$RUNNER_TEMP/vib-evidence"
+          mkdir -p "$output"
+          python - "$output/manifest.json" <<'PY'
+          import json
+          import os
+          from pathlib import Path
+          import sys
+
+          manifest = json.loads(Path('docs/receipt-evidence.json').read_text())
+          manifest['repository'] = os.environ['GITHUB_REPOSITORY']
+          manifest['source_commit'] = os.environ['GITHUB_SHA']
+          Path(sys.argv[1]).write_text(json.dumps(manifest, indent=2) + '\n')
+          PY
+          python "$kit/evidence_map.py" "$output/manifest.json" "$output"
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: vib-evidence-${{ github.event_name }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/vib-evidence
+          if-no-files-found: error
+  contract:
+    if: github.event.repository.private == false
+    runs-on: ubuntu-24.04
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Verify exact six laws in source and portable entry points
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib
+          paths = ["ENGINEERING-LAWS.md","install/branch/AGENTS.md","install/branch/README.md"]
+          start, end = '<!-- engineering-laws:start -->', '<!-- engineering-laws:end -->'
+          expected = "<!-- engineering-laws:start -->\n1. **Independence:** Every tool must remain independently installable, usable, versioned and maintained.\n2. **Composability:** Installing additional tools expands the agent's capabilities without creating mandatory dependencies.\n3. **Portability:** No mandatory AI provider, model, agent harness or paid execution service.\n4. **Persistence:** Project knowledge, decisions, progress and evidence survive the termination of an AI session.\n5. **Verification:** Development claims must be supported by reproducible, revision-bound evidence.\n6. **Owner authority:** The human retains control over scope, architectural decisions, integration and releases.\n<!-- engineering-laws:end -->"
+          for name in paths:
+              text = Path(name).read_text(encoding='utf-8')
+              assert text.count(start) == text.count(end) == 1, name
+              actual = text[text.index(start):text.index(end)+len(end)]
+              assert actual == expected, name
+          assert '(ENGINEERING-LAWS.md)' in Path('README.md').read_text(encoding='utf-8')
+          print('Exact six-law parity:', hashlib.sha256(expected.encode()).hexdigest())
+          print('Documentation parity only; not runtime behavior certification.')
+          PY
+  live:
+    if: github.event.repository.private == false
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    env:
+      GH_TOKEN: ${{ github.token }}
+      VIB_TEST_SOURCE: ${{ github.event.pull_request.head.sha || github.sha }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
+        with:
+          python-version: '3.12'
+      - name: Live public read-only install planning and adopter recovery
+        run: |
+          set -o pipefail
+          python -m tools.live_acceptance | tee "$RUNNER_TEMP/live-acceptance.json"
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: live-acceptance-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/live-acceptance.json
+          if-no-files-found: error
+  render-root:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: '24.22.3'
+          package-manager-cache: false
+      - run: node --check tools/check_vib_homepage_root.cjs
+      - run: |
+          npm install --prefix "$RUNNER_TEMP/vib-browser" --no-audit --no-fund --save-exact playwright@1.56.1
+          "$RUNNER_TEMP/vib-browser/node_modules/.bin/playwright" install chromium --with-deps
+      - run: NODE_PATH="$RUNNER_TEMP/vib-browser/node_modules" node tools/check_vib_homepage_root.cjs
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        if: always()
+        with:
+          name: vib-root-rehearsal-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/vib-readme-visual/
+          if-no-files-found: warn
+          retention-days: 7
+  mechanical:
+    if: github.repository == 'vixttha/Version-Issues-Hub' && github.event.repository.private == false
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: 265e0e4724bc409b16d2605fc4d59d2f3f658eaf
+          path: frozen-engineering
+          persist-credentials: false
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
+        with:
+          python-version: '3.12'
+      - name: Test revision drift guards without network
+        run: python -B ops/test_release_preflight.py -v
+      - name: Verify source pins, prior evidence, issue queue and installed VIB handoff
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python ops/release-preflight.py
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        if: always()
+        with:
+          name: vib-release-preflight-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/vib-release-report.json
+          if-no-files-found: error
+  aggregate-scope:
+    if: github.event.repository.private == false
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Verify exact aggregate ancestry, paths, and immutable source blobs
+        run: |
+          python - <<'PY'
+          import subprocess
+          def git(*args): return subprocess.check_output(['git', *args], text=True).strip()
+          legal='d1e8e1a922446d137a793d1fded105f427122ec5'
+          root='41c5007a7b51621ad1ef1735beac4930cef266f7'
+          pipeline='6f80ab87452b9148fa7817faa9e3ba38f0fe6199'
+          assert git('show','-s','--format=%P','HEAD').split() == [root,pipeline]
+          pipeline_paths=['.github/workflows/vib-release-preflight.yml','ops/RELEASE-PIPELINE.md','ops/release-pipeline.json','ops/release-preflight.py','ops/test_release_preflight.py']
+          for path in pipeline_paths:
+              assert git('rev-parse','HEAD:'+path)==git('rev-parse',pipeline+':'+path),path
+          expected=set(pipeline_paths+['README.md','.github/workflows/vib-aggregate-rehearsal.yml'])
+          assert set(git('diff','--name-only',root,'HEAD').splitlines())==expected
+          assert git('show','HEAD:README.md')==git('show',root+':README.md').replace('https://github.com/vixttha/Version-Issues-Hub/blob/d1e8e1a922446d137a793d1fded105f427122ec5/ENGINEERING-LAWS.md','ENGINEERING-LAWS.md')
+          assert git('rev-parse','HEAD:LICENSE')=='90abd0e6c64a135f42451762337a397bf27f4862'
+          assert git('rev-parse','HEAD:VIB-NOTICE.md')=='70dd8710828a38118965be3ca8be32457d106789'
+          for path in ['assets/vib-logo.svg','assets/vib-logo-light.svg']:
+              assert git('rev-parse','HEAD:'+path)==git('rev-parse',root+':'+path)
+          assert git('diff','--name-only',legal,'HEAD','--','install','ledger','tests','tools',':(exclude)tools/check_vib_homepage_root.cjs')==''
+          print('Exact aggregate source, approved legal bytes, package/ledger and locked asset parity verified; no release authorization.')
+          PY

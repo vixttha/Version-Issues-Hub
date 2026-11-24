@@ -98,7 +98,7 @@ Installation convention: human or agent selects a reviewed exact source SHA, che
 
 ## Project terms
 
-The [six engineering laws](https://github.com/vixttha/Version-Issues-Hub/blob/d1e8e1a922446d137a793d1fded105f427122ec5/ENGINEERING-LAWS.md) preserve independence, composability, portability, persistence, verification and owner authority. Other ecosystem tools are optional. See [architecture decision #9](https://github.com/vixttha/Version-Issues-Hub/issues/9).
+The [six engineering laws](ENGINEERING-LAWS.md) preserve independence, composability, portability, persistence, verification and owner authority. Other ecosystem tools are optional. See [architecture decision #9](https://github.com/vixttha/Version-Issues-Hub/issues/9).
 
 The accepted licensing candidate includes [PolyForm Strict 1.0.0](https://github.com/vixttha/Version-Issues-Hub/blob/d1e8e1a922446d137a793d1fded105f427122ec5/LICENSE) and [VIB-NOTICE.md](https://github.com/vixttha/Version-Issues-Hub/blob/d1e8e1a922446d137a793d1fded105f427122ec5/VIB-NOTICE.md) together. The scope is limited to rights actually held, preserves prior MIT grants and third-party rights, and includes supplemental permission for authorized unchanged dedicated-branch installations. Technical acceptance is not legal-title or trademark clearance. Independent host acceptance, commercial clearance, product integration and release remain pending. This draft is not approved for publication.
 
