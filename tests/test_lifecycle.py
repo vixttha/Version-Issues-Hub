@@ -128,6 +128,32 @@ class LifecycleTests(unittest.TestCase):
             self.assertEqual(api.git("rev-parse",api.old+":"+p),api.git("rev-parse",new+":"+p))
         self.assertEqual(session.load(api,REPO,new)["manifest"]["source_sha"],NEW)
 
+    def test_legal_review_upgrade_is_plan_only_and_preserves_adopter_license(self):
+        api = self.api
+        pin = self.change("LICENSE", "adopter-owned license\n")
+        candidate = {**NEW_FILES, "VIB-LICENSE.md": "reference only\n",
+                     "VIB-NOTICE.md": "REVIEW_ONLY_NOT_A_GRANT\n"}
+        with patch.object(install, "source_files", side_effect=lambda api, sha:
+                          dict({OLD: OLD_FILES, NEW: candidate}[sha])):
+            plan = lifecycle.upgrade(api, REPO, pin, NEW)
+            self.assertIn("VIB-LICENSE.md", plan["changed_paths"])
+            self.assertIn("VIB-NOTICE.md", plan["changed_paths"])
+            self.assertNotIn("LICENSE", plan["changed_paths"])
+            for prepare in (False, True):
+                with self.assertRaisesRegex(ValueError, "not authorized"):
+                    lifecycle.upgrade(api, REPO, pin, NEW, apply=True,
+                                      owner_approved=True, prepare_only=prepare)
+            self.assertEqual(api.writes, [])
+            self.assertEqual(api.ref(install.BRANCH), pin)
+            self.assertEqual(api.ref("main"), api.product)
+            self.assertEqual(api.read(pin, "LICENSE"), "adopter-owned license\n")
+            for p in (session.LEDGER, session.HANDOFF, "notes/custom.md"):
+                self.assertEqual(api.read(pin, p), api.read(api.old, p))
+            collided = self.change("VIB-NOTICE.md", "adopter-owned\n")
+            with self.assertRaisesRegex(ValueError, "collides"):
+                lifecycle.upgrade(api, REPO, collided, NEW)
+            self.assertEqual(api.writes, [])
+
     def test_upgrade_requires_owner_and_current_revision(self):
         api=self.api
         with self.assertRaisesRegex(ValueError,"owner approval"):

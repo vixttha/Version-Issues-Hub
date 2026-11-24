@@ -30,6 +30,8 @@ PACKAGE = {
     "install/branch/STANDARD.md": "STANDARD.md",
     "install/branch/GATE.md": "GATE.md",
     "install/branch/AGENTS.md": "AGENTS.md",
+    "docs/licensing/reference/PolyForm-Strict-1.0.0.md": "VIB-LICENSE.md",
+    "docs/licensing/VIB-NOTICE-REVIEW.md": "VIB-NOTICE.md",
 }
 
 class ApiError(RuntimeError):
@@ -181,6 +183,12 @@ def source_files(api, source_sha):
 def render(data):
     return json.dumps(data, indent=2, sort_keys=True) + "\n"
 
+def require_publishable_package(files):
+    """Review branch only: refuse distribution of either draft legal path."""
+    if {"VIB-LICENSE.md", "VIB-NOTICE.md"}.intersection(files):
+        raise ValueError("Legal review package is not authorized for installation or upgrade")
+
+
 def install(api, target, source_sha, baseline, apply=False):
     require(SHA, source_sha, "full source commit")
     require(BASELINE, baseline, "baseline")
@@ -220,6 +228,7 @@ def install(api, target, source_sha, baseline, apply=False):
     plan = {"status": "planned", "manifest": manifest, "paths": sorted(files)}
     if not apply:
         return plan
+    require_publishable_package(files)
     # Recheck identity and refs before creating unreachable objects. Never update a ref.
     latest = api.request("GET", prefix)
     if latest.get("id") != meta["id"] or latest.get("default_branch") != default:

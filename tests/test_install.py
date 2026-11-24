@@ -21,7 +21,8 @@ class FakeGitHub:
         self.entries = {}
         self.metadata = {"id": 42, "full_name": TARGET, "default_branch": "trunk"}
         self.bad_blob = False
-        self.package = dict(install.PACKAGE)
+        self.package = {k: v for k, v in install.PACKAGE.items()
+                        if v not in {"VIB-LICENSE.md", "VIB-NOTICE.md"}}
 
     def request(self, method, path, body=None):
         if method == "POST":
@@ -68,7 +69,7 @@ class InstallerTests(unittest.TestCase):
         result = install.install(self.api, TARGET, PIN, "v1.0.6", True)
         self.assertEqual(result["installed_sha"], INSTALLED)
         self.assertEqual(self.api.refs, {"trunk": PRODUCT, install.BRANCH: INSTALLED})
-        self.assertEqual(set(self.api.entries), set(install.PACKAGE.values()) |
+        self.assertEqual(set(self.api.entries), set(self.api.package.values()) |
                          {"vib-install.json", "ledger/issue-versions.json", "ledger/handoff.json"})
         ledger = json.loads(self.api.entries["ledger/issue-versions.json"])
         self.assertEqual(ledger["repository"], TARGET)
@@ -79,6 +80,19 @@ class InstallerTests(unittest.TestCase):
         self.assertEqual(manifest["enforcement"], "disabled")
         for name, digest in manifest["package_files_sha256"].items():
             self.assertEqual(hashlib.sha256(self.api.entries[name].encode()).hexdigest(), digest)
+
+    def test_review_legal_paths_are_hashed_and_apply_is_refused(self):
+        self.api.package = dict(install.PACKAGE)
+        plan = install.install(self.api, TARGET, PIN, "v0.0.0")
+        self.assertEqual(len(plan["manifest"]["package_files_sha256"]), 14)
+        for name in ("VIB-LICENSE.md", "VIB-NOTICE.md"):
+            self.assertIn(name, plan["manifest"]["package_files_sha256"])
+        self.assertNotIn("LICENSE", plan["paths"])
+        self.assertEqual(self.api.writes, [])
+        with self.assertRaisesRegex(ValueError, "not authorized"):
+            install.install(self.api, TARGET, PIN, "v0.0.0", True)
+        self.assertEqual(self.api.writes, [])
+        self.assertEqual(self.api.refs, {"trunk": PRODUCT})
 
     def test_dry_run_has_no_writes(self):
         self.assertEqual(install.install(self.api, TARGET, PIN, "v0.0.0")["status"], "planned")

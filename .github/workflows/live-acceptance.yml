@@ -1,7 +1,7 @@
 name: Live read-only adoption acceptance
 on:
   push:
-    branches: ['plan/v0.0.0.1']
+    branches: ['plan/v0.0.0.1', 'plan/v0.0.1-licensing-review']
   pull_request:
     branches: [main]
 permissions:

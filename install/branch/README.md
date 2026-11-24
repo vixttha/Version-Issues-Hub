@@ -34,3 +34,8 @@ Remain standalone. Other tools are optional; their absence must not block normal
 A compatible agent may enumerate the target repository's branch refs, resolve this branch to a commit, and read its entry point at that exact commit. Read-only discovery confers no execution, write, integration or release authority. If this branch or marker is absent, the tool is absent or legacy/unverified; continue independently. Check the target's own instructions and owner scope before any action. The marker describes a capability, not a required registry or package version.
 
 Installation convention: human or agent selects a reviewed exact source SHA, checks the dedicated target branch and collisions, follows this product's own installation guide, and records source/target SHA and preserved product state. Never merge a template workspace wholesale into product source. Existing installations require explicit reviewed upgrades; preserve local records and prior receipts. Optional evidence links do not authorize writes. No mandatory coordinator or other ecosystem tool.
+
+
+## Licensing review branch only
+
+The proposed legal reference and notice are not operative terms. The review package can be planned, but cannot be installed or upgraded using its review-only entry points. Do not treat this as distribution approval; see issue #47. Historical pins and product release remain unchanged.
