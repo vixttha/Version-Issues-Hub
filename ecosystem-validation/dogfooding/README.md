@@ -58,3 +58,7 @@ Supported: six independently developed tools with real self-use and cross-produc
 ## Preservation and follow-up
 
 Retain source pins and failures. Do not close existing issues, modify releases, alter adopter branches or infer owner approval. Finish unresolved VIB live upgrade, optional hard gate review and fresh-harness acceptance separately. Document verified dogfooding as existing product evidence, not a new product feature.
+
+## Completed independent replay
+
+[Triple-check receipt](VERIFIED-RECEIPT.md) — public runner PASS. 18 exact Git files, 17 historical attempts, 431 issue/PR metadata records and retained archive digest verified.
