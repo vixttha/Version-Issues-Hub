@@ -57,7 +57,14 @@ def receipt(group, spec):
         check(group + " merge tree and parents", c["tree"]["sha"] == merge["tree"]["sha"] and [x["sha"] for x in merge["parents"]] == [p["base"]["sha"], spec["head"]])
         checks = api("/commits/" + spec["head"] + "/check-runs?per_page=100")
         bot = [x for x in checks["check_runs"] if x["name"] == "CodeRabbit"]
-        check(group + " CodeRabbit completed", bool(bot) and bot[0]["status"] == "completed" and bot[0]["conclusion"] == "success")
+        # Review is a separate release gate, not a deterministic job result.
+        # Missing, pending or unsuccessful review never authorizes release.
+        review = {"group": group, "head": spec["head"],
+                  "status": bot[0]["status"] if bot else "missing",
+                  "conclusion": bot[0]["conclusion"] if bot else None}
+        report.setdefault("reviews", []).append(review)
+        if review["status"] != "completed" or review["conclusion"] != "success":
+            report["blockers"].append(group + " CodeRabbit review not successful")
 
 def main():
     check("public repository identity", api("")["visibility"] == "public" and os.environ["GITHUB_REPOSITORY"] == REPO)

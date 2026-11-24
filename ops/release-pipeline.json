@@ -17,13 +17,13 @@
     "jobs": 7
   },
   "licensing_review": {
-    "head": "f4be1d5261fb82c4c79764672aa0fb6dc3b5b356",
+    "head": "71c7e2ff5ada754af6fbec8415bea95dbacb1376",
     "pr": 48,
-    "merge": "1ce987b448881ce102d33145e01c15e106582191",
+    "merge": "4e137b636296167056860de85cb8272c425e785b",
     "runs": [
-      45415883466,
-      45415883339,
-      45415898402
+      45419929514,
+      45419929531,
+      45419949301
     ],
     "jobs": 4
   },
@@ -230,9 +230,9 @@
   ],
   "release_blockers": [
     "#37 two qualified independent host trials and final acceptance",
-    "#47 operative license and exact rights/terms approval; review package intentionally non-deployable",
+    "#47 operative candidate prepared under owner-approved scope; final exact candidate acceptance and any unresolved review remain pending",
     "#45 commercial brand clearance",
-    "#46 final homepage destination and source pin validation",
+    "#46 final homepage destination and updated operative legal source pin validation",
     "#40 exact final candidate owner acceptance, integration and release approval"
   ],
   "archive": {
