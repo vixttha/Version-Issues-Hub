@@ -2,11 +2,11 @@
   "active": {
     "issue": 40,
     "version": "v0.0.0.23",
-    "phase": "Worker",
-    "next_action": "Build and verify the release-only pipeline; reconcile all open issues. Existing source mappings imported as assigned, not verified or integrated. No license grant or release.",
-    "fix_sha": null,
-    "candidate_sha": null,
-    "pull_request": null,
+    "phase": "Validate",
+    "next_action": "Verify exact public mechanical run 45420692986 attempt 1 and review evidence; release approval remains separate.",
+    "fix_sha": "f6dc3fae91a73bdead758ea8427308c191a73ade",
+    "candidate_sha": "f6dc3fae91a73bdead758ea8427308c191a73ade",
+    "pull_request": 49,
     "evidence": []
   },
   "history": [],
