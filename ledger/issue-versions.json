@@ -101,6 +101,16 @@
         "Recover existing BART state and refuse an occupied branch without modifying it.",
         "Pass regression and live public read-only adoption checks plus Graphify."
       ]
+    },
+    {
+      "issue": 24,
+      "version": "v0.0.0.11",
+      "state": "in_progress",
+      "acceptance": [
+        "Verify newly created isolated AlderVale install at its historical source and tree, with adopter-only empty ledger.",
+        "Recover BART and AlderVale via fresh processes using real GitHub reads; verify existing-branch refusal and actual issue lookup.",
+        "Public runner and Graphify evidence; no product changes, no enforcement or independent LLM claims."
+      ]
     }
   ]
 }

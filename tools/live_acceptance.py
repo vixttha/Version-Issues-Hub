@@ -13,6 +13,52 @@ class ReadOnlyGitHub(install.GitHub):
             raise AssertionError("Live acceptance must be read-only")
         return super().request(method, path, body)
 
+def verify_aldervale_install(api):
+    target = "vixttha/AlderVale-Pact-of-Ten"
+    prefix = install.repo_path(target)
+    pin = "da4a15c8a1b86931cdc46b08eb466ec731c83269"
+    source = "c79217ea4c18d892cd49112bc30b7b28a2fb502b"
+    baseline = "a6c2060b8175f505cc6327ccb5658cc00a458b24"
+    meta = api.request("GET", prefix)
+    assert meta["private"] is False and meta["id"] == 1458626201
+    historical = api.request("GET", prefix + "/git/commits/" + pin)
+    assert historical["sha"] == pin
+    assert [p["sha"] for p in historical["parents"]] == [baseline]
+    manifest = json.loads(install.read_text(api, prefix, "vib-install.json", pin))
+    assert manifest["source_sha"] == source and manifest["target_repository"] == target
+    assert manifest["target_repository_id"] == meta["id"] and manifest["enforcement"] == "disabled"
+    assert manifest["product_baseline_sha"] == baseline and manifest["baseline_version"] == "v0.0.0"
+    assert manifest["target_version"] == "v0.0.1"
+    files = install.source_files(api, source)
+    assert manifest["package_files_sha256"] == {p: hashlib.sha256(s.encode()).hexdigest() for p,s in files.items()}
+    assert all(install.read_text(api, prefix, p, pin) == s for p,s in files.items())
+    tree = api.request("GET", prefix + "/git/trees/" + historical["tree"]["sha"] + "?recursive=1")
+    assert not tree["truncated"]
+    assert {x["path"] for x in tree["tree"] if x["type"] == "blob"} == set(files) | {
+        "vib-install.json", "ledger/issue-versions.json", "ledger/handoff.json"}
+    ledger = json.loads(install.read_text(api, prefix, "ledger/issue-versions.json", pin))
+    handoff = json.loads(install.read_text(api, prefix, "ledger/handoff.json", pin))
+    assert ledger == {"schema_version":1,"repository":target,"issues":[]}
+    assert handoff == {"schema_version":1,"active":None,"history":[]}
+    state = session.load(api, target)
+    report = session.inspect(api, state, requested=13)
+    assert report["repository"] == target and report["issue"]["number"] == 13
+    assert report["owner_merge_required"] and not report["evidence_verified"]
+    second = json.loads(subprocess.check_output([sys.executable, "-m", "tools.session",
+        "--target", target, "--expected-sha", state["ref"], "inspect", "--issue", "13"], text=True))
+    assert second == report
+    try:
+        install.install(api, target, source, "v0.0.0")
+    except ValueError as exc:
+        assert "already exists" in str(exc)
+    else:
+        raise AssertionError("Occupied AlderVale branch was not refused")
+    return {"repository": target, "initial_install": pin, "current_install": state["ref"],
+            "source": source, "product_parent": baseline, "initial_package_files": len(files),
+            "initial_ledger_empty": True, "fresh_process_match": True,
+            "actual_issue_lookup": report["issue"]["number"], "occupied_install_refused": True,
+            "no_product_writes": True}
+
 api = ReadOnlyGitHub(os.environ.get("GH_TOKEN"))
 repo = install.SOURCE
 prefix = install.repo_path(repo)
@@ -72,6 +118,7 @@ assert "Provenistem" in read("install/branch/AGENTS.md", source)
 assert all(not path.startswith(("provenistem/", "veraphify/", "test-vault/")) for path in plan["paths"])
 print(json.dumps({
     "kind": "read_only_live_acceptance",
+    "aldervale": verify_aldervale_install(api),
     "source": source, "install_plan_paths": plan["paths"],
     "existing_adopter": bart, "adopter_installed_sha": state["ref"],
     "historical_install_sha": first_install, "historical_product_parent": original["product_baseline_sha"],
@@ -80,5 +127,5 @@ print(json.dumps({
     "fresh_process_match": True, "occupied_install_refused": True,
     "template_pins": pins, "archive_source": archive_source,
     "archive_digest": receipt["archive_sha256"], "checkpoint_count": len(receipt["lookups"]),
-    "limits": ["no new live installation or deletion", "no independent LLM trial", "no live merge gate", "reference-level cooperation only"]
+    "limits": ["this job verifies prior live installations, no writes or deletion", "no independent LLM trial", "no live merge gate", "reference-level cooperation only"]
 }, indent=2))

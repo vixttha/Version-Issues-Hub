@@ -280,6 +280,34 @@
           "anchor": "def test_historical_package_pin_does_not_require_future_files(self):"
         }
       ]
+    },
+    {
+      "id": "v0-0-0-11",
+      "label": "Issue #24 · live multi-project adoption",
+      "documented_in": [
+        {
+          "path": "docs/v0.0.0.11.md",
+          "anchor": "## Live cross-project adoption"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "ledger/issue-versions.json",
+          "anchor": "\"issue\": 24,"
+        }
+      ],
+      "implemented_in": [
+        {
+          "path": "tools/live_acceptance.py",
+          "anchor": "def verify_aldervale_install(api):"
+        }
+      ],
+      "tested_by": [
+        {
+          "path": ".github/workflows/live-acceptance.yml",
+          "anchor": "- name: Live public read-only install planning and adopter recovery"
+        }
+      ]
     }
   ]
 }
