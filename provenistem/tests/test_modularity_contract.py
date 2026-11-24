@@ -73,6 +73,38 @@ class ModularityContractTests(unittest.TestCase):
         self.assertFalse(p["enabled_by_default"])
         self.assertIn("NAMESPACE_COLLISION", self.guide)
 
+    @staticmethod
+    def portable_markdown(root):
+        host_files = {"INSTALLATION.md", "ideas/INDEX.md", "features/INDEX.md"}
+        for file in sorted(root.rglob("*.md")):
+            rel = file.relative_to(root)
+            if ".git" in rel.parts or rel.as_posix() in host_files:
+                continue
+            if rel.parts[:2] in (("ideas", "records"), ("features", "records")):
+                continue
+            yield file
+
+    def test_portable_scan_separates_host_records(self):
+        from tempfile import TemporaryDirectory
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            paths = ("README.md", "LIBRARY-AGENT-GUIDE.md", "docs/guide.md",
+                     "ideas/README.md", "features/README.md", "INSTALLATION.md",
+                     "ideas/INDEX.md", "features/INDEX.md", "ideas/records/evidence.md",
+                     "features/records/decision.md", "docs/records/portable.md")
+            for name in paths:
+                file = root / name
+                file.parent.mkdir(parents=True, exist_ok=True)
+                file.write_text("https://github.com/example/project", encoding="utf-8")
+            selected = {p.relative_to(root).as_posix() for p in self.portable_markdown(root)}
+            self.assertEqual(selected, {"README.md", "LIBRARY-AGENT-GUIDE.md",
+                                        "docs/guide.md", "ideas/README.md",
+                                        "features/README.md", "docs/records/portable.md"})
+            for file in self.portable_markdown(root):
+                self.assertIsNotNone(re.search(
+                    r"https?://github\.com/[A-Za-z0-9_-]+/[A-Za-z0-9_.-]+",
+                    file.read_text(encoding="utf-8")))
+
     def test_neutral_future_distribution(self):
         p = self.policy["neutral_distribution"]
         for key in ("ship_unrelated_project_names", "ship_historical_adopter_data",
@@ -81,10 +113,8 @@ class ModularityContractTests(unittest.TestCase):
             self.assertFalse(p[key])
         for key in ("use_synthetic_examples", "keep_internal_provenance_outside_package"):
             self.assertTrue(p[key])
-        # Consumer Markdown must not contain real owner/repo GitHub links.
-        for file in sorted(ROOT.rglob("*.md")):
-            if ".git" in file.parts:
-                continue
+        # Portable Markdown stays neutral; host metadata and record views are not distributed.
+        for file in self.portable_markdown(ROOT):
             with self.subTest(document=file.relative_to(ROOT)):
                 text = file.read_text(encoding="utf-8")
                 self.assertIsNone(
@@ -92,9 +122,8 @@ class ModularityContractTests(unittest.TestCase):
                     "External project-specific GitHub repository URL in neutral product doc",
                 )
 
-    def test_no_actual_adopter_records_or_authority_files_in_standalone_root(self):
-        for section in ("ideas", "features"):
-            self.assertFalse(list((ROOT / section / "records").glob("*.json")))
+    def test_no_host_authority_files_in_standalone_root(self):
+        # Empty-record checks belong to the publisher-only library.py check --expect-empty.
         for name in ("AGENTS.md", "GOVERNANCE-START.md", "src", "governance", ".github", "ops"):
             self.assertFalse((ROOT / name).exists(), name)
 
