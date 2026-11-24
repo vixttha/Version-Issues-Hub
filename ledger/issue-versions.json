@@ -81,6 +81,16 @@
         "Reject duplicate and changed-state verdict publication; revoke exact original check and verify failure readback.",
         "Test simulated controls using public GitHub runners; preserve the live ruleset pilot as a separate completion requirement."
       ]
+    },
+    {
+      "issue": 22,
+      "version": "v0.0.0.9",
+      "state": "in_progress",
+      "acceptance": [
+        "Standard mode is default and does not require App, rulesets or live hard-enforcement pilot.",
+        "Read-only validation rejects stale, missing or unsuccessful run evidence and reports mandatory checkout/owner review, never automatic merge enforcement.",
+        "Public-runner regression and Graphify pass; separate optional gate remains intact."
+      ]
     }
   ]
 }

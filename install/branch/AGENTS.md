@@ -13,3 +13,7 @@ If the host has no shell, use its GitHub read tools to open the exact branch and
 ## Owner-locked interoperability
 
 **VIB remains independent of Provenistem. They are designed to work together as complementary parts of the same puzzle.** See [owner decision](https://github.com/vixttha/Version-Issues-Hub/issues/9). VIB owns issue-version assignments, workflow, revision-bound verification and integration decisions; Provenistem owns its ideas/features and progress records. Optional read-only references may connect them; either must operate independently. Never infer write authorization, install one from the other, merge template branches, or require the other as a dependency. Changes to interoperability require explicit owner approval.
+
+## Default operating mode
+
+Use Standard VIB and [STANDARD.md](STANDARD.md). Never require a GitHub App, branch protection or a separate repository to adopt VIB. Stop on invalid or stale evidence, return to Head, and require owner review of exact checkout logs and acceptance results before integration. Standard validation cannot prevent GitHub merges. Optional hard enforcement requires a separate owner decision and live proof.

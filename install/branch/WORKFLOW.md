@@ -28,7 +28,7 @@ Every mutation is a dry run unless --apply is passed with the exact current --ex
 
 A host without Python can read the installed branch files at the current SHA via GitHub connector, read the issue and PR, and use the same transition rules. Authorized writers must update both ledger and handoff atomically via a new tree and commit parented at the observed state SHA, then a non-force ref update. Verify the new ref. If the tools cannot guarantee an atomic, non-force update or verify the package pin, stop before claiming or changing state. Do not perform direct writes to product branches or another project's catalog.
 
-Public-runner results and Graphify evidence are authoritative only for the tested checkout. A fresh model/harness trial is separate adoption validation. Owner-enabled enforcement is a later capability.
+Public-runner results and Graphify evidence are authoritative only for the tested checkout. A fresh model/harness trial is separate adoption validation. Standard VIB uses [read-only evidence validation](STANDARD.md). Optional owner-enabled hard enforcement is a separate capability and does not gate standard adoption.
 
 ## Batched PRs
 

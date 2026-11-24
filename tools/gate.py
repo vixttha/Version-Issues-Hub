@@ -131,7 +131,10 @@ def check_test(api, prefix, policy, evidence, test):
             "run": run, "attempt": attempt, "job_id": positive(job["id"], "job ID"), "url": details}
 
 def evaluate(api, target, policy):
-    validate_policy(policy)
+    return evaluate_scope(api, target, policy, validate_policy, check_test)
+
+def evaluate_scope(api, target, policy, validate, verify_test):
+    validate(policy)
     if target.lower() != policy["repository"].lower():
         raise ValueError("Policy repository mismatch")
     state = session.load(api, target, policy["installed_sha"])
@@ -172,7 +175,7 @@ def evaluate(api, target, policy):
         proofs = []
         for c in row["criteria"]:
             proofs.append({"criterion": c["text"], "checks": [
-                check_test(api, prefix, policy, evidence, test) for test in c["checks"]
+                verify_test(api, prefix, policy, evidence, test) for test in c["checks"]
             ]})
         results.append({"issue": n, "version": row["version"], "fix_sha": row["fix_sha"], "criteria": proofs})
     if install.read_ref(api, prefix, install.BRANCH) != policy["installed_sha"]:

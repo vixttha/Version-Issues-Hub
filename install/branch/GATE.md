@@ -1,5 +1,7 @@
 # Owner-enabled VIB merge gate — candidate
 
+Standard VIB is the default. This optional feature is not a prerequisite to install, validate, or use VIB. See [STANDARD.md](STANDARD.md).
+
 ## Trust boundary
 
 The standalone branch contains the gate implementation; installing it does **not** modify any product branch or enable enforcement. A repository owner can opt in using a dedicated trusted GitHub App check source. Do not trust a green status from the candidate's own mutable workflow. The privileged verifier must run reviewed, pinned VIB code and an owner-pinned policy outside candidate control. It reads GitHub metadata only and never checks out or executes the PR with the publisher credential.
@@ -27,7 +29,7 @@ The first command is read-only. The second creates a pending check, verifies its
 1. Use a disposable public repository or target branch and a trusted App installed only where needed. Prepare a protected executor and independent test attestation. Do not put its private key in an ordinary candidate-accessible workflow or execute untrusted product code with credentials.
 2. Publish the exact check once to the proposed merge SHA. In repository rulesets, target the disposable product branch, require PRs, require the exact check `VIB / merge gate` **from the selected App**, strict up-to-date checks, and no unintended bypass. Protect the dedicated VIB branch/policy. Keep product-side bootstrap minimal and opt-in; do not merge the VIB branch into product.
 3. Verify ruleset readback, check source, and actual GitHub merge eligibility. Positive: a compliant PR can merge. Negative: missing mapping, incomplete scope, missing/forged source, stale candidate/base/attempt, skipped job/step, and a candidate trying to publish its own verdict must be blocked. Exercise state revocation: if a sealed scope/evidence decision changes after success, invalidate the old verdict or require a new product candidate before allowing merge.
-4. Reconcile staged issues after the actual owner-approved merge. Only then consider adoption outside the pilot. Fork PRs, merge queues, automatic trusted publisher deployment, revocation automation, and cross-repository test runners are not yet supported by this candidate. Same-repository PRs and same-repository Actions evidence only.
+4. Reconcile staged issues after the actual owner-approved merge. Only then consider adoption of hard enforcement outside the pilot. Standard VIB adoption does not depend on this pilot. Fork PRs, merge queues, automatic trusted publisher deployment, revocation automation, and cross-repository test runners are not yet supported by this candidate. Same-repository PRs and same-repository Actions evidence only.
 
 Public-runner unit tests use simulated APIs; they do not prove GitHub branch protection. GitHub Apps and ruleset administration are owner-controlled and separate from installing the branch.
 

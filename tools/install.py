@@ -22,6 +22,8 @@ PACKAGE = {
     "tools/install.py": "tools/install.py",
     "tools/session.py": "tools/session.py",
     "tools/gate.py": "tools/gate.py",
+    "tools/standard.py": "tools/standard.py",
+    "install/branch/STANDARD.md": "STANDARD.md",
     "install/branch/GATE.md": "GATE.md",
     "install/branch/AGENTS.md": "AGENTS.md",
 }

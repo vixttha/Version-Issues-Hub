@@ -224,6 +224,34 @@
           "anchor": "def test_revoke_previous_green_even_after_state_changed(self):"
         }
       ]
+    },
+    {
+      "id": "v0-0-0-9",
+      "label": "Issue #22 · standard advisory validation",
+      "documented_in": [
+        {
+          "path": "install/branch/STANDARD.md",
+          "anchor": "## Standard validation contract"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "ledger/issue-versions.json",
+          "anchor": "\"issue\": 22,"
+        }
+      ],
+      "implemented_in": [
+        {
+          "path": "tools/standard.py",
+          "anchor": "def evaluate(api, target, policy):"
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tests/test_standard.py",
+          "anchor": "def test_standard_needs_no_app_and_never_publishes(self):"
+        }
+      ]
     }
   ]
 }
