@@ -1,7 +1,10 @@
-# Applications
+# Applications — proposed
 
-List the first surface and the intended asset role, size, crop, color treatment, accessible name, pairing with text, and fallback. Start with the surface the owner will actually use. Useful follow-ons include repository avatars, documentation, app headers, favicons, social cards, and presentation covers.
+| Surface | Intended treatment | Verification still needed |
+| --- | --- | --- |
+| GitHub README | Compact horizontal lockup beside accessible full product name | Narrow width, light/dark, real GitHub preview |
+| Repository avatar | Symbol only, square, simple silhouette | 24/32 px and circular crop |
+| Docs header | Small symbol or real-text VIB | Legibility and accessibility |
+| Social card | Optional future use, no release claim | Owner approval and final asset rights |
 
-Mock up the real placement using @Images if a visual preview is needed. Verify the actual placement at narrow width and both themes. Supply practical export names for downstream adoption.
-
-See [review](../08-review/review.md) before replacing live assets.
+Proposed exports after approval: logo-mark.png, wordmark.png, logo-lockup.png, light/dark variants. No asset filenames are registered until actual files exist. Do not publish the README or replace live assets from this proposal.

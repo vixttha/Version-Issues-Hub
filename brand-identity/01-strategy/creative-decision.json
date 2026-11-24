@@ -1,13 +1,70 @@
 {
-  "initial_category": "",
-  "art_style": "",
-  "category_fit": {},
-  "concepts": [],
-  "selected_concept": null,
-  "selection_reason": "",
+  "initial_category": "combination mark",
+  "art_style": "Geometric, one-color-first vector-compatible construction with clear negative space",
+  "category_fit": {
+    "combination mark": {
+      "fits": true,
+      "reason": "Full product name and recognizable compact mark are useful on GitHub and docs."
+    },
+    "abstract mark": {
+      "fits": true,
+      "reason": "Checkpoint and ledger concepts can be conveyed without letters."
+    },
+    "lettermark": {
+      "fits": true,
+      "reason": "VIB is the established short name; short text suits compact surfaces."
+    },
+    "mascot": {
+      "fits": false,
+      "reason": "Adds personality but obscures engineering purpose at small sizes."
+    }
+  },
+  "concepts": [
+    {
+      "id": "checkpoint-spine",
+      "category": "combination mark",
+      "art_style": "Geometric, one-color-first, cut negative space; restrained angular corners",
+      "example": "Three offset horizontal checkpoint bars joined by a vertical spine. The final bar stops short to leave a visible owner-decision gap. Pair with the letters VIB.",
+      "rationale": "Brand fit 5: numbered checkpoints and durable handoff. Character 4: deliberate proportions and negative space. Distinctiveness 4: avoid generic checkmark, branch or shield. Versatility 5: compact one-color construction; test at 24 px.",
+      "scores": {
+        "brand_fit": 5,
+        "artistic_character": 4,
+        "distinctiveness": 4,
+        "versatility": 5
+      }
+    },
+    {
+      "id": "folded-ledger",
+      "category": "abstract mark",
+      "art_style": "Geometric folded bands, no gradients, solid silhouette",
+      "example": "Two opposing folded bands frame a narrow central ledger slit. Three notches along one edge suggest recorded issue history.",
+      "rationale": "Brand fit 4: ledger and persistence, less explicit workflow. Character 4: physical fold motif. Distinctiveness 4: avoid book/document icon. Versatility 4: internal notches could disappear below 24 px.",
+      "scores": {
+        "brand_fit": 4,
+        "artistic_character": 4,
+        "distinctiveness": 4,
+        "versatility": 4
+      }
+    },
+    {
+      "id": "version-monogram",
+      "category": "lettermark",
+      "art_style": "Custom monoline-inspired solid letter construction; compact, optically balanced",
+      "example": "Interlocking V and I built from one uninterrupted rectangular ribbon with a separated terminal block implying B and the next checkpoint.",
+      "rationale": "Brand fit 4: recognizable acronym, weaker evidence meaning. Character 5: custom lettering can provide identity. Distinctiveness 3: crowded V-letter mark category. Versatility 4: small-size readability needs testing.",
+      "scores": {
+        "brand_fit": 4,
+        "artistic_character": 5,
+        "distinctiveness": 3,
+        "versatility": 4
+      }
+    }
+  ],
+  "selected_concept": "checkpoint-spine",
+  "selection_reason": "Proposed lead 90/100 vs 80/100 for each alternative; clearest connection to durable numbered checkpoints and smallest surface. Not owner-approved. No artwork until exact name confirmation.",
   "names": {
-    "product": "",
-    "wordmark": ""
+    "product": "Version-Issues-Hub",
+    "wordmark": "VIB"
   },
   "confirmation": null
 }
