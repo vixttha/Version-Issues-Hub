@@ -1,0 +1,91 @@
+name: VIB fresh remote CLI self-install
+on:
+  push:
+    branches: ['ops/vib-fresh-cli-self-pilot']
+permissions:
+  contents: read
+concurrency:
+  group: vib-fresh-cli-self-install
+  cancel-in-progress: false
+jobs:
+  pilot:
+    if: github.repository == 'vixttha/Version-Issues-Hub' && github.event_name == 'push' && github.ref == 'refs/heads/ops/vib-fresh-cli-self-pilot' && github.event.repository.private == false
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+          ref: '4fc9ac47462101b941ea2f78fc939d42a9de0032'
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
+        with:
+          python-version: '3.12'
+      - name: Real CLI dry run, create-only apply and readback
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          python - <<'PY'
+          import hashlib, json, os, subprocess, sys
+          from pathlib import Path
+          from tools import install
+          target = 'vixttha/Version-Issues-Hub'
+          source = '4fc9ac47462101b941ea2f78fc939d42a9de0032'
+          main = '1b11865f79464ae7db9a648467e8c2c1cb898a02'
+          prefix = install.repo_path(target)
+          assert subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip() == source
+          assert os.environ['GITHUB_REPOSITORY'] == target
+          assert os.environ['GITHUB_REF'] == 'refs/heads/ops/vib-fresh-cli-self-pilot'
+          api = install.GitHub(os.environ['GH_TOKEN'])
+          meta = api.request('GET', prefix)
+          assert meta['id'] == 1465107353 and meta['full_name'] == target
+          assert not meta['private'] and meta['default_branch'] == 'main'
+          assert install.read_ref(api, prefix, 'main') == main
+          assert install.read_ref(api, prefix, install.BRANCH) is None, 'Installation already exists; no retry or overwrite'
+          cmd = [sys.executable, '-m', 'tools.install', '--target', target, '--source-sha', source, '--baseline', 'v0.0.0']
+          out = Path('self-install-evidence')
+          out.mkdir()
+          def cli(name, args):
+              p = subprocess.run(cmd + args, capture_output=True, text=True)
+              (out / (name + '.stdout.json')).write_text(p.stdout, encoding='utf-8')
+              (out / (name + '.exit.json')).write_text(json.dumps({'exit_code': p.returncode}), encoding='utf-8')
+              if p.returncode:
+                  raise RuntimeError(p.stderr.strip())
+              return json.loads(p.stdout)
+          plan = cli('dry-run', [])
+          assert plan['status'] == 'planned'
+          assert install.read_ref(api, prefix, install.BRANCH) is None
+          applied = cli('apply', ['--apply'])
+          assert applied['status'] == 'installed' and applied['manifest'] == plan['manifest']
+          sha = applied['installed_sha']
+          assert install.read_ref(api, prefix, install.BRANCH) == sha
+          commit = api.request('GET', prefix + '/git/commits/' + sha)
+          assert [p['sha'] for p in commit['parents']] == [main]
+          assert commit['tree']['sha'] == applied['installed_tree_sha']
+          tree = api.request('GET', prefix + '/git/trees/' + commit['tree']['sha'] + '?recursive=1')
+          assert not tree.get('truncated')
+          files = {x['path']:x for x in tree['tree'] if x['type'] != 'tree'}
+          assert set(files) == set(plan['paths'])
+          assert all(x['mode'] == '100644' and x['type'] == 'blob' for x in files.values())
+          manifest = json.loads(install.read_text(api, prefix, 'vib-install.json', sha))
+          assert manifest == plan['manifest']
+          for path, digest in manifest['package_files_sha256'].items():
+              assert hashlib.sha256(install.read_text(api, prefix, path, sha).encode()).hexdigest() == digest, path
+          assert json.loads(install.read_text(api, prefix, 'ledger/issue-versions.json', sha))['issues'] == []
+          assert json.loads(install.read_text(api, prefix, 'ledger/handoff.json', sha))['active'] is None
+          duplicate = subprocess.run(cmd + ['--apply'], capture_output=True, text=True)
+          assert duplicate.returncode != 0 and 'already exists' in duplicate.stderr
+          assert install.read_ref(api, prefix, install.BRANCH) == sha
+          assert install.read_ref(api, prefix, 'main') == main
+          receipt = {'status':'verified','scope':'same-repository fresh remote create, not independent cross-repository host acceptance','source_sha':source,'target':target,'target_id':meta['id'],'main_before_after':main,'installed_sha':sha,'installed_tree_sha':commit['tree']['sha'],'package_files':len(manifest['package_files_sha256']),'installed_files':len(files),'cli_dry_run_exit':0,'cli_apply_exit':0,'duplicate_exit':duplicate.returncode,'run_id':os.environ['GITHUB_RUN_ID'],'run_attempt':os.environ['GITHUB_RUN_ATTEMPT'],'independent_llm':False}
+          (out / 'receipt.json').write_text(json.dumps(receipt, indent=2)+'\n', encoding='utf-8')
+          print(json.dumps(receipt, indent=2))
+          PY
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        if: always()
+        with:
+          name: vib-fresh-cli-self-install-${{ github.run_id }}-${{ github.run_attempt }}
+          path: self-install-evidence/
+          if-no-files-found: error
