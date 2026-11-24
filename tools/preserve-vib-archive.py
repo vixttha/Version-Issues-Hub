@@ -11,7 +11,7 @@ ROOT = Path.cwd()
 TEMP = Path(os.environ["RUNNER_TEMP"])
 IDENTITY = "vixttha/Version-Issues-Hub"
 HISTORICAL = "ee64cdd7019c3cd279213c490226eb3f89f5fb49"
-CURRENT = "3b6951be81d2fc9468b5379aead57c7afc444754"
+CURRENT = "4fc9ac47462101b941ea2f78fc939d42a9de0032"
 
 def preserve(origin, source, version, run, attempt):
     receipt_path = origin / "candidate-receipt.json"
@@ -45,4 +45,4 @@ def preserve(origin, source, version, run, attempt):
 
 old = ROOT / "archives/candidates" / HISTORICAL / "45330366047-1"
 preserve(TEMP / "historical" if not old.exists() else old, HISTORICAL, "v0.0.0.5", "45330366047", "1")
-preserve(TEMP / "current", CURRENT, "v0.0.0.8", os.environ["GITHUB_RUN_ID"], os.environ["GITHUB_RUN_ATTEMPT"])
+preserve(TEMP / "current", CURRENT, "v0.0.0.19", os.environ["GITHUB_RUN_ID"], os.environ["GITHUB_RUN_ATTEMPT"])

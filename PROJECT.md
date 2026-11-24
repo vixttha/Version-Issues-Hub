@@ -11,3 +11,7 @@ Permanent independent Veraphify v0.0.9 preview installation. [Runtime instructio
 The workflow compares the manifest against the pinned issue-version ledger, checks each implementation citation, and verifies the archive digest. Public push runs also preserve exact verified candidate bytes and receipt under `archives/candidates/<source>/<run>-<attempt>/` on this branch. The original artifact is recovered using its recorded ZIP SHA-256. PR runs are read-only. Preservation is not an owner acceptance or release decision. Existing bytes must never be replaced; any non-fast-forward push fails. Durable storage is verified only after the Git commit exists. Issue #15 tracks live ref protection.
 
 VIB remains independent of Provenistem. Both are complementary parts of the same puzzle. [Owner lock](https://github.com/vixttha/Version-Issues-Hub/issues/9). Optional read-only references only; neither product requires the other or transfers write authority. No private source, credentials, or product branch mutations.
+
+## Current candidate intake
+
+[19-checkpoint VIB candidate](https://github.com/vixttha/Version-Issues-Hub/tree/4fc9ac47462101b941ea2f78fc939d42a9de0032); v0.0.0.19 (unreleased). The public archive workflow pins this exact SHA. The eight- and five-checkpoint archives above are historical and immutable. Runtime updated from current Veraphify main; v0.0.9 remains preview. No release asserted.

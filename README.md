@@ -50,3 +50,33 @@ Veraphify-authored code and tests are available under the [MIT license](https://
 [Report an issue](https://github.com/vixttha/Veraphify/issues/new/choose) · [Release tracker](https://github.com/vixttha/Veraphify/issues/21)
 
 We use and support the open-source [Graphify project](https://github.com/Graphify-Labs/graphify). Veraphify is developed and maintained independently of Graphify Labs.
+
+## Engineering ecosystem
+
+[Owner-approved six architectural laws](ENGINEERING-LAWS.md) apply to this product. Standalone operation and owner authority remain unchanged. The product has no mandatory coordination-tool dependency.
+
+
+## Owner-approved engineering ecosystem laws
+
+Decision ENGINEERING-ECOSYSTEM-LAWS-001 (2026-11-24). Mission: Build a toolkit that gives compatible LLM agents a structured engineering environment, rather than building another AI model.
+
+<!-- engineering-laws:start -->
+1. **Independence:** Every tool must remain independently installable, usable, versioned and maintained.
+2. **Composability:** Installing additional tools expands the agent's capabilities without creating mandatory dependencies.
+3. **Portability:** No mandatory AI provider, model, agent harness or paid execution service.
+4. **Persistence:** Project knowledge, decisions, progress and evidence survive the termination of an AI session.
+5. **Verification:** Development claims must be supported by reproducible, revision-bound evidence.
+6. **Owner authority:** The human retains control over scope, architectural decisions, integration and releases.
+<!-- engineering-laws:end -->
+
+Remain standalone. Other tools are optional; their absence must not block normal operation. Preserve project-local authority and evidence; never automatically install, merge, synchronize or write to another tool's branch. No mandatory seventh coordinator, paid service or AI provider. Existing product scope remains authoritative. Change these laws only by explicit owner approval.
+
+## Agent capability discovery — v1
+
+<!-- agent-capability:v1
+{"schema_version":1,"id":"veraphify","branch":"Veraphify","entrypoint":"README.md","scope":"Version archive and exact-source citations","required_ecosystem_tools":[],"authority":"owner","discovery":"read-only","versioning":"independent"}
+-->
+
+A compatible agent may enumerate the target repository's branch refs, resolve this branch to a commit, and read its entry point at that exact commit. Read-only discovery confers no execution, write, integration or release authority. If this branch or marker is absent, the tool is absent or legacy/unverified; continue independently. Check the target's own instructions and owner scope before any action. The marker describes a capability, not a required registry or package version.
+
+Installation convention: human or agent selects a reviewed exact source SHA, checks the dedicated target branch and collisions, follows this product's own installation guide, and records source/target SHA and preserved product state. Never merge a template workspace wholesale into product source. Existing installations require explicit reviewed upgrades; preserve local records and prior receipts. Optional evidence links do not authorize writes. No mandatory coordinator or other ecosystem tool.

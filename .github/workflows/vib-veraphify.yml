@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     env:
-      VIB_SOURCE: '3b6951be81d2fc9468b5379aead57c7afc444754'
+      VIB_SOURCE: '4fc9ac47462101b941ea2f78fc939d42a9de0032'
       PRODUCER_SHA: '6af3c2025be3f51e02dca4e4502088c526aae6d1'
       GRAPHIFY_QUERY_LOG_DISABLE: '1'
       PYTHONHASHSEED: '0'
@@ -24,7 +24,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           repository: vixttha/Version-Issues-Hub
-          ref: '3b6951be81d2fc9468b5379aead57c7afc444754'
+          ref: '4fc9ac47462101b941ea2f78fc939d42a9de0032'
           path: vib
           persist-credentials: false
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
