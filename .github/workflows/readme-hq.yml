@@ -1,9 +1,9 @@
 name: README HQ
 on:
   push:
-    branches: [readme-hq]
+    branches: [readme-hq-v0.0.1]
   pull_request:
-    branches: [readme-hq]
+    branches: [readme-hq-v0.0.1]
 permissions:
   contents: read
 jobs:
@@ -14,6 +14,7 @@ jobs:
         with:
           persist-credentials: false
       - run: python3 tools/check_readme_hq.py
+      - run: python3 -m unittest discover -s tests -p 'test_workspace_navigation.py' -v
 
   graphify:
     name: Rebuild and query the README HQ Graphify maps

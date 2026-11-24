@@ -13,6 +13,10 @@ README HQ helps people understand a GitHub project and take their first useful s
 | Browse techniques learned from reviews | [README Technique Library](https://github.com/vixttha/README-HQ/tree/README-Technique-Library) |
 | Invoke README HQ from an agent | [Agent entry point](AGENTS.md) |
 
+## Version-Issues-Hub workspace
+
+This fresh version-specific workspace starts from the installed clean README HQ template. [First project README v0.0.1](workspace/v0.0.1/README.md) is a candidate, not published. The existing permanent [README HQ branch](https://github.com/vixttha/Version-Issues-Hub/tree/readme-hq) is unchanged.
+
 ## Use README HQ
 
 Ask your coding agent to use `vixttha/README-HQ`, branch `readme-hq`, and name the target repository. For example, **Use README HQ to audit owner/repository.** The agent loads the branch at its current commit and uses the target repository's own instructions for work there.
