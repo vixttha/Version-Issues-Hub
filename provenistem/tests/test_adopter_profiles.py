@@ -123,6 +123,18 @@ class AdopterProfiles(unittest.TestCase):
         )
         self.assertFalse(clean.exists())
 
+    def test_non_directory_parent_blocks_plan(self):
+        dest = self.root / "blocked"
+        dest.mkdir()
+        (dest / "ideas").write_text("HOST", encoding="utf-8")
+        result = adopter.plan(ROOT, dest)
+        self.assertEqual(result["status"], "EXISTING_DESTINATION")
+        actions = {x["path"]: x["action"] for x in result["entries"]}
+        self.assertEqual(actions["ideas/schema/v1/idea.schema.json"], "CONFLICT_PARENT")
+        self.assertEqual(actions["features/schema/v1/feature.schema.json"], "ADD")
+        self.assertEqual(adopter.main([str(dest)]), 1)
+        self.assertEqual((dest / "ideas").read_text(), "HOST")
+
     def test_clean_host_plan_never_writes(self):
         dest = self.root / "brand-new-root"
         result = adopter.plan(ROOT, dest)

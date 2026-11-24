@@ -76,7 +76,7 @@ class HardeningTests(unittest.TestCase):
                 row["testing"] = {"status": "planned", "outcome": "pass", "refs": ["claim"]}
                 self.write(kind + "s", row)
                 errors, _, _ = library.validate(self.root)
-                self.assertIn("premature testing outcome", " ".join(errors))
+                self.assertIn(f'{row["id"]}: premature testing outcome', " ".join(errors))
 
     def test_unsupported_schema_keywords_rejected(self):
         for kind, singular, keyword, value in (
