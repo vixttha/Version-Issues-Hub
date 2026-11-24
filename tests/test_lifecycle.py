@@ -1,5 +1,8 @@
 """Exercise lifecycle operations against real disposable Git objects, with a simulated GitHub API."""
 import copy
+import contextlib
+import io
+import sys
 import json
 import os
 from pathlib import Path
@@ -174,3 +177,57 @@ class LifecycleTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError,"occupied"):
             lifecycle.prepare_retirement(api,REPO,api.old,apply=True,owner_approved=True)
         self.assertEqual(api.writes,[])
+
+
+    def test_fresh_cli_install_upgrade_archive_remove_restore(self):
+        api=self.api
+        # Only a disposable fixture ref is deleted. The initialized product is retained.
+        api.git("update-ref","-d","refs/heads/"+install.BRANCH,api.old)
+        def cli(entry, args):
+            stdout=io.StringIO()
+            with patch.object(install,"GitHub",return_value=api), \
+                 patch.object(sys,"argv",["vib"]+args), \
+                 patch.dict(os.environ,{"GH_TOKEN":"fixture-only"}), \
+                 contextlib.redirect_stdout(stdout):
+                entry()
+            return json.loads(stdout.getvalue())
+        args=["--target",REPO,"--source-sha",OLD,"--baseline","v1.0.6"]
+        plan=cli(install.main,args)
+        self.assertEqual(plan["status"],"planned")
+        self.assertEqual(api.writes,[])
+        installed=cli(install.main,args+["--apply"])
+        first=installed["installed_sha"]
+        self.assertEqual(api.ref(install.BRANCH),first)
+        self.assertEqual(api.git("rev-parse",first+"^"),api.product)
+        self.assertEqual(session.load(api,REPO,first)["ledger"]["issues"],[])
+        before={p:api.git("rev-parse",first+":"+p) for p in (session.LEDGER,session.HANDOFF)}
+        new=cli(lifecycle.main,["--target",REPO,"--expected-sha",first,"upgrade",
+                    "--source-sha",NEW,"--apply","--owner-approved"])["installed_sha"]
+        archive=cli(lifecycle.main,["--target",REPO,"--expected-sha",new,"prepare-retirement",
+                    "--apply","--owner-approved"])
+        self.assertEqual(api.ref(archive["archive_branch"]),new)
+        self.assertEqual(api.ref(install.BRANCH),new)
+        # Simulate separate owner-authorized removal with Git's exact expected-old ref.
+        api.git("update-ref","-d","refs/heads/"+install.BRANCH,new)
+        with self.assertRaisesRegex(ValueError,"not installed"):
+            session.load(api,REPO)
+        self.assertEqual(api.ref(archive["archive_branch"]),new)
+        api.git("update-ref","refs/heads/"+install.BRANCH,new,"0"*40)
+        self.assertEqual(session.load(api,REPO,new)["manifest"]["source_sha"],NEW)
+        self.assertEqual(before,{p:api.git("rev-parse",new+":"+p) for p in before})
+        self.assertEqual(api.ref("main"),api.product)
+
+    def test_competing_writer_during_upgrade_cannot_be_overwritten(self):
+        api=self.api
+        original=api.request
+        competing=[]
+        def race(method,path,body=None):
+            if method=="PATCH":
+                competing.append(self.change("notes/custom.md","concurrent work\n"))
+            return original(method,path,body)
+        api.request=race
+        with self.assertRaises(install.ApiError):
+            lifecycle.upgrade(api,REPO,api.old,NEW,apply=True,owner_approved=True)
+        self.assertEqual(api.ref(install.BRANCH),competing[0])
+        self.assertEqual(api.read(competing[0],"notes/custom.md"),"concurrent work\n")
+        self.assertEqual(api.ref("main"),api.product)

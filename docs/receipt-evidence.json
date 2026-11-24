@@ -336,6 +336,34 @@
           "anchor": "def test_upgrade_preserves_real_git_state_and_product(self):"
         }
       ]
+    },
+    {
+      "id": "v0-0-0-13",
+      "label": "Issue #26 · CLI lifecycle and recovery",
+      "documented_in": [
+        {
+          "path": "docs/v0.0.0.13.md",
+          "anchor": "## Fresh CLI lifecycle acceptance"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "ledger/issue-versions.json",
+          "anchor": "\"issue\": 26,"
+        }
+      ],
+      "implemented_in": [
+        {
+          "path": "tools/live_acceptance.py",
+          "anchor": "def verify_live_cli_plan(api, source):"
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tests/test_lifecycle.py",
+          "anchor": "def test_fresh_cli_install_upgrade_archive_remove_restore(self):"
+        }
+      ]
     }
   ]
 }

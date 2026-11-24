@@ -121,6 +121,16 @@
         "Reject active/staged work, enabled enforcement, stale revisions, non-descendant source pins and path conflicts.",
         "Prepare exact archive without deleting branches; verify real disposable Git objects on public runners."
       ]
+    },
+    {
+      "issue": 26,
+      "version": "v0.0.0.13",
+      "state": "in_progress",
+      "acceptance": [
+        "Exercise CLI install, upgrade, archive, fixture-only removal and recovery using actual Git objects with simulated GitHub API.",
+        "Prove competing writer cannot be overwritten and product/state blobs remain unchanged.",
+        "Run real public GitHub read-only CLI planning in README HQ, without installation or repair-plan changes; public-runner tests and Graphify."
+      ]
     }
   ]
 }

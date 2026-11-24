@@ -59,6 +59,29 @@ def verify_aldervale_install(api):
             "actual_issue_lookup": report["issue"]["number"], "occupied_install_refused": True,
             "no_product_writes": True}
 
+def verify_live_cli_plan(api, source):
+    target = "vixttha/README-HQ"
+    prefix = install.repo_path(target)
+    meta = api.request("GET", prefix)
+    assert meta["private"] is False
+    product = install.read_ref(api,prefix,meta["default_branch"])
+    assert product is not None
+    # This is a read-only installation plan, not an allocation or migration of README HQ checkpoints.
+    before = install.read_ref(api,prefix,install.BRANCH)
+    assert before is None
+    report = json.loads(subprocess.check_output([sys.executable, "-m", "tools.install",
+        "--target", target, "--source-sha", source, "--baseline", "v0.0.6"], text=True))
+    assert report["status"] == "planned"
+    assert report["manifest"]["source_sha"] == source
+    assert report["manifest"]["target_repository_id"] == meta["id"]
+    assert report["manifest"]["product_baseline_sha"] == product
+    assert report["manifest"]["enforcement"] == "disabled"
+    assert install.read_ref(api,prefix,install.BRANCH) is None
+    assert install.read_ref(api,prefix,meta["default_branch"]) == product
+    return {"repository":target,"mode":"read_only_cli_plan","product_sha":product,
+            "source":source,"baseline":"v0.0.6","planned_files":len(report["paths"]),
+            "branch_created":False,"issue_assignments_changed":False}
+
 api = ReadOnlyGitHub(os.environ.get("GH_TOKEN"))
 repo = install.SOURCE
 prefix = install.repo_path(repo)
@@ -118,6 +141,7 @@ assert "Provenistem" in read("install/branch/AGENTS.md", source)
 assert all(not path.startswith(("provenistem/", "veraphify/", "test-vault/")) for path in plan["paths"])
 print(json.dumps({
     "kind": "read_only_live_acceptance",
+    "readme_hq_cli_plan": verify_live_cli_plan(api, source),
     "aldervale": verify_aldervale_install(api),
     "source": source, "install_plan_paths": plan["paths"],
     "existing_adopter": bart, "adopter_installed_sha": state["ref"],
