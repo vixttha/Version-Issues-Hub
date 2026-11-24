@@ -70,7 +70,7 @@ def validate_handoff(handoff, ledger):
         if not isinstance(record, dict) or set(record) != {"handoff", "disposition", "decision", "merged_sha"}:
             raise ValueError("Invalid archived handoff")
         validate_active(record["handoff"], ledger)
-        if record["handoff"]["phase"] != "Head" or record["disposition"] not in ("blocked", "deferred", "integrated"):
+        if record["disposition"] not in ("blocked", "deferred", "staged", "integrated", "rework") or (record["disposition"] != "rework" and record["handoff"]["phase"] != "Head"):
             raise ValueError("Invalid archived disposition")
         text(record["decision"], "owner decision")
         if record["disposition"] == "integrated":
@@ -197,11 +197,14 @@ def advance(api, state, note, *, fix=None, candidate=None, pr=None, evidence=Non
     if rework:
         if phase == "Worker":
             raise ValueError("Already in Worker phase")
+        previous = copy.deepcopy(state["handoff"]["active"])
+        handoff["history"].append({"handoff": previous, "disposition": "rework",
+                                   "decision": note, "merged_sha": None})
         active.update(phase="Worker", fix_sha=None, candidate_sha=None, pull_request=None, evidence=[])
     elif return_to_head:
         if phase == "Head":
             raise ValueError("Already at Head")
-        active.update(phase="Head", fix_sha=None, candidate_sha=None, pull_request=None, evidence=[])
+        active["phase"] = "Head"
     elif phase == "Worker":
         active.update(phase="Validate", fix_sha=fix, candidate_sha=candidate, pull_request=pr, evidence=[])
         validate_active(active, ledger)
@@ -223,20 +226,45 @@ def finish(api, state, disposition, decision):
     active = handoff["active"]
     if active is None or active["phase"] != "Head":
         raise ValueError("Return to Head before deciding")
-    if disposition not in ("blocked", "deferred", "integrated"):
+    if disposition not in ("blocked", "deferred", "staged", "integrated"):
         raise ValueError("Invalid disposition")
     merged = None
-    if disposition == "integrated":
+    if disposition in ("staged", "integrated"):
         if not active["evidence"]:
             raise ValueError("Integration requires recorded verification evidence")
         pr = get_pr(api, state, active)
-        if pr.get("merged") is not True:
-            raise ValueError("GitHub does not report the PR merged")
-        merged = install.require(install.SHA, pr["merge_commit_sha"], "merged revision")
+        if disposition == "staged":
+            if pr.get("state") != "open" or pr.get("merged") is True:
+                raise ValueError("Staging requires an open unmerged PR")
+        else:
+            if pr.get("merged") is not True:
+                raise ValueError("GitHub does not report the PR merged")
+            merged = install.require(install.SHA, pr["merge_commit_sha"], "merged revision")
     handoff["history"].append({"handoff": active, "disposition": disposition,
                                "decision": text(decision, "owner decision"), "merged_sha": merged})
     next(x for x in ledger["issues"] if x["issue"] == active["issue"])["state"] = disposition
     handoff["active"] = None
+    return ledger, handoff
+
+def reconcile(api, state, number, decision):
+    ledger = copy.deepcopy(state["ledger"])
+    handoff = copy.deepcopy(state["handoff"])
+    if handoff["active"] is not None:
+        raise ValueError("Finish the active handoff before integration reconciliation")
+    row = next((x for x in ledger["issues"] if x["issue"] == issue_number(number)), None)
+    if row is None or row["state"] != "staged":
+        raise ValueError("Integration reconciliation requires a staged issue")
+    prior = next((x for x in reversed(handoff["history"]) if x["handoff"]["issue"] == number), None)
+    if prior is None or prior["disposition"] != "staged":
+        raise ValueError("Missing latest staged handoff")
+    active = copy.deepcopy(prior["handoff"])
+    pr = get_pr(api, state, active)
+    if pr.get("merged") is not True:
+        raise ValueError("GitHub does not report the PR merged")
+    handoff["history"].append({"handoff": active, "disposition": "integrated",
+        "decision": text(decision, "owner decision"), "merged_sha": install.require(
+            install.SHA, pr["merge_commit_sha"], "merged revision")})
+    row["state"] = "integrated"
     return ledger, handoff
 
 def save(api, state, ledger, handoff, apply=False):
@@ -289,10 +317,14 @@ def main():
     a.add_argument("--rework", action="store_true")
     a.add_argument("--return-to-head", action="store_true")
     f = sub.add_parser("finish")
-    f.add_argument("disposition", choices=["blocked", "deferred", "integrated"])
+    f.add_argument("disposition", choices=["blocked", "deferred", "staged", "integrated"])
     f.add_argument("--decision", required=True)
     f.add_argument("--owner-approved", action="store_true")
-    for command in (c, a, f):
+    i = sub.add_parser("reconcile")
+    i.add_argument("issue", type=int)
+    i.add_argument("--decision", required=True)
+    i.add_argument("--owner-approved", action="store_true")
+    for command in (c, a, f, i):
         command.add_argument("--apply", action="store_true")
     args = p.parse_args()
     token = os.environ.get("GH_TOKEN") or os.environ.get("GITHUB_TOKEN")
@@ -304,15 +336,17 @@ def main():
         else:
             if args.apply and (not token or not args.expected_sha):
                 raise ValueError("Apply requires a credential and exact expected installed SHA")
-            if args.command in ("claim", "finish") and not args.owner_approved:
+            if args.command in ("claim", "finish", "reconcile") and not args.owner_approved:
                 raise ValueError("Explicit owner approval is required")
             if args.command == "claim":
                 ledger, handoff = claim(api, state, args.issue, args.acceptance, args.note)
             elif args.command == "advance":
                 ledger, handoff = advance(api, state, args.note, fix=args.fix, candidate=args.candidate,
                     pr=args.pr, evidence=args.evidence, rework=args.rework, return_to_head=args.return_to_head)
-            else:
+            elif args.command == "finish":
                 ledger, handoff = finish(api, state, args.disposition, args.decision)
+            else:
+                ledger, handoff = reconcile(api, state, args.issue, args.decision)
             result = save(api, state, ledger, handoff, args.apply)
         print(install.render(result), end="")
     except (ValueError, KeyError, OSError, install.ApiError) as exc:

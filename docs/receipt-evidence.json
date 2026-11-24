@@ -112,6 +112,34 @@
           "anchor": "def test_fresh_session_recovers_active_issue(self):"
         }
       ]
+    },
+    {
+      "id": "v0-0-0-5",
+      "label": "Issue #11 · batched staged handoffs",
+      "documented_in": [
+        {
+          "path": "install/branch/WORKFLOW.md",
+          "anchor": "## Batched PRs"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "ledger/issue-versions.json",
+          "anchor": "\"issue\": 11,"
+        }
+      ],
+      "implemented_in": [
+        {
+          "path": "tools/session.py",
+          "anchor": "def reconcile(api, state, number, decision):"
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tests/test_session.py",
+          "anchor": "def test_stage_two_issues_and_reconcile_only_after_merge(self):"
+        }
+      ]
     }
   ]
 }

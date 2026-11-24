@@ -13,7 +13,7 @@ LINE = re.compile(r"v(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)")
 VERSION = re.compile(LINE.pattern + r"\.[1-9][0-9]*")
 REPOSITORY = re.compile(r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+")
 SHA = re.compile(r"[0-9a-f]{40}")
-STATES = {"assigned", "in_progress", "blocked", "deferred", "verified", "integrated", "retired"}
+STATES = {"assigned", "in_progress", "blocked", "deferred", "verified", "staged", "integrated", "retired"}
 LEDGER = Path("ledger/issue-versions.json")
 RECEIPT_SCOPE = Path("ledger/receipt-scope.json")
 

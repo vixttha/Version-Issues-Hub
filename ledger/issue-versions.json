@@ -41,6 +41,16 @@
         "Recover the active issue and phase from the pinned installed package and GitHub without chat history; reject target mismatch and tampering.",
         "Serialize cooperative claims and handoff changes, reject competing claims and stale writes, retain owner merge authority; test on public runners."
       ]
+    },
+    {
+      "issue": 11,
+      "version": "v0.0.0.5",
+      "state": "in_progress",
+      "acceptance": [
+        "Stage two sequential issues on one PR without declaring integration.",
+        "Reject reconciliation until GitHub reports the exact candidate merged; preserve earlier fix/evidence history through rework.",
+        "Prove the batched handoff and stale-candidate controls on public runners."
+      ]
     }
   ]
 }

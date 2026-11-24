@@ -26,7 +26,7 @@ class Fake:
         self.writes = []
         self.pr = {"number": 8, "head": {"sha": CANDIDATE},
                    "base": {"ref": "trunk", "repo": {"id": 42}},
-                   "merged": False, "merge_commit_sha": NEXT}
+                   "state": "open", "merged": False, "merge_commit_sha": NEXT}
     def request(self, method, path, body=None):
         if method != "GET":
             self.writes.append((method, path, body))
@@ -155,3 +155,54 @@ class SessionTests(unittest.TestCase):
             files["AGENTS.md"] = "changed"
             with self.assertRaisesRegex(ValueError, "pinned source"):
                 session.load(self.api, REPO, HEAD)
+
+
+    def test_stage_two_issues_and_reconcile_only_after_merge(self):
+        self.claim()
+        self.advance(fix=FIX, candidate=CANDIDATE, pr=8)
+        self.advance(evidence=[RUN])
+        self.advance()
+        self.state["ledger"], self.state["handoff"] = session.finish(
+            self.api, self.state, "staged", "Owner stages first issue")
+        self.assertEqual(self.state["ledger"]["issues"][0]["state"], "staged")
+        self.assertIsNone(self.state["handoff"]["active"])
+        self.state["ledger"], self.state["handoff"] = session.claim(
+            self.api, self.state, 248, ["test second"], "Fix second")
+        self.assertEqual(self.state["handoff"]["active"]["version"], "v1.0.6.2")
+        self.advance(fix=NEXT, candidate=CANDIDATE, pr=8)
+        self.advance(evidence=[RUN])
+        self.advance()
+        self.state["ledger"], self.state["handoff"] = session.finish(
+            self.api, self.state, "staged", "Owner stages second issue")
+        with self.assertRaisesRegex(ValueError, "merged"):
+            session.reconcile(self.api, self.state, 247, "Owner integrates")
+        self.api.pr.update(state="closed", merged=True)
+        for issue in (247, 248):
+            self.state["ledger"], self.state["handoff"] = session.reconcile(
+                self.api, self.state, issue, "Owner integrates")
+        self.assertEqual([r["state"] for r in self.state["ledger"]["issues"]], ["integrated", "integrated"])
+        self.assertEqual([r["disposition"] for r in self.state["handoff"]["history"]],
+                         ["staged", "staged", "integrated", "integrated"])
+
+    def test_staged_stale_candidate_refused_and_prior_evidence_retained(self):
+        self.claim()
+        self.advance(fix=FIX, candidate=CANDIDATE, pr=8)
+        self.advance(evidence=[RUN])
+        self.advance()
+        self.state["ledger"], self.state["handoff"] = session.finish(
+            self.api, self.state, "staged", "Owner stages")
+        self.api.pr["head"]["sha"] = NEXT
+        self.api.pr["merged"] = True
+        with self.assertRaisesRegex(ValueError, "changed"):
+            session.reconcile(self.api, self.state, 247, "Owner integrates")
+        self.api.pr.update(state="open", merged=False)
+        self.claim()
+        self.assertEqual(self.state["handoff"]["active"]["version"], "v1.0.6.1")
+        self.advance(fix=FIX, candidate=NEXT, pr=8)
+        self.advance(evidence=[RUN])
+        self.advance(rework=True)
+        old = self.state["handoff"]["history"]
+        self.assertEqual(old[0]["handoff"]["fix_sha"], FIX)
+        self.assertEqual(old[0]["handoff"]["evidence"], [RUN])
+        self.assertEqual(old[-1]["disposition"], "rework")
+        self.assertEqual(old[-1]["handoff"]["candidate_sha"], NEXT)
