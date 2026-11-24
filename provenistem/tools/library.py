@@ -89,7 +89,7 @@ def json_identity(value):
     if isinstance(value, bool):
         return ("bool", value)
     if isinstance(value, (int, float, Decimal)):
-        return ("number", Decimal(str(value)).normalize())
+        return ("number", Decimal(str(value)))
     if isinstance(value, str):
         return ("string", value)
     if isinstance(value, list):
