@@ -13,3 +13,9 @@ Pilot: compare two fresh sessions of the same agent on the same historical BART 
 
 ## Commercialization proposal (not approved branding or launch)
 Working category: **agent engineering toolkit**. Working positioning: Six independent GitHub-native tools that provide a durable, owner-controlled engineering environment for compatible agents. Target: solo developers and small software teams using GitHub and coding agents. Demonstration: begin with an issue, recover exact scope, verify tests, archive evidence, update documentation and record owner decision. Sell no performance guarantees before measured data. Free/open source availability depends on each product's license; paid options to research: installation/setup services, support, training and optional hosted conveniences, never a mandatory paid service. No final collective name, price, trademark claim, license change, or public launch authorized. Confirm each product's reuse terms and dependencies before bundling or commercial distribution.
+
+## Completed evidence
+
+- [Verification receipt](VERIFICATION.md) — 64 configurations, 192 native smoke checks, 2 negative controls.
+- [Measured benchmark pilot](benchmark-pilot-1.md) — no observed accuracy gain; no full-tool efficacy claim.
+- [Working commercial identity and licensing inventory](COMMERCIAL-OFFER.md).
