@@ -2,12 +2,14 @@
   "active": {
     "issue": 40,
     "version": "v0.0.0.23",
-    "phase": "Validate",
-    "next_action": "Check 7 regression tests and 91 live mechanical checks on exact repaired PR49.",
+    "phase": "Internal Auditor",
+    "next_action": "Review original CodeRabbit finding, preservation and new revision pins.",
     "fix_sha": "e20f35d92f9b11523b18c7c11b6f9630b620a4b0",
     "candidate_sha": "e20f35d92f9b11523b18c7c11b6f9630b620a4b0",
     "pull_request": 49,
-    "evidence": []
+    "evidence": [
+      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45423191525/attempts/1"
+    ]
   },
   "history": [
     {
