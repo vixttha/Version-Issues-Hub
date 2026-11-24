@@ -30,7 +30,7 @@ This is read-only. An installed project returns its current checkpoint and hando
 To plan installation into an initialized repository (without writing):
 
 ```sh
-python -m tools.install --target OWNER/REPO --source-sha 4fc9ac47462101b941ea2f78fc939d42a9de0032 --baseline v0.0.0
+python tools/install.py --target OWNER/REPO --source-sha 4fc9ac47462101b941ea2f78fc939d42a9de0032 --baseline v0.0.0
 ```
 
 Use the adopter's actual baseline version, not the example blindly. The owner must review the plan before apply. VIB uses a dedicated `Version-Issues-Hub` branch; never merge this branch into product source. Existing installs use the lifecycle guide instead of reinstalling. A corrected fresh remote CLI apply still awaits acceptance.
