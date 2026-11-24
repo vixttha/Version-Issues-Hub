@@ -1,9 +1,5 @@
-# Visual system
+# Visual system — preliminary direction
 
-## Color and type
+One-color-first identity with a restrained technical/editorial feel. Candidate palette (not approved): ink #172B3A, paper #F7FAFC, slate #516575, teal #176C71. Teal is an accent, not a status indicator. On dark surfaces prefer pale ink treatment. Use standard system sans for reading; system monospace for hashes and code. No required fonts or font downloads. Contrast and final pairings must be measured against actual placements before rollout.
 
-Record semantic roles, hex values, intended foreground/background pairs, measured contrast, and safe alternates for dark and light themes. Define display, reading, and optional code typography, fallbacks, and licensing. Specify headings, body, spacing, and alignment for the first surface.
-
-## Imagery and graphics
-
-Define the graphic elements that belong to this product. Include examples of appropriate subjects and composition. Use @Images for production imagery and export PNG. Record the source and the purpose of each image. Use color and form consistently across the [applications](../07-applications/applications.md).
+Avoid decorative circuitry and complex graph diagrams in the mark. Use simple rules, consistent spacing, and short evidence labels in documentation. Product UI and source code are out of scope.

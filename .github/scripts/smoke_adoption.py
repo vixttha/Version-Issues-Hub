@@ -74,6 +74,13 @@ def run():
                     [*command, "--ready-for-handoff"], cwd=consumer, capture_output=True, text=True,
                 )
                 assert early_handoff.returncode and "needs both logo and wordmark PNGs" in early_handoff.stderr
+        test_only_handoff = subprocess.run(
+            [*command, "--ready-for-handoff"], cwd=consumer, capture_output=True, text=True,
+        )
+        assert test_only_handoff.returncode and "status 'approved'" in test_only_handoff.stderr
+        for asset in manifest["assets"]:
+            asset["status"] = "approved"
+        write_record(manifest_path, manifest)
         subprocess.run([*command, "--ready-for-handoff"], cwd=consumer, check=True)
         assert (consumer / "AGENTS.md").read_bytes() == instructions
         assert (consumer / "README.md").read_bytes() == readme
