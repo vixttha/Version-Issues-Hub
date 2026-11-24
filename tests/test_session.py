@@ -206,3 +206,34 @@ class SessionTests(unittest.TestCase):
         self.assertEqual(old[0]["handoff"]["evidence"], [RUN])
         self.assertEqual(old[-1]["disposition"], "rework")
         self.assertEqual(old[-1]["handoff"]["candidate_sha"], NEXT)
+
+
+    def test_inspect_distinguishes_closed_and_merged_pr(self):
+        self.claim()
+        self.advance(fix=FIX, candidate=CANDIDATE, pr=8)
+        self.api.pr.update(state="closed", merged=True)
+        before = copy.deepcopy(self.state)
+        self.assertEqual(session.inspect(self.api, self.state)["status"], "merged_reconciliation_required")
+        with self.assertRaisesRegex(ValueError, "merged"):
+            self.advance(evidence=[RUN])
+        self.assertEqual(self.state, before)
+        self.api.pr.update(state="closed", merged=False)
+        self.assertEqual(session.inspect(self.api, self.state)["status"], "closed_pr_rework_required")
+        with self.assertRaisesRegex(ValueError, "not open"):
+            self.advance(evidence=[RUN])
+        self.api.pr.update(state="open", merged=False, draft=True)
+        self.assertEqual(session.inspect(self.api, self.state)["status"], "resume")
+        self.api.pr["head"]["sha"] = NEXT
+        self.assertEqual(session.inspect(self.api, self.state)["status"], "stale_candidate")
+        self.assertEqual(session.inspect(self.api, self.state, 248)["status"], "blocked_other_active_issue")
+        self.assertEqual(self.api.writes, [])
+
+    def test_closed_issue_requires_head_reconciliation(self):
+        self.claim()
+        with patch.object(self.api, "request", return_value={"number": 247, "state": "closed"}):
+            self.assertEqual(session.inspect(self.api, self.state)["status"], "issue_reconciliation_required")
+            with self.assertRaisesRegex(ValueError, "not open"):
+                self.advance(fix=FIX, candidate=CANDIDATE, pr=8)
+            self.advance(return_to_head=True)
+        self.assertEqual(self.state["handoff"]["active"]["phase"], "Head")
+        self.assertEqual(self.api.writes, [])

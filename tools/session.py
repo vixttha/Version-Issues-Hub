@@ -136,6 +136,14 @@ def get_pr(api, state, active):
         raise ValueError("PR candidate or target changed; return to Worker and reverify")
     return pr
 
+def require_open_pr(api, state, active):
+    pr = get_pr(api, state, active)
+    if pr.get("merged") is True:
+        raise ValueError("PR is merged; return to Head for owner reconciliation")
+    if pr.get("state") != "open" or pr.get("merged") is not False:
+        raise ValueError("PR is not open and unmerged; return to Head or rework")
+    return pr
+
 def inspect(api, state, requested=None):
     active = state["handoff"]["active"]
     issue = requested if requested is not None else (active["issue"] if active else None)
@@ -147,11 +155,21 @@ def inspect(api, state, requested=None):
     status = "head_scope_required" if active is None else "resume"
     if active and issue != active["issue"]:
         status = "blocked_other_active_issue"
-    if active and active["pull_request"] is not None and status == "resume":
-        try:
-            get_pr(api, state, active)
-        except ValueError:
-            status = "stale_candidate"
+    if active and status == "resume":
+        if active["pull_request"] is not None:
+            try:
+                pr = get_pr(api, state, active)
+            except ValueError:
+                status = "stale_candidate"
+            else:
+                if pr.get("merged") is True and pr.get("state") == "closed":
+                    status = "merged_reconciliation_required"
+                elif pr.get("state") == "closed" and pr.get("merged") is False:
+                    status = "closed_pr_rework_required"
+                elif pr.get("state") != "open" or pr.get("merged") is not False:
+                    status = "pr_state_unverified"
+        if status == "resume" and info["state"] != "open":
+            status = "issue_reconciliation_required"
     return {"status": status, "installed_sha": state["ref"], "product_sha": state["product_sha"],
             "repository": state["ledger"]["repository"], "baseline": state["manifest"]["baseline_version"],
             "target": state["manifest"]["target_version"], "issue": info, "active": active,
@@ -205,15 +223,17 @@ def advance(api, state, note, *, fix=None, candidate=None, pr=None, evidence=Non
         if phase == "Head":
             raise ValueError("Already at Head")
         active["phase"] = "Head"
+    elif get_issue(api, state, active["issue"]).get("state") != "open":
+        raise ValueError("Issue is not open; return to Head for owner reconciliation")
     elif phase == "Worker":
         active.update(phase="Validate", fix_sha=fix, candidate_sha=candidate, pull_request=pr, evidence=[])
         validate_active(active, ledger)
-        get_pr(api, state, active)
+        require_open_pr(api, state, active)
     elif phase == "Validate":
-        get_pr(api, state, active)
+        require_open_pr(api, state, active)
         active.update(phase="Internal Auditor", evidence=evidence_links(ledger["repository"], evidence or []))
     elif phase == "Internal Auditor":
-        get_pr(api, state, active)
+        require_open_pr(api, state, active)
         active["phase"] = "Head"
     else:
         raise ValueError("Head must decide or return to Worker")

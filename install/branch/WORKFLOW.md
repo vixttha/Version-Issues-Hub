@@ -24,6 +24,10 @@ The second command plans only. Add --apply after owner approval and authorizatio
 
 Every mutation is a dry run unless --apply is passed with the exact current --expected-sha. The tool writes only the ledger and handoff in a new fast-forward commit on this branch. A stale concurrent writer fails and must reload. Direct GitHub writes can bypass these cooperative constraints; no merge enforcement is active.
 
+## Recovery when GitHub state changes
+
+Read-only inspect distinguishes a matching merged PR (`merged_reconciliation_required`), a closed unmerged PR (`closed_pr_rework_required`), a changed candidate (`stale_candidate`), an unverifiable PR state (`pr_state_unverified`), and a non-open active issue (`issue_reconciliation_required`). A different requested issue remains blocked while the active handoff exists. Normal verification transitions require an open issue and open unmerged PR. Return to Head for a recorded owner decision or rework as appropriate; a merged PR without required verification is not automatically accepted. No status changes the repository.
+
 ## Connector-only hosts
 
 A host without Python can read the installed branch files at the current SHA via GitHub connector, read the issue and PR, and use the same transition rules. Authorized writers must update both ledger and handoff atomically via a new tree and commit parented at the observed state SHA, then a non-force ref update. Verify the new ref. If the tools cannot guarantee an atomic, non-force update or verify the package pin, stop before claiming or changing state. Do not perform direct writes to product branches or another project's catalog.
