@@ -4,15 +4,15 @@
 
 VIB is a GitHub-first workflow for humans and coding agents who need durable issue-to-version mapping, repeatable validation and a handoff that can be recovered from the repository.
 
-**Status:** development candidate for v0.0.1; not released. [Source candidate](https://github.com/vixttha/Version-Issues-Hub/tree/83deccb89f048e6aa11726837fff123bdb793e89) · [Draft PR #2](https://github.com/vixttha/Version-Issues-Hub/pull/2) · [Owner review packet](https://github.com/vixttha/Version-Issues-Hub/blob/83deccb89f048e6aa11726837fff123bdb793e89/docs/release-v0.0.1-review.md)
+**Status:** development candidate for v0.0.1; not released. [Source candidate](https://github.com/vixttha/Version-Issues-Hub/tree/11beda07557c8bbc32fc05bf50ef3eaefcdae7f3) · [Draft PR #2](https://github.com/vixttha/Version-Issues-Hub/pull/2) · [Owner review packet](https://github.com/vixttha/Version-Issues-Hub/blob/11beda07557c8bbc32fc05bf50ef3eaefcdae7f3/docs/release-v0.0.1-review.md)
 
 ## Start here
 
 | For | First step |
 | --- | --- |
-| Repository owners | [Standalone installation contract](https://github.com/vixttha/Version-Issues-Hub/blob/83deccb89f048e6aa11726837fff123bdb793e89/docs/v0.0.0.3.md) |
-| Coding agents | [Agent entry point](https://github.com/vixttha/Version-Issues-Hub/blob/83deccb89f048e6aa11726837fff123bdb793e89/install/branch/AGENTS.md) and [workflow](https://github.com/vixttha/Version-Issues-Hub/blob/83deccb89f048e6aa11726837fff123bdb793e89/install/branch/WORKFLOW.md) |
-| Contributors | [GitHub issues](https://github.com/vixttha/Version-Issues-Hub/issues) and [issue-version ledger](https://github.com/vixttha/Version-Issues-Hub/blob/83deccb89f048e6aa11726837fff123bdb793e89/ledger/issue-versions.json) |
+| Repository owners | [Standalone installation contract](https://github.com/vixttha/Version-Issues-Hub/blob/11beda07557c8bbc32fc05bf50ef3eaefcdae7f3/docs/v0.0.0.3.md) |
+| Coding agents | [Agent entry point](https://github.com/vixttha/Version-Issues-Hub/blob/11beda07557c8bbc32fc05bf50ef3eaefcdae7f3/install/branch/AGENTS.md) and [workflow](https://github.com/vixttha/Version-Issues-Hub/blob/11beda07557c8bbc32fc05bf50ef3eaefcdae7f3/install/branch/WORKFLOW.md) |
+| Contributors | [GitHub issues](https://github.com/vixttha/Version-Issues-Hub/issues) and [issue-version ledger](https://github.com/vixttha/Version-Issues-Hub/blob/11beda07557c8bbc32fc05bf50ef3eaefcdae7f3/ledger/issue-versions.json) |
 | Reviewers | [Public checks](https://github.com/vixttha/Version-Issues-Hub/actions) and [preserved archive evidence](https://github.com/vixttha/Version-Issues-Hub/tree/829fdfae2ac0e8167d740e1a0ad8e8201295c34e/archives/candidates) |
 
 ## How it works
@@ -28,8 +28,8 @@ With an authorized GitHub-capable Python 3 host, inspect the exact candidate fir
 ```sh
 git clone https://github.com/vixttha/Version-Issues-Hub.git
 cd Version-Issues-Hub
-git checkout --detach 83deccb89f048e6aa11726837fff123bdb793e89
-python tools/install.py --target OWNER/REPO --source-sha 83deccb89f048e6aa11726837fff123bdb793e89 --baseline v0.0.0
+git checkout --detach 11beda07557c8bbc32fc05bf50ef3eaefcdae7f3
+python tools/install.py --target OWNER/REPO --source-sha 11beda07557c8bbc32fc05bf50ef3eaefcdae7f3 --baseline v0.0.0
 ```
 
 This command is a dry run. The separately authorized apply creates only the dedicated `Version-Issues-Hub` branch. It refuses existing installations. Do not merge the installed branch into product source. Upgrade and removal require a separate reviewed procedure.
@@ -40,7 +40,7 @@ This command is a dry run. The separately authorized apply creates only the dedi
 python -B -m unittest discover -s tests -v
 ```
 
-GitHub public runners produce revision-bound receipts and Graphify evidence. [Previous eight-checkpoint archive validation](https://github.com/vixttha/Version-Issues-Hub/actions/runs/45331511873) applies to its pinned source, not every later commit. Independent agent trials and optional live merge enforcement are separate acceptance questions. Branch protection is intentionally disabled for this project.
+GitHub public runners produce revision-bound receipts and Graphify evidence. [Previous eight-checkpoint archive validation](https://github.com/vixttha/Version-Issues-Hub/actions/runs/45331511873) applies to its pinned source, not every later commit. [Exact source CI](https://github.com/vixttha/Version-Issues-Hub/actions/runs/45336018839) passed 46 tests and Graphify; [live read-only adoption](https://github.com/vixttha/Version-Issues-Hub/actions/runs/45336018703) confirmed installation planning, existing BART state recovery, and reference-level template cooperation. Independent agent trials and optional live merge enforcement are separate acceptance questions. Branch protection is intentionally disabled for this project.
 
 ## Independent tools, complementary roles
 
