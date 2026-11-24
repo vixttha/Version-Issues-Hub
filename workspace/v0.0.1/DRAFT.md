@@ -1,15 +1,16 @@
 # Version-Issues-Hub-Branch (VIB)
 
-![VIB angular lettermark and three checkpoint nodes — Circuit Industrial v2 draft](assets/vib-lockup-dark.svg)
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="assets/vib-logo.svg">
+  <img alt="VIB — angular lettermark joined by a three-checkpoint circuit" src="assets/vib-logo-light.svg" width="380">
+</picture>
 
 **Every issue. A checkpoint.**  
 Build. Verify. Advance.
 
-*Artwork preview only — [light variant](assets/vib-lockup-light.svg), [source and approval scope](BRAND-AND-TECHNIQUES.md). Final artwork and rollout are not approved.*
-
 Issue-linked checkpoints, reproducible verification, and durable agent handoffs for GitHub projects. VIB helps humans and compatible coding agents recover what is being developed, what was tested, and what the owner still needs to decide.
 
-**Development candidate v0.0.0.19 · v0.0.1 on owner-directed brand hold; not released.** [Pinned source](https://github.com/vixttha/Version-Issues-Hub/tree/114a22196eab578b3053002f8eb7af935b26fe89) · [Draft PR #2](https://github.com/vixttha/Version-Issues-Hub/pull/2) · [Remaining acceptance #37](https://github.com/vixttha/Version-Issues-Hub/issues/37).
+**Development candidate v0.0.0.19 · v0.0.1 not released.** [Pinned source](https://github.com/vixttha/Version-Issues-Hub/tree/114a22196eab578b3053002f8eb7af935b26fe89) · [Draft PR #2](https://github.com/vixttha/Version-Issues-Hub/pull/2) · [Remaining acceptance #37](https://github.com/vixttha/Version-Issues-Hub/issues/37).
 
 ## Start here
 
@@ -61,7 +62,7 @@ Standard VIB reviews revision-bound evidence without requiring branch protection
 | Fresh remote CLI self-install | [Passed on prior package pin](https://github.com/vixttha/Version-Issues-Hub/actions/runs/45382958376/attempts/1); same-repository only |
 | Independent LLM hosts, owner acceptance | Pending [acceptance #37](https://github.com/vixttha/Version-Issues-Hub/issues/37) |
 
-These results apply to the named revisions and test paths, not all hosts or future releases. Use standard GitHub-hosted public runners for the verified public profile; no paid execution required.
+These results apply to the named revisions and test paths, not all hosts or future releases. The public profile was tested on standard GitHub-hosted public runners; no paid execution service is required by Standard VIB.
 
 To verify the pinned product candidate from the checkout above:
 
@@ -69,7 +70,7 @@ To verify the pinned product candidate from the checkout above:
 python -B -m unittest discover -s tests -v
 ```
 
-The command is used by the candidate's public workflow. The complete README onboarding walkthrough has not yet been replayed independently.
+The command is used by the candidate's public workflow. The linked CI evidence is revision-bound; the separate README review records the clean quickstart replay status.
 
 ## Troubleshooting
 
@@ -82,4 +83,6 @@ The command is used by the candidate's public workflow. The complete README onbo
 
 The [six architectural laws](https://github.com/vixttha/Version-Issues-Hub/blob/114a22196eab578b3053002f8eb7af935b26fe89/ENGINEERING-LAWS.md) preserve independence, composability, portability, persistence, verification and owner authority. Provenistem, README HQ and Brand Identity are optional complementary tools; none is a required dependency. No template branch is merged wholesale into the product. See [owner-locked architecture](https://github.com/vixttha/Version-Issues-Hub/issues/9).
 
-Reuse terms: the pinned VIB product tree has no LICENSE file; do not infer an open-source license from public visibility. Release, reuse terms and publication remain owner decisions.
+Reuse terms: the pinned VIB product tree has no LICENSE file; public visibility does not establish an open-source license. Product reuse terms, brand commercial clearance and release remain separate owner decisions.
+
+[Brand identity and asset provenance](https://github.com/vixttha/Version-Issues-Hub/blob/388c6ef968aa15edf3caa34e9de6819dcda24e7f/brand-identity/08-review/BRAND-LOCK.md). The approved visual master is Circuit Industrial v2; no artwork has been modified for this draft.
