@@ -90,6 +90,8 @@ jobs:
         with:
           node-version: '24.22.3'
           package-manager-cache: false
+      - name: Check browser audit syntax
+        run: node --check tools/check_vib_live_render.cjs
       - name: Install exact browser test version
         run: |
           npm install --prefix "$RUNNER_TEMP/vib-browser" --no-audit --no-fund --save-exact playwright@1.56.1

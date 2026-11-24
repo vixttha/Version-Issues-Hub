@@ -55,6 +55,7 @@ fs.mkdirSync(output,{recursive:true});
      rows.push(result);console.log(JSON.stringify(result));await context.close();
     }
    }
+  }
  }finally{await browser.close();fs.writeFileSync(path.join(output,'results.json'),JSON.stringify(rows,null,2));}
  assert.equal(rows.length,12);
  assert.equal(rows.filter(x=>x.label==='after'&&x.status==='pass').length,6,'candidate live GitHub visual checks');
