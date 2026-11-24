@@ -1,0 +1,40 @@
+name: VIB v0.0.1 mechanical release preflight
+on:
+  push:
+    branches: [ops/vib-v0.0.1-release-pipeline]
+permissions:
+  contents: read
+  actions: read
+  checks: read
+  pull-requests: read
+  issues: read
+concurrency:
+  group: vib-release-preflight
+  cancel-in-progress: false
+jobs:
+  mechanical:
+    if: github.repository == 'vixttha/Version-Issues-Hub' && github.event.repository.private == false
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: 265e0e4724bc409b16d2605fc4d59d2f3f658eaf
+          path: frozen-engineering
+          persist-credentials: false
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
+        with:
+          python-version: '3.12'
+      - name: Verify source pins, prior evidence, issue queue and installed VIB handoff
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python ops/release-preflight.py
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        if: always()
+        with:
+          name: vib-release-preflight-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/vib-release-report.json
+          if-no-files-found: error

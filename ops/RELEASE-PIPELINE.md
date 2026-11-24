@@ -1,0 +1,7 @@
+# VIB v0.0.1 release pipeline — operational, not product scope
+
+Head → Worker → Validate → Internal Auditor → Head. Sole active installed issue #40 / v0.0.0.23 (operational checkpoint, not a new product version). The installed ledger imports 22 original source mappings and acceptance criteria as assigned, not completed; original engineering receipt ledger untouched. The frozen engineering source remains v0.0.0.22. Old self-install package pin retained. 
+
+This public-runner workflow checks exact existing runs, PR trees, CodeRabbit, locked README/brand, all currently open issue numbers and VIB self-state using the repaired session CLI. A green mechanical result does NOT authorize release. The report always identifies outstanding approval gates. No writes, schedules, automatic release, paid or self-hosted runners. Re-pin the manifest after reviewed state changes; stale evidence fails closed. Graphify evidence is read from the exact successful Graphify jobs, not a new graph generation. 
+
+Queue: #39/#41–43 ready for final integration disposition; #44 visual incident separate from homepage promotion; #47 legal approval and operative candidate; #37 qualified hosts; #45 commercial clearance; #46 actual destination; #40 final Head decision. Historical checkpoints and optional governance/adoption issues are individually classified, not silently closed. Review #12/#14/#34 as optional hard enforcement; #20/#38 optional Provenistem scope. No scope expansion or new feature. 
