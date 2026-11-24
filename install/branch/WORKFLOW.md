@@ -33,3 +33,7 @@ Public-runner results and Graphify evidence are authoritative only for the teste
 ## Batched PRs
 
 After audit, Head may stage an issue on an open PR via `finish staged --decision "Owner-approved stage" --owner-approved`. This preserves evidence and releases the cooperative active slot without claiming integration. Claim the next issue, keep each fix SHA separate, and re-claim a staged issue for validation if the PR head changes. Do not replace the original fix on an unrelated change. After an owner-approved merge, run `reconcile ISSUE --decision "Owner-approved integration" --owner-approved` for each staged issue at the exact merged PR head. This refuses stale candidates and unmerged PRs. Rework history retains the prior candidate and evidence. All writes still require --apply and the current --expected-sha. Staging is not a trusted merge verdict.
+
+## Owner-locked interoperability
+
+**VIB remains independent of Provenistem. They are designed to work together as complementary parts of the same puzzle.** See [owner decision](https://github.com/vixttha/Version-Issues-Hub/issues/9). VIB owns issue-version assignments, workflow, revision-bound verification and integration decisions; Provenistem owns its ideas/features and progress records. Optional read-only references may connect them; either must operate independently. Never infer write authorization, install one from the other, merge template branches, or require the other as a dependency. Changes to interoperability require explicit owner approval.
