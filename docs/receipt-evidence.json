@@ -448,6 +448,34 @@
           "anchor": "def test_api_mutating_request_never_retried(self):"
         }
       ]
+    },
+    {
+      "id": "v0-0-0-17",
+      "label": "Issue #33 · bounded read-only timeout recovery",
+      "documented_in": [
+        {
+          "path": "docs/v0.0.0.17.md",
+          "anchor": "## Bounded transport recovery"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "ledger/issue-versions.json",
+          "anchor": "\"issue\": 33,"
+        }
+      ],
+      "implemented_in": [
+        {
+          "path": "tools/install.py",
+          "anchor": "class ApiTransportError(OSError):"
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tests/test_install.py",
+          "anchor": "def test_api_get_timeout_retries_direct_and_wrapped(self):"
+        }
+      ]
     }
   ]
 }
