@@ -42,10 +42,16 @@ jobs:
           fi
 
       - name: Verify the kit inventory
-        run: python3 brand-identity/verify.py
+        run: python3 brand-identity/verify.py --ready-for-artwork
 
       - name: Test the creative direction gate
         run: python3 -m unittest discover -s brand-identity -p 'test_*.py' -v
 
       - name: Exercise adoption in a separate Git repository
         run: python3 .github/scripts/smoke_adoption.py
+
+      - name: Verify Circuit Industrial draft SVGs
+        run: python3 brand-identity/08-review/circuit-industrial-v2/verify.py
+
+      - name: Verify owner-locked artwork bytes and foundation
+        run: python3 brand-identity/08-review/verify_lock.py

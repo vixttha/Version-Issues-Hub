@@ -1,5 +1,9 @@
-# Logo — written concepts only
+# Logo — approved direction, draft artwork only
 
-Proposed lead: Checkpoint Spine, a solid vertical connection joining three offset checkpoint bars, with an intentional final gap. Keep the shape distinct from a Git branch icon, tick mark or shield. Alternative directions: Folded Ledger and Version Monogram. See [scored decision](../01-strategy/creative-decision.json). No actual artwork selected or produced.
+Decision VIB-BRAND-FOUNDATION-001: Version Monogram + Version Path. Explore five distinct hybrid logo mockups: Version Circuit, Checkpoint Monogram, Cobalt Sequence, Branch Signature, Version Relay. [Scored decision](../01-strategy/creative-decision.json) ranks the written concepts; Checkpoint Monogram is the working lead, not an owner-selected final asset.
 
-Test proposed silhouette at 24/32 px, clear space equal to one bar thickness, light/dark and monochrome. These are design requirements, not completed tests. Exact proportions remain pending artwork and owner review.
+Use readable VIB letterforms, integrated checkpoint path, open endpoint, balanced silhouette, deliberate negative space, and one-color-compatible flat geometry. Avoid generic Git logos, shields, checkmarks, gradients, glow and 3D. Test 24/32 px, monochrome, clear space, light/dark contrast and SVG construction after selection. Five separate @Images mockups authorized; final asset selection and rollout require owner approval.
+
+## Current owner decision — LOCKED
+
+[ VIB-BRAND-LOCK-001 ](../08-review/BRAND-LOCK.md) supersedes the historical working lead above. Circuit Industrial v2, including all three hollow checkpoints, is the approved visual master. Do not regenerate or modify it without explicit owner approval.

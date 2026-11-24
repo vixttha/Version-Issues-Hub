@@ -1,3 +1,3 @@
-# Wordmark — proposal
+# Wordmark — approved text
 
-Proposed exact text: VIB. Use a custom balanced uppercase sans construction with clearly distinct glyphs, no artificial cuts that compromise reading. Full product name remains real accessible text. Explore horizontal symbol + wordmark, wordmark-only and symbol-only after approval. Keep glyph shape, spacing and clear space consistent. Do not generate artwork before the owner confirms both exact strings in the decision record.
+Exact text: **VIB**. Approved under VIB-BRAND-FOUNDATION-001 (2026-11-24). Use custom readable uppercase letterforms; the full product name Version-Issues-Hub-Branch remains accessible real text. Explore symbol-only, wordmark-only, and horizontal lockup after the owner selects the final artwork. Wordmark geometry and final asset remain pending.

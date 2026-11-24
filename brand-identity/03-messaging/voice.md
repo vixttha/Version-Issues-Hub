@@ -1,9 +1,12 @@
-# Slogan and voice — proposal
+# Slogan and voice — approved foundation
 
-**Lead slogan:** Every issue. A checkpoint.
+Decision VIB-BRAND-FOUNDATION-001 (2026-11-24).
 
-Alternative A: Development with a record.
-Alternative B: Progress you can verify.
+**Primary:** Every issue. A checkpoint.
+
+**Secondary:** Build. Verify. Advance.
+
+Use as two lines in a brand lockup; primary explains the mechanism, secondary expresses the workflow.
 
 Factual descriptor: Issue-linked checkpoints, reproducible verification, and durable agent handoffs for GitHub projects.
 
@@ -11,7 +14,7 @@ Overview: VIB helps humans and compatible coding agents recover what is being de
 
 Voice: compact, technically precise, evidence-led, plain-spoken. Distinguish observed results, planned checks and approved integration. Never promise a bug-free result, universal agent support, or automatic merge enforcement in Standard mode.
 
-README opener: use the factual descriptor; slogan remains optional until approved.
+README opener: use the factual descriptor; use the approved dual-line slogans where space permits after rollout approval.
 Empty state: No checkpoint assigned. Review the existing issue backlog and confirm scope before claiming work.
 Error: Installed branch has advanced. Reload the current state before acting.
 

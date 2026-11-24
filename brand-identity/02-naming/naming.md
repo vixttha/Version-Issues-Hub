@@ -1,5 +1,3 @@
-# Naming — proposed
+# Naming — approved foundation
 
-Existing repository and full product name: **Version-Issues-Hub**. Established short identity: **VIB**. Proposed exact wordmark: VIB (uppercase). Use the full name and abbreviation together on first mention, then VIB. Keep repository and installation branch names unchanged. README title follows the established full name.
-
-The exact wordmark and new creative direction are not confirmed. No rename, trademark clearance, domain availability or commercial rights claim has been made. Check confusingly similar marks and software names before rollout. [Decision record](../01-strategy/creative-decision.json).
+Decision VIB-BRAND-FOUNDATION-001 (2026-11-24). Exact full product brand: **Version-Issues-Hub-Branch**. Exact wordmark: **VIB** (uppercase). Use both on first mention, then VIB. Existing GitHub repository `vixttha/Version-Issues-Hub` and installation branch `Version-Issues-Hub` remain unchanged. No repository rename, domain registration, trademark clearance, or commercial rights claim is authorized. [Decision record](../01-strategy/creative-decision.json).
