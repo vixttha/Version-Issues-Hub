@@ -1,0 +1,27 @@
+name: Historical dogfooding evidence
+on:
+  push:
+    branches: ['audit/ecosystem-dogfooding']
+permissions:
+  contents: read
+  actions: read
+  issues: read
+  pull-requests: read
+jobs:
+  verify:
+    if: github.repository == 'vixttha/Version-Issues-Hub' && github.event.repository.private == false
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Recheck pinned public historical evidence and census
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 ecosystem-validation/dogfooding/verify.py
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: historical-dogfooding-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/dogfooding-audit.json
+          if-no-files-found: error

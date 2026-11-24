@@ -1,0 +1,426 @@
+{
+  "schema_version": 1,
+  "scope": "Targeted historical case audit across six public products plus two BART corroborations; not every commit causally attributed.",
+  "files": [
+    {
+      "repo": "Provenistem",
+      "commit": "8c9647d1cd168642ba4dd3b2b5ec3045634d1bcb",
+      "path": "catalog/features/records/FEAT-000016.json",
+      "blob": "3c63d19bed49fe1aa9154c5cb8e028eae17bdad7"
+    },
+    {
+      "repo": "Provenistem",
+      "commit": "8c9647d1cd168642ba4dd3b2b5ec3045634d1bcb",
+      "path": "catalog/ADOPTER-BUG-AUDIT.md",
+      "blob": "1c5de2e775b6e0c2b3217f5b1f19d47af025d842"
+    },
+    {
+      "repo": "Provenistem",
+      "commit": "574baa77833e00ef1b23b7b768c7abdbfece8a2e",
+      "path": "README.md",
+      "blob": "214604279c72d801a4361f89b9d919c0bfe62c3b"
+    },
+    {
+      "repo": "Version-Issues-Hub",
+      "commit": "dad94766a7462a67098be7408f49d0eeeadc3af0",
+      "path": "ledger/issue-versions.json",
+      "blob": "a1ac90fcc70458cfa651ecbae3a10cd0d385e69c"
+    },
+    {
+      "repo": "Version-Issues-Hub",
+      "commit": "8f20e5f7d1da1436f37ef4f51dd16a280c5fe748",
+      "path": "PROJECT.md",
+      "blob": "6a75d2039ca018d7ca8e7ef63687b58910b94a0c"
+    },
+    {
+      "repo": "Version-Issues-Hub",
+      "commit": "829fdfae2ac0e8167d740e1a0ad8e8201295c34e",
+      "path": "archives/candidates/3b6951be81d2fc9468b5379aead57c7afc444754/45331511873-1/candidate-receipt.json",
+      "blob": "f15dbcee6b94eec45d1b3734606aeda821df3574"
+    },
+    {
+      "repo": "Version-Issues-Hub",
+      "commit": "990ffad5c1ede38bc7edac3a145499f0dbbc0788",
+      "path": "workspace/v0.0.1/DRAFT.md",
+      "blob": "2fb210c4f3a15460517e75860da348f33bba99ac"
+    },
+    {
+      "repo": "Version-Issues-Hub",
+      "commit": "ad449084b71bd1439c9914d30f4ad45f18dfae98",
+      "path": "brand-identity/01-strategy/creative-decision.json",
+      "blob": "6ef0d4afcdf851a56ebde362c350e97fadc3b378"
+    },
+    {
+      "repo": "Veraphify",
+      "commit": "add4a029312c958a5e126990fc49e802c0112c27",
+      "path": "test-vault/README.md",
+      "blob": "5f3a64b422312956e4c262c7bd7953e2a981e71d"
+    },
+    {
+      "repo": "Veraphify",
+      "commit": "63c10e8797a1803f3198387d74c59ddc10056ae1",
+      "path": "brand-identity/01-strategy/creative-decision.json",
+      "blob": "eea33077992edc6b31d1be46cd9d22f2cf7dce76"
+    },
+    {
+      "repo": "Veraphify",
+      "commit": "63c10e8797a1803f3198387d74c59ddc10056ae1",
+      "path": "brand-identity/09-assets/manifest.json",
+      "blob": "54253fae2d812b0969f4f186876d11336b4dceaa"
+    },
+    {
+      "repo": "Brand-Identity-Template",
+      "commit": "59337a0b01168389446d248c861cc650dfd15647",
+      "path": "provenistem/features/INDEX.md",
+      "blob": "f7fc03488a3b923843d16aeb3a8d2d56ae6dee67"
+    },
+    {
+      "repo": "Brand-Identity-Template",
+      "commit": "2d199fc4c206df3032803fea9eb7c5327a31aae9",
+      "path": "brand-identity/09-assets/manifest.json",
+      "blob": "107702b500b1de103ac8b67969c81a1b8dd981ce"
+    },
+    {
+      "repo": "Brand-Identity-Template",
+      "commit": "74a4666404fb4aa427881d0907cacbc8c65e2cfc",
+      "path": "test-vault/cases.md",
+      "blob": "602b5030c9045c9bfe3dcbba2a67a9eed0f11462"
+    },
+    {
+      "repo": "README-HQ",
+      "commit": "5eb7412e306f4fcaa7315cb1b97485ae177e6b48",
+      "path": "combinations/pinned-walkthrough-with-evidence.md",
+      "blob": "59bc812f61dc847c9716c620ef2dbf3be7bd8711"
+    },
+    {
+      "repo": "Lydite-Test-Vault-Template",
+      "commit": "87d25d80d3154d295052412b64b29a0f0f152c27",
+      "path": "README.md",
+      "blob": "0ae785061e10c95eab3202ea7d43725739c72076"
+    },
+    {
+      "repo": "Blender-Agent-Refinement-Toolkit",
+      "commit": "beab675bc7c8c228a77e858c3c3a50c40fe7ec2b",
+      "path": "ledger/issue-versions.json",
+      "blob": "f570add43a8117f82ae26663a9eba4ef3c73316b"
+    },
+    {
+      "repo": "Blender-Agent-Refinement-Toolkit",
+      "commit": "beab675bc7c8c228a77e858c3c3a50c40fe7ec2b",
+      "path": "ledger/handoff.json",
+      "blob": "380b4a715704bf84ce55fb260ae0a68d55c5e441"
+    }
+  ],
+  "runs": [
+    {
+      "repo": "Provenistem",
+      "run": 44696477080,
+      "head": "b7da387da5838216e3c7f42fa807b80523d8da5d",
+      "attempt": 1,
+      "conclusion": "success"
+    },
+    {
+      "repo": "Provenistem",
+      "run": 44995999617,
+      "head": "a9ec26a5affd3204eb83f4122edbf95f95f01b4a",
+      "attempt": 1,
+      "conclusion": "success"
+    },
+    {
+      "repo": "Provenistem",
+      "run": 44975292608,
+      "head": "82df517172d1a8b05e4b3f16dbefd346f7f25934",
+      "attempt": 1,
+      "conclusion": "success"
+    },
+    {
+      "repo": "Lydite-Test-Vault-Template",
+      "run": 44506598515,
+      "head": "87d25d80d3154d295052412b64b29a0f0f152c27",
+      "attempt": 1,
+      "conclusion": "success"
+    },
+    {
+      "repo": "Lydite-Test-Vault-Template",
+      "run": 44509686092,
+      "head": "5ef7b73a85e4e648855ed427c0686184ada5b061",
+      "attempt": 1,
+      "conclusion": "success"
+    },
+    {
+      "repo": "Lydite-Test-Vault-Template",
+      "run": 44658525431,
+      "head": "965fd9a19a1b90e208c8786267df93589e7ebf8f",
+      "attempt": 1,
+      "conclusion": "success"
+    },
+    {
+      "repo": "Veraphify",
+      "run": 44653386073,
+      "head": "fdef4867c87148bdf0782e16de372b584d51588e",
+      "attempt": 1,
+      "conclusion": "success"
+    },
+    {
+      "repo": "Veraphify",
+      "run": 44645804412,
+      "head": "3aa88d323bebcca9c025cf4be135f7bf9497fb88",
+      "attempt": 1,
+      "conclusion": "success"
+    },
+    {
+      "repo": "README-HQ",
+      "run": 44658167449,
+      "head": "d81acd7517f1985d26f385ba2794bdfc49ea44bf",
+      "attempt": 1,
+      "conclusion": "success"
+    },
+    {
+      "repo": "README-HQ",
+      "run": 44671027344,
+      "head": "5eb7412e306f4fcaa7315cb1b97485ae177e6b48",
+      "attempt": 1,
+      "conclusion": "success"
+    },
+    {
+      "repo": "Brand-Identity-Template",
+      "run": 44513584643,
+      "head": "6b827e9248baa8e9f9147d834cf8bf741eb245bc",
+      "attempt": 1,
+      "conclusion": "success"
+    },
+    {
+      "repo": "Brand-Identity-Template",
+      "run": 44515952918,
+      "head": "5930c91a1b89cbb2bcdb072df4c74002675343b7",
+      "attempt": 3,
+      "conclusion": "success"
+    },
+    {
+      "repo": "Version-Issues-Hub",
+      "run": 45331511873,
+      "head": "8df46d16a573abaad50b82b4294cc1e7abdcacea",
+      "attempt": 1,
+      "conclusion": "success"
+    },
+    {
+      "repo": "Version-Issues-Hub",
+      "run": 45336145042,
+      "head": "990ffad5c1ede38bc7edac3a145499f0dbbc0788",
+      "attempt": 1,
+      "conclusion": "success"
+    },
+    {
+      "repo": "Version-Issues-Hub",
+      "run": 44696174996,
+      "head": "4ab3695b6f5695d7164233d7f10b30ac2fe9606a",
+      "attempt": 1,
+      "conclusion": "success"
+    },
+    {
+      "repo": "Version-Issues-Hub",
+      "run": 45340848541,
+      "head": "dad94766a7462a67098be7408f49d0eeeadc3af0",
+      "attempt": 1,
+      "conclusion": "success"
+    },
+    {
+      "repo": "Blender-Agent-Refinement-Toolkit",
+      "run": 45337193197,
+      "head": "392d8d7a1c262227cba3c08d5577af38c74b4e25",
+      "attempt": 1,
+      "conclusion": "success"
+    }
+  ],
+  "cases": [
+    {
+      "id": "D01",
+      "tool": "Provenistem",
+      "host": "Provenistem",
+      "status": "operational self-use",
+      "claim": "11 ideas and 16 features in current pinned self-catalog; first public check validated 10 ideas and 15 features.",
+      "issue": "Provenistem#1; FEAT-000016",
+      "run": "44696477080"
+    },
+    {
+      "id": "D02",
+      "tool": "VIB",
+      "host": "VIB",
+      "status": "operational self-use, candidate",
+      "claim": "17 actual issue/version assignments and pinned acceptance receipts; one active workflow, not stable release.",
+      "issue": "Version-Issues-Hub#2, #33",
+      "run": "45340848541"
+    },
+    {
+      "id": "D03",
+      "tool": "Lydite",
+      "host": "Lydite",
+      "status": "release qualification",
+      "claim": "Five public jobs verified language examples, inventory/starter adoption, graph maps and candidate receipt at v0.0.4 source. This is native self-validation, not independent efficacy evidence.",
+      "issue": "Lydite-Test-Vault-Template v0.0.4",
+      "run": "44506598515"
+    },
+    {
+      "id": "D04",
+      "tool": "Provenistem",
+      "host": "Lydite",
+      "status": "verified draft use",
+      "claim": "6 ideas and 7 features at historical pinned catalog; actual release references and cross-platform validation; draft not merged.",
+      "issue": "Lydite-Test-Vault-Template#34",
+      "run": "44509686092"
+    },
+    {
+      "id": "D05",
+      "tool": "Provenistem",
+      "host": "VIB",
+      "status": "operational branch use",
+      "claim": "6 ideas and 6 features, historical source kept distinct from live issue ledger; navigation deficiency tracked in #18.",
+      "issue": "Version-Issues-Hub#18",
+      "run": "44696174996"
+    },
+    {
+      "id": "D06",
+      "tool": "Provenistem",
+      "host": "Brand Identity",
+      "status": "operational project records",
+      "claim": "8 ideas and 7 features in project-owned catalog; 6 marked verified, one implemented; status is record claim, not new independent certification.",
+      "issue": "Brand-Identity-Template pinned provenistem branch",
+      "run": ""
+    },
+    {
+      "id": "D07",
+      "tool": "Provenistem",
+      "host": "README HQ",
+      "status": "corrected adopter records",
+      "claim": "Corrected 12 ideas/12 features catalog ownership and selection boundaries in #149; preserved original trial.",
+      "issue": "README-HQ#149",
+      "run": ""
+    },
+    {
+      "id": "D08",
+      "tool": "Veraphify",
+      "host": "Provenistem",
+      "status": "real archive and defect investigation",
+      "claim": "Two version archives and three code citations; audit probes reproduced blocked parent, partial index build and duplicate JSON fields on v0.0.2. Defects remain open; audit success means reproduction succeeded.",
+      "issue": "Provenistem#2,#3,#4; Lydite#121",
+      "run": "44975292608;44995999617"
+    },
+    {
+      "id": "D09",
+      "tool": "Veraphify",
+      "host": "Lydite",
+      "status": "integrated adopter verification",
+      "claim": "Pinned v0.0.9 archive CLI validated inventory implementation at tools/inventory.py:212; real Lydite source and digest.",
+      "issue": "Lydite-Test-Vault-Template#115",
+      "run": "44658525431"
+    },
+    {
+      "id": "D10",
+      "tool": "Veraphify",
+      "host": "README HQ",
+      "status": "integrated adopter verification",
+      "claim": "Pinned archive CLI verified technique registry implementation tools/check_readme_hq.py:31 at exact source.",
+      "issue": "README-HQ#143",
+      "run": "44658167449"
+    },
+    {
+      "id": "D11",
+      "tool": "Veraphify",
+      "host": "VIB",
+      "status": "retained candidate archive",
+      "claim": "Verified eight implementation citations and persisted archive; candidate only, not all 17 checkpoints.",
+      "issue": "Version-Issues-Hub#16,#17",
+      "run": "45331511873"
+    },
+    {
+      "id": "D12",
+      "tool": "Lydite",
+      "host": "Veraphify",
+      "status": "integrated product qualification",
+      "claim": "211 named Vault cases across six topics, 19 brand tests, Linux/Windows archive replay; five repair issues #57–61, including dot-prefixed repo regression. Original detection of #61 credited to CodeRabbit, not Vault.",
+      "issue": "Veraphify#56,#61,#70",
+      "run": "44653386073"
+    },
+    {
+      "id": "D13",
+      "tool": "Lydite",
+      "host": "Brand Identity",
+      "status": "integrated repair verification",
+      "claim": "Five mechanical jobs and 53 native Vault tests; draft vs approved role handling and safe evidence links; five expected failures converted to normal tests.",
+      "issue": "Brand-Identity-Template#16",
+      "run": "44513584643"
+    },
+    {
+      "id": "D14",
+      "tool": "README HQ",
+      "host": "Veraphify",
+      "status": "real documentation and execution trial",
+      "claim": "Pinned README and two-version walkthrough, rendered navigation and exact citations; CodeRabbit guidance corrected. README/product and workflow revisions kept distinct.",
+      "issue": "Veraphify#55",
+      "run": "44645804412"
+    },
+    {
+      "id": "D15",
+      "tool": "README HQ",
+      "host": "README HQ",
+      "status": "self-improvement from adopter trial",
+      "claim": "Veraphify pilot led to missing technique definition and searchable five-step reusable combination; catalog validated on both platforms. Fresh independent handoff remains pending in historical pilot.",
+      "issue": "README-HQ#148",
+      "run": "44671027344"
+    },
+    {
+      "id": "D16",
+      "tool": "README HQ",
+      "host": "VIB",
+      "status": "verified documentation draft",
+      "claim": "Draft v0.0.1 README authored at older pinned candidate, two public jobs verified navigation/maps. Not published and not current release guide.",
+      "issue": "Version-Issues-Hub#19",
+      "run": "45336145042"
+    },
+    {
+      "id": "D17",
+      "tool": "Brand Identity",
+      "host": "Veraphify",
+      "status": "creative planning and name confirmation",
+      "claim": "Three scored concepts, recorded selected Filed Edge direction and name confirmation; project asset manifest empty. Later visual directions not inferred; no approved logo claim.",
+      "issue": "Veraphify#21,#26; pinned Brand-Identity branch",
+      "run": "44653386073 (19 brand tests)"
+    },
+    {
+      "id": "D18",
+      "tool": "Brand Identity",
+      "host": "Brand Identity",
+      "status": "real template self-development",
+      "claim": "Own verifier exercised by Lydite, actual release-candidate approval and evidence link tests; 53 native tests in #16. Shared evidence with D13, not extra test count.",
+      "issue": "Brand-Identity-Template#12,#16",
+      "run": "44513584643"
+    },
+    {
+      "id": "D19",
+      "tool": "VIB",
+      "host": "BART (external)",
+      "status": "operational handoff and integration",
+      "claim": "24 historical mappings at adopter pin; #55 v0.0.3.2 and #69 v0.0.3.3 integrated; exact main CI 10/10. Later #45 handoff pinned to active owner decision. No package release inferred.",
+      "issue": "Blender-Agent-Refinement-Toolkit#69,#109",
+      "run": "45337193197"
+    },
+    {
+      "id": "D20",
+      "tool": "Brand Identity",
+      "host": "BART (external)",
+      "status": "actual draft assets",
+      "claim": "Two recorded draft logo/wordmark PNG exports; not final artwork approval.",
+      "issue": "Brand-Identity-Template BART-Brand-Identity snapshot",
+      "run": ""
+    },
+    {
+      "id": "D21",
+      "tool": "Brand Identity",
+      "host": "VIB",
+      "status": "installed only",
+      "claim": "Blank creative decision: no proof of VIB branding completion. Excluded from practical-use tally.",
+      "issue": "Version-Issues-Hub Brand-Identity branch",
+      "run": ""
+    }
+  ]
+}
