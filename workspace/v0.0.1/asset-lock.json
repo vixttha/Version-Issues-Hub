@@ -31,7 +31,7 @@
   "presentation": {
     "dark": "assets/vib-logo.svg",
     "light": "assets/vib-logo-light.svg",
-    "width": 380
+    "width": 300
   },
   "publication": "draft_only"
 }

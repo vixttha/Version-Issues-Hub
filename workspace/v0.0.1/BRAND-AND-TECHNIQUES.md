@@ -16,3 +16,5 @@ Technique library pin: [88feb6971d2f49c530535f09d0defb1e9e1808bf](https://github
 | [descriptive-link-labels](https://github.com/vixttha/README-HQ/blob/88feb6971d2f49c530535f09d0defb1e9e1808bf/techniques/descriptive-link-labels.md) | Named destinations and no unexplained links | Link and keyboard review |
 
 Draft only. Prior draft remains in Git at f836b232201da0738b4d1e895eb365ec58adf600. Visual identity is locked; README remains a draft, no stable release, homepage publication or README acceptance. Existing README HQ checker and Graphify run on workspace change; clean reader replay and visual inspection are separate.
+
+Mobile refinement retains all selected techniques; role-based navigation and evidence use single-column lists. Theme artwork is displayed at 300 CSS px; no asset changes.
