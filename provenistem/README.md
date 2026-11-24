@@ -17,12 +17,12 @@ A human can use the files directly in GitHub. An LLM can read and suggest edits 
 
 ## Quick use (GitHub website only)
 
-1. Copy `ideas/`, `features/`, **and `templates/` if following the examples below** into an isolated, collision-free location in your repository. The agent guide is optional. Never overwrite existing paths. See [adoption instructions](docs/ADOPTION.md).
+1. Copy `ideas/`, `features/`, **and `templates/` if following the examples below** into an isolated, collision-free location in your repository. The agent guide is optional. Never overwrite existing paths. Retain the [MIT license](LICENSE) and its copyright and permission notice with any copied files. See [adoption instructions](docs/ADOPTION.md).
 2. For a new idea, copy [the example](templates/idea.example.json) into `ideas/records/IDEA-000001.json`, edit its ID, title, and facts. For a new feature, use [the feature example](templates/feature.example.json) at `features/records/FEAT-000001.json`. Use the next unused ID, never recycle an ID.
 3. Link features to existing ideas by `idea_ids`; keep decisions, implementation, tests, and release claims separate.
 4. Edit or regenerate `INDEX.md` as a **read-only view** of records; records always prevail if an index becomes stale. An optional standard-library-only Python helper can validate and generate indexes, but is *not required*.
 
-Run optional checks when Python happens to be available: `python tools/library.py check`, `python tools/library.py build`, `python -m unittest discover -s tests -v`. Copy `tools/`, `tests/`, and `docs/` if those helpers are wanted; tests read the policy documents. **v0.0.2 adds count-neutral populated-adopter tests, a bounded validator, local `maxLength` schema support and read-only `python tools/adopter.py <host-library-root>` no-clobber planning.** Starter publishers can also use `python tools/library.py check --expect-empty`; do **not** apply that flag to populated adopters.
+Run optional checks when Python happens to be available: `python tools/library.py check`, `python tools/library.py build`, `python -m unittest discover -s tests -v`. For optional tests, copy `tools/`, `tests/`, `docs/`, and `templates/` together with the catalog and license; tests read the policy documents and synthetic example fixtures. The examples remain optional for manually maintained records when not running the suite. **v0.0.2 adds count-neutral populated-adopter tests, a bounded validator, local `maxLength` schema support and read-only `python tools/adopter.py <host-library-root>` no-clobber planning.** Starter publishers can also use `python tools/library.py check --expect-empty`; do **not** apply that flag to populated adopters.
 
 No GitHub Actions workflow, runner configuration, release authorization, or development test-arm file is included in this portable package. Any CI is optional and host-owned. Prior source/host test receipts do not imply independent external security certification.
 
@@ -45,3 +45,22 @@ Only an actual project's release authority can assert shipped versions. The temp
 - [Provenance and source separation](docs/PROVENANCE.md)
 
 Provenistem version: `0.0.2`; frozen experimental library baseline: `0.0.1`. Neither is the adopting project's product version. A private GitHub release must refer to the exact 24-file package commit, not the larger development branch.
+
+## Owner-approved engineering ecosystem laws
+
+Decision ENGINEERING-ECOSYSTEM-LAWS-001 (2026-11-24). Mission: Build a toolkit that gives compatible LLM agents a structured engineering environment, rather than building another AI model.
+
+<!-- engineering-laws:start -->
+1. **Independence:** Every tool must remain independently installable, usable, versioned and maintained.
+2. **Composability:** Installing additional tools expands the agent's capabilities without creating mandatory dependencies.
+3. **Portability:** No mandatory AI provider, model, agent harness or paid execution service.
+4. **Persistence:** Project knowledge, decisions, progress and evidence survive the termination of an AI session.
+5. **Verification:** Development claims must be supported by reproducible, revision-bound evidence.
+6. **Owner authority:** The human retains control over scope, architectural decisions, integration and releases.
+<!-- engineering-laws:end -->
+
+Remain standalone. Other tools are optional; their absence must not block normal operation. Preserve project-local authority and evidence; never automatically install, merge, synchronize or write to another tool's branch. No mandatory seventh coordinator, paid service or AI provider. Existing product scope remains authoritative. Change these laws only by explicit owner approval.
+
+## Branch-local library boundary
+
+Read the local catalog at the library root in the adopting workspace. Resolve its actual repository, branch and revision before citing records. This nested copy is an optional library, not a standalone branch discovery marker. Read-only discovery does not authorize writes. Preserve local records and prior receipts; no automatic cross-branch installation, synchronization, integration or release.

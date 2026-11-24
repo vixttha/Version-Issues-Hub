@@ -32,3 +32,17 @@ python3 tools/check_readme_hq.py
 On Windows, use `py -3 tools/check_readme_hq.py`. A passing check prints counts for the version index, archived technique records, local navigation, and archived source files.
 
 The branch keeps versions and audit findings available between sessions. An authorized human or agent starts each audit, records each new finding, and reviews any resulting project changes.
+
+## Engineering ecosystem
+
+[Owner-approved six architectural laws](ENGINEERING-LAWS.md) apply to this product. Standalone operation and owner authority remain unchanged. The product has no mandatory coordination-tool dependency.
+
+## Agent capability discovery — v1
+
+<!-- agent-capability:v1
+{"schema_version":1,"id":"readme-hq","branch":"readme-hq","entrypoint":"AGENTS.md","scope":"Documentation authoring and version history","required_ecosystem_tools":[],"authority":"owner","discovery":"read-only","versioning":"independent"}
+-->
+
+A compatible agent may enumerate the target repository's branch refs, resolve this branch to a commit, and read its entry point at that exact commit. Read-only discovery confers no execution, write, integration or release authority. If this branch or marker is absent, the tool is absent or legacy/unverified; continue independently. Check the target's own instructions and owner scope before any action. The marker describes a capability, not a required registry or package version.
+
+Installation convention: human or agent selects a reviewed exact source SHA, checks the dedicated target branch and collisions, follows this product's own installation guide, and records source/target SHA and preserved product state. Never merge a template workspace wholesale into product source. Existing installations require explicit reviewed upgrades; preserve local records and prior receipts. Optional evidence links do not authorize writes. No mandatory coordinator or other ecosystem tool.
