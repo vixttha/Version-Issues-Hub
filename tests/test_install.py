@@ -119,6 +119,7 @@ class InstallerTests(unittest.TestCase):
         notice = (root / "VIB-NOTICE.md").read_text(encoding="utf-8")
         for files in ({"VIB-LICENSE.md": license_text}, {"VIB-NOTICE.md": notice},
                       {"VIB-LICENSE.md": license_text + "changed", "VIB-NOTICE.md": notice},
+                      {"VIB-LICENSE.md": license_text, "VIB-NOTICE.md": notice + "changed"},
                       {"VIB-LICENSE.md": license_text, "VIB-NOTICE.md": "REVIEW_ONLY_NOT_A_GRANT"}):
             with self.subTest(files=list(files)), self.assertRaisesRegex(ValueError, "not authorized"):
                 install.require_publishable_package(files)

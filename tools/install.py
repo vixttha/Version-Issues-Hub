@@ -198,7 +198,10 @@ def require_publishable_package(files):
     raw = files["VIB-LICENSE.md"].encode("utf-8")
     blob = hashlib.sha1(b"blob " + str(len(raw)).encode() + b"\0" + raw).hexdigest()
     notice = files["VIB-NOTICE.md"]
+    notice_raw = notice.encode("utf-8")
+    notice_blob = hashlib.sha1(b"blob " + str(len(notice_raw)).encode() + b"\0" + notice_raw).hexdigest()
     if (blob != "90abd0e6c64a135f42451762337a397bf27f4862"
+            or notice_blob != "70dd8710828a38118965be3ca8be32457d106789"
             or "VIB_LICENSE_TERMS_APPROVED" not in notice.splitlines()
             or "REVIEW_ONLY_NOT_A_GRANT" in notice):
         raise ValueError("Legal review package is not authorized for installation or upgrade")
