@@ -154,6 +154,25 @@ class LifecycleTests(unittest.TestCase):
                 lifecycle.upgrade(api, REPO, collided, NEW)
             self.assertEqual(api.writes, [])
 
+    def test_review_notice_preserves_shared_law_exclusions_and_mit_text(self):
+        root = Path(__file__).resolve().parents[1]
+        notice = (root / "docs/licensing/VIB-NOTICE-REVIEW.md").read_text(encoding="utf-8")
+        self.assertIn("REVIEW_ONLY_NOT_A_GRANT", notice)
+        self.assertIn("excluded from the proposed restrictive grant", notice)
+        self.assertIn("Prior licensed revisions", notice)
+        self.assertIn("Ownership and separate lawful permission", notice)
+        # Verify embedded, verbatim MIT texts against immutable upstream Git blob IDs.
+        import re
+        notices = re.findall(r"```text\n(.*?)\n```", notice, re.DOTALL)
+        self.assertEqual(len(notices), 3)
+        self.assertEqual([lifecycle.blob_id(value + "\n") for value in notices],
+                         ["1466aeaa07d9f7fd502ca697353b5feace5f4e5a","2fca5f35039b9b1eb3c3d193219411a9cf0765f1","30e65839065c0ea88ca00a2de47d65de4313e154"])
+        laws = (root / "ENGINEERING-LAWS.md").read_text(encoding="utf-8")
+        start, end = "<!-- engineering-laws:start -->", "<!-- engineering-laws:end -->"
+        shared = laws[laws.index(start):laws.index(end) + len(end)]
+        for name in ("README.md", "AGENTS.md"):
+            self.assertIn(shared, (root / "install/branch" / name).read_text(encoding="utf-8"))
+
     def test_simulated_approved_legal_package_fresh_install_and_upgrade(self):
         # Test-only simulation of post-approval copying. No GitHub API calls:
         # GitApi writes exclusively to a disposable local bare repository.
