@@ -113,7 +113,10 @@ def plan(source, destination):
         target = destination / relative
         if library.has_link_component(destination, target):
             raise ValueError(f"host path symlink: {relative}")
-        if target.is_dir():
+        if any(parent.exists() and not parent.is_dir()
+               for parent in target.parents if parent.is_relative_to(destination)):
+            entries.append({"path": relative.as_posix(), "action": "CONFLICT_PARENT"})
+        elif target.is_dir():
             entries.append({"path": relative.as_posix(), "action": "CONFLICT_DIRECTORY"})
         elif target.is_file():
             # Do not interpret canonical host data or user documentation as upstream-managed.
@@ -142,7 +145,7 @@ def main(argv=None):
     print(json.dumps(result, indent=2, sort_keys=True))
     if result["status"] == "NAMESPACE_COLLISION":
         return 2
-    return 1 if any(e["action"] in ("REVIEW_LOCAL_DIFFERENCE", "CONFLICT_DIRECTORY")
+    return 1 if any(e["action"] in ("REVIEW_LOCAL_DIFFERENCE", "CONFLICT_DIRECTORY", "CONFLICT_PARENT")
                     for e in result["entries"]) else 0
 
 

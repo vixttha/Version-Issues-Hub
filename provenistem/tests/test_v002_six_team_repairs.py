@@ -73,6 +73,7 @@ class SixTeamRepairs(unittest.TestCase):
         self.assertIn("duplicate entries", " ".join(library.shape([a, b], spec, "item")))
         self.assertIn("duplicate entries", " ".join(library.shape([1, 1.0], spec, "item")))
         self.assertEqual(library.shape([True, 1], spec, "item"), [])
+        self.assertEqual(library.shape([10**28, 10**28 + 1], spec, "item"), [])
         self.assertEqual(library.shape([{"k": 1}, {"k": 2}], spec, "item"), [])
 
     def test_purple_governance_yaml_namespace_collision(self):
