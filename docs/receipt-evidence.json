@@ -327,7 +327,7 @@
       "implemented_in": [
         {
           "path": "tools/lifecycle.py",
-          "anchor": "def upgrade(api, target, expected_sha, source_sha, *, apply=False, owner_approved=False):"
+          "anchor": "if source_sha == old_source:"
         }
       ],
       "tested_by": [
@@ -502,6 +502,34 @@
         {
           "path": "tests/test_lifecycle.py",
           "anchor": "def test_prepared_upgrade_moves_no_ref_and_can_be_confirmed_after_external_advance(self):"
+        }
+      ]
+    },
+    {
+      "id": "v0-0-0-19",
+      "label": "Issue #36 · stable read-only recovery acceptance",
+      "documented_in": [
+        {
+          "path": "docs/v0.0.0.19.md",
+          "anchor": "## Concurrent adopter recovery"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "ledger/issue-versions.json",
+          "anchor": "\"issue\": 36,"
+        }
+      ],
+      "implemented_in": [
+        {
+          "path": "tools/acceptance_snapshot.py",
+          "anchor": "def recover_stable(api, target, requested=None, attempts=3):"
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tests/test_acceptance_snapshot.py",
+          "anchor": "def test_reload_only_after_demonstrated_ref_advance(self):"
         }
       ]
     }

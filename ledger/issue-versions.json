@@ -181,6 +181,16 @@
         "Apply exact expected-old non-force connector update to isolated live pilot; verify entire tree, state and product SHA independently.",
         "Verify live archival and separate recovery ref, preserving original installation and history; record public-runner evidence."
       ]
+    },
+    {
+      "issue": 36,
+      "version": "v0.0.0.19",
+      "state": "in_progress",
+      "acceptance": [
+        "Reload read-only acceptance snapshot only after demonstrated installed-ref advance, bounded to three attempts.",
+        "Reject unrelated errors, disagreement or exhausted attempts; preserve stale-state guard.",
+        "Repair historical Graphify navigation without modifying fix pins; public-runner evidence."
+      ]
     }
   ]
 }

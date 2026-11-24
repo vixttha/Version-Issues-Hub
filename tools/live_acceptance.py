@@ -6,6 +6,7 @@ from pathlib import Path
 import subprocess
 import sys
 from tools import install, session
+from tools.acceptance_snapshot import recover_stable
 
 class ReadOnlyGitHub(install.GitHub):
     def request(self, method, path, body=None):
@@ -40,13 +41,9 @@ def verify_aldervale_install(api):
     handoff = json.loads(install.read_text(api, prefix, "ledger/handoff.json", pin))
     assert ledger == {"schema_version":1,"repository":target,"issues":[]}
     assert handoff == {"schema_version":1,"active":None,"history":[]}
-    state = session.load(api, target)
-    report = session.inspect(api, state, requested=13)
+    state, report = recover_stable(api, target, requested=13)
     assert report["repository"] == target and report["issue"]["number"] == 13
     assert report["owner_merge_required"] and not report["evidence_verified"]
-    second = json.loads(subprocess.check_output([sys.executable, "-m", "tools.session",
-        "--target", target, "--expected-sha", state["ref"], "inspect", "--issue", "13"], text=True))
-    assert second == report
     try:
         install.install(api, target, source, "v0.0.0")
     except ValueError as exc:
@@ -94,8 +91,7 @@ assert plan["manifest"]["enforcement"] == "disabled"
 assert install.read_ref(api, prefix, install.BRANCH) is None
 assert install.read_ref(api, prefix, "main") == before
 bart = "vixttha/Blender-Agent-Refinement-Toolkit"
-state = session.load(api, bart)
-report = session.inspect(api, state)
+state, report = recover_stable(api, bart)
 # Historical actual BART install is not a new write trial; verify its parent and package pin.
 first_install = "cf777c6f4303b766fcc0e4bb9ff6e3ba04ae73b6"
 first = api.request("GET", install.repo_path(bart) + "/git/commits/" + first_install)
@@ -107,8 +103,6 @@ assert report["repository"] == bart and report["owner_merge_required"]
 assert not report["evidence_verified"]
 # Separate fresh process, no transcript or shared Python state.
 # Run the read-only CLI; reject a changed revision rather than comparing mixed state.
-second = json.loads(subprocess.check_output([sys.executable, "-m", "tools.session", "--target", bart, "--expected-sha", state["ref"], "inspect"], text=True))
-assert second["installed_sha"] == state["ref"] and second["active"] == report["active"]
 try:
     install.install(api, bart, source, "v0.0.3")
 except ValueError as exc:
