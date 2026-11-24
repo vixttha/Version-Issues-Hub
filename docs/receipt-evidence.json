@@ -392,6 +392,34 @@
           "anchor": "assert \"advanced\" in stale"
         }
       ]
+    },
+    {
+      "id": "v0-0-0-15",
+      "label": "Issue #30 · bounded ref readback",
+      "documented_in": [
+        {
+          "path": "docs/v0.0.0.15.md",
+          "anchor": "## Recovering a confirmed remote installation"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "ledger/issue-versions.json",
+          "anchor": "\"issue\": 30,"
+        }
+      ],
+      "implemented_in": [
+        {
+          "path": "tools/install.py",
+          "anchor": "def wait_ref(api, prefix, branch, expected, previous=None):"
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tests/test_install.py",
+          "anchor": "def test_wait_ref_tolerates_only_expected_previous_state(self):"
+        }
+      ]
     }
   ]
 }

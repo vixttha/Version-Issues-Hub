@@ -292,8 +292,7 @@ def save(api, state, ledger, handoff, apply=False):
     install.require(install.SHA, new, "handoff commit")
     # Fast-forward-only CAS: a divergent writer cannot overwrite a competing handoff.
     api.request("PATCH", prefix + "/git/refs/heads/" + install.BRANCH, {"sha": new, "force": False})
-    if install.read_ref(api, prefix, install.BRANCH) != new:
-        raise ValueError("Handoff ref changed; inspect before retry")
+    install.wait_ref(api, prefix, install.BRANCH, new, old)
     return {"status": "saved", "installed_sha": new}
 
 def main():

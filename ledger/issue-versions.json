@@ -141,6 +141,16 @@
         "Verify exact state digests and product ref, duplicate/stale refusal, durable archive and fresh process recovery.",
         "Preserve live installation and archive; no automatic deletion or live adopter mutation; record exact public-runner evidence."
       ]
+    },
+    {
+      "issue": 30,
+      "version": "v0.0.0.15",
+      "state": "in_progress",
+      "acceptance": [
+        "Bound post-write read-only ref confirmation; accept only expected SHA and tolerate only absence or known prior SHA.",
+        "Reject divergent and exhausted readback without repeating writes; public-runner regression.",
+        "Resume exact existing pilot installation and prove actual upgrade/archive without recreating or deleting live refs."
+      ]
     }
   ]
 }

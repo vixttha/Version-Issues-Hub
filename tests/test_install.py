@@ -2,6 +2,7 @@ import base64
 import hashlib
 import json
 import unittest
+from unittest.mock import patch
 from tools import install, checkpoint
 
 PIN = "a" * 40
@@ -138,6 +139,30 @@ class InstallerTests(unittest.TestCase):
             with self.subTest(source=source), self.assertRaises(ValueError):
                 install.pinned_package(source)
 
+
+
+    def test_wait_ref_tolerates_only_expected_previous_state(self):
+        with patch.object(install, "read_ref", side_effect=[None, None, INSTALLED]) as read, \
+             patch.object(install.time, "sleep"):
+            self.assertEqual(install.wait_ref(self.api,PREFIX,install.BRANCH,INSTALLED),INSTALLED)
+            self.assertEqual(read.call_count,3)
+        with patch.object(install,"read_ref",side_effect=[PRODUCT,INSTALLED]), \
+             patch.object(install.time,"sleep"):
+            self.assertEqual(install.wait_ref(self.api,PREFIX,install.BRANCH,INSTALLED,PRODUCT),INSTALLED)
+        self.assertEqual(self.api.writes,[])
+
+    def test_wait_ref_rejects_divergent_and_exhausted_readback(self):
+        with patch.object(install,"read_ref",return_value=PRODUCT) as read, \
+             patch.object(install.time,"sleep"):
+            with self.assertRaisesRegex(ValueError,"Unexpected ref"):
+                install.wait_ref(self.api,PREFIX,install.BRANCH,INSTALLED)
+            self.assertEqual(read.call_count,1)
+        with patch.object(install,"read_ref",return_value=None) as read, \
+             patch.object(install.time,"sleep"):
+            with self.assertRaisesRegex(ValueError,"not confirmed"):
+                install.wait_ref(self.api,PREFIX,install.BRANCH,INSTALLED)
+            self.assertEqual(read.call_count,6)
+        self.assertEqual(self.api.writes,[])
 
 if __name__ == "__main__":
     unittest.main()

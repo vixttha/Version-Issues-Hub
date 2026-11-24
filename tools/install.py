@@ -7,6 +7,7 @@ import json
 import os
 import re
 import sys
+import time
 from urllib.error import HTTPError
 from urllib.parse import quote
 from urllib.request import Request, build_opener, HTTPRedirectHandler
@@ -80,6 +81,21 @@ def read_ref(api, prefix, branch):
     if data.get("ref") != "refs/heads/" + branch or data["object"]["type"] != "commit":
         raise ValueError("Unexpected GitHub ref response")
     return require(SHA, data["object"]["sha"], "ref revision")
+
+def wait_ref(api, prefix, branch, expected, previous=None):
+    """After a successful write, tolerate only absent/known-old readback, never repeat the write."""
+    require(SHA, expected, "expected ref revision")
+    if previous is not None:
+        require(SHA, previous, "previous ref revision")
+    for delay in (0, 0.25, 0.5, 1, 2, 4):
+        if delay:
+            time.sleep(delay)
+        observed = read_ref(api, prefix, branch)
+        if observed == expected:
+            return expected
+        if observed != previous:
+            raise ValueError("Unexpected ref revision after write; inspect before retrying")
+    raise ValueError("Ref readback not confirmed; inspect before retrying")
 
 def read_text(api, prefix, path, ref):
     require(SHA, ref, "file revision")
@@ -183,8 +199,7 @@ def install(api, target, source_sha, baseline, apply=False):
     })["sha"], "installed commit")
     # Create-only: GitHub rejects an existing branch even in a race.
     api.request("POST", prefix + "/git/refs", {"ref": "refs/heads/" + BRANCH, "sha": commit})
-    if read_ref(api, prefix, BRANCH) != commit:
-        raise ValueError("Install ref read-back mismatch; inspect before retrying")
+    wait_ref(api, prefix, BRANCH, commit)
     installed = api.request("GET", prefix + "/git/commits/" + commit)
     if installed.get("sha") != commit or installed["tree"]["sha"] != tree:
         raise ValueError("Installed tree read-back mismatch")

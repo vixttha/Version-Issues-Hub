@@ -25,7 +25,12 @@ def main():
     assert meta["id"] == TARGET_ID and meta["full_name"] == TARGET
     assert meta["private"] is False and meta["default_branch"] == "main"
     assert install.read_ref(api,prefix,"main") == PRODUCT
-    assert install.read_ref(api,prefix,install.BRANCH) is None, "Pilot already installed; inspect rather than retry"
+    resume = os.environ.get("VIB_RESUME_SHA")
+    if resume:
+        install.require(install.SHA, resume, "exact recovered install")
+        assert install.read_ref(api,prefix,install.BRANCH) == resume
+    else:
+        assert install.read_ref(api,prefix,install.BRANCH) is None, "Pilot already installed; inspect rather than retry"
     def cli(module,*args, expect_fail=False):
         p = subprocess.run([sys.executable,"-m",module,"--target",TARGET,*args],
                            capture_output=True,text=True,check=False)
@@ -36,12 +41,20 @@ def main():
             raise RuntimeError(p.stderr.strip())
         return json.loads(p.stdout)
     args = ("--source-sha",OLD,"--baseline","v0.0.0")
-    plan = cli("tools.install",*args)
-    assert plan["status"] == "planned"
-    assert install.read_ref(api,prefix,install.BRANCH) is None
-    first = cli("tools.install",*args,"--apply")
-    assert first["status"] == "installed"
-    sha = first["installed_sha"]
+    if resume:
+        sha = resume
+        commit = api.request("GET",prefix+"/git/commits/"+sha)
+        assert commit["sha"] == sha and [p["sha"] for p in commit["parents"]] == [PRODUCT]
+        _, entries = lifecycle.tree_entries(api,prefix,sha)
+        expected = set(install.source_files(api,OLD)) | {"vib-install.json",session.LEDGER,session.HANDOFF}
+        assert {p for p,v in entries.items() if v[0] != "tree"} == expected
+    else:
+        plan = cli("tools.install",*args)
+        assert plan["status"] == "planned"
+        assert install.read_ref(api,prefix,install.BRANCH) is None
+        first = cli("tools.install",*args,"--apply")
+        assert first["status"] == "installed"
+        sha = first["installed_sha"]
     initial = session.load(api,TARGET,sha)
     assert initial["ledger"]["issues"] == [] and initial["handoff"]["active"] is None
     assert initial["manifest"]["source_sha"] == OLD
@@ -75,7 +88,7 @@ def main():
         "archive_branch":archive["archive_branch"],"archive_sha":final,"state_sha256":before,
         "product_before":PRODUCT,"product_after":PRODUCT,"duplicate_install_refused":True,
         "stale_upgrade_refused":True,"fresh_process_recovered":True,"live_deletion_performed":False,
-        "run":os.environ["GITHUB_RUN_ID"],"attempt":os.environ["GITHUB_RUN_ATTEMPT"]}),end="")
+        "recovered_prior_install":bool(resume),"run":os.environ["GITHUB_RUN_ID"],"attempt":os.environ["GITHUB_RUN_ATTEMPT"]}),end="")
 
 if __name__ == "__main__":
     main()
