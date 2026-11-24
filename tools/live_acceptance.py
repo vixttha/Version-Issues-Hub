@@ -66,7 +66,8 @@ assert receipt["status"] == "candidate_only" and receipt["source"] == archive_so
 assert "VIB remains independent of Provenistem" in read("PROJECT.md", pins["Provenistem"])
 assert "VIB remains independent of Provenistem" in read("workspace/v0.0.1/DRAFT.md", pins["README HQ"])
 assert "Lydite Test Vault" in read("README.md", pins["Lydite"])
-assert "verify_receipts.py" in read("starter/test-vault/README.md", pins["Lydite"])
+assert "Verify execution receipts" in read("starter/test-vault/README.md", pins["Lydite"])
+assert len(read("starter/test-vault/verify_receipts.py", pins["Lydite"])) > 0
 assert "Provenistem" in read("install/branch/AGENTS.md", source)
 assert all(not path.startswith(("provenistem/", "veraphify/", "test-vault/")) for path in plan["paths"])
 print(json.dumps({
