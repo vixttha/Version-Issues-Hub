@@ -92,9 +92,8 @@ class ModularityContractTests(unittest.TestCase):
                     "External project-specific GitHub repository URL in neutral product doc",
                 )
 
-    def test_no_actual_adopter_records_or_authority_files_in_standalone_root(self):
-        for section in ("ideas", "features"):
-            self.assertFalse(list((ROOT / section / "records").glob("*.json")))
+    def test_no_host_authority_files_in_standalone_root(self):
+        # Empty-record checks belong to the publisher-only library.py check --expect-empty.
         for name in ("AGENTS.md", "GOVERNANCE-START.md", "src", "governance", ".github", "ops"):
             self.assertFalse((ROOT / name).exists(), name)
 
