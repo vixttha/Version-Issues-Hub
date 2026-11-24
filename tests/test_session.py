@@ -237,3 +237,30 @@ class SessionTests(unittest.TestCase):
             self.advance(return_to_head=True)
         self.assertEqual(self.state["handoff"]["active"]["phase"], "Head")
         self.assertEqual(self.api.writes, [])
+
+
+    def test_orphan_in_progress_rows_fail_closed(self):
+        self.state["ledger"]["issues"].append({"issue": 247, "version": "v1.0.6.1",
+            "state": "in_progress", "acceptance": ["test"]})
+        before = copy.deepcopy(self.state)
+        with self.assertRaisesRegex(ValueError, "Orphan"):
+            session.validate_handoff(self.state["handoff"], self.state["ledger"])
+        with self.assertRaisesRegex(ValueError, "Orphan"):
+            session.claim(self.api, self.state, 248, ["test"], "New work")
+        self.assertEqual(self.state, before)
+        self.assertEqual(self.api.writes, [])
+
+    def test_multiple_in_progress_rows_fail_closed(self):
+        self.claim()
+        self.state["ledger"]["issues"].append({"issue": 248, "version": "v1.0.6.2",
+            "state": "in_progress", "acceptance": ["test"]})
+        with self.assertRaisesRegex(ValueError, "sole in-progress"):
+            session.validate_handoff(self.state["handoff"], self.state["ledger"])
+        with self.assertRaisesRegex(ValueError, "sole in-progress"):
+            session.advance(self.api, self.state, "next", return_to_head=True)
+        self.state["ledger"]["issues"][1]["state"] = "assigned"
+        session.validate_handoff(self.state["handoff"], self.state["ledger"])
+        self.state["ledger"]["issues"][0]["state"] = "assigned"
+        with self.assertRaisesRegex(ValueError, "sole in-progress"):
+            session.validate_handoff(self.state["handoff"], self.state["ledger"])
+        self.assertEqual(self.api.writes, [])

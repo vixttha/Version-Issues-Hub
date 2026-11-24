@@ -24,6 +24,8 @@ The second command plans only. Add --apply after owner approval and authorizatio
 
 Every mutation is a dry run unless --apply is passed with the exact current --expected-sha. The tool writes only the ledger and handoff in a new fast-forward commit on this branch. A stale concurrent writer fails and must reload. Direct GitHub writes can bypass these cooperative constraints; no merge enforcement is active.
 
+The installed ledger must contain exactly one in-progress row matching the active handoff, or no in-progress rows when the slot is empty. Legacy orphan or competing rows stop recovery and writes with an explicit reconciliation error; no record is silently deleted or reassigned. An owner must review the historical state and authorize a separate repair.
+
 ## Recovery when GitHub state changes
 
 Read-only inspect distinguishes a matching merged PR (`merged_reconciliation_required`), a closed unmerged PR (`closed_pr_rework_required`), a changed candidate (`stale_candidate`), an unverifiable PR state (`pr_state_unverified`), and a non-open active issue (`issue_reconciliation_required`). A different requested issue remains blocked while the active handoff exists. Normal verification transitions require an open issue and open unmerged PR. Return to Head for a recorded owner decision or rework as appropriate; a merged PR without required verification is not automatically accepted. No status changes the repository.

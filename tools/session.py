@@ -61,11 +61,14 @@ def validate_handoff(handoff, ledger):
         raise ValueError("Invalid handoff schema")
     if type(handoff["schema_version"]) is not int or handoff["schema_version"] != 1 or not isinstance(handoff["history"], list):
         raise ValueError("Invalid handoff version or history")
+    checkpoint.bindings(ledger)
+    in_progress = {row["issue"] for row in ledger["issues"] if row["state"] == "in_progress"}
     if handoff["active"] is not None:
         validate_active(handoff["active"], ledger)
-        row = next(x for x in ledger["issues"] if x["issue"] == handoff["active"]["issue"])
-        if row["state"] != "in_progress":
-            raise ValueError("Active issue must be in progress")
+        if in_progress != {handoff["active"]["issue"]}:
+            raise ValueError("Active issue must be the sole in-progress row; owner reconciliation required")
+    elif in_progress:
+        raise ValueError("Orphan in-progress issue without active handoff; owner reconciliation required")
     for record in handoff["history"]:
         if not isinstance(record, dict) or set(record) != {"handoff", "disposition", "decision", "merged_sha"}:
             raise ValueError("Invalid archived handoff")
@@ -176,6 +179,7 @@ def inspect(api, state, requested=None):
             "owner_merge_required": True, "evidence_verified": False}
 
 def claim(api, state, number, criteria, note):
+    validate_handoff(state["handoff"], state["ledger"])
     item = get_issue(api, state, number)
     if item.get("state") != "open":
         raise ValueError("Only an open GitHub issue can be claimed")
@@ -203,6 +207,7 @@ def claim(api, state, number, criteria, note):
 
 def advance(api, state, note, *, fix=None, candidate=None, pr=None, evidence=None,
             rework=False, return_to_head=False):
+    validate_handoff(state["handoff"], state["ledger"])
     ledger = copy.deepcopy(state["ledger"])
     handoff = copy.deepcopy(state["handoff"])
     active = handoff["active"]
@@ -241,6 +246,7 @@ def advance(api, state, note, *, fix=None, candidate=None, pr=None, evidence=Non
     return ledger, handoff
 
 def finish(api, state, disposition, decision):
+    validate_handoff(state["handoff"], state["ledger"])
     ledger = copy.deepcopy(state["ledger"])
     handoff = copy.deepcopy(state["handoff"])
     active = handoff["active"]
@@ -267,6 +273,7 @@ def finish(api, state, disposition, decision):
     return ledger, handoff
 
 def reconcile(api, state, number, decision):
+    validate_handoff(state["handoff"], state["ledger"])
     ledger = copy.deepcopy(state["ledger"])
     handoff = copy.deepcopy(state["handoff"])
     if handoff["active"] is not None:
@@ -288,6 +295,7 @@ def reconcile(api, state, number, decision):
     return ledger, handoff
 
 def save(api, state, ledger, handoff, apply=False):
+    validate_handoff(state["handoff"], state["ledger"])
     checkpoint.check_history(ledger, state["ledger"])
     validate_handoff(handoff, ledger)
     if handoff["history"][:len(state["handoff"]["history"])] != state["handoff"]["history"]:
