@@ -6,3 +6,5 @@
 README workspace versions are independent of VIB product checkpoints and README HQ's upstream v0.0.6. v0.0.1 is owner accepted, not published. Keep this permanent branch separate from main and publish only an owner-approved README and associated outputs, not the template machinery.
 
 - [v0.0.2 unpublished preflight](v0.0.2/README.md)
+
+- [v0.0.3 unpublished destination rehearsal](v0.0.3/README.md)
