@@ -17,3 +17,18 @@ If the host has no shell, use its GitHub read tools to open the exact branch and
 ## Default operating mode
 
 Use Standard VIB and [STANDARD.md](STANDARD.md). Never require a GitHub App, branch protection or a separate repository to adopt VIB. Stop on invalid or stale evidence, return to Head, and require owner review of exact checkout logs and acceptance results before integration. Standard validation cannot prevent GitHub merges. Optional hard enforcement requires a separate owner decision and live proof.
+
+## Owner-approved engineering ecosystem laws
+
+Decision ENGINEERING-ECOSYSTEM-LAWS-001 (2026-11-24). Mission: Build a toolkit that gives compatible LLM agents a structured engineering environment, rather than building another AI model.
+
+<!-- engineering-laws:start -->
+1. **Independence:** Every tool must remain independently installable, usable, versioned and maintained.
+2. **Composability:** Installing additional tools expands the agent's capabilities without creating mandatory dependencies.
+3. **Portability:** No mandatory AI provider, model, agent harness or paid execution service.
+4. **Persistence:** Project knowledge, decisions, progress and evidence survive the termination of an AI session.
+5. **Verification:** Development claims must be supported by reproducible, revision-bound evidence.
+6. **Owner authority:** The human retains control over scope, architectural decisions, integration and releases.
+<!-- engineering-laws:end -->
+
+Remain standalone. Other tools are optional; their absence must not block normal operation. Preserve project-local authority and evidence; never automatically install, merge, synchronize or write to another tool's branch. No mandatory seventh coordinator, paid service or AI provider. Existing product scope remains authoritative. Change these laws only by explicit owner approval.

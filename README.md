@@ -10,3 +10,7 @@ Start with [the issue-version ledger](ledger/issue-versions.json), [the checkpoi
 Standalone branch installation candidate: [v0.0.0.3](docs/v0.0.0.3.md). VIB owns its package and workflow independently of other templates.
 
 Agent package: [v0.0.0.4](docs/v0.0.0.4.md), including batched handoffs in [WORKFLOW.md](install/branch/WORKFLOW.md). Owner-enabled [merge gate candidate](install/branch/GATE.md) is not live enforcement; Standard VIB is the default; the disposable GitHub pilot gates only optional hard enforcement. See [standard validation](install/branch/STANDARD.md).
+
+## Engineering ecosystem
+
+[Owner-approved six architectural laws](ENGINEERING-LAWS.md) apply to this product. Standalone operation and owner authority remain unchanged. The product has no mandatory coordination-tool dependency.
