@@ -49,7 +49,9 @@ def current(api, state):
             or install.read_ref(api, prefix, manifest["product_branch"]) != state["product_sha"]):
         raise ValueError("Target refs advanced; reload before applying")
 
-def upgrade(api, target, expected_sha, source_sha, *, apply=False, owner_approved=False):
+def upgrade(api, target, expected_sha, source_sha, *, apply=False, owner_approved=False, prepare_only=False):
+    if prepare_only and not apply:
+        raise ValueError("Prepare-only requires explicitly approved object creation")
     install.require(install.SHA, source_sha, "new pinned source")
     state = idle_state(api, target, expected_sha)
     manifest, prefix = state["manifest"], state["prefix"]
@@ -104,6 +106,8 @@ def upgrade(api, target, expected_sha, source_sha, *, apply=False, owner_approve
     if proposed_tree != tree or {p:v for p,v in proposed.items() if v[0] != "tree"} != expected:
         raise ValueError("Proposed upgrade tree changed unrelated paths")
     current(api,state)
+    if prepare_only:
+        return {**plan,"status":"prepared","prepared_sha":commit,"tree_sha":tree,"ref_moved":False}
     api.request("PATCH",prefix+"/git/refs/heads/"+install.BRANCH,{"sha":commit,"force":False})
     install.wait_ref(api,prefix,install.BRANCH,commit,expected_sha)
     observed = session.load(api,target,commit)
@@ -143,6 +147,7 @@ def main():
     sub=p.add_subparsers(dest="command",required=True)
     u=sub.add_parser("upgrade")
     u.add_argument("--source-sha",required=True)
+    u.add_argument("--prepare-only",action="store_true",help="Create verified objects, never move a ref")
     r=sub.add_parser("prepare-retirement")
     for command in (u,r):
         command.add_argument("--apply",action="store_true")
@@ -154,7 +159,7 @@ def main():
     try:
         api=install.GitHub(token)
         opts={"apply":args.apply,"owner_approved":args.owner_approved}
-        result=(upgrade(api,args.target,args.expected_sha,args.source_sha,**opts) if args.command=="upgrade"
+        result=(upgrade(api,args.target,args.expected_sha,args.source_sha,prepare_only=args.prepare_only,**opts) if args.command=="upgrade"
                 else prepare_retirement(api,args.target,args.expected_sha,**opts))
         print(install.render(result),end="")
     except (ValueError, KeyError, TypeError, OSError, install.ApiError) as exc:

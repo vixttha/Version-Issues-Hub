@@ -476,6 +476,34 @@
           "anchor": "def test_api_get_timeout_retries_direct_and_wrapped(self):"
         }
       ]
+    },
+    {
+      "id": "v0-0-0-18",
+      "label": "Issue #35 · verified alternative upgrade transport",
+      "documented_in": [
+        {
+          "path": "install/branch/LIFECYCLE.md",
+          "anchor": "### Alternative transport after a ref-update failure"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "ledger/issue-versions.json",
+          "anchor": "\"issue\": 35,"
+        }
+      ],
+      "implemented_in": [
+        {
+          "path": "tools/lifecycle.py",
+          "anchor": "def upgrade(api, target, expected_sha, source_sha, *, apply=False, owner_approved=False, prepare_only=False):"
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tests/test_lifecycle.py",
+          "anchor": "def test_prepared_upgrade_moves_no_ref_and_can_be_confirmed_after_external_advance(self):"
+        }
+      ]
     }
   ]
 }

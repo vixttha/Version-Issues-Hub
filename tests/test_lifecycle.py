@@ -231,3 +231,28 @@ class LifecycleTests(unittest.TestCase):
         self.assertEqual(api.ref(install.BRANCH),competing[0])
         self.assertEqual(api.read(competing[0],"notes/custom.md"),"concurrent work\n")
         self.assertEqual(api.ref("main"),api.product)
+
+
+    def test_prepared_upgrade_moves_no_ref_and_can_be_confirmed_after_external_advance(self):
+        api=self.api
+        result=lifecycle.upgrade(api,REPO,api.old,NEW,apply=True,owner_approved=True,prepare_only=True)
+        self.assertEqual(result["status"],"prepared")
+        self.assertFalse(result["ref_moved"])
+        self.assertEqual(api.ref(install.BRANCH),api.old)
+        self.assertEqual(api.ref("main"),api.product)
+        self.assertEqual([w[0] for w in api.writes],["POST","POST"])
+        new=result["prepared_sha"]
+        self.assertEqual(api.git("rev-parse",new+"^"),api.old)
+        for p in (session.LEDGER,session.HANDOFF,"notes/custom.md"):
+            self.assertEqual(api.git("rev-parse",api.old+":"+p),api.git("rev-parse",new+":"+p))
+        api.request("PATCH",PREFIX+"/git/refs/heads/"+install.BRANCH,{"sha":new,"force":False})
+        self.assertEqual(session.load(api,REPO,new)["manifest"]["source_sha"],NEW)
+        archive=lifecycle.prepare_retirement(api,REPO,new,apply=True,owner_approved=True)
+        self.assertEqual(api.ref(archive["archive_branch"]),new)
+
+    def test_prepare_requires_explicit_apply_and_owner(self):
+        with self.assertRaisesRegex(ValueError,"Prepare-only requires"):
+            lifecycle.upgrade(self.api,REPO,self.api.old,NEW,prepare_only=True)
+        with self.assertRaisesRegex(ValueError,"owner approval"):
+            lifecycle.upgrade(self.api,REPO,self.api.old,NEW,apply=True,prepare_only=True)
+        self.assertEqual(self.api.writes,[])

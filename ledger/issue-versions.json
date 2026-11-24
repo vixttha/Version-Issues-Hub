@@ -171,6 +171,16 @@
         "Redact transport details and refuse retry of uncertain mutations; fail closed on other URL errors.",
         "Public runner regression and exact receipt/Graphify evidence; retain unresolved live remote upgrade separately."
       ]
+    },
+    {
+      "issue": 35,
+      "version": "v0.0.0.18",
+      "state": "in_progress",
+      "acceptance": [
+        "Explicit prepared upgrade creates verified objects without moving refs; reject missing owner approval.",
+        "Apply exact expected-old non-force connector update to isolated live pilot; verify entire tree, state and product SHA independently.",
+        "Verify live archival and separate recovery ref, preserving original installation and history; record public-runner evidence."
+      ]
     }
   ]
 }

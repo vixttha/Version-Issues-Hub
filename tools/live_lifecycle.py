@@ -26,9 +26,13 @@ def main():
     assert meta["private"] is False and meta["default_branch"] == "main"
     assert install.read_ref(api,prefix,"main") == PRODUCT
     resume = os.environ.get("VIB_RESUME_SHA")
+    prepared = os.environ.get("VIB_PREPARED_SHA")
+    if prepared:
+        install.require(install.SHA, prepared, "prepared upgraded revision")
+        assert resume and install.read_ref(api,prefix,install.BRANCH) == prepared
     if resume:
         install.require(install.SHA, resume, "exact recovered install")
-        assert install.read_ref(api,prefix,install.BRANCH) == resume
+        assert install.read_ref(api,prefix,install.BRANCH) == (prepared or resume)
     else:
         assert install.read_ref(api,prefix,install.BRANCH) is None, "Pilot already installed; inspect rather than retry"
     def cli(module,*args, expect_fail=False):
@@ -55,20 +59,43 @@ def main():
         first = cli("tools.install",*args,"--apply")
         assert first["status"] == "installed"
         sha = first["installed_sha"]
-    initial = session.load(api,TARGET,sha)
-    assert initial["ledger"]["issues"] == [] and initial["handoff"]["active"] is None
-    assert initial["manifest"]["source_sha"] == OLD
+    if prepared:
+        # Independently reconstruct the exact expected upgraded tree from the archived old commit.
+        old_manifest = json.loads(install.read_text(api,prefix,"vib-install.json",sha))
+        assert old_manifest["source_sha"] == OLD and old_manifest["target_repository_id"] == TARGET_ID
+        assert json.loads(install.read_text(api,prefix,session.LEDGER,sha))["issues"] == []
+        assert json.loads(install.read_text(api,prefix,session.HANDOFF,sha))["active"] is None
+        parent = api.request("GET",prefix+"/git/commits/"+prepared)
+        assert [p["sha"] for p in parent["parents"]] == [sha]
+        _, old_tree = lifecycle.tree_entries(api,prefix,sha)
+        _, actual = lifecycle.tree_entries(api,prefix,prepared)
+        new_files = install.source_files(api,new)
+        expected_manifest = {**old_manifest,"source_sha":new,"package_files_sha256":lifecycle.digest_files(new_files)}
+        expected_leaves = {p:v for p,v in old_tree.items() if v[0] != "tree"}
+        expected_leaves.update({p:("blob","100644",lifecycle.blob_id(s)) for p,s in new_files.items()})
+        expected_leaves["vib-install.json"] = ("blob","100644",lifecycle.blob_id(install.render(expected_manifest)))
+        assert {p:v for p,v in actual.items() if v[0] != "tree"} == expected_leaves
+    else:
+        initial = session.load(api,TARGET,sha)
+        assert initial["ledger"]["issues"] == [] and initial["handoff"]["active"] is None
+        assert initial["manifest"]["source_sha"] == OLD
     state_paths = (session.LEDGER,session.HANDOFF)
     before = {p:hashlib.sha256(install.read_text(api,prefix,p,sha).encode()).hexdigest() for p in state_paths}
     duplicate = cli("tools.install",*args,"--apply",expect_fail=True)
     assert "already exists" in duplicate
     up_args = ("--expected-sha",sha,"upgrade","--source-sha",new)
-    upgrade_plan = cli("tools.lifecycle",*up_args)
-    assert upgrade_plan["status"] == "planned"
-    assert install.read_ref(api,prefix,install.BRANCH) == sha
-    upgraded = cli("tools.lifecycle",*up_args,"--apply","--owner-approved")
-    final = upgraded["installed_sha"]
-    assert upgraded["status"] == "upgraded"
+    if prepared:
+        final = prepared
+    else:
+        upgrade_plan = cli("tools.lifecycle",*up_args)
+        assert upgrade_plan["status"] == "planned"
+        assert install.read_ref(api,prefix,install.BRANCH) == sha
+        upgraded = cli("tools.lifecycle",*up_args,"--apply","--owner-approved","--prepare-only")
+        assert upgraded["status"] == "prepared" and upgraded["ref_moved"] is False
+        assert install.read_ref(api,prefix,install.BRANCH) == sha
+        print(install.render({**upgraded,"kind":"live_remote_upgrade_prepared","initial_install":sha,
+            "run":os.environ["GITHUB_RUN_ID"],"attempt":os.environ["GITHUB_RUN_ATTEMPT"]}),end="")
+        return
     current = session.load(api,TARGET,final)
     assert current["manifest"]["source_sha"] == new
     assert current["manifest"]["enforcement"] == "disabled"
@@ -81,11 +108,17 @@ def main():
     assert install.read_ref(api,prefix,archive["archive_branch"]) == final
     assert install.read_ref(api,prefix,install.BRANCH) == final
     assert install.read_ref(api,prefix,"main") == PRODUCT
+    # Prove the archived commit can be restored under a separate pilot-only ref, never delete the install.
+    recovery = "archive/vib-recovery/" + final
+    assert install.read_ref(api,prefix,recovery) is None
+    api.request("POST",prefix+"/git/refs",{"ref":"refs/heads/"+recovery,"sha":final})
+    install.wait_ref(api,prefix,recovery,final)
+    assert lifecycle.tree_entries(api,prefix,final)[0] == lifecycle.tree_entries(api,prefix,install.read_ref(api,prefix,recovery))[0]
     resumed = cli("tools.session","--expected-sha",final,"inspect")
     assert resumed["installed_sha"] == final and resumed["status"] == "head_scope_required"
     print(install.render({"kind":"live_remote_cli_lifecycle","repository":TARGET,"repository_id":TARGET_ID,
         "source_before":OLD,"source_after":new,"initial_install":sha,"upgraded_install":final,
-        "archive_branch":archive["archive_branch"],"archive_sha":final,"state_sha256":before,
+        "archive_branch":archive["archive_branch"],"archive_sha":final,"recovery_branch":recovery,"recovery_sha":final,"state_sha256":before,
         "product_before":PRODUCT,"product_after":PRODUCT,"duplicate_install_refused":True,
         "stale_upgrade_refused":True,"fresh_process_recovered":True,"live_deletion_performed":False,
         "recovered_prior_install":bool(resume),"run":os.environ["GITHUB_RUN_ID"],"attempt":os.environ["GITHUB_RUN_ATTEMPT"]}),end="")
