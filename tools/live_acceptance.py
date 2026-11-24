@@ -27,6 +27,13 @@ assert install.read_ref(api, prefix, "main") == before
 bart = "vixttha/Blender-Agent-Refinement-Toolkit"
 state = session.load(api, bart)
 report = session.inspect(api, state)
+# Historical actual BART install is not a new write trial; verify its parent and package pin.
+first_install = "cf777c6f4303b766fcc0e4bb9ff6e3ba04ae73b6"
+first = api.request("GET", install.repo_path(bart) + "/git/commits/" + first_install)
+original = json.loads(install.read_text(api, install.repo_path(bart), "vib-install.json", first_install))
+assert [p["sha"] for p in first["parents"]] == [original["product_baseline_sha"]]
+assert original["target_repository"] == bart and original["install_branch"] == install.BRANCH
+assert original["source_sha"] == state["manifest"]["source_sha"]
 assert report["repository"] == bart and report["owner_merge_required"]
 assert not report["evidence_verified"]
 # Separate fresh process, no transcript or shared Python state.
@@ -58,13 +65,15 @@ assert set(receipt["lookups"]) == {item["version"].replace(".", "-") for item in
 assert receipt["status"] == "candidate_only" and receipt["source"] == archive_source
 assert "VIB remains independent of Provenistem" in read("PROJECT.md", pins["Provenistem"])
 assert "VIB remains independent of Provenistem" in read("workspace/v0.0.1/DRAFT.md", pins["README HQ"])
-assert "Lydite" in read("starter/test-vault/README.md", pins["Lydite"])
+assert "Lydite Test Vault" in read("README.md", pins["Lydite"])
+assert "verify_receipts.py" in read("starter/test-vault/README.md", pins["Lydite"])
 assert "Provenistem" in read("install/branch/AGENTS.md", source)
 assert all(not path.startswith(("provenistem/", "veraphify/", "test-vault/")) for path in plan["paths"])
 print(json.dumps({
     "kind": "read_only_live_acceptance",
     "source": source, "install_plan_paths": plan["paths"],
     "existing_adopter": bart, "adopter_installed_sha": state["ref"],
+    "historical_install_sha": first_install, "historical_product_parent": original["product_baseline_sha"],
     "adopter_package_sha": state["manifest"]["source_sha"],
     "adopter_state": report["status"], "active": report["active"],
     "fresh_process_match": True, "occupied_install_refused": True,
