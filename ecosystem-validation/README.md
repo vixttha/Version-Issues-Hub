@@ -19,3 +19,4 @@ Working category: **agent engineering toolkit**. Working positioning: Six indepe
 - [Verification receipt](VERIFICATION.md) — 64 configurations, 192 native smoke checks, 2 negative controls.
 - [Measured benchmark pilot](benchmark-pilot-1.md) — no observed accuracy gain; no full-tool efficacy claim.
 - [Working commercial identity and licensing inventory](COMMERCIAL-OFFER.md).
+- [Historical dogfooding audit](HISTORICAL-DOGFOODING.md) — actual self-use, cross-product contributions, repairs, and persistent records; distinct from causal benchmarking.

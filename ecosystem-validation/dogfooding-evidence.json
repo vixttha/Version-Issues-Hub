@@ -1,0 +1,544 @@
+{
+  "schema_version": 1,
+  "as_of": "2026-11-24",
+  "method": "Retrospective audit; exact source blobs, independently queried Actions run metadata, selected logs and PR dispositions. Historical source and workflow checkout may differ; relationship stated in each case. A successful run may deliberately reproduce a bug. Not a causal benchmark.",
+  "cases": [
+    {
+      "id": "D01",
+      "provider": "Provenistem",
+      "beneficiary": "Provenistem",
+      "classification": "self-use",
+      "scope": "Populated catalog on permanent workspace",
+      "source": {
+        "repository": "vixttha/Provenistem",
+        "commit": "8c9647d1cd168642ba4dd3b2b5ec3045634d1bcb",
+        "path": "catalog/features/records/FEAT-000016.json",
+        "blob": "3c63d19bed49fe1aa9154c5cb8e028eae17bdad7"
+      },
+      "run": {
+        "repository": "vixttha/Provenistem",
+        "id": 44696477080,
+        "head": "b7da387da5838216e3c7f42fa807b80523d8da5d",
+        "attempt": 1,
+        "conclusion": "success"
+      },
+      "outcome": "First self-catalog: 10 ideas, 15 features; Ubuntu and Windows validate populated and blank starter. Later catalog has 11 ideas, 16 features. Receipt is for first snapshot, not later records.",
+      "refs": [
+        "https://github.com/vixttha/Provenistem/tree/b7da387da5838216e3c7f42fa807b80523d8da5d/catalog"
+      ]
+    },
+    {
+      "id": "D02",
+      "provider": "Version-Issues-Hub",
+      "beneficiary": "Version-Issues-Hub",
+      "classification": "self-use",
+      "scope": "Candidate issue ledger; not released",
+      "source": {
+        "repository": "vixttha/Version-Issues-Hub",
+        "commit": "dad94766a7462a67098be7408f49d0eeeadc3af0",
+        "path": "ledger/issue-versions.json",
+        "blob": "a1ac90fcc70458cfa651ecbae3a10cd0d385e69c"
+      },
+      "run": {
+        "repository": "vixttha/Version-Issues-Hub",
+        "id": 45340848541,
+        "head": "dad94766a7462a67098be7408f49d0eeeadc3af0",
+        "attempt": 1,
+        "conclusion": "success"
+      },
+      "outcome": "17 actual development issue assignments at .17 with acceptance criteria, including batching and timeout repair; regression and Graphify passed. Later .18 ledger has 18 assignments but newer CI is not all green.",
+      "refs": [
+        "https://github.com/vixttha/Version-Issues-Hub/pull/2"
+      ]
+    },
+    {
+      "id": "D03",
+      "provider": "Lydite-Test-Vault-Template",
+      "beneficiary": "Lydite-Test-Vault-Template",
+      "classification": "self-use",
+      "scope": "Released Lydite v0.0.4 source",
+      "source": {
+        "repository": "vixttha/Lydite-Test-Vault-Template",
+        "commit": "87d25d80d3154d295052412b64b29a0f0f152c27",
+        "path": "README.md",
+        "blob": "0ae785061e10c95eab3202ea7d43725739c72076"
+      },
+      "run": {
+        "repository": "vixttha/Lydite-Test-Vault-Template",
+        "id": 44506598515,
+        "head": "87d25d80d3154d295052412b64b29a0f0f152c27",
+        "attempt": 1,
+        "conclusion": "success"
+      },
+      "outcome": "Five successful jobs: inventory/adoption, language checks on Ubuntu and Windows, archived graph validation, release-candidate receipt. Rejects archive mode and byte drift.",
+      "refs": [
+        "https://github.com/vixttha/Lydite-Test-Vault-Template/releases/tag/v0.0.4",
+        "https://github.com/vixttha/Lydite-Test-Vault-Template/pull/32"
+      ]
+    },
+    {
+      "id": "D04",
+      "provider": "Veraphify",
+      "beneficiary": "Veraphify",
+      "classification": "self-validation",
+      "scope": "Integrated preview; fixture archive demonstration",
+      "source": {
+        "repository": "vixttha/Veraphify",
+        "commit": "e42e9ff321432619a6004a59164f51b002ff6055",
+        "path": "docs/verification.md",
+        "blob": "0fcd7b13c5050b73ac272d3cc041a503d0683443"
+      },
+      "run": {
+        "repository": "vixttha/Veraphify",
+        "id": 44645804412,
+        "head": "3aa88d323bebcca9c025cf4be135f7bf9497fb88",
+        "attempt": 1,
+        "conclusion": "success"
+      },
+      "outcome": "Veraphify executes its own documented two-version lookup workflow, preserving the old archive and verifying different source lines. Source document and runner workflow are separately pinned. Not proof that its own version archive was published.",
+      "refs": [
+        "https://github.com/vixttha/Veraphify/pull/55"
+      ]
+    },
+    {
+      "id": "D05",
+      "provider": "README-HQ",
+      "beneficiary": "README-HQ",
+      "classification": "self-use",
+      "scope": "Permanent README HQ branch",
+      "source": {
+        "repository": "vixttha/README-HQ",
+        "commit": "788f2127d3cf004ac5615d21364f5b56e4f7dd31",
+        "path": "AGENTS.md",
+        "blob": "15bdd970ca5745dc6d097f38a58ba4aa44418fa7"
+      },
+      "run": {
+        "repository": "vixttha/README-HQ",
+        "id": 44670989158,
+        "head": "788f2127d3cf004ac5615d21364f5b56e4f7dd31",
+        "attempt": 1,
+        "conclusion": "success"
+      },
+      "outcome": "Fixed self-navigation so current technique discovery goes to the separate library; preserved historic registry and validated documentation and Graphify.",
+      "refs": [
+        "https://github.com/vixttha/README-HQ/issues/146"
+      ]
+    },
+    {
+      "id": "D06",
+      "provider": "Brand-Identity-Template",
+      "beneficiary": "Brand-Identity-Template",
+      "classification": "self-validation",
+      "scope": "Standalone kit; no production-logo claim",
+      "source": {
+        "repository": "vixttha/Brand-Identity-Template",
+        "commit": "4b81280b90d974d0168c99adae041713c85d8ea1",
+        "path": "brand-identity/README.md",
+        "blob": "2da17292c098a3e2884e19e5a6cf2779ac75399f"
+      },
+      "run": {
+        "repository": "vixttha/Brand-Identity-Template",
+        "id": 44491105154,
+        "head": "4b81280b90d974d0168c99adae041713c85d8ea1",
+        "attempt": 1,
+        "conclusion": "success"
+      },
+      "outcome": "Standalone creative decision, name confirmation, inventory and adopter-kit checks qualified. PR #12 merged; not proof of a finished Brand Identity logo.",
+      "refs": [
+        "https://github.com/vixttha/Brand-Identity-Template/pull/12"
+      ]
+    },
+    {
+      "id": "D07",
+      "provider": "Provenistem",
+      "beneficiary": "Version-Issues-Hub",
+      "classification": "adopter-use",
+      "scope": "Installed permanent Provenistem catalog; historical",
+      "source": {
+        "repository": "vixttha/Version-Issues-Hub",
+        "commit": "8f20e5f7d1da1436f37ef4f51dd16a280c5fe748",
+        "path": "PROJECT.md",
+        "blob": "6a75d2039ca018d7ca8e7ef63687b58910b94a0c"
+      },
+      "run": {
+        "repository": "vixttha/Version-Issues-Hub",
+        "id": 44696174996,
+        "head": "4ab3695b6f5695d7164233d7f10b30ac2fe9606a",
+        "attempt": 1,
+        "conclusion": "success"
+      },
+      "outcome": "Six ideas and six features with catalog validation; audit corrected stale candidate navigation and retained old ledger pointers as historical. Earlier CI applies to earlier catalog, not audit head.",
+      "refs": [
+        "https://github.com/vixttha/Version-Issues-Hub/issues/18",
+        "https://github.com/vixttha/Version-Issues-Hub/issues/9"
+      ]
+    },
+    {
+      "id": "D08",
+      "provider": "Provenistem",
+      "beneficiary": "Lydite-Test-Vault-Template",
+      "classification": "verified-draft",
+      "scope": "Populated draft PR #34, not integrated",
+      "source": {
+        "repository": "vixttha/Lydite-Test-Vault-Template",
+        "commit": "5ef7b73a85e4e648855ed427c0686184ada5b061",
+        "path": "provenistem/features/INDEX.md",
+        "blob": "a95990970279c5ca9fa7c62168aec4f57c009de9"
+      },
+      "run": {
+        "repository": "vixttha/Lydite-Test-Vault-Template",
+        "id": 44509686092,
+        "head": "5ef7b73a85e4e648855ed427c0686184ada5b061",
+        "attempt": 1,
+        "conclusion": "success"
+      },
+      "outcome": "Six ideas and seven features; public Ubuntu/Windows validated records and indices. Records cover actual released implementation and evidence, but catalog PR is still open.",
+      "refs": [
+        "https://github.com/vixttha/Lydite-Test-Vault-Template/pull/34"
+      ]
+    },
+    {
+      "id": "D09",
+      "provider": "Provenistem",
+      "beneficiary": "Brand-Identity-Template",
+      "classification": "adopter-use",
+      "scope": "Project-owned catalog branch",
+      "source": {
+        "repository": "vixttha/Brand-Identity-Template",
+        "commit": "59337a0b01168389446d248c861cc650dfd15647",
+        "path": "provenistem/features/INDEX.md",
+        "blob": "f7fc03488a3b923843d16aeb3a8d2d56ae6dee67"
+      },
+      "run": {
+        "repository": "vixttha/Brand-Identity-Template",
+        "id": 44504799138,
+        "head": "59337a0b01168389446d248c861cc650dfd15647",
+        "attempt": 1,
+        "conclusion": "success"
+      },
+      "outcome": "Eight ideas and seven feature records preserve creative, validation and delivery decisions; project record links and released kit checked. Not blanket proof of all feature claims.",
+      "refs": []
+    },
+    {
+      "id": "D10",
+      "provider": "Provenistem",
+      "beneficiary": "README-HQ",
+      "classification": "adopter-use",
+      "scope": "Corrected project record; feature still proposed",
+      "source": {
+        "repository": "vixttha/README-HQ",
+        "commit": "e0ffb324acaf5bb30d402371228706a45ec41aed",
+        "path": "features/records/FEAT-000012.json",
+        "blob": "2ed83bd307221fdb7a1bdc4ea728f70e29fd8604"
+      },
+      "run": null,
+      "outcome": "Closed #149 corrected ownership: reusable technique definitions in library, selection with adopter/agent, draft and verification in README HQ. Issue reports 12 ideas/12 features checked; no exact Actions run located for this catalog change.",
+      "refs": [
+        "https://github.com/vixttha/README-HQ/issues/149"
+      ]
+    },
+    {
+      "id": "D11",
+      "provider": "Veraphify",
+      "beneficiary": "Provenistem",
+      "classification": "adopter-use",
+      "scope": "Archive workspace and audit of two actual versions",
+      "source": {
+        "repository": "vixttha/Provenistem",
+        "commit": "574baa77833e00ef1b23b7b768c7abdbfece8a2e",
+        "path": "README.md",
+        "blob": "214604279c72d801a4361f89b9d919c0bfe62c3b"
+      },
+      "run": {
+        "repository": "vixttha/Provenistem",
+        "id": 44975292608,
+        "head": "82df517172d1a8b05e4b3f16dbefd346f7f25934",
+        "attempt": 1,
+        "conclusion": "success"
+      },
+      "outcome": "Archived v0.0.1 and v0.0.2; exact version-specific code references recovered. Later audit used archive lookup for validator and index generator. Workflow head is an earlier workspace snapshot.",
+      "refs": [
+        "https://github.com/vixttha/Provenistem/actions/runs/44995999617/job/137127048871"
+      ]
+    },
+    {
+      "id": "D12",
+      "provider": "Veraphify",
+      "beneficiary": "Lydite-Test-Vault-Template",
+      "classification": "integrated",
+      "scope": "Merged adoption PR #115",
+      "source": {
+        "repository": "vixttha/Lydite-Test-Vault-Template",
+        "commit": "965fd9a19a1b90e208c8786267df93589e7ebf8f",
+        "path": ".github/workflows/veraphify-adoption.yml",
+        "blob": "25e5a8f6a0be5c246c2385e0a57b4e83c774e7d2"
+      },
+      "run": {
+        "repository": "vixttha/Lydite-Test-Vault-Template",
+        "id": 44658525431,
+        "head": "965fd9a19a1b90e208c8786267df93589e7ebf8f",
+        "attempt": 1,
+        "conclusion": "success"
+      },
+      "outcome": "Archived Lydite source 87d25d8, verified archive digest and inventory implementation citation tools/inventory.py:212; merged to main.",
+      "refs": [
+        "https://github.com/vixttha/Lydite-Test-Vault-Template/pull/115"
+      ]
+    },
+    {
+      "id": "D13",
+      "provider": "Veraphify",
+      "beneficiary": "README-HQ",
+      "classification": "integrated",
+      "scope": "Merged adoption PR #143 to readme-hq",
+      "source": {
+        "repository": "vixttha/README-HQ",
+        "commit": "d81acd7517f1985d26f385ba2794bdfc49ea44bf",
+        "path": ".github/workflows/veraphify-adoption.yml",
+        "blob": "c4eac0d5c60b9a4ba9bf5ca5e0bdf2adf818a60b"
+      },
+      "run": {
+        "repository": "vixttha/README-HQ",
+        "id": 44658167449,
+        "head": "d81acd7517f1985d26f385ba2794bdfc49ea44bf",
+        "attempt": 1,
+        "conclusion": "success"
+      },
+      "outcome": "Archived README HQ checker and verified tools/check_readme_hq.py:31 against pinned Git blob.",
+      "refs": [
+        "https://github.com/vixttha/README-HQ/pull/143"
+      ]
+    },
+    {
+      "id": "D14",
+      "provider": "Veraphify",
+      "beneficiary": "Version-Issues-Hub",
+      "classification": "adopter-use",
+      "scope": "Candidate archive retained in Git",
+      "source": {
+        "repository": "vixttha/Version-Issues-Hub",
+        "commit": "829fdfae2ac0e8167d740e1a0ad8e8201295c34e",
+        "path": "archives/candidates/3b6951be81d2fc9468b5379aead57c7afc444754/45331511873-1/candidate-receipt.json",
+        "blob": "f15dbcee6b94eec45d1b3734606aeda821df3574"
+      },
+      "run": {
+        "repository": "vixttha/Version-Issues-Hub",
+        "id": 45331511873,
+        "head": "8df46d16a573abaad50b82b4294cc1e7abdcacea",
+        "attempt": 1,
+        "conclusion": "success"
+      },
+      "outcome": "Eight implementation citations verified at historical candidate 3b6951b; 46 graph nodes and 53 edges. Archive and preservation jobs passed. Deficiencies in coverage and durable retention tracked #16/#17, repaired at historical pin; not every subsequent checkpoint archived.",
+      "refs": [
+        "https://github.com/vixttha/Version-Issues-Hub/issues/16",
+        "https://github.com/vixttha/Version-Issues-Hub/issues/17"
+      ]
+    },
+    {
+      "id": "D15",
+      "provider": "Lydite-Test-Vault-Template",
+      "beneficiary": "Veraphify",
+      "classification": "integrated",
+      "scope": "Merged product preview PR #56; permanent Vault PR #70",
+      "source": {
+        "repository": "vixttha/Veraphify",
+        "commit": "fdef4867c87148bdf0782e16de372b584d51588e",
+        "path": "test-vault/README.md",
+        "blob": "5f3a64b422312956e4c262c7bd7953e2a981e71d"
+      },
+      "run": {
+        "repository": "vixttha/Veraphify",
+        "id": 44653386073,
+        "head": "fdef4867c87148bdf0782e16de372b584d51588e",
+        "attempt": 1,
+        "conclusion": "success"
+      },
+      "outcome": "211 named Vault cases across six languages and 19 brand tests; three jobs passed. Five pre-release fixes #57–61, including dot-prefixed repo regression. Lydite verifies rather than solely discovered defects; CodeRabbit found dot-prefix issue.",
+      "refs": [
+        "https://github.com/vixttha/Veraphify/pull/56",
+        "https://github.com/vixttha/Veraphify/pull/70"
+      ]
+    },
+    {
+      "id": "D16",
+      "provider": "Lydite-Test-Vault-Template",
+      "beneficiary": "Brand-Identity-Template",
+      "classification": "integrated",
+      "scope": "Merged Brand Identity PR #16",
+      "source": {
+        "repository": "vixttha/Brand-Identity-Template",
+        "commit": "6b827e9248baa8e9f9147d834cf8bf741eb245bc",
+        "path": "test-vault/tests/test_verifier_cli.py",
+        "blob": "2b2ba9c2c6204a97c1763a32f32685a3e79b3559"
+      },
+      "run": {
+        "repository": "vixttha/Brand-Identity-Template",
+        "id": 44513584643,
+        "head": "6b827e9248baa8e9f9147d834cf8bf741eb245bc",
+        "attempt": 1,
+        "conclusion": "success"
+      },
+      "outcome": "Five expected failures promoted to regression tests; 53 Vault tests observed in Linux Python 3.12 logs; five public jobs including Chromium and ZIP. Rejects draft-only art handoff, missing/escaping evidence links. Merged #16.",
+      "refs": [
+        "https://github.com/vixttha/Brand-Identity-Template/pull/16",
+        "https://github.com/vixttha/Brand-Identity-Template/actions/runs/44515952918/attempts/3"
+      ]
+    },
+    {
+      "id": "D17",
+      "provider": "README-HQ",
+      "beneficiary": "Veraphify",
+      "classification": "integrated",
+      "scope": "Merged documentation PR #55",
+      "source": {
+        "repository": "vixttha/Veraphify",
+        "commit": "e42e9ff321432619a6004a59164f51b002ff6055",
+        "path": "docs/verification.md",
+        "blob": "0fcd7b13c5050b73ac272d3cc041a503d0683443"
+      },
+      "run": {
+        "repository": "vixttha/Veraphify",
+        "id": 44645804412,
+        "head": "3aa88d323bebcca9c025cf4be135f7bf9497fb88",
+        "attempt": 1,
+        "conclusion": "success"
+      },
+      "outcome": "Rendered navigation, MIT attribution, two-version quickstart and evidence links verified. README HQ revision separately pinned; original docs merged, preview not stable release.",
+      "refs": [
+        "https://github.com/vixttha/Veraphify/pull/55"
+      ]
+    },
+    {
+      "id": "D18",
+      "provider": "README-HQ",
+      "beneficiary": "Version-Issues-Hub",
+      "classification": "adopter-use",
+      "scope": "Version-specific README draft workspace",
+      "source": {
+        "repository": "vixttha/Version-Issues-Hub",
+        "commit": "990ffad5c1ede38bc7edac3a145499f0dbbc0788",
+        "path": "workspace/v0.0.1/DRAFT.md",
+        "blob": "2fb210c4f3a15460517e75860da348f33bba99ac"
+      },
+      "run": {
+        "repository": "vixttha/Version-Issues-Hub",
+        "id": 45336145042,
+        "head": "990ffad5c1ede38bc7edac3a145499f0dbbc0788",
+        "attempt": 1,
+        "conclusion": "success"
+      },
+      "outcome": "Actual VIB homepage draft with navigation, pinned quickstart, release caveats; both CI jobs passed. Separate missing-link/heading regression at 18c99e2 passed. Draft is not published and older pins should not be called current.",
+      "refs": [
+        "https://github.com/vixttha/Version-Issues-Hub/issues/19",
+        "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45331420349"
+      ]
+    },
+    {
+      "id": "D19",
+      "provider": "Brand-Identity-Template",
+      "beneficiary": "Veraphify",
+      "classification": "adopter-use",
+      "scope": "Creative direction; artwork incomplete",
+      "source": {
+        "repository": "vixttha/Veraphify",
+        "commit": "63c10e8797a1803f3198387d74c59ddc10056ae1",
+        "path": "brand-identity/01-strategy/creative-decision.json",
+        "blob": "eea33077992edc6b31d1be46cd9d22f2cf7dce76"
+      },
+      "run": {
+        "repository": "vixttha/Veraphify",
+        "id": 44688477155,
+        "head": "63c10e8797a1803f3198387d74c59ddc10056ae1",
+        "attempt": 1,
+        "conclusion": "success"
+      },
+      "outcome": "Three scored concepts, exact owner-confirmed product/wordmark spelling, kit CI passed. Empty asset manifest: no final production logo claim.",
+      "refs": [
+        "https://github.com/vixttha/Veraphify/issues/26"
+      ]
+    },
+    {
+      "id": "D20",
+      "provider": "Lydite-Test-Vault-Template",
+      "beneficiary": "Provenistem",
+      "classification": "feedback",
+      "scope": "Cross-product audit; upstream defect remains open",
+      "source": {
+        "repository": "vixttha/Provenistem",
+        "commit": "a9ec26a5affd3204eb83f4122edbf95f95f01b4a",
+        "path": "audit/probe_v002.py",
+        "blob": "c0d6b46a936935552646466829f01a105254cb11"
+      },
+      "run": {
+        "repository": "vixttha/Provenistem",
+        "id": 44995999617,
+        "head": "a9ec26a5affd3204eb83f4122edbf95f95f01b4a",
+        "attempt": 1,
+        "conclusion": "success"
+      },
+      "outcome": "Lydite adopter audit exposed duplicate JSON members; upstream public probes reproduced duplicate member, partial index build, blocked parent on pinned v0.0.2. This is an adopter-audit feedback loop, not automatic bug discovery by the Lydite CLI.",
+      "refs": [
+        "https://github.com/vixttha/Lydite-Test-Vault-Template/issues/121",
+        "https://github.com/vixttha/Provenistem/issues/2",
+        "https://github.com/vixttha/Provenistem/issues/3",
+        "https://github.com/vixttha/Provenistem/issues/4"
+      ]
+    },
+    {
+      "id": "D21",
+      "provider": "Veraphify",
+      "beneficiary": "README-HQ",
+      "classification": "feedback",
+      "scope": "Veraphify real pilot becomes reusable README knowledge",
+      "source": {
+        "repository": "vixttha/README-HQ",
+        "commit": "5eb7412e306f4fcaa7315cb1b97485ae177e6b48",
+        "path": "combinations/pinned-walkthrough-with-evidence.md",
+        "blob": "59bc812f61dc847c9716c620ef2dbf3be7bd8711"
+      },
+      "run": {
+        "repository": "vixttha/README-HQ",
+        "id": 44671027344,
+        "head": "5eb7412e306f4fcaa7315cb1b97485ae177e6b48",
+        "attempt": 1,
+        "conclusion": "success"
+      },
+      "outcome": "Pilot led to a missing technique definition and ordered five-step combination. #148 closed. Independent fresh-agent handoff remains pending; not automatic transfer of learning.",
+      "refs": [
+        "https://github.com/vixttha/README-HQ/issues/148"
+      ]
+    },
+    {
+      "id": "D22",
+      "provider": "Version-Issues-Hub",
+      "beneficiary": "Blender-Agent-Refinement-Toolkit",
+      "classification": "external-adopter",
+      "scope": "Actual BART issues #55 and #69 integrated",
+      "source": {
+        "repository": "vixttha/Blender-Agent-Refinement-Toolkit",
+        "commit": "beab675bc7c8c228a77e858c3c3a50c40fe7ec2b",
+        "path": "ledger/issue-versions.json",
+        "blob": "f570add43a8117f82ae26663a9eba4ef3c73316b"
+      },
+      "run": {
+        "repository": "vixttha/Blender-Agent-Refinement-Toolkit",
+        "id": 45337193197,
+        "head": "392d8d7a1c262227cba3c08d5577af38c74b4e25",
+        "attempt": 1,
+        "conclusion": "success"
+      },
+      "outcome": "Durable VIB ledger records #55 v0.0.3.2 and #69 v0.0.3.3 integrated. PRs #108/#109 merged; exact #109 post-merge CI 10/10. Demonstrates actual issue/acceptance workflow outside the six-tool ecosystem, not a package release or quantified efficiency gain.",
+      "refs": [
+        "https://github.com/vixttha/Blender-Agent-Refinement-Toolkit/pull/108",
+        "https://github.com/vixttha/Blender-Agent-Refinement-Toolkit/pull/109"
+      ]
+    }
+  ],
+  "counts": {
+    "cases": 22,
+    "source_pins": 21,
+    "distinct_runs": 20,
+    "internal_cross_product_operational_edges": 13,
+    "external_adopter_cases": 1
+  }
+}
