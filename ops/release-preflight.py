@@ -76,6 +76,15 @@ def check_final_refs():
     check("main still frozen at final read", branch("main") == M["main"])
     check("installed state still frozen at final read", branch("Version-Issues-Hub") == M["installed_state"])
 
+def check_active_checkpoint(active, other):
+    handoff = active["active"]
+    check("VIB sole active release checkpoint",
+          active["status"] == "resume" and handoff["issue"] == 40
+          and handoff["version"] == "v0.0.0.23"
+          and handoff["phase"] == M["installed_phase"])
+    check("competing issue refused", other["status"] == "blocked_other_active_issue")
+
+
 def main():
     check("public repository identity", api("")["visibility"] == "public" and os.environ["GITHUB_REPOSITORY"] == REPO)
     check("main frozen", branch("main") == M["main"])
@@ -102,14 +111,15 @@ def main():
             cwd="frozen-engineering", text=True))
     active = inspect(40)
     other = inspect(47)
-    check("VIB sole active release checkpoint", active["status"] == "resume" and active["active"]["issue"] == 40 and active["active"]["version"] == "v0.0.0.23" and active["active"]["phase"] == "Worker")
-    check("competing issue refused", other["status"] == "blocked_other_active_issue")
+    check_active_checkpoint(active, other)
     check_inspected_revisions(active, other)
     report["vib_inspect"] = active
     # GitHub content read is immutable, and imported historical versions are not integrations.
     import base64
     def contents(path, ref):
         return json.loads(base64.b64decode(api("/contents/" + path + "?ref=" + ref)["content"]))
+    handoff = contents("ledger/handoff.json", M["installed_state"])
+    check("inspected handoff matches pinned ledger", active["active"] == handoff["active"])
     ledger = contents("ledger/issue-versions.json", M["installed_state"])
     original = contents("ledger/issue-versions.json", M["engineering"]["head"])
     check("22 historical mappings and criteria intact", len(ledger["issues"]) == 23 and len(original["issues"]) == 22 and all({k: row[k] for k in ("issue","version","acceptance")} == {k: old[k] for k in ("issue","version","acceptance")} and row["state"] == "assigned" for row,old in zip(ledger["issues"], original["issues"])))

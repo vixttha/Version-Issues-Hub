@@ -62,5 +62,22 @@ class RevisionGuardTests(unittest.TestCase):
                 self.p.receipt("test", {"head": "head", "runs": [2], "jobs": 1})
         self.assertIn("/actions/runs/2/attempts/2/jobs?per_page=100", seen)
 
+    def test_active_checkpoint_matches_pinned_phase(self):
+        active = {"status": "resume", "active": {"issue": 40, "version": "v0.0.0.23",
+                                                 "phase": self.p.M["installed_phase"]}}
+        self.p.check_active_checkpoint(active, {"status": "blocked_other_active_issue"})
+
+    def test_active_checkpoint_rejects_stale_phase(self):
+        active = {"status": "resume", "active": {"issue": 40, "version": "v0.0.0.23",
+                                                 "phase": "Worker"}}
+        with self.assertRaisesRegex(ValueError, "sole active release checkpoint"):
+            self.p.check_active_checkpoint(active, {"status": "blocked_other_active_issue"})
+
+    def test_competing_checkpoint_still_rejected(self):
+        active = {"status": "resume", "active": {"issue": 40, "version": "v0.0.0.23",
+                                                 "phase": self.p.M["installed_phase"]}}
+        with self.assertRaisesRegex(ValueError, "competing issue refused"):
+            self.p.check_active_checkpoint(active, {"status": "resume"})
+
 if __name__ == "__main__":
     unittest.main()
