@@ -187,7 +187,7 @@
       "implemented_in": [
         {
           "path": "tools/checkpoint.py",
-          "anchor": "def receipts("
+          "anchor": "def receipts(ledger, scope, checkout, env, event, parents=(), *, versions=None, previous=None):"
         }
       ],
       "tested_by": [
