@@ -62,5 +62,38 @@ class RevisionGuardTests(unittest.TestCase):
                 self.p.receipt("test", {"head": "head", "runs": [2], "jobs": 1})
         self.assertIn("/actions/runs/2/attempts/2/jobs?per_page=100", seen)
 
+    def review_case(self, rows, total=None):
+        with patch.object(self.p, "api", return_value={"total_count": len(rows) if total is None else total, "check_runs": rows}):
+            self.p.record_review("test", "head")
+        return self.p.report["reviews"][-1]
+
+    def valid_review(self):
+        return {"id": 123, "name": "CodeRabbit", "head_sha": "head",
+                "app": {"slug": "coderabbitai", "id": 347564},
+                "status": "completed", "conclusion": "success"}
+
+    def test_exact_trusted_review(self):
+        self.assertEqual(self.review_case([self.valid_review()])["conclusion"], "success")
+
+    def test_wrong_app_rejected(self):
+        self.assertEqual(self.review_case([dict(self.valid_review(), app={"slug": "coderabbitai", "id": 1})])["status"], "missing")
+
+    def test_wrong_revision_rejected(self):
+        self.assertEqual(self.review_case([dict(self.valid_review(), head_sha="old")])["status"], "missing")
+
+    def test_incomplete_inventory_rejected(self):
+        self.assertEqual(self.review_case([self.valid_review()], 101)["status"], "incomplete")
+
+    def test_multiple_exact_reviews_blocked(self):
+        self.assertEqual(self.review_case([self.valid_review(), dict(self.valid_review(), id=124)])["status"], "ambiguous")
+
+    def test_failed_review_blocks(self):
+        self.assertEqual(self.review_case([dict(self.valid_review(), conclusion="failure")])["conclusion"], "failure")
+        self.assertIn("test CodeRabbit review not successful", self.p.report["blockers"])
+
+    def test_pending_review_blocks(self):
+        self.assertEqual(self.review_case([dict(self.valid_review(), status="in_progress", conclusion=None)])["status"], "in_progress")
+        self.assertIn("test CodeRabbit review not successful", self.p.report["blockers"])
+
 if __name__ == "__main__":
     unittest.main()

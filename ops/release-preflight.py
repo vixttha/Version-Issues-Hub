@@ -55,16 +55,30 @@ def receipt(group, spec):
         c = api("/git/commits/" + spec["head"])
         merge = api("/git/commits/" + spec["merge"])
         check(group + " merge tree and parents", c["tree"]["sha"] == merge["tree"]["sha"] and [x["sha"] for x in merge["parents"]] == [p["base"]["sha"], spec["head"]])
-        checks = api("/commits/" + spec["head"] + "/check-runs?per_page=100")
-        bot = [x for x in checks["check_runs"] if x["name"] == "CodeRabbit"]
-        # Review is a separate release gate, not a deterministic job result.
-        # Missing, pending or unsuccessful review never authorizes release.
-        review = {"group": group, "head": spec["head"],
-                  "status": bot[0]["status"] if bot else "missing",
-                  "conclusion": bot[0]["conclusion"] if bot else None}
-        report.setdefault("reviews", []).append(review)
-        if review["status"] != "completed" or review["conclusion"] != "success":
-            report["blockers"].append(group + " CodeRabbit review not successful")
+        record_review(group, spec["head"])
+
+def record_review(group, head):
+    # Only the installed CodeRabbit GitHub App may supply review evidence.
+    # Fail closed if the inventory is incomplete or exact reviews are ambiguous.
+    checks = api("/commits/" + head + "/check-runs?filter=all&per_page=100")
+    rows = checks["check_runs"]
+    complete = checks["total_count"] == len(rows)
+    bot = [x for x in rows if x.get("name") == "CodeRabbit"
+           and x.get("head_sha") == head
+           and (x.get("app") or {}).get("slug") == "coderabbitai"
+           and (x.get("app") or {}).get("id") == 347564]
+    review = {"group": group, "head": head, "inventory_complete": complete,
+              "matching_checks": len(bot), "status": "missing", "conclusion": None}
+    if not complete:
+        review["status"] = "incomplete"
+    elif len(bot) > 1:
+        review["status"] = "ambiguous"
+    elif len(bot) == 1:
+        review.update(status=bot[0]["status"], conclusion=bot[0]["conclusion"],
+                      check_id=bot[0]["id"], app_id=347564)
+    report.setdefault("reviews", []).append(review)
+    if review["status"] != "completed" or review["conclusion"] != "success":
+        report["blockers"].append(group + " CodeRabbit review not successful")
 
 def check_inspected_revisions(active, other):
     check("product revision frozen after inspection",
@@ -82,19 +96,30 @@ def main():
     check("brand frozen", branch("Brand-Identity") == M["brand"])
     check("accepted README frozen", branch("readme-hq") == M["readme"])
     check("homepage branch pinned", branch("review/vib-homepage-preflight") == M["homepage"]["head"])
+    check("homepage root rehearsal pinned", branch("review/vib-homepage-root-rehearsal") == M["homepage_root"]["head"])
     check("self state pinned", branch("Version-Issues-Hub") == M["installed_state"])
-    for key in ("engineering", "licensing_review", "homepage", "archive"):
+    for key in ("engineering", "licensing_review", "homepage", "homepage_root", "archive"):
         receipt(key, M[key])
     original = leaves(M["readme"])
     derivative = leaves(M["homepage"]["head"])
     frozen = {k:v for k,v in original.items() if k.startswith("workspace/v0.0.1/accepted/")}
     check("five accepted README blobs unchanged", len(frozen) == 5 and all(derivative.get(k) == v for k,v in frozen.items()))
+    legal = leaves(M["licensing_review"]["head"])
+    root = leaves(M["homepage_root"]["head"])
+    delta = {k for k in legal.keys() | root.keys() if legal.get(k) != root.get(k)}
+    check("root rehearsal exact scope", delta == {"README.md", "assets/vib-logo.svg",
+          "assets/vib-logo-light.svg", "tools/check_vib_homepage_root.cjs",
+          ".github/workflows/vib-homepage-root-rehearsal.yml"})
+    for name in ("vib-logo.svg", "vib-logo-light.svg"):
+        check("root locked asset " + name,
+              root["assets/" + name] == original["workspace/v0.0.1/accepted/assets/" + name])
+    check("root rehearsal parent", [p["sha"] for p in api("/git/commits/" + M["homepage_root"]["head"])["parents"]] == [M["licensing_review"]["head"]])
     issue_list = api("/issues?state=open&per_page=100")
     check("issue listing within page", len(issue_list) < 100)
     actual = {x["number"] for x in issue_list if "pull_request" not in x}
     check("all open issues classified", actual == {x["issue"] for x in M["queue"]})
     report["issue_queue"] = M["queue"]
-    # Use the frozen repaired VIB implementation against its own historical installation.
+    # Use the frozen repaired VIB implementation against its exact installed snapshot.
     def inspect(issue):
         return json.loads(subprocess.check_output(
             [sys.executable, "-m", "tools.session", "--target", REPO,
@@ -102,7 +127,7 @@ def main():
             cwd="frozen-engineering", text=True))
     active = inspect(40)
     other = inspect(47)
-    check("VIB sole active release checkpoint", active["status"] == "resume" and active["active"]["issue"] == 40 and active["active"]["version"] == "v0.0.0.23" and active["active"]["phase"] == "Worker")
+    check("VIB sole active release checkpoint", active["status"] == "resume" and active["active"]["issue"] == 40 and active["active"]["version"] == "v0.0.0.23" and active["active"]["phase"] == M["installed_phase"])
     check("competing issue refused", other["status"] == "blocked_other_active_issue")
     check_inspected_revisions(active, other)
     report["vib_inspect"] = active
@@ -114,6 +139,7 @@ def main():
     original = contents("ledger/issue-versions.json", M["engineering"]["head"])
     check("22 historical mappings and criteria intact", len(ledger["issues"]) == 23 and len(original["issues"]) == 22 and all({k: row[k] for k in ("issue","version","acceptance")} == {k: old[k] for k in ("issue","version","acceptance")} and row["state"] == "assigned" for row,old in zip(ledger["issues"], original["issues"])))
     check("no second active ledger row", [x["issue"] for x in ledger["issues"] if x["state"] == "in_progress"] == [40])
+    check("root still frozen at final read", branch("review/vib-homepage-root-rehearsal") == M["homepage_root"]["head"])
     check_final_refs()
     report["mechanical"] = "passed"
 

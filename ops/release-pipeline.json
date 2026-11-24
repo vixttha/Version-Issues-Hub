@@ -2,7 +2,7 @@
   "schema": 1,
   "repository": "vixttha/Version-Issues-Hub",
   "main": "1b11865f79464ae7db9a648467e8c2c1cb898a02",
-  "installed_state": "fb6523d2cfb14f5a0bc7639a7cfb2ffe67a12f42",
+  "installed_state": "5ac44c3d7f6ca129f55fce583de8659e5e950873",
   "engineering": {
     "head": "265e0e4724bc409b16d2605fc4d59d2f3f658eaf",
     "pr": 2,
@@ -235,10 +235,10 @@
   ],
   "release_blockers": [
     "#37 two qualified independent host trials and final acceptance",
-    "#47 operative candidate prepared under owner-approved scope; final exact candidate acceptance and any unresolved review remain pending",
+    "#47 rights/provenance and final integration remain pending; exact licensing candidate technically accepted",
     "#45 commercial brand clearance",
-    "#46 final homepage destination and updated operative legal source pin validation",
-    "#40 exact final candidate owner acceptance, integration and release approval"
+    "#46 root rehearsal passed; final integrated destination validation and publication permission pending",
+    "#40 fresh exact pipeline review, aggregate validation, owner integration and separate release approval"
   ],
   "archive": {
     "head": "a9cdd97c4ad111ed4bb3eb1efa4c9bafc306a9b4",
@@ -247,5 +247,13 @@
     ],
     "jobs": 4,
     "attempt": 2
+  },
+  "installed_phase": "Head",
+  "homepage_root": {
+    "head": "41c5007a7b51621ad1ef1735beac4930cef266f7",
+    "runs": [
+      45425652177
+    ],
+    "jobs": 2
   }
 }

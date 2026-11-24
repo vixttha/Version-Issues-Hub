@@ -1,7 +1,7 @@
 name: VIB v0.0.1 mechanical release preflight
 on:
   push:
-    branches: [ops/vib-v0.0.1-release-pipeline]
+    branches: [ops/vib-v0.0.1-release-pipeline, review/vib-release-preflight-refresh]
 permissions:
   contents: read
   actions: read
