@@ -71,8 +71,32 @@ jobs:
           cd Version-Issues-Hub
           git checkout --detach 114a22196eab578b3053002f8eb7af935b26fe89
           test "$(git rev-parse HEAD)" = "114a22196eab578b3053002f8eb7af935b26fe89"
+          # The installed ledger is mutable, unlike the archived README source.
+          # Capture its exact state, replay the documented command, then compare.
+          state_sha="$(git ls-remote origin refs/heads/Version-Issues-Hub | cut -f1)"
+          test "${#state_sha}" = 40
+          git fetch --no-tags --depth=1 origin "$state_sha"
+          git show "$state_sha:ledger/handoff.json" > "$RUNNER_TEMP/vib-handoff.json"
           python -m tools.session --target vixttha/Version-Issues-Hub inspect > "$RUNNER_TEMP/vib-inspect.json"
-          python -c 'import json,os; from pathlib import Path; x=json.loads((Path(os.environ["RUNNER_TEMP"])/"vib-inspect.json").read_text()); assert x["status"]=="head_scope_required" and x["active"] is None and x["owner_merge_required"] is True and x["evidence_verified"] is False and x["repository"]=="vixttha/Version-Issues-Hub"; print(json.dumps(x,indent=2))'
+          test "$(git ls-remote origin refs/heads/Version-Issues-Hub | cut -f1)" = "$state_sha"
+          python - "$state_sha" <<'PY'
+          import json, os, sys
+          from pathlib import Path
+          root = Path(os.environ["RUNNER_TEMP"])
+          observed = json.loads((root / "vib-inspect.json").read_text())
+          expected = json.loads((root / "vib-handoff.json").read_text())["active"]
+          assert observed["installed_sha"] == sys.argv[1], "Installed revision drift"
+          assert observed["owner_merge_required"] is True and observed["evidence_verified"] is False
+          assert observed["repository"] == "vixttha/Version-Issues-Hub"
+          assert observed["active"] == expected, "Recovered active handoff differs from pinned ledger"
+          if expected is None:
+              assert observed["status"] == "head_scope_required" and observed["issue"] is None
+          else:
+              assert observed["status"] == "resume", "Active checkpoint not resumable"
+              assert observed["issue"]["number"] == expected["issue"]
+              assert observed["issue"]["version"] == expected["version"]
+          print(json.dumps(observed, indent=2))
+          PY
           python -B -m unittest discover -s tests -v
 
   live-readme-render:
