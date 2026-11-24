@@ -131,6 +131,16 @@
         "Prove competing writer cannot be overwritten and product/state blobs remain unchanged.",
         "Run real public GitHub read-only CLI planning in README HQ, without installation or repair-plan changes; public-runner tests and Graphify."
       ]
+    },
+    {
+      "issue": 29,
+      "version": "v0.0.0.14",
+      "state": "in_progress",
+      "acceptance": [
+        "Run actual CLI install and upgrade against a real isolated public GitHub repository on a standard hosted runner.",
+        "Verify exact state digests and product ref, duplicate/stale refusal, durable archive and fresh process recovery.",
+        "Preserve live installation and archive; no automatic deletion or live adopter mutation; record exact public-runner evidence."
+      ]
     }
   ]
 }

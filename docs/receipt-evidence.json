@@ -364,6 +364,34 @@
           "anchor": "def test_fresh_cli_install_upgrade_archive_remove_restore(self):"
         }
       ]
+    },
+    {
+      "id": "v0-0-0-14",
+      "label": "Issue #29 · live remote CLI lifecycle",
+      "documented_in": [
+        {
+          "path": "docs/v0.0.0.14.md",
+          "anchor": "## Real GitHub lifecycle pilot"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "ledger/issue-versions.json",
+          "anchor": "\"issue\": 29,"
+        }
+      ],
+      "implemented_in": [
+        {
+          "path": "tools/live_lifecycle.py",
+          "anchor": "def main():"
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tools/live_lifecycle.py",
+          "anchor": "assert \"advanced\" in stale"
+        }
+      ]
     }
   ]
 }
