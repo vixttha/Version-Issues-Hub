@@ -52,6 +52,13 @@ def discover(path):
             value["id"] in result):
             raise ValueError("invalid capability: "+name)
         law = LAW.search(source)
+        try:
+            separate = LAW.search(git(path, "show", commit+":ENGINEERING-LAWS.md"))
+        except subprocess.CalledProcessError:
+            separate = None
+        if law and separate and law.group() != separate.group():
+            raise ValueError("inconsistent law copies: "+name)
+        law = law or separate
         if not law:
             raise ValueError("missing laws: "+name)
         result[value["id"]] = {"branch": name, "commit": commit,
