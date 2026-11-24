@@ -5,7 +5,7 @@ import { parseArgs } from "node:util";
 import {
   GRAPH_BYTES, PINNED_PRODUCER, RECEIPT_BYTES, implementationLocations, inspectEvidenceBytes,
   parseEvidenceObject, readBytes, repositoryPath, sha256,
-} from "./test-vault/javascript/inspect-evidence.mjs";
+} from "./lib/inspect-evidence.mjs";
 
 const ARCHIVE_FORMAT = 1;
 const TOOL_VERSION = "v0.0.9";
