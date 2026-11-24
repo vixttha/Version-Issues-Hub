@@ -1,6 +1,6 @@
 # VIB v0.0.1 — owner review packet
 
-**Candidate only; not released or approved for stable distribution.** Target v0.0.1, development checkpoints through v0.0.0.19. [PR #2](https://github.com/vixttha/Version-Issues-Hub/pull/2) remains draft. The verified installed-package candidate is [4fc9ac47462101b941ea2f78fc939d42a9de0032](https://github.com/vixttha/Version-Issues-Hub/tree/4fc9ac47462101b941ea2f78fc939d42a9de0032). The subsequent #39 acceptance-harness and review-document correction does not change the installed package or historical checkpoint pins; verify its own exact candidate and CI via PR #2 before accepting.
+**Candidate only; not released or approved for stable distribution.** Target v0.0.1, development checkpoints through v0.0.0.22. [PR #2](https://github.com/vixttha/Version-Issues-Hub/pull/2) remains draft. The verified installed-package candidate is [4fc9ac47462101b941ea2f78fc939d42a9de0032](https://github.com/vixttha/Version-Issues-Hub/tree/4fc9ac47462101b941ea2f78fc939d42a9de0032). Subsequent #39 acceptance-harness and #41–#43 session repairs require their own exact candidate verification; the original package and historical fix pins remain preserved.
 
 ## Current evidence and open gates
 
@@ -32,3 +32,7 @@ The following earlier observations are preserved as historical context, not the 
 ### Earlier owner review
 
 Review exact candidate, independent agent evidence, live lifecycle limitations and licensing. Do not conflate a passed schema or discovery check with product acceptance or hard merge enforcement.
+
+## Final stabilization review (2026-11-24)
+
+Previous verified candidate [c65a872](https://github.com/vixttha/Version-Issues-Hub/tree/c65a872605250ee8b0a754a5e2a3ec7e286e0022), proposed merge 2546f312548116c8dcf0ef31fbcd52e813fef619: [push](https://github.com/vixttha/Version-Issues-Hub/actions/runs/45400769363) and [PR](https://github.com/vixttha/Version-Issues-Hub/actions/runs/45400787761) each passed 90 tests and 22 receipts; Graphify 111 nodes/110 edges each. Prior #39 seven regressions pass. Existing distinct issue mappings #41 v0.0.0.20, #42 v0.0.0.21, #43 v0.0.0.22 preserved; original fix pins unchanged. This follow-up strengthens #41 rework safety; its exact final run is required. No adopter upgrade, main write, release or README redesign. Independent host evidence #37, license and commercial clearance, final owner acceptance and homepage publication remain open.

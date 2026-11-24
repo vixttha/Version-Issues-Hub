@@ -298,3 +298,26 @@ class SessionTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "existing eligible"):
             session.claim(self.api, state(), 247, ["test"], "Resume", resume_prior_line=True)
         self.assertEqual(self.api.writes, [])
+
+
+    def test_rework_requires_open_issue_and_unmerged_pr(self):
+        self.claim()
+        self.advance(fix=FIX, candidate=CANDIDATE, pr=8)
+        before = copy.deepcopy(self.state)
+        for status in ({"state": "closed", "merged": True},
+                       {"state": "closed", "merged": True, "head": {"sha": NEXT}},
+                       {"state": "open", "merged": None}):
+            with self.subTest(status=status):
+                self.api.pr.update(status)
+                with self.assertRaisesRegex(ValueError, "owner reconciliation"):
+                    self.advance(rework=True)
+                self.assertEqual(self.state, before)
+        self.api.pr.update(state="closed", merged=False, head={"sha": CANDIDATE})
+        with patch.object(session, "get_issue", return_value={"number":247, "state":"closed"}):
+            with self.assertRaisesRegex(ValueError, "Issue is not open"):
+                self.advance(rework=True)
+            self.assertEqual(self.state, before)
+        self.advance(rework=True)
+        self.assertEqual(self.state["handoff"]["active"]["phase"], "Worker")
+        self.assertEqual(self.state["handoff"]["history"][-1]["disposition"], "rework")
+        self.assertEqual(self.api.writes, [])

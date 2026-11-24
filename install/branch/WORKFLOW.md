@@ -47,3 +47,5 @@ New issues use the current manifest baseline. Previously assigned, blocked or de
 ## Owner-locked interoperability
 
 **VIB remains independent of Provenistem. They are designed to work together as complementary parts of the same puzzle.** See [owner decision](https://github.com/vixttha/Version-Issues-Hub/issues/9). VIB owns issue-version assignments, workflow, revision-bound verification and integration decisions; Provenistem owns its ideas/features and progress records. Optional read-only references may connect them; either must operate independently. Never infer write authorization, install one from the other, merge template branches, or require the other as a dependency. Changes to interoperability require explicit owner approval.
+
+Rework is allowed for an open issue with an open or closed-unmerged PR, including a stale head. A merged PR (even if the candidate head changed), unknown PR state, or closed issue must go to Head for owner reconciliation; do not clear the active candidate via rework.

@@ -233,6 +233,17 @@ def advance(api, state, note, *, fix=None, candidate=None, pr=None, evidence=Non
     if rework:
         if phase == "Worker":
             raise ValueError("Already in Worker phase")
+        if get_issue(api, state, active["issue"]).get("state") != "open":
+            raise ValueError("Issue is not open; return to Head for owner reconciliation")
+        if active["pull_request"] is not None:
+            # Rework is allowed for stale or closed-unmerged PRs, never for a
+            # merged PR (including a changed head) or an unverified PR state.
+            existing = api.request("GET", state["prefix"] + "/pulls/" +
+                                   str(issue_number(active["pull_request"])))
+            if (existing.get("number") != active["pull_request"]
+                    or existing.get("merged") is not False
+                    or existing.get("state") not in ("open", "closed")):
+                raise ValueError("PR is merged or state is unverified; return to Head for owner reconciliation")
         previous = copy.deepcopy(state["handoff"]["active"])
         handoff["history"].append({"handoff": previous, "disposition": "rework",
                                    "decision": note, "merged_sha": None})
