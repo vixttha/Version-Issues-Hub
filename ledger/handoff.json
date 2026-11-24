@@ -1,5 +1,14 @@
 {
-  "active": null,
+  "active": {
+    "issue": 40,
+    "version": "v0.0.0.23",
+    "phase": "Worker",
+    "next_action": "Build and verify the release-only pipeline; reconcile all open issues. Existing source mappings imported as assigned, not verified or integrated. No license grant or release.",
+    "fix_sha": null,
+    "candidate_sha": null,
+    "pull_request": null,
+    "evidence": []
+  },
   "history": [],
   "schema_version": 1
 }
