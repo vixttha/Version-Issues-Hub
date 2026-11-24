@@ -2,15 +2,31 @@
   "active": {
     "issue": 40,
     "version": "v0.0.0.23",
-    "phase": "Head",
-    "next_action": "Mechanical preflight passed 87 checks. #40 remains active at Head: review PR49 CodeRabbit and reconcile remaining #47, #37, #45, #46 plus final acceptance. No merge or release authorized; re-pin pipeline after reviewed state/candidate changes.",
-    "fix_sha": "f6dc3fae91a73bdead758ea8427308c191a73ade",
-    "candidate_sha": "f6dc3fae91a73bdead758ea8427308c191a73ade",
-    "pull_request": 49,
-    "evidence": [
-      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45420692986/attempts/1"
-    ]
+    "phase": "Worker",
+    "next_action": "PR49 CodeRabbit finding 4682051116: rework exact product SHA comparisons and add regression checks; preserve previous evidence.",
+    "fix_sha": null,
+    "candidate_sha": null,
+    "pull_request": null,
+    "evidence": []
   },
-  "history": [],
+  "history": [
+    {
+      "handoff": {
+        "issue": 40,
+        "version": "v0.0.0.23",
+        "phase": "Head",
+        "next_action": "Mechanical preflight passed 87 checks. #40 remains active at Head: review PR49 CodeRabbit and reconcile remaining #47, #37, #45, #46 plus final acceptance. No merge or release authorized; re-pin pipeline after reviewed state/candidate changes.",
+        "fix_sha": "f6dc3fae91a73bdead758ea8427308c191a73ade",
+        "candidate_sha": "f6dc3fae91a73bdead758ea8427308c191a73ade",
+        "pull_request": 49,
+        "evidence": [
+          "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45420692986/attempts/1"
+        ]
+      },
+      "disposition": "rework",
+      "decision": "PR49 CodeRabbit finding 4682051116: rework exact product SHA comparisons and add regression checks; preserve previous evidence.",
+      "merged_sha": null
+    }
+  ],
   "schema_version": 1
 }
