@@ -49,3 +49,6 @@ jobs:
 
       - name: Exercise adoption in a separate Git repository
         run: python3 .github/scripts/smoke_adoption.py
+
+      - name: Verify Circuit Industrial draft SVGs
+        run: python3 brand-identity/08-review/circuit-industrial-v2/verify.py
