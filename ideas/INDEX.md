@@ -10,3 +10,4 @@
 | IDEA-000004 | Let GitHub prove the required merge check | captured | not\_planned |
 | IDEA-000005 | Keep public development and product readiness distinct | captured | not\_planned |
 | IDEA-000006 | Derive an evidence map from project records | captured | not\_planned |
+| IDEA-000007 | Independent agent handoff acceptance | captured | not\_planned |

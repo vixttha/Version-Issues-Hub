@@ -1,0 +1,3 @@
+# VIB Provenistem adoption
+
+Portable package v0.0.2, latest main source [d64d0c73538e79af0292642c1f23bafe2e979ec0](https://github.com/vixttha/Provenistem/tree/d64d0c73538e79af0292642c1f23bafe2e979ec0/packages/provenistem). Core package files matched local installation except project-specific README/indexes and updated guide. Previous installation 8f20e5f7d1da1436f37ef4f51dd16a280c5fe748; refreshed guide, retained all six existing ideas and features, populated three current candidate feature records and one research idea. No canonical VIB ledger edits, no automatic cross-branch writes, no release or implementation authorization. Verify public catalog and Graphify independently.

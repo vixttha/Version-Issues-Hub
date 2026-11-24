@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "id": "FEAT-000007",
+  "title": "Standard advisory validation",
+  "summary": "Review exact PR and run metadata without mandatory enforcement.",
+  "kind": "capability",
+  "lifecycle_status": "implemented",
+  "implementation_status": "implemented",
+  "idea_ids": [
+    "IDEA-000003",
+    "IDEA-000005"
+  ],
+  "acceptance_criteria": [
+    "Reject stale and mismatched run evidence.",
+    "Return review_required, never integration authority."
+  ],
+  "testing": {
+    "status": "in_progress"
+  },
+  "evidence": [
+    {
+      "kind": "implementation",
+      "claim": "Implemented in unreleased VIB candidate; owner integration and full acceptance not asserted.",
+      "source_sha": "4fc9ac47462101b941ea2f78fc939d42a9de0032",
+      "source_path": "tools/standard.py",
+      "receipt": "https://github.com/vixttha/Version-Issues-Hub/pull/2"
+    },
+    {
+      "kind": "other",
+      "claim": "Candidate verification run exists; scope of full feature acceptance remains open.",
+      "source_sha": "4fc9ac47462101b941ea2f78fc939d42a9de0032",
+      "source_path": ".github/workflows/verify-checkpoint.yml",
+      "receipt": "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45357923198/attempts/1"
+    }
+  ],
+  "release_membership": "NOT_ASSERTED"
+}

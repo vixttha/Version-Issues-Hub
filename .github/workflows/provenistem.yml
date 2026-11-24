@@ -25,7 +25,7 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           repository: vixttha/Provenistem
-          ref: e36fcd6d12633395e9b573228c0797ade9e775b0
+          ref: d64d0c73538e79af0292642c1f23bafe2e979ec0
           path: upstream
           persist-credentials: false
       - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405

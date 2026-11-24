@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "id": "IDEA-000007",
+  "title": "Independent agent handoff acceptance",
+  "summary": "Test discovery and recovery in genuinely fresh compatible LLM sessions without shared conversation state.",
+  "kind": "research",
+  "origin": {
+    "created_by": "joint",
+    "source": "VIB Phase 4 acceptance issue #37"
+  },
+  "lifecycle_status": "captured",
+  "implementation_status": "not_planned",
+  "testing": {
+    "status": "untested"
+  },
+  "importance": "high",
+  "complexity": "unknown",
+  "categories": [
+    "agent portability"
+  ],
+  "benefits": [
+    "Distinguishes actual model behavior from deterministic process recovery."
+  ],
+  "risks": [
+    "Unknown model configuration or shared history invalidates independence."
+  ],
+  "related_ideas": [
+    "IDEA-000002",
+    "IDEA-000006"
+  ],
+  "evidence": [
+    {
+      "relation": "context",
+      "claim": "Independent host acceptance remains open.",
+      "repository": "vixttha/Version-Issues-Hub",
+      "commit": "4fc9ac47462101b941ea2f78fc939d42a9de0032",
+      "path": "docs/v0.0.0.19.md"
+    }
+  ]
+}

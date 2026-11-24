@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "id": "FEAT-000008",
+  "title": "Owner-controlled installation lifecycle",
+  "summary": "Prepare and verify upgrades and archives while preserving project-local state.",
+  "kind": "capability",
+  "lifecycle_status": "implemented",
+  "implementation_status": "implemented",
+  "idea_ids": [
+    "IDEA-000002",
+    "IDEA-000005"
+  ],
+  "acceptance_criteria": [
+    "Preserve adopter files and reject stale state.",
+    "Archive without automatic deletion; corrected fresh remote CLI apply remains pending."
+  ],
+  "testing": {
+    "status": "in_progress"
+  },
+  "evidence": [
+    {
+      "kind": "implementation",
+      "claim": "Implemented in unreleased VIB candidate; owner integration and full acceptance not asserted.",
+      "source_sha": "4fc9ac47462101b941ea2f78fc939d42a9de0032",
+      "source_path": "tools/lifecycle.py",
+      "receipt": "https://github.com/vixttha/Version-Issues-Hub/pull/2"
+    },
+    {
+      "kind": "other",
+      "claim": "Candidate verification run exists; scope of full feature acceptance remains open.",
+      "source_sha": "4fc9ac47462101b941ea2f78fc939d42a9de0032",
+      "source_path": ".github/workflows/verify-checkpoint.yml",
+      "receipt": "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45357923198/attempts/1"
+    }
+  ],
+  "release_membership": "NOT_ASSERTED"
+}

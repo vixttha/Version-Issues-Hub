@@ -33,3 +33,7 @@ Run `python tools/library.py check` for this populated installation. The existin
 ## Owner-locked interoperability
 
 **VIB remains independent of Provenistem. They are designed to work together as complementary parts of the same puzzle.** See [owner decision](https://github.com/vixttha/Version-Issues-Hub/issues/9). VIB owns issue-version assignments, workflow, revision-bound verification and integration decisions; Provenistem owns its ideas/features and progress records. Optional read-only references may connect them; either must operate independently. Never infer write authorization, install one from the other, merge template branches, or require the other as a dependency. Changes to interoperability require explicit owner approval.
+
+## Current candidate inventory
+
+[Source](https://github.com/vixttha/Version-Issues-Hub/tree/4fc9ac47462101b941ea2f78fc939d42a9de0032) · [19-checkpoint ledger](https://github.com/vixttha/Version-Issues-Hub/blob/4fc9ac47462101b941ea2f78fc939d42a9de0032/ledger/issue-versions.json) · [Open acceptance #37](https://github.com/vixttha/Version-Issues-Hub/issues/37). Existing six ideas and six features remain historical. Added one research idea and three implemented candidate capability records with acceptance explicitly incomplete. No release membership or owner decision inferred.
