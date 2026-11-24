@@ -1,0 +1,37 @@
+{
+  "decision": "VIB-BRAND-LOCK-001",
+  "brand_commit": "388c6ef968aa15edf3caa34e9de6819dcda24e7f",
+  "source_commit": "114a22196eab578b3053002f8eb7af935b26fe89",
+  "files": [
+    {
+      "file": "assets/vib-lockup-dark.svg",
+      "source_path": "brand-identity/08-review/circuit-industrial-v2/vib-lockup-dark.svg",
+      "sha256": "3b44274abac2c59bd26a80d25a8658432269a6c19e1503e523e43180aafc34a4",
+      "git_blob": "f846b5f3f690a6050e4a890255e16e4aa6374f17"
+    },
+    {
+      "file": "assets/vib-lockup-light.svg",
+      "source_path": "brand-identity/08-review/circuit-industrial-v2/vib-lockup-light.svg",
+      "sha256": "66dc40f4e5ba5efb0a7f266d84730b23ea57b6909bfe3225bb32ebd539d7fc81",
+      "git_blob": "8d4da610027352b4c860995885df10fcd26aa556"
+    },
+    {
+      "file": "assets/vib-logo-light.svg",
+      "source_path": "brand-identity/08-review/circuit-industrial-v2/vib-logo-light.svg",
+      "sha256": "f4fe275b687f59723a5bc7b853a8033b9c3128410f9608e27ba59d58436d9e7e",
+      "git_blob": "df709a42fee10fcfada6747298dcda18f1465731"
+    },
+    {
+      "file": "assets/vib-logo.svg",
+      "source_path": "brand-identity/08-review/circuit-industrial-v2/vib-logo.svg",
+      "sha256": "1668c63798633d3e3b6dca1b5719e8cfac0424eb4f6293f406297510f3ded5b6",
+      "git_blob": "3bf0564bc56d57159a6d1baf4d5baa9b4b5b3893"
+    }
+  ],
+  "presentation": {
+    "dark": "assets/vib-logo.svg",
+    "light": "assets/vib-logo-light.svg",
+    "width": 300
+  },
+  "publication": "draft_only"
+}
