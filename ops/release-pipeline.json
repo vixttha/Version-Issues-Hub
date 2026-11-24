@@ -231,6 +231,11 @@
       "issue": 47,
       "title": "Release licensing: establish VIB reuse rights and carry notices into standalone installs",
       "classification": "release_blocker"
+    },
+    {
+      "issue": 51,
+      "title": "Live acceptance: isolate mutable external adopter checks from core evidence",
+      "classification": "release_risk_pending_disposition"
     }
   ],
   "release_blockers": [
@@ -238,7 +243,8 @@
     "#47 rights/provenance and final integration remain pending; exact licensing candidate technically accepted",
     "#45 commercial brand clearance",
     "#46 root rehearsal passed; final integrated destination validation and publication permission pending",
-    "#40 fresh exact pipeline review, aggregate validation, owner integration and separate release approval"
+    "#40 fresh exact pipeline review, aggregate validation, owner integration and separate release approval",
+    "#51 external adopter drift and live acceptance isolation require disposition"
   ],
   "archive": {
     "head": "a9cdd97c4ad111ed4bb3eb1efa4c9bafc306a9b4",
