@@ -84,6 +84,34 @@
           "anchor": "def test_install_isolated_branch(self):"
         }
       ]
+    },
+    {
+      "id": "v0-0-0-4",
+      "label": "Issue #10 · agent bootstrap and handoffs",
+      "documented_in": [
+        {
+          "path": "docs/v0.0.0.4.md",
+          "anchor": "## Bootstrap and handoffs"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "ledger/issue-versions.json",
+          "anchor": "\"issue\": 10,"
+        }
+      ],
+      "implemented_in": [
+        {
+          "path": "tools/session.py",
+          "anchor": "def load(api, target, expected_sha=None):"
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tests/test_session.py",
+          "anchor": "def test_fresh_session_recovers_active_issue(self):"
+        }
+      ]
     }
   ]
 }

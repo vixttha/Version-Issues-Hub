@@ -65,7 +65,7 @@ class InstallerTests(unittest.TestCase):
         self.assertEqual(result["installed_sha"], INSTALLED)
         self.assertEqual(self.api.refs, {"trunk": PRODUCT, install.BRANCH: INSTALLED})
         self.assertEqual(set(self.api.entries), set(install.PACKAGE.values()) |
-                         {"vib-install.json", "ledger/issue-versions.json"})
+                         {"vib-install.json", "ledger/issue-versions.json", "ledger/handoff.json"})
         ledger = json.loads(self.api.entries["ledger/issue-versions.json"])
         self.assertEqual(ledger["repository"], TARGET)
         self.assertEqual(ledger["issues"], [])

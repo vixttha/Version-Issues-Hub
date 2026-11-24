@@ -31,6 +31,16 @@
         "Generate an adopter-specific empty ledger and provenance record; accept existing three-component baselines.",
         "Refuse occupied branches, conflicting identity, and empty repositories without silently modifying the target. Verify creation using public-runner tests."
       ]
+    },
+    {
+      "issue": 10,
+      "version": "v0.0.0.4",
+      "state": "in_progress",
+      "acceptance": [
+        "Ship a host-neutral AGENTS.md and workflow guide only on the dedicated install branch.",
+        "Recover the active issue and phase from the pinned installed package and GitHub without chat history; reject target mismatch and tampering.",
+        "Serialize cooperative claims and handoff changes, reject competing claims and stale writes, retain owner merge authority; test on public runners."
+      ]
     }
   ]
 }

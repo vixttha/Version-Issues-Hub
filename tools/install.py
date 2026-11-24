@@ -19,6 +19,9 @@ PACKAGE = {
     "install/branch/README.md": "README.md",
     "install/branch/WORKFLOW.md": "WORKFLOW.md",
     "tools/checkpoint.py": "tools/checkpoint.py",
+    "tools/install.py": "tools/install.py",
+    "tools/session.py": "tools/session.py",
+    "install/branch/AGENTS.md": "AGENTS.md",
 }
 
 class ApiError(RuntimeError):
@@ -71,6 +74,17 @@ def read_ref(api, prefix, branch):
         raise ValueError("Unexpected GitHub ref response")
     return require(SHA, data["object"]["sha"], "ref revision")
 
+def read_text(api, prefix, path, ref):
+    require(SHA, ref, "file revision")
+    item = api.request("GET", prefix + "/contents/" + quote(path, safe="/") + "?ref=" + ref)
+    if item.get("type") != "file" or item.get("encoding") != "base64" or item.get("path") != path:
+        raise ValueError("Package source is not a regular file")
+    raw = base64.b64decode("".join(item["content"].split()), validate=True)
+    blob = hashlib.sha1(b"blob " + str(len(raw)).encode() + b"\0" + raw).hexdigest()
+    if blob != item.get("sha"):
+        raise ValueError("Package blob integrity mismatch")
+    return raw.decode("utf-8")
+
 def source_files(api, source_sha):
     files = {}
     prefix = repo_path(SOURCE)
@@ -78,14 +92,7 @@ def source_files(api, source_sha):
     if commit.get("sha") != source_sha:
         raise ValueError("Source revision did not match")
     for source, dest in PACKAGE.items():
-        item = api.request("GET", prefix + "/contents/" + quote(source, safe="/") + "?ref=" + source_sha)
-        if item.get("type") != "file" or item.get("encoding") != "base64" or item.get("path") != source:
-            raise ValueError("Package source is not a regular file")
-        raw = base64.b64decode("".join(item["content"].split()), validate=True)
-        blob = hashlib.sha1(b"blob " + str(len(raw)).encode() + b"\0" + raw).hexdigest()
-        if blob != item.get("sha"):
-            raise ValueError("Package blob integrity mismatch")
-        files[dest] = raw.decode("utf-8")
+        files[dest] = read_text(api, prefix, source, source_sha)
     return files
 
 def render(data):
@@ -126,6 +133,7 @@ def install(api, target, source_sha, baseline, apply=False):
     files["ledger/issue-versions.json"] = render({
         "schema_version": 1, "repository": meta["full_name"], "issues": [],
     })
+    files["ledger/handoff.json"] = render({"schema_version": 1, "active": None, "history": []})
     plan = {"status": "planned", "manifest": manifest, "paths": sorted(files)}
     if not apply:
         return plan
