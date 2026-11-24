@@ -34,3 +34,7 @@ The public workflow runs the test suite and produces issue-specific receipts and
 VIB installs on a dedicated `Version-Issues-Hub` branch in an adopter's repository, separately from product source and other templates. The owner selects the package pin and explicitly authorizes installation. The installer and cooperative agent handoff are candidates; fresh harness trials and owner-enabled merge enforcement remain separate acceptance gates. Do not treat this draft as installation approval or a public release.
 
 See [the locked install architecture](https://github.com/vixttha/Version-Issues-Hub/issues/9) and [the staged handoff checkpoint](https://github.com/vixttha/Version-Issues-Hub/issues/11).
+
+## Owner-locked interoperability
+
+**VIB remains independent of Provenistem. They are designed to work together as complementary parts of the same puzzle.** See [owner decision](https://github.com/vixttha/Version-Issues-Hub/issues/9). VIB owns issue-version assignments, workflow, revision-bound verification and integration decisions; Provenistem owns its ideas/features and progress records. Optional read-only references may connect them; either must operate independently. Never infer write authorization, install one from the other, merge template branches, or require the other as a dependency. Changes to interoperability require explicit owner approval.
