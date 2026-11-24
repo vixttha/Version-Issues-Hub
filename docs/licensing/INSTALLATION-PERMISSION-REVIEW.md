@@ -5,7 +5,7 @@ Status: REVIEW_ONLY_NOT_A_GRANT. Owner selected PolyForm Strict 1.0.0 for now. K
 ## Proposed permission boundary for counsel and owner review
 
 - For an otherwise permitted purpose, allow copying the unchanged pinned VIB package, license and notice into the user's own dedicated installation branch, including a private repository, and allow normal execution, backups, and owner-controlled upgrades.
-- For a public repository, expressly decide whether to allow hosting the unchanged package only in the dedicated branch, including unavoidable GitHub view/fork rights. This is a separate distribution permission; do not assume Strict authorizes it. If not approved, restrict adopters to permitted private installations or redesign distribution later. No blanket redistribution, modified copies, resale, sublicensing or competing product rights.
+- Owner approved hosting the unchanged package in users' own public dedicated branches for otherwise permitted purposes (issue #47 comment 7133948319). Exact supplemental wording in VIB-NOTICE-REVIEW.md is still non-operative. This is separate distribution permission; do not assume Strict authorizes it. No blanket redistribution, modified copies, resale, sublicensing or competing product rights.
 - Adopter-local manifest, ledger, handoff, receipts and independently authored product code are not VIB-owned software merely because they are stored alongside it. State editing and normal operation must be allowed without permitting changes to the pinned VIB package.
 - Commercial use outside Strict's permitted purposes requires a separate agreement; its specified organization exceptions and fair-use savings are preserved. No customer terms, evaluation period, price, licensing service or retroactive restriction assumed.
 - Separate rights in logos, slogans, third-party material and patent rights. Obtain rights-holder review before using a patent grant. Do not alter the official PolyForm text or claim trademark clearance.
@@ -17,6 +17,12 @@ Proposed two namespaced paths VIB-LICENSE.md and VIB-NOTICE.md in the 14-file pa
 ## Approval gates
 
 1. Rights holder and scope confirmed; third-party and AI-assisted provenance resolved.
-2. Counsel/owner approves exact permission and notice, including public-branch distribution decision.
+2. Public-branch policy owner-approved; counsel/owner review of exact permission, notice and scope still pending.
 3. Approved license candidate technically validated; separate explicit distribution and release authorization.
 4. Independent agent acceptance #37, commercial clearance #45, publication #46 and release hold #40 remain open.
+
+## Finalization checklist (not authorization)
+
+- Retain the unmodified reference text and its source permission. After rights and exact wording approval, publish the official root LICENSE with a clear scope/exclusions notice. Preserve the existing historical mapping for review and prior pins; any path mapping change must be explicitly tested against earlier literal declarations (do not simply replace an allowlist key that historical pins need).
+- Turn the review notice into approved operative terms only after approval. Remove the review-only runtime refusal only on a separately approved final candidate. The fixture-only simulation uses a mocked review guard inside disposable Git objects and is not proof of live authorization or a production bypass.
+- Check the complete package hashes, old-pin recovery, new installs, upgrades, collision refusal, unchanged default/product refs and adopter-owned license/state. Validate exact final SHA and matching proposed merge tree. No live adopter upgrade unless separately authorized.

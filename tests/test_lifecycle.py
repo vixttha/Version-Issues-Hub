@@ -154,6 +154,47 @@ class LifecycleTests(unittest.TestCase):
                 lifecycle.upgrade(api, REPO, collided, NEW)
             self.assertEqual(api.writes, [])
 
+    def test_simulated_approved_legal_package_fresh_install_and_upgrade(self):
+        # Test-only simulation of post-approval copying. No GitHub API calls:
+        # GitApi writes exclusively to a disposable local bare repository.
+        # Production refusal remains intact and separately tested.
+        api = self.api
+        root = Path(__file__).resolve().parents[1]
+        package = {dest: (root / src).read_text(encoding="utf-8")
+                   for src, dest in install.PACKAGE.items()}
+        self.assertEqual(len(package), 14)
+        self.assertIn("REVIEW_ONLY_NOT_A_GRANT", package["VIB-NOTICE.md"])
+        self.assertNotIn("LICENSE", package)
+        with patch.object(install, "source_files", side_effect=lambda api, sha:
+                          dict({OLD: OLD_FILES, NEW: package}[sha])), \
+             patch.object(install, "require_publishable_package") as fixture_only:
+            pin = self.change("LICENSE", "adopter-owned license\n")
+            before = {p: api.read(pin, p) for p in
+                      ("LICENSE", session.LEDGER, session.HANDOFF, "notes/custom.md")}
+            upgraded = lifecycle.upgrade(api, REPO, pin, NEW, apply=True,
+                                         owner_approved=True)["installed_sha"]
+            self.assertEqual(api.ref("main"), api.product)
+            self.assertEqual({p: api.read(upgraded, p) for p in before}, before)
+            self.assertEqual(session.load(api, REPO, upgraded)["manifest"]
+                             ["package_files_sha256"], lifecycle.digest_files(package))
+            for path, content in package.items():
+                self.assertEqual(api.read(upgraded, path), content)
+            # Fresh-install path in the disposable fixture only.
+            api.git("update-ref", "-d", "refs/heads/" + install.BRANCH, upgraded)
+            fresh = install.install(api, REPO, NEW, "v1.0.6", True)["installed_sha"]
+            self.assertEqual(api.ref("main"), api.product)
+            self.assertEqual(api.git("rev-parse", fresh + "^"), api.product)
+            observed = session.load(api, REPO, fresh)
+            self.assertEqual(observed["manifest"]["package_files_sha256"],
+                             lifecycle.digest_files(package))
+            self.assertEqual(observed["ledger"]["issues"], [])
+            for path, content in package.items():
+                self.assertEqual(api.read(fresh, path), content)
+            self.assertEqual(fixture_only.call_count, 2)
+        # Real production guard still refuses the draft package.
+        with self.assertRaisesRegex(ValueError, "not authorized"):
+            install.require_publishable_package(package)
+
     def test_upgrade_requires_owner_and_current_revision(self):
         api=self.api
         with self.assertRaisesRegex(ValueError,"owner approval"):
