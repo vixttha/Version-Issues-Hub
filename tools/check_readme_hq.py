@@ -149,6 +149,7 @@ def check_navigation(errors):
         ROOT / "history/README.md", ROOT / "techniques/README.md",
         ROOT / "graphify-hq/README.md", *sorted((ROOT / "graphify-hq/maps").glob("*/README.md")),
         *sorted((ROOT / "audits").rglob("*.md")), *sorted((ROOT / "versions").rglob("*.md")),
+        *sorted((ROOT / "workspace").rglob("*.md")),
     ]
     count = 0
     for path in paths:
