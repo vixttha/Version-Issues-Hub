@@ -111,6 +111,16 @@
         "Recover BART and AlderVale via fresh processes using real GitHub reads; verify existing-branch refusal and actual issue lookup.",
         "Public runner and Graphify evidence; no product changes, no enforcement or independent LLM claims."
       ]
+    },
+    {
+      "issue": 25,
+      "version": "v0.0.0.12",
+      "state": "in_progress",
+      "acceptance": [
+        "Owner-approved dry-run-first upgrade preserves ledger, handoff and adopter files and only advances dedicated branch.",
+        "Reject active/staged work, enabled enforcement, stale revisions, non-descendant source pins and path conflicts.",
+        "Prepare exact archive without deleting branches; verify real disposable Git objects on public runners."
+      ]
     }
   ]
 }

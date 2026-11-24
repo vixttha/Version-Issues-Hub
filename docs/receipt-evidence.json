@@ -308,6 +308,34 @@
           "anchor": "- name: Live public read-only install planning and adopter recovery"
         }
       ]
+    },
+    {
+      "id": "v0-0-0-12",
+      "label": "Issue #25 · safe installation lifecycle",
+      "documented_in": [
+        {
+          "path": "install/branch/LIFECYCLE.md",
+          "anchor": "## Upgrade and retirement contract"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "ledger/issue-versions.json",
+          "anchor": "\"issue\": 25,"
+        }
+      ],
+      "implemented_in": [
+        {
+          "path": "tools/lifecycle.py",
+          "anchor": "def upgrade(api, target, expected_sha, source_sha, *, apply=False, owner_approved=False):"
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tests/test_lifecycle.py",
+          "anchor": "def test_upgrade_preserves_real_git_state_and_product(self):"
+        }
+      ]
     }
   ]
 }

@@ -7,3 +7,5 @@ Run `python -m tools.session --target OWNER/REPO inspect` in an authorized cloud
 Optional owner-enabled gate: [GATE.md](GATE.md). The candidate is not live enforcement until the disposable ruleset pilot passes.
 
 **Default: Standard VIB.** No GitHub App, rulesets, branch protection, database or external service required. Use [STANDARD.md](STANDARD.md) to review product evidence. Optional hard enforcement is separate and does not block ordinary adoption.
+
+Owner-controlled [upgrade and retirement preparation](LIFECYCLE.md) is dry-run-first; never automatically delete a branch.
