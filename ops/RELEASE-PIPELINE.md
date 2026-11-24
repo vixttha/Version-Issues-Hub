@@ -15,3 +15,7 @@ PR49 review finding 4682051116: compare both inspected product SHAs against pinn
 ## Refresh rehearsal (not PR49 integration)
 
 Read-only Head snapshot 5ac44c3d7f6ca129f55fce583de8659e5e950873; original PR49 and its 91-check receipt preserved. Verify exact root rehearsal 41c5007a7b51621ad1ef1735beac4930cef266f7, two public jobs and locked asset bytes; licensing technically accepted, rights/integration remain separate. CodeRabbit evidence requires complete inventory, exact head, known GitHub App identity and unambiguous successful check; otherwise report a blocker. Review of this new candidate remains pending. This branch is a supporting rehearsal of #40, not a new claim, release or PR merge. No paid review requested.
+
+## #51 combined rehearsal (unpublished)
+
+Preserve historical engineering, legal and homepage receipts. Add the exact #52 review and seven jobs, with job names bound per run; both matrix scopes are required on the new combined SHA. Optional hard enforcement remains disabled. Its generic policy accepts exact job names, workflow IDs, source SHA and steps; if the owner later enables it, bind both new scope names and independently verify the new policy rather than reusing the old single-job evidence. #34 remains separate. No claim, approval, or release.

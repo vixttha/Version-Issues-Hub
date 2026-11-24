@@ -62,6 +62,22 @@ class RevisionGuardTests(unittest.TestCase):
                 self.p.receipt("test", {"head": "head", "runs": [2], "jobs": 1})
         self.assertIn("/actions/runs/2/attempts/2/jobs?per_page=100", seen)
 
+    def test_scope_receipt_requires_both_named_jobs(self):
+        job = {"status": "completed", "conclusion": "success",
+               "runner_group_name": "GitHub Actions", "labels": ["ubuntu-24.04"]}
+        spec = {"head": "head", "runs": [1], "jobs": 2,
+                "job_names": {"1": ["live (core)", "live (external)"]}}
+        run = {"head_sha": "head", "run_attempt": 1, "status": "completed", "conclusion": "success"}
+        for names in (["live (core)", "live (external)"], ["live (core)", "live (core)"], ["live (core)"]):
+            with self.subTest(names=names):
+                jobs = {"total_count": len(names), "jobs": [dict(job, name=n) for n in names]}
+                with patch.object(self.p, "api", side_effect=[run, jobs]):
+                    if names == ["live (core)", "live (external)"]:
+                        self.p.receipt("split", spec)
+                    else:
+                        with self.assertRaisesRegex(ValueError, "exact job names"):
+                            self.p.receipt("split", spec)
+
     def review_case(self, rows, total=None):
         with patch.object(self.p, "api", return_value={"total_count": len(rows) if total is None else total, "check_runs": rows}):
             self.p.record_review("test", "head")

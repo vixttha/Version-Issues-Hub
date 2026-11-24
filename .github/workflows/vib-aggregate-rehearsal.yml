@@ -1,7 +1,7 @@
 name: VIB aggregate candidate rehearsal
 on:
   push:
-    branches: [review/vib-v0.0.1-aggregate]
+    branches: [review/vib-v0.0.1-isolated-aggregate]
 permissions:
   contents: read
   actions: read
@@ -105,6 +105,10 @@ jobs:
           print('Documentation parity only; not runtime behavior certification.')
           PY
   live:
+    strategy:
+      fail-fast: false
+      matrix:
+        scope: [core, external]
     if: github.event.repository.private == false
     runs-on: ubuntu-24.04
     timeout-minutes: 8
@@ -121,10 +125,11 @@ jobs:
       - name: Live public read-only install planning and adopter recovery
         run: |
           set -o pipefail
-          python -m tools.live_acceptance | tee "$RUNNER_TEMP/live-acceptance.json"
-      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+          python -m tools.live_acceptance --scope "${{ matrix.scope }}" | tee "$RUNNER_TEMP/live-acceptance.json"
+      - if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         with:
-          name: live-acceptance-${{ github.run_id }}-${{ github.run_attempt }}
+          name: live-acceptance-${{ matrix.scope }}-${{ github.run_id }}-${{ github.run_attempt }}
           path: ${{ runner.temp }}/live-acceptance.json
           if-no-files-found: error
   render-root:
@@ -192,20 +197,16 @@ jobs:
           python - <<'PY'
           import subprocess
           def git(*args): return subprocess.check_output(['git', *args], text=True).strip()
-          legal='d1e8e1a922446d137a793d1fded105f427122ec5'
-          root='41c5007a7b51621ad1ef1735beac4930cef266f7'
-          pipeline='6f80ab87452b9148fa7817faa9e3ba38f0fe6199'
-          assert git('show','-s','--format=%P','HEAD').split() == [root,pipeline]
-          pipeline_paths=['.github/workflows/vib-release-preflight.yml','ops/RELEASE-PIPELINE.md','ops/release-pipeline.json','ops/release-preflight.py','ops/test_release_preflight.py']
-          for path in pipeline_paths:
-              assert git('rev-parse','HEAD:'+path)==git('rev-parse',pipeline+':'+path),path
-          expected=set(pipeline_paths+['README.md','.github/workflows/vib-aggregate-rehearsal.yml'])
-          assert set(git('diff','--name-only',root,'HEAD').splitlines())==expected
-          assert git('show','HEAD:README.md')==git('show',root+':README.md').replace('https://github.com/vixttha/Version-Issues-Hub/blob/d1e8e1a922446d137a793d1fded105f427122ec5/ENGINEERING-LAWS.md','ENGINEERING-LAWS.md')
-          assert git('rev-parse','HEAD:LICENSE')=='90abd0e6c64a135f42451762337a397bf27f4862'
-          assert git('rev-parse','HEAD:VIB-NOTICE.md')=='70dd8710828a38118965be3ca8be32457d106789'
-          for path in ['assets/vib-logo.svg','assets/vib-logo-light.svg']:
-              assert git('rev-parse','HEAD:'+path)==git('rev-parse',root+':'+path)
-          assert git('diff','--name-only',legal,'HEAD','--','install','ledger','tests','tools',':(exclude)tools/check_vib_homepage_root.cjs')==''
-          print('Exact aggregate source, approved legal bytes, package/ledger and locked asset parity verified; no release authorization.')
+          previous='75617d4226620455cc4ab1d895bc5d268eea87fd'
+          repair='d7a1efef88704be952f3ecefde1c018b1155fe9a'
+          assert git('show','-s','--format=%P','HEAD').split() == [previous,repair]
+          repair_paths=['.github/workflows/live-acceptance.yml','docs/live-acceptance-isolation.md','tests/test_live_acceptance.py','tools/live_acceptance.py']
+          revised=['.github/workflows/vib-aggregate-rehearsal.yml','ops/RELEASE-PIPELINE.md','ops/release-pipeline.json','ops/release-preflight.py','ops/test_release_preflight.py']
+          for path in repair_paths:
+              assert git('rev-parse','HEAD:'+path)==git('rev-parse',repair+':'+path),path
+          assert set(git('diff','--name-only',previous,'HEAD').splitlines())==set(repair_paths+revised)
+          for path in ['LICENSE','VIB-NOTICE.md','README.md','assets/vib-logo.svg','assets/vib-logo-light.svg']:
+              assert git('rev-parse','HEAD:'+path)==git('rev-parse',previous+':'+path),path
+          assert git('diff','--name-only',previous,'HEAD','--','install','ledger')==''
+          print('Exact reviewed #52 blobs and immutable prior aggregate assets/package/ledger verified.')
           PY

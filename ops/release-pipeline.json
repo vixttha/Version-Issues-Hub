@@ -244,7 +244,7 @@
     "#45 commercial brand clearance",
     "#46 root rehearsal passed; final integrated destination validation and publication permission pending",
     "#40 fresh exact pipeline review, aggregate validation, owner integration and separate release approval",
-    "#51 external adopter drift and live acceptance isolation require disposition"
+    "#51 isolated candidate reviewed; integrated both-scope validation and owner disposition pending"
   ],
   "archive": {
     "head": "a9cdd97c4ad111ed4bb3eb1efa4c9bafc306a9b4",
@@ -261,5 +261,34 @@
       45425652177
     ],
     "jobs": 2
+  },
+  "live_isolation": {
+    "head": "d7a1efef88704be952f3ecefde1c018b1155fe9a",
+    "pr": 52,
+    "merge": "a2562695ae9bd2da0752f4bbed3a42ca0e2dfc83",
+    "runs": [
+      45429658539,
+      45429658406,
+      45429714829,
+      45429715578
+    ],
+    "jobs": 7,
+    "job_names": {
+      "45429658539": [
+        "verify",
+        "graphify"
+      ],
+      "45429658406": [
+        "live (core)",
+        "live (external)"
+      ],
+      "45429714829": [
+        "live (core)",
+        "live (external)"
+      ],
+      "45429715578": [
+        "contract"
+      ]
+    }
   }
 }

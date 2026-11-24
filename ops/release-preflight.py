@@ -44,6 +44,9 @@ def receipt(group, spec):
               run["run_attempt"] == attempt and run["status"] == "completed" and run["conclusion"] == "success")
         jobs = api(f"/actions/runs/{run_id}/attempts/{attempt}/jobs?per_page=100")
         check(f"{group} run {run_id} full job list", jobs["total_count"] == len(jobs["jobs"]))
+        if "job_names" in spec:
+            check(f"{group} run {run_id} exact job names",
+                  sorted(j["name"] for j in jobs["jobs"]) == sorted(spec["job_names"][str(run_id)]))
         for job in jobs["jobs"]:
             check(f"{group} {job['name']} success", job["status"] == "completed" and job["conclusion"] == "success")
             check(f"{group} {job['name']} hosted", job["runner_group_name"] == "GitHub Actions" and any(x in ("ubuntu-latest", "ubuntu-24.04", "windows-latest", "macos-latest") for x in job["labels"]) and "self-hosted" not in job["labels"])
@@ -98,7 +101,7 @@ def main():
     check("homepage branch pinned", branch("review/vib-homepage-preflight") == M["homepage"]["head"])
     check("homepage root rehearsal pinned", branch("review/vib-homepage-root-rehearsal") == M["homepage_root"]["head"])
     check("self state pinned", branch("Version-Issues-Hub") == M["installed_state"])
-    for key in ("engineering", "licensing_review", "homepage", "homepage_root", "archive"):
+    for key in ("engineering", "licensing_review", "homepage", "homepage_root", "archive", "live_isolation"):
         receipt(key, M[key])
     original = leaves(M["readme"])
     derivative = leaves(M["homepage"]["head"])
