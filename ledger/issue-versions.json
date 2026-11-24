@@ -161,6 +161,16 @@
         "Retry only transient GET 5xx within a fixed bound; never retry POST/PATCH/DELETE.",
         "Repeat exact isolated pilot recovery once and capture live upgrade/archive outcome, retaining original failures."
       ]
+    },
+    {
+      "issue": 33,
+      "version": "v0.0.0.17",
+      "state": "in_progress",
+      "acceptance": [
+        "Bound retry of direct and wrapped GitHub GET timeouts including response reads.",
+        "Redact transport details and refuse retry of uncertain mutations; fail closed on other URL errors.",
+        "Public runner regression and exact receipt/Graphify evidence; retain unresolved live remote upgrade separately."
+      ]
     }
   ]
 }

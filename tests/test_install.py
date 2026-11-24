@@ -2,7 +2,7 @@ import base64
 import hashlib
 import json
 import io
-from urllib.error import HTTPError
+from urllib.error import HTTPError, URLError
 import unittest
 from unittest.mock import patch
 from tools import install, checkpoint
@@ -195,6 +195,51 @@ class InstallerTests(unittest.TestCase):
                 self.assertEqual(req.call_count,1)
                 self.assertEqual(str(raised.exception),f"GitHub API returned HTTP 500 ({method} git/refs)")
                 delay.assert_not_called()
+
+    def test_api_get_timeout_retries_direct_and_wrapped(self):
+        for first in (TimeoutError("private detail"), URLError(TimeoutError("private detail"))):
+            api = install.GitHub("fixture-secret")
+            with patch.object(api.opener,"open",side_effect=[first,io.BytesIO(b'{"ok":true}')]) as req, \
+                 patch.object(install.time,"sleep") as delay:
+                self.assertEqual(api.request("GET",PREFIX+"/contents/private-file?ref=secret"),{"ok":True})
+                self.assertEqual(req.call_count,2)
+                delay.assert_called_once_with(0.5)
+
+    def test_api_get_timeout_during_response_read(self):
+        api = install.GitHub("fixture-secret")
+        class SlowResponse(io.BytesIO):
+            def read(self, *args, **kwargs):
+                raise TimeoutError("private response detail")
+        with patch.object(api.opener,"open",side_effect=[SlowResponse(),io.BytesIO(b'{"ok":true}')]) as req, \
+             patch.object(install.time,"sleep"):
+            self.assertEqual(api.request("GET",PREFIX+"/contents/private-file"),{"ok":True})
+            self.assertEqual(req.call_count,2)
+
+    def test_api_transport_exhaustion_and_no_write_retry(self):
+        api = install.GitHub("fixture-secret")
+        for method, count in (("GET",3),("POST",1),("PATCH",1),("DELETE",1)):
+            errors=[TimeoutError("private request detail") for _ in range(count)]
+            with patch.object(api.opener,"open",side_effect=errors) as req, patch.object(install.time,"sleep") as delay:
+                with self.assertRaises(install.ApiTransportError) as raised:
+                    api.request(method,PREFIX+"/git/refs/heads/private?ref=secret")
+                self.assertEqual(req.call_count,count)
+                self.assertTrue(raised.exception.timed_out)
+                expected=f"GitHub transport timed out ({method} git/refs)"
+                if method!="GET":
+                    expected+="; inspect before retrying any write"
+                    delay.assert_not_called()
+                self.assertEqual(str(raised.exception),expected)
+
+    def test_api_other_url_errors_fail_closed(self):
+        api = install.GitHub("fixture-secret")
+        with patch.object(api.opener,"open",side_effect=URLError("private error")) as req, \
+             patch.object(install.time,"sleep") as delay:
+            with self.assertRaises(install.ApiTransportError) as raised:
+                api.request("GET",PREFIX+"/contents/private-file")
+            self.assertEqual(req.call_count,1)
+            self.assertFalse(raised.exception.timed_out)
+            self.assertEqual(str(raised.exception),"GitHub transport failed (GET contents)")
+            delay.assert_not_called()
 
 if __name__ == "__main__":
     unittest.main()

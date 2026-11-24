@@ -8,7 +8,7 @@ import os
 import re
 import sys
 import time
-from urllib.error import HTTPError
+from urllib.error import HTTPError, URLError
 from urllib.parse import quote
 from urllib.request import Request, build_opener, HTTPRedirectHandler
 
@@ -37,6 +37,15 @@ class ApiError(RuntimeError):
         context = f" ({method} {operation})" if method and operation else ""
         super().__init__(f"GitHub API returned HTTP {status}{context}")
         self.status = status
+
+class ApiTransportError(OSError):
+    """Transport failure with only safe operation context, never request details."""
+    def __init__(self, method, operation, timed_out):
+        self.timed_out = timed_out
+        detail = "timed out" if timed_out else "failed"
+        caution = "; inspect before retrying any write" if method != "GET" else ""
+        super().__init__(f"GitHub transport {detail} ({method} {operation}){caution}")
+
 
 def api_operation(path):
     """Classify endpoint without logging repository names, filenames, query strings or bodies."""
@@ -79,6 +88,13 @@ class GitHub:
                 exc.close()
                 if code not in (500, 502, 503, 504) or attempt == len(delays) - 1:
                     raise ApiError(code, method, api_operation(path)) from None
+            except (TimeoutError, URLError) as exc:
+                timed_out = isinstance(exc, TimeoutError) or (
+                    isinstance(exc, URLError) and isinstance(exc.reason, TimeoutError))
+                # A read may safely repeat; an uncertain write never does.
+                if not timed_out or attempt == len(delays) - 1:
+                    raise ApiTransportError(method, api_operation(path), timed_out) from None
+
 
 def require(pattern, value, name):
     if not isinstance(value, str) or not pattern.fullmatch(value):
