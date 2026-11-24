@@ -64,7 +64,7 @@ class RevisionGuardTests(unittest.TestCase):
 
     def test_active_checkpoint_matches_pinned_phase(self):
         active = {"status": "resume", "active": {"issue": 40, "version": "v0.0.0.23",
-                                                 "phase": self.p.M["installed_phase"]}}
+                                                 "phase": self.p.M["installed_phase"], "pull_request": None}}
         self.p.check_active_checkpoint(active, {"status": "blocked_other_active_issue"})
 
     def test_active_checkpoint_rejects_stale_phase(self):
@@ -75,9 +75,20 @@ class RevisionGuardTests(unittest.TestCase):
 
     def test_competing_checkpoint_still_rejected(self):
         active = {"status": "resume", "active": {"issue": 40, "version": "v0.0.0.23",
-                                                 "phase": self.p.M["installed_phase"]}}
+                                                 "phase": self.p.M["installed_phase"], "pull_request": None}}
         with self.assertRaisesRegex(ValueError, "competing issue refused"):
             self.p.check_active_checkpoint(active, {"status": "resume"})
+
+    def test_head_self_reference_reports_stale_candidate(self):
+        active = {"status": "stale_candidate", "active": {"issue": 40, "version": "v0.0.0.23",
+                   "phase": "Head", "pull_request": 49, "candidate_sha": "historical"}}
+        pr = {"head": {"sha": "test"}, "state": "open", "draft": True, "merged": False}
+        with patch.object(self.p, "api", return_value=pr):
+            self.p.check_active_checkpoint(active, {"status": "blocked_other_active_issue"})
+            active["status"] = "resume"
+            with self.assertRaisesRegex(ValueError, "Head recovery status"):
+                self.p.check_active_checkpoint(active, {"status": "blocked_other_active_issue"})
+        self.assertEqual(self.p.report["release"], "BLOCKED")
 
 if __name__ == "__main__":
     unittest.main()

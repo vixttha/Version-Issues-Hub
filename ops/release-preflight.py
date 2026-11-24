@@ -79,9 +79,22 @@ def check_final_refs():
 def check_active_checkpoint(active, other):
     handoff = active["active"]
     check("VIB sole active release checkpoint",
-          active["status"] == "resume" and handoff["issue"] == 40
+          handoff["issue"] == 40
           and handoff["version"] == "v0.0.0.23"
           and handoff["phase"] == M["installed_phase"])
+    # The PR under review is this pipeline itself. A new pipeline commit
+    # invalidates the historical Head candidate; do not claim it is resumable.
+    if handoff["phase"] == "Head" and handoff["pull_request"] == 49:
+        current = api("/pulls/49")
+        check("current pipeline is the exact open draft under review",
+              current["head"]["sha"] == report["pipeline_sha"]
+              and current["state"] == "open" and current["draft"] and not current["merged"])
+        expected = "resume" if handoff["candidate_sha"] == current["head"]["sha"] else "stale_candidate"
+        check("Head recovery status matches actual PR revision", active["status"] == expected)
+        if expected == "stale_candidate":
+            report["blockers"].append("Head handoff references historical PR49 revision; reconcile before integration")
+    else:
+        check("active checkpoint resumable", active["status"] == "resume")
     check("competing issue refused", other["status"] == "blocked_other_active_issue")
 
 
