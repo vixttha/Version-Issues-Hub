@@ -1,0 +1,155 @@
+{
+  "status": "candidate_only",
+  "source": "3b6951be81d2fc9468b5379aead57c7afc444754",
+  "version": "v0.0.0.8",
+  "archive_sha256": "d2b42251cced6f1d9d45ecd9ac28249b09480164e2102eed9e481455f51b3816",
+  "runner_id": "45331511873",
+  "runner_attempt": "1",
+  "veraphify_source": "8df46d16a573abaad50b82b4294cc1e7abdcacea",
+  "lookups": {
+    "v0-0-0-1": {
+      "project": "vixttha/Version-Issues-Hub",
+      "version": "v0.0.0.8",
+      "source": "3b6951be81d2fc9468b5379aead57c7afc444754",
+      "format": 1,
+      "veraphifiy_version": "v0.0.9",
+      "producer": "0.9.109",
+      "graph_sha256": "f75f0746710a6e7cca1c42557d6e24d167acfe753c6c877094a1b958774c0caf",
+      "receipt_sha256": "2de89e7c0f94c9eb17b056d6bee2942d4c830f09ddc2be8a6049ebae1ca3bff0",
+      "archive_sha256": "d2b42251cced6f1d9d45ecd9ac28249b09480164e2102eed9e481455f51b3816",
+      "feature": "feature:v0-0-0-1",
+      "citations": [
+        {
+          "path": "tools/checkpoint.py",
+          "line": 87
+        }
+      ]
+    },
+    "v0-0-0-2": {
+      "project": "vixttha/Version-Issues-Hub",
+      "version": "v0.0.0.8",
+      "source": "3b6951be81d2fc9468b5379aead57c7afc444754",
+      "format": 1,
+      "veraphifiy_version": "v0.0.9",
+      "producer": "0.9.109",
+      "graph_sha256": "f75f0746710a6e7cca1c42557d6e24d167acfe753c6c877094a1b958774c0caf",
+      "receipt_sha256": "2de89e7c0f94c9eb17b056d6bee2942d4c830f09ddc2be8a6049ebae1ca3bff0",
+      "archive_sha256": "d2b42251cced6f1d9d45ecd9ac28249b09480164e2102eed9e481455f51b3816",
+      "feature": "feature:v0-0-0-2",
+      "citations": [
+        {
+          "path": ".github/workflows/verify-checkpoint.yml",
+          "line": 30
+        }
+      ]
+    },
+    "v0-0-0-3": {
+      "project": "vixttha/Version-Issues-Hub",
+      "version": "v0.0.0.8",
+      "source": "3b6951be81d2fc9468b5379aead57c7afc444754",
+      "format": 1,
+      "veraphifiy_version": "v0.0.9",
+      "producer": "0.9.109",
+      "graph_sha256": "f75f0746710a6e7cca1c42557d6e24d167acfe753c6c877094a1b958774c0caf",
+      "receipt_sha256": "2de89e7c0f94c9eb17b056d6bee2942d4c830f09ddc2be8a6049ebae1ca3bff0",
+      "archive_sha256": "d2b42251cced6f1d9d45ecd9ac28249b09480164e2102eed9e481455f51b3816",
+      "feature": "feature:v0-0-0-3",
+      "citations": [
+        {
+          "path": "tools/install.py",
+          "line": 103
+        }
+      ]
+    },
+    "v0-0-0-4": {
+      "project": "vixttha/Version-Issues-Hub",
+      "version": "v0.0.0.8",
+      "source": "3b6951be81d2fc9468b5379aead57c7afc444754",
+      "format": 1,
+      "veraphifiy_version": "v0.0.9",
+      "producer": "0.9.109",
+      "graph_sha256": "f75f0746710a6e7cca1c42557d6e24d167acfe753c6c877094a1b958774c0caf",
+      "receipt_sha256": "2de89e7c0f94c9eb17b056d6bee2942d4c830f09ddc2be8a6049ebae1ca3bff0",
+      "archive_sha256": "d2b42251cced6f1d9d45ecd9ac28249b09480164e2102eed9e481455f51b3816",
+      "feature": "feature:v0-0-0-4",
+      "citations": [
+        {
+          "path": "tools/session.py",
+          "line": 81
+        }
+      ]
+    },
+    "v0-0-0-5": {
+      "project": "vixttha/Version-Issues-Hub",
+      "version": "v0.0.0.8",
+      "source": "3b6951be81d2fc9468b5379aead57c7afc444754",
+      "format": 1,
+      "veraphifiy_version": "v0.0.9",
+      "producer": "0.9.109",
+      "graph_sha256": "f75f0746710a6e7cca1c42557d6e24d167acfe753c6c877094a1b958774c0caf",
+      "receipt_sha256": "2de89e7c0f94c9eb17b056d6bee2942d4c830f09ddc2be8a6049ebae1ca3bff0",
+      "archive_sha256": "d2b42251cced6f1d9d45ecd9ac28249b09480164e2102eed9e481455f51b3816",
+      "feature": "feature:v0-0-0-5",
+      "citations": [
+        {
+          "path": "tools/session.py",
+          "line": 249
+        }
+      ]
+    },
+    "v0-0-0-6": {
+      "project": "vixttha/Version-Issues-Hub",
+      "version": "v0.0.0.8",
+      "source": "3b6951be81d2fc9468b5379aead57c7afc444754",
+      "format": 1,
+      "veraphifiy_version": "v0.0.9",
+      "producer": "0.9.109",
+      "graph_sha256": "f75f0746710a6e7cca1c42557d6e24d167acfe753c6c877094a1b958774c0caf",
+      "receipt_sha256": "2de89e7c0f94c9eb17b056d6bee2942d4c830f09ddc2be8a6049ebae1ca3bff0",
+      "archive_sha256": "d2b42251cced6f1d9d45ecd9ac28249b09480164e2102eed9e481455f51b3816",
+      "feature": "feature:v0-0-0-6",
+      "citations": [
+        {
+          "path": "tools/gate.py",
+          "line": 133
+        }
+      ]
+    },
+    "v0-0-0-7": {
+      "project": "vixttha/Version-Issues-Hub",
+      "version": "v0.0.0.8",
+      "source": "3b6951be81d2fc9468b5379aead57c7afc444754",
+      "format": 1,
+      "veraphifiy_version": "v0.0.9",
+      "producer": "0.9.109",
+      "graph_sha256": "f75f0746710a6e7cca1c42557d6e24d167acfe753c6c877094a1b958774c0caf",
+      "receipt_sha256": "2de89e7c0f94c9eb17b056d6bee2942d4c830f09ddc2be8a6049ebae1ca3bff0",
+      "archive_sha256": "d2b42251cced6f1d9d45ecd9ac28249b09480164e2102eed9e481455f51b3816",
+      "feature": "feature:v0-0-0-7",
+      "citations": [
+        {
+          "path": "tools/checkpoint.py",
+          "line": 221
+        }
+      ]
+    },
+    "v0-0-0-8": {
+      "project": "vixttha/Version-Issues-Hub",
+      "version": "v0.0.0.8",
+      "source": "3b6951be81d2fc9468b5379aead57c7afc444754",
+      "format": 1,
+      "veraphifiy_version": "v0.0.9",
+      "producer": "0.9.109",
+      "graph_sha256": "f75f0746710a6e7cca1c42557d6e24d167acfe753c6c877094a1b958774c0caf",
+      "receipt_sha256": "2de89e7c0f94c9eb17b056d6bee2942d4c830f09ddc2be8a6049ebae1ca3bff0",
+      "archive_sha256": "d2b42251cced6f1d9d45ecd9ac28249b09480164e2102eed9e481455f51b3816",
+      "feature": "feature:v0-0-0-8",
+      "citations": [
+        {
+          "path": "tools/gate.py",
+          "line": 242
+        }
+      ]
+    }
+  }
+}
