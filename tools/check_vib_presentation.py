@@ -47,6 +47,6 @@ for path in sorted(set(paths)):
 print("Verified",len(set(paths)),"pinned product paths and both theme assets")
 commands=re.findall(r"```sh\n(.*?)\n```",draft,re.S)
 assert commands[0]=="git clone https://github.com/vixttha/Version-Issues-Hub.git\ncd Version-Issues-Hub\ngit checkout --detach 114a22196eab578b3053002f8eb7af935b26fe89\npython -m tools.session --target vixttha/Version-Issues-Hub inspect"
-assert commands[1] == "python tools/install.py \\\n  --target OWNER/REPO \\\n  --source-sha 114a22196eab578b3053002f8eb7af935b26fe89 \\\n  --baseline v0.0.0"
+assert commands[1] == (" "+chr(92)+"\n").join(["python tools/install.py", "  --target OWNER/REPO", "  --source-sha 114a22196eab578b3053002f8eb7af935b26fe89", "  --baseline v0.0.0"])
 assert commands[-1]=="python -B -m unittest discover -s tests -v"
 print("Exact documented quickstart and test commands verified")
