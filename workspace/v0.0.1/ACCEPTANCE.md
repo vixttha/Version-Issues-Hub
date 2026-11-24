@@ -1,0 +1,7 @@
+# VIB README v0.0.1 — accepted baseline
+
+**VIB-README-ACCEPT-001 — owner accepted, 2026-11-24.** Exact reviewed README at [c2b70b2cbc00177ee71f5004ae72996cf1db77e9](https://github.com/vixttha/Version-Issues-Hub/blob/c2b70b2cbc00177ee71f5004ae72996cf1db77e9/workspace/v0.0.1/DRAFT.md). The owner accepted the README and requested the remaining v0.0.1 product release gates. This freezes the README and its four approved SVG assets, not the VIB product candidate or release.
+
+[Accepted README](accepted/README.md) · [Machine-readable acceptance](acceptance.json) · [Exact public runner](https://github.com/vixttha/Version-Issues-Hub/actions/runs/45397914703/attempts/1) · [Visual audit](https://github.com/vixttha/Version-Issues-Hub/actions/runs/45397914703/artifacts/14921363311) · [Technical receipt](https://github.com/vixttha/Version-Issues-Hub/issues/40#issuecomment-7132121369).
+
+All four jobs passed, including 12/12 actual GitHub Chromium configurations (6 baseline and 6 revised), 84 product tests, 11 Graphify tests and 6 maps. No artwork changes. The accepted README and four assets are copied by exact Git blob ID into the accepted directory; the original draft remains intact. Future changes require owner approval and a new reviewed record. Homepage publication and actual destination review, product license/reuse terms, commercial clearance, independent host acceptance and product release remain separate. Do not merge the README HQ template wholesale into main.
