@@ -1,0 +1,39 @@
+name: VIB project Test Vault
+on:
+  push:
+    branches: [Lydite-Test-Vault]
+  pull_request:
+    branches: [Lydite-Test-Vault]
+permissions:
+  contents: read
+jobs:
+  product:
+    if: github.event.repository.private == false
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          path: vault
+          persist-credentials: false
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: '4fc9ac47462101b941ea2f78fc939d42a9de0032'
+          path: product
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
+        with:
+          python-version: '3.12'
+      - name: Run project suites with per-case Lydite verdicts
+        env:
+          VIB_CHECKOUT: ${{ github.workspace }}/product
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: python vault/vib/run_cases.py
+      - name: Retain exact product and vault evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: vib-test-vault-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/vib-vault/
+          if-no-files-found: error

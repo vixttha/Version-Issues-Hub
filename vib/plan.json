@@ -1,0 +1,91 @@
+{
+  "schema_version": 1,
+  "product_repository": "vixttha/Version-Issues-Hub",
+  "product_sha": "4fc9ac47462101b941ea2f78fc939d42a9de0032",
+  "cases": [
+    {
+      "case_id": "VIB-001",
+      "suite": "test_checkpoint.py",
+      "plan": {
+        "schema_version": 2,
+        "case_id": "VIB-001",
+        "required_checks": [
+          "python-unittest"
+        ],
+        "shared_evidence": false
+      }
+    },
+    {
+      "case_id": "VIB-002",
+      "suite": "test_install.py",
+      "plan": {
+        "schema_version": 2,
+        "case_id": "VIB-002",
+        "required_checks": [
+          "python-unittest"
+        ],
+        "shared_evidence": false
+      }
+    },
+    {
+      "case_id": "VIB-003",
+      "suite": "test_session.py",
+      "plan": {
+        "schema_version": 2,
+        "case_id": "VIB-003",
+        "required_checks": [
+          "python-unittest"
+        ],
+        "shared_evidence": false
+      }
+    },
+    {
+      "case_id": "VIB-004",
+      "suite": "test_standard.py",
+      "plan": {
+        "schema_version": 2,
+        "case_id": "VIB-004",
+        "required_checks": [
+          "python-unittest"
+        ],
+        "shared_evidence": false
+      }
+    },
+    {
+      "case_id": "VIB-005",
+      "suite": "test_gate.py",
+      "plan": {
+        "schema_version": 2,
+        "case_id": "VIB-005",
+        "required_checks": [
+          "python-unittest"
+        ],
+        "shared_evidence": false
+      }
+    },
+    {
+      "case_id": "VIB-006",
+      "suite": "test_lifecycle.py",
+      "plan": {
+        "schema_version": 2,
+        "case_id": "VIB-006",
+        "required_checks": [
+          "python-unittest"
+        ],
+        "shared_evidence": false
+      }
+    },
+    {
+      "case_id": "VIB-007",
+      "suite": "test_acceptance_snapshot.py",
+      "plan": {
+        "schema_version": 2,
+        "case_id": "VIB-007",
+        "required_checks": [
+          "python-unittest"
+        ],
+        "shared_evidence": false
+      }
+    }
+  ]
+}
