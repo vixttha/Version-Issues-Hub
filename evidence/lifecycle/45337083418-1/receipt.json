@@ -1,0 +1,40 @@
+{
+  "archive_sha256": "0ee368555f5412c9584d7738e33db3d0e826e7cac57df11b52313eea37dfaf34",
+  "attempt": "1",
+  "installed_sha": "603bae29b247b98cae1d32a5018056eef201be3c",
+  "new_source": "c79217ea4c18d892cd49112bc30b7b28a2fb502b",
+  "old_source": "8af9508e20fa80e6dc312ededc83f4a8007ecf92",
+  "repository": "vixttha/Version-Issues-Hub",
+  "results": {
+    "actual_install_isolated_tree": true,
+    "adopter_state_saved": true,
+    "dry_run": true,
+    "lease_checked_removal": true,
+    "manual_upgrade_preserved_state": true,
+    "occupied_install_refused": true,
+    "product_and_templates_unchanged": true,
+    "started": true,
+    "state_exported": true
+  },
+  "run": "45337083418",
+  "untouched_refs_after": {
+    "Brand-Identity": "ad449084b71bd1439c9914d30f4ad45f18dfae98",
+    "Lydite-Test-Vault": "e0f2aae2679ecce8c9a6e78cabad4ba0479d17ca",
+    "Provenistem": "8f20e5f7d1da1436f37ef4f51dd16a280c5fe748",
+    "Veraphify": "829fdfae2ac0e8167d740e1a0ad8e8201295c34e",
+    "main": "1b11865f79464ae7db9a648467e8c2c1cb898a02",
+    "readme-hq": "18c99e2e3a9d93ff7cfa37203ae18e88160062dc",
+    "readme-hq-v0.0.1": "990ffad5c1ede38bc7edac3a145499f0dbbc0788"
+  },
+  "untouched_refs_before": {
+    "Brand-Identity": "ad449084b71bd1439c9914d30f4ad45f18dfae98",
+    "Lydite-Test-Vault": "e0f2aae2679ecce8c9a6e78cabad4ba0479d17ca",
+    "Provenistem": "8f20e5f7d1da1436f37ef4f51dd16a280c5fe748",
+    "Veraphify": "829fdfae2ac0e8167d740e1a0ad8e8201295c34e",
+    "main": "1b11865f79464ae7db9a648467e8c2c1cb898a02",
+    "readme-hq": "18c99e2e3a9d93ff7cfa37203ae18e88160062dc",
+    "readme-hq-v0.0.1": "990ffad5c1ede38bc7edac3a145499f0dbbc0788"
+  },
+  "upgraded_sha": "81630a5e0b66ba7595698dfd8b74f47d44b84ef7",
+  "workflow_sha": "d7d6563b83a3ff866d713a585688fdc800039a91"
+}

@@ -1,0 +1,14 @@
+{
+  "active": {
+    "candidate_sha": null,
+    "evidence": [],
+    "fix_sha": null,
+    "issue": 9,
+    "next_action": "TRIAL ONLY: preserve state on upgrade",
+    "phase": "Worker",
+    "pull_request": null,
+    "version": "v0.0.0.1"
+  },
+  "history": [],
+  "schema_version": 1
+}

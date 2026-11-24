@@ -1,0 +1,14 @@
+{
+  "issues": [
+    {
+      "acceptance": [
+        "Disposable lifecycle preservation test"
+      ],
+      "issue": 9,
+      "state": "in_progress",
+      "version": "v0.0.0.1"
+    }
+  ],
+  "repository": "vixttha/Version-Issues-Hub",
+  "schema_version": 1
+}
