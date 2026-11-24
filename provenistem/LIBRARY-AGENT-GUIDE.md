@@ -41,4 +41,4 @@ Remain standalone. Other tools are optional; their absence must not block normal
 
 ## Branch-local library boundary
 
-This optional library belongs to the Veraphify workspace. Discover the standalone Provenistem capability through its own dedicated branch, not this nested copy. Read-only discovery does not authorize writes. Preserve local records and prior receipts; no automatic cross-branch installation, synchronization, integration or release.
+Read the local catalog at the library root in the adopting workspace. Resolve its actual repository, branch and revision before citing records. This nested copy is an optional library, not a standalone branch discovery marker. Read-only discovery does not authorize writes. Preserve local records and prior receipts; no automatic cross-branch installation, synchronization, integration or release.
