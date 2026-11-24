@@ -17,7 +17,7 @@
       "version": "v0.0.0.2",
       "state": "assigned",
       "acceptance": [
-        "The combined draft PR produces exactly two receipts, one per checkpoint.",
+        "The original two-checkpoint dogfood PR scope produces exactly two receipts, one per checkpoint; later scopes produce one receipt per selected checkpoint.",
         "Each receipt identifies its own GitHub issue and the corresponding fix commit.",
         "A docs-only commit changes candidate and tested revisions while preserving both fix commits."
       ]
@@ -60,6 +60,16 @@
         "Validate the complete owner-pinned staged scope and exact proposed merge SHA, including per-issue fix ancestry and criterion mapping.",
         "Reject stale, missing, skipped or candidate-writable check evidence; publish only an independently sourced success check when explicitly enabled.",
         "Run positive/negative public-runner unit controls and document the separate live GitHub ruleset pilot; do not claim actual merge enforcement before live proof."
+      ]
+    },
+    {
+      "issue": 13,
+      "version": "v0.0.0.7",
+      "state": "in_progress",
+      "acceptance": [
+        "Preserve the historical exactly-two dogfood assertion as a scope-specific pilot criterion.",
+        "Generate exactly one receipt for every selected checkpoint at the current scope; preserve each pinned fix revision.",
+        "Run the regression on public GitHub-hosted runners."
       ]
     }
   ]

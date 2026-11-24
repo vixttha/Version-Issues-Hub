@@ -168,6 +168,34 @@
           "anchor": "def test_two_issue_gate_and_opt_in_publish(self):"
         }
       ]
+    },
+    {
+      "id": "v0-0-0-7",
+      "label": "Issue #13 · scope-correct receipt criteria",
+      "documented_in": [
+        {
+          "path": "docs/v0.0.0.2.md",
+          "anchor": "The historical two-checkpoint dogfood test"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "ledger/issue-versions.json",
+          "anchor": "\"issue\": 13,"
+        }
+      ],
+      "implemented_in": [
+        {
+          "path": "tools/checkpoint.py",
+          "anchor": "def receipts("
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tests/test_checkpoint.py",
+          "anchor": "def test_live_scope_has_one_receipt_per_selected_version(self, check_ancestry):"
+        }
+      ]
     }
   ]
 }

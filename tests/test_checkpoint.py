@@ -163,5 +163,19 @@ class ReceiptTests(unittest.TestCase):
                 checkpoint.check_receipt_scope(self.ledger, scope, previous)
 
 
+    @patch.object(checkpoint, "verify_fix_ancestry")
+    def test_live_scope_has_one_receipt_per_selected_version(self, check_ancestry):
+        ledger = checkpoint.parse_json(Path(checkpoint.LEDGER).read_text(encoding="utf-8"))
+        scope = checkpoint.parse_json(Path(checkpoint.RECEIPT_SCOPE).read_text(encoding="utf-8"))
+        self.env["GITHUB_EVENT_NAME"] = "push"
+        self.event["after"] = self.tested
+        results = checkpoint.receipts(ledger, scope, self.tested, self.env, self.event)
+        self.assertEqual(len(results), len(scope["versions"]))
+        self.assertEqual({r["version"] for r in results}, set(scope["versions"]))
+        self.assertEqual({r["version"]: r["fix_sha"] for r in results},
+                         {v: scope["fixes"][v] for v in scope["versions"]})
+        self.assertEqual(check_ancestry.call_count, len(scope["versions"]))
+
+
 if __name__ == "__main__":
     unittest.main()
