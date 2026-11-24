@@ -21,6 +21,8 @@ PACKAGE = {
     "tools/checkpoint.py": "tools/checkpoint.py",
     "tools/install.py": "tools/install.py",
     "tools/session.py": "tools/session.py",
+    "tools/gate.py": "tools/gate.py",
+    "install/branch/GATE.md": "GATE.md",
     "install/branch/AGENTS.md": "AGENTS.md",
 }
 

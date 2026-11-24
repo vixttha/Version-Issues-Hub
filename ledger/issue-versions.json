@@ -51,6 +51,16 @@
         "Reject reconciliation until GitHub reports the exact candidate merged; preserve earlier fix/evidence history through rework.",
         "Prove the batched handoff and stale-candidate controls on public runners."
       ]
+    },
+    {
+      "issue": 12,
+      "version": "v0.0.0.6",
+      "state": "in_progress",
+      "acceptance": [
+        "Validate the complete owner-pinned staged scope and exact proposed merge SHA, including per-issue fix ancestry and criterion mapping.",
+        "Reject stale, missing, skipped or candidate-writable check evidence; publish only an independently sourced success check when explicitly enabled.",
+        "Run positive/negative public-runner unit controls and document the separate live GitHub ruleset pilot; do not claim actual merge enforcement before live proof."
+      ]
     }
   ]
 }

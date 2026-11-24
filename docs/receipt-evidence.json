@@ -140,6 +140,34 @@
           "anchor": "def test_stage_two_issues_and_reconcile_only_after_merge(self):"
         }
       ]
+    },
+    {
+      "id": "v0-0-0-6",
+      "label": "Issue #12 · trusted merge gate candidate",
+      "documented_in": [
+        {
+          "path": "install/branch/GATE.md",
+          "anchor": "## Trust boundary"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "ledger/issue-versions.json",
+          "anchor": "\"issue\": 12,"
+        }
+      ],
+      "implemented_in": [
+        {
+          "path": "tools/gate.py",
+          "anchor": "def evaluate(api, target, policy):"
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tests/test_gate.py",
+          "anchor": "def test_two_issue_gate_and_opt_in_publish(self):"
+        }
+      ]
     }
   ]
 }
