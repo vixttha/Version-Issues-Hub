@@ -82,14 +82,38 @@ def package_tree(path, p):
         for source, target in package.items():
             blob = git(path, "rev-parse", sha+":"+source)
             git(path, "update-index", "--add", "--cacheinfo", "100644,"+blob+","+target, env=env)
+        # Synthetic adopter ledger mirrors the installer's empty state; no real records.
+        ledger = json.dumps({"schema_version":1,"repository":"fixture/product","issues":[]})+"\n"
+        blob = git(path,"hash-object","-w","--stdin",input=ledger)
+        git(path,"update-index","--add","--cacheinfo","100644,"+blob+",ledger/issue-versions.json",env=env)
         return git(path, "write-tree", env=env)
+
+SMOKE = {
+    "vib": ["python3","-B","tools/checkpoint.py","check"],
+    "provenistem": ["python3","-B","tools/library.py","check","--expect-empty"],
+    "lydite": ["python3","-B","starter/test-vault/validate_catalog.py"],
+    "veraphify": ["node","veraphifiy.mjs","--version"],
+    "readme-hq": ["python3","-B","tools/check_readme_hq.py"],
+    "brand-identity": ["python3","-B","brand-identity/verify.py"],
+}
+def smoke(path, p):
+    git(path,"switch","--quiet",p["branch"])
+    assert not git(path,"status","--porcelain","--untracked-files=all")
+    command=SMOKE[p["id"]]
+    env=dict(os.environ, PYTHONDONTWRITEBYTECODE="1")
+    result=subprocess.run(command,cwd=path,env=env,text=True,capture_output=True,timeout=60)
+    if result.returncode:
+        raise AssertionError(f'{p["id"]} smoke failed: {result.stdout}\n{result.stderr}')
+    assert not git(path,"status","--porcelain","--untracked-files=all")
+    return {"command":command,"exit_code":result.returncode,"stdout":result.stdout.strip()}
+
 
 def main():
     report = {"schema_version":1, "kind":"mechanical_git_ref_discovery_coexistence",
               "pins":PINS, "configurations":[], "negative_controls":{},
-              "limits":["not live installation of 63 repositories","not every product runtime in every combination",
+              "limits":["not live installation of 63 repositories","one native smoke per installed tool, not full runtime/integration suites",
                         "not LLM behavior, performance or authority certification",
-                        "VIB package layout extracted without adopter ledger; existing product lifecycle tests remain separate"]}
+                        "VIB package layout extracted with synthetic empty adopter ledger; real lifecycle separate"]}
     with tempfile.TemporaryDirectory() as tmp:
         root = Path(tmp); store=root/"store"; init(store)
         branch_commits={}
@@ -112,16 +136,20 @@ def main():
             selected=[p for i,p in enumerate(PINS) if mask & (1<<i)]
             for p in selected:
                 git(repo,"update-ref","refs/heads/"+p["branch"],branch_commits[p["id"]])
+            git(repo,"reset","--hard","main")
             before=git(repo,"show-ref")
             found=discover(repo)
             assert set(found)=={p["id"] for p in selected}, (mask,found)
             assert all(found[p["id"]]["commit"]==branch_commits[p["id"]] for p in selected)
             assert len({v["law_sha256"] for v in found.values()}) <= 1
+            smokes={p["id"]:smoke(repo,p) for p in selected}
+            git(repo,"switch","--quiet","main")
+            assert not git(repo,"status","--porcelain","--untracked-files=all")
             assert git(repo,"show-ref")==before and ref(repo,"main")==product
             assert git(repo,"rev-parse","main^{tree}")==tree
             by_size[len(selected)]+=1
             report["configurations"].append({"mask":mask,"installed":sorted(found),"count":len(selected),
-                                              "discovered":found,"status":"pass"})
+                                              "discovered":found,"native_smokes":smokes,"status":"pass"})
         assert dict(by_size)=={0:1,1:6,2:15,3:20,4:15,5:6,6:1}
         # A branch that has a valid marker under the wrong branch name is rejected.
         repo=root/"negative"; init(repo)
@@ -137,9 +165,12 @@ def main():
         report["negative_controls"]["legacy_or_missing_marker_not_trusted"]="pass"
         report["counts_by_size"]=dict(by_size)
         report["total"]=len(report["configurations"])
+        report["native_smoke_total"]=sum(len(c["native_smokes"]) for c in report["configurations"])
+        assert report["native_smoke_total"]==192
     output=Path(os.environ["RUNNER_TEMP"])/"ecosystem-discovery.json"
     output.write_text(json.dumps(report,indent=2)+"\n")
     print("Verified",report["total"],"configurations, including zero-tool baseline; sizes:",report["counts_by_size"])
+    print("Native smoke executions:",report["native_smoke_total"])
     print("Negative controls:",report["negative_controls"])
 if __name__=="__main__":
     main()
