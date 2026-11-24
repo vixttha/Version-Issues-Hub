@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     env:
-      VIB_SOURCE: 'ee64cdd7019c3cd279213c490226eb3f89f5fb49'
+      VIB_SOURCE: '3b6951be81d2fc9468b5379aead57c7afc444754'
       PRODUCER_SHA: '6af3c2025be3f51e02dca4e4502088c526aae6d1'
       GRAPHIFY_QUERY_LOG_DISABLE: '1'
       PYTHONHASHSEED: '0'
@@ -24,7 +24,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           repository: vixttha/Version-Issues-Hub
-          ref: 'ee64cdd7019c3cd279213c490226eb3f89f5fb49'
+          ref: '3b6951be81d2fc9468b5379aead57c7afc444754'
           path: vib
           persist-credentials: false
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
@@ -44,7 +44,7 @@ jobs:
         run: |
           python -m pip install --require-hashes --no-deps --only-binary=:all: -r producer/versions/v0.0.8/requirements.txt
           python -m pip check
-      - name: Archive and verify five VIB implementation citations
+      - name: Archive and verify every pinned VIB checkpoint
         run: python veraphify/tools/verify-vib-candidate.py
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         with:
@@ -52,3 +52,40 @@ jobs:
           path: ${{ runner.temp }}/vib-candidate-archive
           retention-days: 90
           if-no-files-found: error
+
+  preserve:
+    needs: archive
+    if: github.event_name == 'push' && github.ref == 'refs/heads/Veraphify' && github.event.repository.private == false
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    permissions:
+      contents: write
+      actions: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: '24.22.3'
+          package-manager-cache: false
+      - name: Retrieve exact candidate and historical artifact
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh run download "$GITHUB_RUN_ID" --name "vib-candidate-archive-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" --dir "$RUNNER_TEMP/current"
+          if [ ! -d archives/candidates/ee64cdd7019c3cd279213c490226eb3f89f5fb49/45330366047-1 ]; then
+            gh api "repos/$GITHUB_REPOSITORY/actions/artifacts/14892240126/zip" > "$RUNNER_TEMP/historical.zip"
+            echo "13699789ec6bb1e362b15adb7bf09f23f656201b59cd5dde5255207c7638b745  $RUNNER_TEMP/historical.zip" | sha256sum -c -
+            unzip -q "$RUNNER_TEMP/historical.zip" -d "$RUNNER_TEMP/historical"
+          fi
+      - name: Verify and preserve archive entries without replacing history
+        run: |
+          python3 tools/preserve-vib-archive.py
+          git add archives/candidates
+          if git diff --cached --quiet; then exit 0; fi
+          git diff --cached --name-status
+          git -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' commit -m "Preserve verified VIB candidate archive $GITHUB_RUN_ID/$GITHUB_RUN_ATTEMPT"
+          git push origin HEAD:refs/heads/Veraphify

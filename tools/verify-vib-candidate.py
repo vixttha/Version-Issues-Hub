@@ -10,7 +10,13 @@ project = root / "vib"
 producer = root / "producer"
 source = os.environ["VIB_SOURCE"]
 identity = "vixttha/Version-Issues-Hub"
-version = "v0.0.0.5"
+ledger = json.loads(subprocess.check_output(["git", "show", f"{source}:ledger/issue-versions.json"], cwd=project))
+if ledger["repository"] != identity:
+    raise ValueError("Ledger identity mismatch")
+versions = [record["version"] for record in ledger["issues"]]
+if not versions or len(set(versions)) != len(versions):
+    raise ValueError("Empty or duplicate ledger versions")
+version = max(versions, key=lambda value: tuple(map(int, value[1:].split("."))))
 output = Path(os.environ["RUNNER_TEMP"]) / "vib-candidate-archive"
 output.mkdir()
 
@@ -27,6 +33,8 @@ features = manifest["features"]
 expected = {}
 inventory = set()
 for feature in features:
+    if feature["id"] in expected:
+        raise ValueError("Duplicate feature mapping")
     citations = []
     for relation in ("implemented_in", "documented_in", "changed_in", "tested_by"):
         for ref in feature.get(relation, []):
@@ -39,7 +47,7 @@ for feature in features:
             if relation == "implemented_in":
                 citations.append({"path": path, "line": matches[0]})
     expected[feature["id"]] = citations
-if set(expected) != {f"v0-0-0-{i}" for i in range(1, 6)}:
+if set(expected) != {v.replace(".", "-") for v in versions}:
     raise ValueError("Unexpected checkpoint scope")
 if sum(len(git(project, "show", f"{source}:{p}")) for p in inventory) > 8 * 1024 * 1024:
     raise ValueError("Archive source budget exceeded")
@@ -75,9 +83,9 @@ for feature, citations in expected.items():
         raise ValueError(f"Incorrect citation: {feature}")
     lookups[feature] = result
 (output / "candidate-receipt.json").write_text(json.dumps({
-    "status": "candidate_only", "source": source, "archive_sha256": digest,
+    "status": "candidate_only", "source": source, "version": version, "archive_sha256": digest,
     "runner_id": os.environ["GITHUB_RUN_ID"], "runner_attempt": os.environ["GITHUB_RUN_ATTEMPT"],
     "veraphify_source": git(root / "veraphify", "rev-parse", "HEAD").decode().strip(),
     "lookups": lookups,
 }, indent=2) + "\n", encoding="utf-8")
-print("Verified five VIB candidate implementation citations")
+print(f"Verified {len(expected)} VIB candidate implementation citations")
