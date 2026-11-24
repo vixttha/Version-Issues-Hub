@@ -45,3 +45,22 @@ Only an actual project's release authority can assert shipped versions. The temp
 - [Provenance and source separation](docs/PROVENANCE.md)
 
 Provenistem version: `0.0.2`; frozen experimental library baseline: `0.0.1`. Neither is the adopting project's product version. A private GitHub release must refer to the exact 24-file package commit, not the larger development branch.
+
+## Owner-approved engineering ecosystem laws
+
+Decision ENGINEERING-ECOSYSTEM-LAWS-001 (2026-11-24). Mission: Build a toolkit that gives compatible LLM agents a structured engineering environment, rather than building another AI model.
+
+<!-- engineering-laws:start -->
+1. **Independence:** Every tool must remain independently installable, usable, versioned and maintained.
+2. **Composability:** Installing additional tools expands the agent's capabilities without creating mandatory dependencies.
+3. **Portability:** No mandatory AI provider, model, agent harness or paid execution service.
+4. **Persistence:** Project knowledge, decisions, progress and evidence survive the termination of an AI session.
+5. **Verification:** Development claims must be supported by reproducible, revision-bound evidence.
+6. **Owner authority:** The human retains control over scope, architectural decisions, integration and releases.
+<!-- engineering-laws:end -->
+
+Remain standalone. Other tools are optional; their absence must not block normal operation. Preserve project-local authority and evidence; never automatically install, merge, synchronize or write to another tool's branch. No mandatory seventh coordinator, paid service or AI provider. Existing product scope remains authoritative. Change these laws only by explicit owner approval.
+
+## Branch-local library boundary
+
+This optional library belongs to the Veraphify workspace. Discover the standalone Provenistem capability through its own dedicated branch, not this nested copy. Read-only discovery does not authorize writes. Preserve local records and prior receipts; no automatic cross-branch installation, synchronization, integration or release.
