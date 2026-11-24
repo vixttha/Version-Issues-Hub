@@ -1,5 +1,6 @@
 """Create a standalone VIB branch via GitHub's Git data API; no product ref writes."""
 import argparse
+import ast
 import base64
 import hashlib
 import json
@@ -89,14 +90,38 @@ def read_text(api, prefix, path, ref):
         raise ValueError("Package blob integrity mismatch")
     return raw.decode("utf-8")
 
+def pinned_package(source_text):
+    """Read a historical literal package declaration without executing source."""
+    try:
+        tree = ast.parse(source_text)
+        declarations = [node.value for node in tree.body if isinstance(node, ast.Assign)
+                        and any(isinstance(t, ast.Name) and t.id == "PACKAGE" for t in node.targets)]
+        if len(declarations) != 1:
+            raise ValueError("Missing or ambiguous pinned package declaration")
+        node = declarations[0]
+        if not isinstance(node, ast.Dict) or any(k is None for k in node.keys):
+            raise ValueError("Pinned package must be a literal mapping")
+        package = ast.literal_eval(node)
+        if len(package) != len(node.keys):
+            raise ValueError("Duplicate pinned package path")
+    except (SyntaxError, TypeError, ValueError) as exc:
+        raise ValueError("Invalid pinned package declaration") from exc
+    required = {"install/branch/README.md", "install/branch/WORKFLOW.md", "tools/checkpoint.py"}
+    if (not required.issubset(package) or
+            any(not isinstance(k, str) or not isinstance(v, str) or PACKAGE.get(k) != v
+                for k, v in package.items()) or len(set(package.values())) != len(package)):
+        raise ValueError("Pinned package has unsupported or missing paths")
+    return package
+
 def source_files(api, source_sha):
     files = {}
     prefix = repo_path(SOURCE)
     commit = api.request("GET", prefix + "/git/commits/" + source_sha)
     if commit.get("sha") != source_sha:
         raise ValueError("Source revision did not match")
-    for source, dest in PACKAGE.items():
-        files[dest] = read_text(api, prefix, source, source_sha)
+    source_text = read_text(api, prefix, "tools/install.py", source_sha)
+    for source, dest in pinned_package(source_text).items():
+        files[dest] = source_text if source == "tools/install.py" else read_text(api, prefix, source, source_sha)
     return files
 
 def render(data):

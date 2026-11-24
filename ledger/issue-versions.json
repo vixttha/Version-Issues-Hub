@@ -91,6 +91,16 @@
         "Read-only validation rejects stale, missing or unsuccessful run evidence and reports mandatory checkout/owner review, never automatic merge enforcement.",
         "Public-runner regression and Graphify pass; separate optional gate remains intact."
       ]
+    },
+    {
+      "issue": 23,
+      "version": "v0.0.0.10",
+      "state": "in_progress",
+      "acceptance": [
+        "Read and verify the historical pinned package map without executing historical source.",
+        "Recover existing BART state and refuse an occupied branch without modifying it.",
+        "Pass regression and live public read-only adoption checks plus Graphify."
+      ]
     }
   ]
 }

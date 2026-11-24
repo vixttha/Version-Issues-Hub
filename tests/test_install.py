@@ -18,6 +18,7 @@ class FakeGitHub:
         self.entries = {}
         self.metadata = {"id": 42, "full_name": TARGET, "default_branch": "trunk"}
         self.bad_blob = False
+        self.package = dict(install.PACKAGE)
 
     def request(self, method, path, body=None):
         if method == "POST":
@@ -50,7 +51,7 @@ class FakeGitHub:
         if path.startswith(source + "/contents/"):
             name, ref = path.removeprefix(source + "/contents/").split("?ref=")
             assert ref == PIN and name in install.PACKAGE
-            raw = ("sample " + name + "\n").encode()
+            raw = (("PACKAGE = " + repr(self.package) + "\n") if name == "tools/install.py" else ("sample " + name + "\n")).encode()
             sha = hashlib.sha1(b"blob " + str(len(raw)).encode() + b"\0" + raw).hexdigest()
             return {"type": "file", "path": name, "encoding": "base64",
                     "content": base64.b64encode(raw).decode(), "sha": "0" * 40 if self.bad_blob else sha}
@@ -121,6 +122,22 @@ class InstallerTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "product default"):
             install.install(self.api, TARGET, PIN, "v0.0.0", True)
         self.assertEqual(self.api.writes, [])
+
+
+    def test_historical_package_pin_does_not_require_future_files(self):
+        self.api.package.pop("tools/standard.py")
+        self.api.package.pop("install/branch/STANDARD.md")
+        result = install.install(self.api, TARGET, PIN, "v1.0.6", True)
+        self.assertNotIn("STANDARD.md", result["paths"])
+        self.assertNotIn("tools/standard.py", self.api.entries)
+        self.assertEqual(set(result["manifest"]["package_files_sha256"]), set(self.api.package.values()))
+
+    def test_pinned_package_rejects_dynamic_or_unknown_paths(self):
+        for source in ("PACKAGE = dict()", "PACKAGE = {'evil': 'README.md'}",
+                       "PACKAGE = {}; PACKAGE = {}", "PACKAGE = {'x': 'a', 'x': 'b'}"):
+            with self.subTest(source=source), self.assertRaises(ValueError):
+                install.pinned_package(source)
+
 
 if __name__ == "__main__":
     unittest.main()

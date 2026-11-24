@@ -252,6 +252,34 @@
           "anchor": "def test_standard_needs_no_app_and_never_publishes(self):"
         }
       ]
+    },
+    {
+      "id": "v0-0-0-10",
+      "label": "Issue #23 · historical package pin recovery",
+      "documented_in": [
+        {
+          "path": "docs/v0.0.0.10.md",
+          "anchor": "## Historical package compatibility"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "ledger/issue-versions.json",
+          "anchor": "\"issue\": 23,"
+        }
+      ],
+      "implemented_in": [
+        {
+          "path": "tools/install.py",
+          "anchor": "def pinned_package(source_text):"
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tests/test_install.py",
+          "anchor": "def test_historical_package_pin_does_not_require_future_files(self):"
+        }
+      ]
     }
   ]
 }
