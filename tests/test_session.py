@@ -264,3 +264,37 @@ class SessionTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "sole in-progress"):
             session.validate_handoff(self.state["handoff"], self.state["ledger"])
         self.assertEqual(self.api.writes, [])
+
+
+    def test_explicit_prior_line_recovery_preserves_assignment(self):
+        for old_state in ("assigned", "blocked", "deferred"):
+            with self.subTest(old_state=old_state):
+                s = state()
+                s["ledger"]["issues"].append({"issue": 247, "version": "v1.0.5.7",
+                    "state": old_state, "acceptance": ["original"]})
+                before = copy.deepcopy(s)
+                with self.assertRaisesRegex(ValueError, "resume-prior-line"):
+                    session.claim(self.api, s, 247, [], "Resume")
+                with self.assertRaisesRegex(ValueError, "criteria differ"):
+                    session.claim(self.api, s, 247, ["changed"], "Resume", resume_prior_line=True)
+                ledger, handoff = session.claim(self.api, s, 247, [], "Resume", resume_prior_line=True)
+                self.assertEqual(s, before)
+                self.assertEqual(ledger["issues"][0]["version"], "v1.0.5.7")
+                self.assertEqual(ledger["issues"][0]["acceptance"], ["original"])
+                self.assertEqual(handoff["active"]["version"], "v1.0.5.7")
+                session.validate_handoff(handoff, ledger)
+                self.assertEqual(session.save(self.api, s, ledger, handoff)["status"], "planned")
+        self.assertEqual(self.api.writes, [])
+
+    def test_prior_line_recovery_refuses_terminal_future_and_new_rows(self):
+        for version, old_state in (("v1.0.5.7", "integrated"), ("v1.0.5.7", "retired"),
+                                   ("v1.0.5.7", "staged"), ("v1.0.7.1", "assigned")):
+            with self.subTest(version=version, old_state=old_state):
+                s = state()
+                s["ledger"]["issues"].append({"issue": 247, "version": version,
+                    "state": old_state, "acceptance": ["original"]})
+                with self.assertRaises(ValueError):
+                    session.claim(self.api, s, 247, [], "Resume", resume_prior_line=True)
+        with self.assertRaisesRegex(ValueError, "existing eligible"):
+            session.claim(self.api, state(), 247, ["test"], "Resume", resume_prior_line=True)
+        self.assertEqual(self.api.writes, [])

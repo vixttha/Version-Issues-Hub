@@ -178,7 +178,7 @@ def inspect(api, state, requested=None):
             "target": state["manifest"]["target_version"], "issue": info, "active": active,
             "owner_merge_required": True, "evidence_verified": False}
 
-def claim(api, state, number, criteria, note):
+def claim(api, state, number, criteria, note, *, resume_prior_line=False):
     validate_handoff(state["handoff"], state["ledger"])
     item = get_issue(api, state, number)
     if item.get("state") != "open":
@@ -193,10 +193,23 @@ def claim(api, state, number, criteria, note):
         if criteria and criteria != record["acceptance"]:
             raise ValueError("Existing acceptance criteria differ")
         return ledger, handoff
-    version, _ = checkpoint.register(ledger, number, state["manifest"]["baseline_version"], criteria)
-    row = next(x for x in ledger["issues"] if x["issue"] == number)
-    if row["state"] in ("integrated", "retired"):
+    baseline = state["manifest"]["baseline_version"]
+    row = next((x for x in ledger["issues"] if x["issue"] == number), None)
+    if row is not None and row["state"] in ("integrated", "retired"):
         raise ValueError("Historical issue cannot be reclaimed")
+    if row is not None and row["version"].rsplit(".", 1)[0] != baseline:
+        prior_line = row["version"].rsplit(".", 1)[0]
+        if (checkpoint.version_number(prior_line) >= checkpoint.version_number(baseline)
+                or row["state"] not in ("assigned", "blocked", "deferred")):
+            raise ValueError("Issue is not eligible for prior-line recovery; owner reconciliation required")
+        if not resume_prior_line:
+            raise ValueError("Prior-line issue requires explicit owner-approved --resume-prior-line")
+        version = row["version"]
+    else:
+        if resume_prior_line:
+            raise ValueError("Prior-line recovery requires an existing eligible historical issue")
+        version, _ = checkpoint.register(ledger, number, baseline, criteria)
+        row = next(x for x in ledger["issues"] if x["issue"] == number)
     if criteria and criteria != row["acceptance"]:
         raise ValueError("Existing acceptance criteria differ")
     row["state"] = "in_progress"
@@ -335,6 +348,7 @@ def main():
     c.add_argument("--acceptance", action="append", default=[])
     c.add_argument("--note", required=True)
     c.add_argument("--owner-approved", action="store_true")
+    c.add_argument("--resume-prior-line", action="store_true", help="Resume an eligible unresolved historical checkpoint without renumbering")
     a = sub.add_parser("advance")
     a.add_argument("--note", required=True)
     a.add_argument("--fix")
@@ -366,7 +380,8 @@ def main():
             if args.command in ("claim", "finish", "reconcile") and not args.owner_approved:
                 raise ValueError("Explicit owner approval is required")
             if args.command == "claim":
-                ledger, handoff = claim(api, state, args.issue, args.acceptance, args.note)
+                ledger, handoff = claim(api, state, args.issue, args.acceptance, args.note,
+                    resume_prior_line=args.resume_prior_line)
             elif args.command == "advance":
                 ledger, handoff = advance(api, state, args.note, fix=args.fix, candidate=args.candidate,
                     pr=args.pr, evidence=args.evidence, rework=args.rework, return_to_head=args.return_to_head)
