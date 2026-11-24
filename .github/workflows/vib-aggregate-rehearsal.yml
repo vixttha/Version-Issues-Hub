@@ -197,16 +197,20 @@ jobs:
           python - <<'PY'
           import subprocess
           def git(*args): return subprocess.check_output(['git', *args], text=True).strip()
-          previous='75617d4226620455cc4ab1d895bc5d268eea87fd'
+          previous='150fa126ce3bb544a34578709b72b939168082c1'
+          pipeline='4873e18ea82e5ac9062a611d08c0e6d8913629c0'
           repair='d7a1efef88704be952f3ecefde1c018b1155fe9a'
-          assert git('show','-s','--format=%P','HEAD').split() == [previous,repair]
-          repair_paths=['.github/workflows/live-acceptance.yml','docs/live-acceptance-isolation.md','tests/test_live_acceptance.py','tools/live_acceptance.py']
-          revised=['.github/workflows/vib-aggregate-rehearsal.yml','ops/RELEASE-PIPELINE.md','ops/release-pipeline.json','ops/release-preflight.py','ops/test_release_preflight.py']
+          accepted='896ce5576974e0881ac9438b4200347aa79018a8'
+          assert git('show','-s','--format=%P','HEAD').split() == [previous,pipeline]
+          repair_paths=['docs/live-acceptance-isolation.md','tests/test_live_acceptance.py','tools/live_acceptance.py']
           for path in repair_paths:
               assert git('rev-parse','HEAD:'+path)==git('rev-parse',repair+':'+path),path
-          assert set(git('diff','--name-only',previous,'HEAD').splitlines())==set(repair_paths+revised)
+          path='.github/workflows/live-acceptance.yml'
+          assert git('rev-parse','HEAD:'+path)==git('rev-parse',accepted+':'+path)
+          revised=['.github/workflows/vib-aggregate-rehearsal.yml','.github/workflows/live-acceptance.yml','ops/RELEASE-PIPELINE.md','ops/release-pipeline.json','ops/release-preflight.py','ops/test_release_preflight.py']
+          assert set(git('diff','--name-only',previous,'HEAD').splitlines())==set(revised)
           for path in ['LICENSE','VIB-NOTICE.md','README.md','assets/vib-logo.svg','assets/vib-logo-light.svg']:
               assert git('rev-parse','HEAD:'+path)==git('rev-parse',previous+':'+path),path
-          assert git('diff','--name-only',previous,'HEAD','--','install','ledger')==''
-          print('Exact reviewed #52 blobs and immutable prior aggregate assets/package/ledger verified.')
+          assert git('diff','--name-only',previous,'HEAD','--','install','ledger','tests','tools')==''
+          print('Exact reviewed #52 runtime and preserved licensed trigger; PR49 pinned read-only adaptation; immutable prior aggregate assets/package/ledger.')
           PY

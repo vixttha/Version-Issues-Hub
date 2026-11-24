@@ -19,3 +19,7 @@ Read-only Head snapshot 5ac44c3d7f6ca129f55fce583de8659e5e950873; original PR49 
 ## #51 combined rehearsal (unpublished)
 
 Preserve historical engineering, legal and homepage receipts. Add the exact #52 review and seven jobs, with job names bound per run; both matrix scopes are required on the new combined SHA. Optional hard enforcement remains disabled. Its generic policy accepts exact job names, workflow IDs, source SHA and steps; if the owner later enables it, bind both new scope names and independently verify the new policy rather than reusing the old single-job evidence. #34 remains separate. No claim, approval, or release.
+
+## Concurrent PR49 revision reconciliation
+
+Run 45446866082 attempt 1 retained both failures: archived GitHub page HTTP 503 and stale Head handoff after PR49 moved. All six other jobs passed, including 104 product tests and Graphify. Port the observed PR49 self-review guard from 4873e18ea82e5ac9062a611d08c0e6d8913629c0, adapted to the separately pinned PR49 head rather than equating it with the aggregate SHA. Verify exact handoff equality, observe stale_candidate without granting authority, recheck the PR pin, collect exact CodeRabbit receipts for both revisions, keep release BLOCKED. Restore the licensing branch trigger from the earlier combined candidate. Prior green candidate and failed attempts preserved; no PR49/installed branch writes.

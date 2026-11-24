@@ -78,6 +78,42 @@ class RevisionGuardTests(unittest.TestCase):
                         with self.assertRaisesRegex(ValueError, "exact job names"):
                             self.p.receipt("split", spec)
 
+    def checkpoint(self, status="stale_candidate", candidate="historical"):
+        return {"status": status, "active": {"issue": 40, "version": "v0.0.0.23",
+                    "phase": "Head", "pull_request": 49, "candidate_sha": candidate}}
+
+    def test_head_stale_is_observed_not_resumed(self):
+        pr = {"head": {"sha": self.p.M["pipeline_review_head"]}, "state": "open",
+              "draft": True, "merged": False}
+        other = {"status": "blocked_other_active_issue"}
+        with patch.object(self.p, "api", return_value=pr):
+            self.p.check_active_checkpoint(self.checkpoint(), other)
+            self.assertIn("Head handoff references historical PR49 revision; reconcile before integration", self.p.report["blockers"])
+            with self.assertRaisesRegex(ValueError, "Head recovery status"):
+                self.p.check_active_checkpoint(self.checkpoint(status="resume"), other)
+            self.p.check_active_checkpoint(self.checkpoint("resume", self.p.M["pipeline_review_head"]), other)
+        self.assertEqual(self.p.report["release"], "BLOCKED")
+
+    def test_pr_review_ref_drift_and_closed_pr_fail(self):
+        good = {"head": {"sha": self.p.M["pipeline_review_head"]}, "state": "open",
+                "draft": True, "merged": False}
+        for bad in (dict(good, head={"sha": "changed"}), dict(good, state="closed"),
+                    dict(good, draft=False), dict(good, merged=True)):
+            with patch.object(self.p, "api", return_value=bad):
+                with self.assertRaisesRegex(ValueError, "pipeline review revision"):
+                    self.p.check_pipeline_pr()
+
+    def test_wrong_phase_and_competing_issue_fail(self):
+        active = self.checkpoint()
+        active["active"]["phase"] = "Worker"
+        with self.assertRaisesRegex(ValueError, "sole active release checkpoint"):
+            self.p.check_active_checkpoint(active, {"status": "blocked_other_active_issue"})
+        pr = {"head": {"sha": self.p.M["pipeline_review_head"]}, "state": "open",
+              "draft": True, "merged": False}
+        with patch.object(self.p, "api", return_value=pr):
+            with self.assertRaisesRegex(ValueError, "competing issue refused"):
+                self.p.check_active_checkpoint(self.checkpoint(), {"status": "resume"})
+
     def review_case(self, rows, total=None):
         with patch.object(self.p, "api", return_value={"total_count": len(rows) if total is None else total, "check_runs": rows}):
             self.p.record_review("test", "head")
