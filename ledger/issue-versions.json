@@ -191,6 +191,36 @@
         "Reject unrelated errors, disagreement or exhausted attempts; preserve stale-state guard.",
         "Repair historical Graphify navigation without modifying fix pins; public-runner evidence."
       ]
+    },
+    {
+      "issue": 41,
+      "version": "v0.0.0.20",
+      "state": "assigned",
+      "acceptance": [
+        "Distinguish exact merged, closed-unmerged, stale and non-open issue states without mutation.",
+        "Reject normal verification of non-open issues or PRs while preserving owner-controlled return to Head and rework.",
+        "Public runner regression and revision-bound Graphify evidence."
+      ]
+    },
+    {
+      "issue": 42,
+      "version": "v0.0.0.21",
+      "state": "assigned",
+      "acceptance": [
+        "Require exactly one in-progress issue matching the active handoff or none when idle.",
+        "Reject orphan, competing and mismatched rows before cooperative mutation; preserve historical records.",
+        "Public runner regression and revision-bound Graphify evidence."
+      ]
+    },
+    {
+      "issue": 43,
+      "version": "v0.0.0.22",
+      "state": "assigned",
+      "acceptance": [
+        "Allow explicit owner-approved recovery of open assigned, blocked or deferred prior-line issues without remapping.",
+        "Refuse terminal, staged, future-line and new rows under prior-line flag; preserve original acceptance and current lease.",
+        "Public runner regression and revision-bound Graphify evidence."
+      ]
     }
   ]
 }
