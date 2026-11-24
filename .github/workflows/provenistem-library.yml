@@ -28,8 +28,11 @@ jobs:
       - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
         with:
           python-version: '3.12'
-      - name: Check the branch library
+      - name: Check the branch library from its documented root
+        working-directory: provenistem
         run: |
           git rev-parse HEAD
-          python provenistem/tools/library.py check
-          python -m unittest discover -s provenistem/tests -p 'test_*.py' -v
+          python tools/library.py check
+          python tools/library.py build
+          git diff --exit-code -- ideas/INDEX.md features/INDEX.md
+          python -m unittest discover -s tests -v
