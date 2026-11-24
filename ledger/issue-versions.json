@@ -71,6 +71,16 @@
         "Generate exactly one receipt for every selected checkpoint at the current scope; preserve each pinned fix revision.",
         "Run the regression on public GitHub-hosted runners."
       ]
+    },
+    {
+      "issue": 14,
+      "version": "v0.0.0.8",
+      "state": "in_progress",
+      "acceptance": [
+        "Publish pending first and confirm trusted App identity before a successful gate verdict.",
+        "Reject duplicate and changed-state verdict publication; revoke exact original check and verify failure readback.",
+        "Test simulated controls using public GitHub runners; preserve the live ruleset pilot as a separate completion requirement."
+      ]
     }
   ]
 }

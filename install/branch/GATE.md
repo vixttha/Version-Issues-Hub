@@ -20,7 +20,7 @@ python -m tools.gate --target OWNER/REPO --policy /trusted/owner-policy.json
 python -m tools.gate --target OWNER/REPO --policy /trusted/owner-policy.json --publish
 ```
 
-The first command is read-only. The second creates only the successful check on the proposed merge SHA. Failures publish no success and exit nonzero. GH_TOKEN is the read credential; VIB_CHECK_TOKEN is the separately scoped, short-lived App installation token with Checks write permission. Never expose either in candidate code or chat. Publish only from a trusted protected workflow/host. An owner must protect the policy, installed state and verifier from candidate writes; pin each policy snapshot. Do not assume an agent's assertion of owner approval is a security control.
+The first command is read-only. The second creates a pending check, verifies its App identity and readback, then re-evaluates before publishing success on the proposed merge SHA. A failed preflight creates no check; later failure can leave a pending check that blocks merging. Existing trusted checks are refused rather than shadowed. GH_TOKEN is the read credential; VIB_CHECK_TOKEN is the separately scoped, short-lived App installation token with Checks write permission. Never expose either in candidate code or chat. Publish only from a trusted protected workflow/host. An owner must protect the policy, installed state and verifier from candidate writes; pin each policy snapshot. Do not assume an agent's assertion of owner approval is a security control.
 
 ## Live pilot required before enforcement
 
@@ -32,3 +32,13 @@ The first command is read-only. The second creates only the successful check on 
 Public-runner unit tests use simulated APIs; they do not prove GitHub branch protection. GitHub Apps and ruleset administration are owner-controlled and separate from installing the branch.
 
 References: [rulesets](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/available-rules-for-rulesets), [required status check troubleshooting](https://docs.github.com/en/pull-requests/how-tos/merge-and-close-pull-requests/troubleshooting-required-status-checks), [check runs](https://docs.github.com/en/rest/checks/runs), [secure pull_request_target](https://docs.github.com/en/actions/reference/security/securely-using-pull_request_target).
+
+## Sealed verdict and revocation
+
+A successful verdict remains attached to a Git SHA even when external state changes. The trusted owner-controlled executor MUST serialize all gate publication, revocation, policy/ledger edits and merge decisions; GitHub does not make these separate API operations atomic. Never mutate a sealed policy or its evidence while a green verdict is mergeable. First freeze merging, revoke the exact old check using the original policy and check ID, verify GitHub actually blocks the PR, then make the change and require a new candidate SHA. Keep merge frozen if revocation fails or readback is ambiguous. Do not automatically retry an uncertain publication or create duplicate checks on the same candidate. A trusted App token must be scoped to the pilot repository and not available to product code.
+
+```sh
+python -m tools.gate --target OWNER/REPO --policy /trusted/original-policy.json --revoke-check CHECK_ID
+```
+
+The revocation command verifies repository identity and the original external ID, updates that exact trusted check to failure, and reads it back. It intentionally works after the installed state changes, as emergency remediation. This does not prove live GitHub re-evaluation; include a post-green revocation negative control in the disposable pilot. No live merge enforcement may be advertised until that control passes.

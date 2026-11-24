@@ -184,39 +184,104 @@ def evaluate(api, target, policy):
             "base_sha": policy["base_sha"], "tested_sha": policy["merge_sha"],
             "issues": results, "published": False}
 
+def external_id(policy):
+    return f"vib:{policy['repository_id']}:{policy['pull_request']}:{policy['installed_sha']}:{policy['merge_sha']}"
+
+def assert_gate_identity(check, policy, *, expected_id=None):
+    app = check.get("app") or {}
+    if (check.get("name") != CHECK or check.get("head_sha") != policy["merge_sha"]
+            or check.get("external_id") != external_id(policy)
+            or app.get("id") != policy["publisher_app_id"]
+            or app.get("slug") in (None, "github-actions")):
+        raise ValueError("Published check has wrong identity; do not rely on it")
+    check_id = positive(check["id"], "published check ID")
+    if expected_id is not None and check_id != expected_id:
+        raise ValueError("Wrong check run ID")
+    return check_id
+
+def matching_gate_checks(api, prefix, policy):
+    path = prefix + "/commits/" + policy["merge_sha"] + "/check-runs?filter=all&per_page=100&check_name=" + quote(CHECK, safe="")
+    return [r for r in exact_collection(api, path, "check_runs")
+            if r.get("name") == CHECK and (r.get("app") or {}).get("id") == policy["publisher_app_id"]]
+
 def publish(api, publisher, target, policy):
     verdict = evaluate(api, target, policy)
     prefix = install.repo_path(target)
-    # The caller must provide a token belonging to the owner-selected trusted App.
-    # No candidate checkout, execution, or candidate-supplied policy is permitted.
-    check = publisher.request("POST", prefix + "/check-runs", {
-        "name": CHECK, "head_sha": policy["merge_sha"], "status": "completed",
-        "conclusion": "success", "external_id": f"vib:{policy['repository_id']}:{policy['pull_request']}:{policy['installed_sha']}:{policy['merge_sha']}",
+    # A prior verdict must never be shadowed by a duplicate green check.
+    if matching_gate_checks(api, prefix, policy):
+        raise ValueError("Existing trusted gate check; revoke and use a new candidate")
+    pending = publisher.request("POST", prefix + "/check-runs", {
+        "name": CHECK, "head_sha": policy["merge_sha"], "status": "in_progress",
+        "external_id": external_id(policy),
+        "output": {"title": "VIB gate evaluating", "summary": "No successful verdict yet."},
+    })
+    check_id = assert_gate_identity(pending, policy)
+    path = prefix + "/check-runs/" + str(check_id)
+    observed = api.request("GET", path)
+    assert_gate_identity(observed, policy, expected_id=check_id)
+    if observed.get("status") != "in_progress" or observed.get("conclusion") is not None:
+        raise ValueError("Expected a non-success pending gate check")
+    rows = matching_gate_checks(api, prefix, policy)
+    if len(rows) != 1 or rows[0].get("id") != check_id:
+        raise ValueError("Ambiguous trusted gate check; do not publish success")
+    # Re-evaluate after creating the pending check. The trusted executor must
+    # serialize publication, revocation, and policy/state writes through merge.
+    verdict = evaluate(api, target, policy)
+    updated = publisher.request("PATCH", path, {
+        "status": "completed", "conclusion": "success",
         "output": {"title": "VIB gate passed", "summary":
             f"Owner-pinned state {policy['installed_sha']}; tested merge {policy['merge_sha']}; "
             f"{len(verdict['issues'])} staged issue(s)."},
     })
-    if (check.get("name") != CHECK or check.get("head_sha") != policy["merge_sha"]
-            or check.get("conclusion") != "success" or check.get("status") != "completed"
-            or (check.get("app") or {}).get("id") != policy["publisher_app_id"]
-            or (check.get("app") or {}).get("slug") in (None, "github-actions")):
-        raise ValueError("Published check has wrong identity; do not enable or rely on it")
-    return {**verdict, "published": True, "check_id": positive(check["id"], "published check ID")}
+    for check in (updated, api.request("GET", path)):
+        assert_gate_identity(check, policy, expected_id=check_id)
+        if check.get("status") != "completed" or check.get("conclusion") != "success":
+            raise ValueError("Gate success was not confirmed")
+    return {**verdict, "published": True, "check_id": check_id}
+
+def revoke(api, publisher, target, policy, check_id):
+    """Revoke an exact previously published verdict, including an old state pin."""
+    validate_policy(policy)
+    if target.lower() != policy["repository"].lower():
+        raise ValueError("Policy repository mismatch")
+    prefix = install.repo_path(target)
+    meta = api.request("GET", prefix)
+    if meta.get("id") != policy["repository_id"] or meta.get("full_name") != policy["repository"]:
+        raise ValueError("Revocation repository identity mismatch")
+    path = prefix + "/check-runs/" + str(positive(check_id, "check ID"))
+    assert_gate_identity(api.request("GET", path), policy, expected_id=check_id)
+    updated = publisher.request("PATCH", path, {
+        "status": "completed", "conclusion": "failure",
+        "output": {"title": "VIB gate revoked", "summary": "Owner invalidated this sealed verdict. New candidate required."},
+    })
+    for check in (updated, api.request("GET", path)):
+        assert_gate_identity(check, policy, expected_id=check_id)
+        if check.get("status") != "completed" or check.get("conclusion") != "failure":
+            raise ValueError("Gate revocation was not confirmed")
+    rows = matching_gate_checks(api, prefix, policy)
+    if len(rows) != 1 or rows[0].get("id") != check_id or rows[0].get("conclusion") != "failure":
+        raise ValueError("Revocation ambiguous; freeze merges and inspect all checks")
+    return {"status": "revoked", "check_id": check_id, "tested_sha": policy["merge_sha"]}
+
 
 def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("--target", required=True)
     p.add_argument("--policy", type=Path, required=True, help="Owner-approved policy outside PR control")
-    p.add_argument("--publish", action="store_true")
+    mode = p.add_mutually_exclusive_group()
+    mode.add_argument("--publish", action="store_true")
+    mode.add_argument("--revoke-check", type=int, help="Revoke exact prior check using its original owner policy")
     args = p.parse_args()
     api = install.GitHub(os.environ.get("GH_TOKEN") or os.environ.get("GITHUB_TOKEN"))
     try:
         policy = checkpoint.parse_json(args.policy.read_text(encoding="utf-8"))
-        if args.publish:
+        if args.publish or args.revoke_check is not None:
             token = os.environ.get("VIB_CHECK_TOKEN")
             if not token:
                 raise ValueError("Trusted GitHub App installation credential required")
-            verdict = publish(api, install.GitHub(token), args.target, policy)
+            publisher = install.GitHub(token)
+            verdict = (publish(api, publisher, args.target, policy) if args.publish else
+                       revoke(api, publisher, args.target, policy, args.revoke_check))
         else:
             verdict = evaluate(api, args.target, policy)
         print(install.render(verdict), end="")

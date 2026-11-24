@@ -52,12 +52,26 @@ class Fake:
         self.jobs = [{"id": 456, "name": "product-test", "status": "completed", "conclusion": "success",
                       "steps": [{"name": "Run acceptance", "status": "completed", "conclusion": "success"}]}]
         self.writes = []
+        self.gate_checks = []
+        self.publisher_app = 88
     def request(self, method, path, body=None):
         if method == "POST" and path == PREFIX + "/check-runs":
             self.writes.append(body)
-            return {**body, "id": 100, "app": {"id": 88, "slug": "trusted-vib-app"}}
+            check = {**body, "id": 100, "app": {"id": self.publisher_app, "slug": "trusted-vib-app"}, "conclusion": None}
+            self.gate_checks.append(check)
+            return copy.deepcopy(check)
+        if method == "PATCH" and path == PREFIX + "/check-runs/100":
+            self.writes.append(body)
+            self.gate_checks[0].update(body)
+            return copy.deepcopy(self.gate_checks[0])
         if method != "GET":
             raise AssertionError("Unexpected mutation")
+        if path == PREFIX:
+            return {"id": 42, "full_name": REPO}
+        if path == PREFIX + "/check-runs/100":
+            return copy.deepcopy(self.gate_checks[0])
+        if path.startswith(PREFIX + "/commits/" + MERGE + "/check-runs?filter=all"):
+            return {"total_count": len(self.gate_checks), "check_runs": copy.deepcopy(self.gate_checks)}
         if path == PREFIX + "/pulls/8":
             return self.pr
         if path.startswith(PREFIX + "/git/ref/heads/"):
@@ -173,3 +187,58 @@ class GateTests(unittest.TestCase):
         self.policy["issues"] = []
         with self.assertRaisesRegex(ValueError, "scope"):
             self.evaluate()
+
+
+    def test_wrong_publisher_never_creates_green_check(self):
+        self.api.publisher_app = 999
+        with self.assertRaisesRegex(ValueError, "wrong identity"):
+            gate.publish(self.api, self.api, REPO, self.policy)
+        self.assertEqual(len(self.api.writes), 1)
+        self.assertEqual(self.api.writes[0]["status"], "in_progress")
+        self.assertIsNone(self.api.gate_checks[0]["conclusion"])
+
+    def test_existing_gate_cannot_be_shadowed(self):
+        gate.publish(self.api, self.api, REPO, self.policy)
+        with self.assertRaisesRegex(ValueError, "Existing trusted gate"):
+            gate.publish(self.api, self.api, REPO, self.policy)
+        self.assertEqual(len(self.api.gate_checks), 1)
+
+    def test_revoke_previous_green_even_after_state_changed(self):
+        verdict = gate.publish(self.api, self.api, REPO, self.policy)
+        self.api.refs[install.BRANCH] = SOURCE
+        result = gate.revoke(self.api, self.api, REPO, self.policy, verdict["check_id"])
+        self.assertEqual(result["status"], "revoked")
+        self.assertEqual(self.api.gate_checks[0]["conclusion"], "failure")
+
+    def test_revoke_rejects_wrong_policy(self):
+        verdict = gate.publish(self.api, self.api, REPO, self.policy)
+        changed = copy.deepcopy(self.policy)
+        changed["installed_sha"] = SOURCE
+        with self.assertRaisesRegex(ValueError, "wrong identity"):
+            gate.revoke(self.api, self.api, REPO, changed, verdict["check_id"])
+        self.assertEqual(self.api.gate_checks[0]["conclusion"], "success")
+
+    def test_changed_state_after_pending_never_turns_green(self):
+        original = self.api.request
+        def race(method, path, body=None):
+            result = original(method, path, body)
+            if method == "POST" and path == PREFIX + "/check-runs":
+                self.api.refs[install.BRANCH] = SOURCE
+            return result
+        self.api.request = race
+        with self.assertRaisesRegex(ValueError, "state advanced"):
+            gate.publish(self.api, self.api, REPO, self.policy)
+        self.assertIsNone(self.api.gate_checks[0]["conclusion"])
+        self.assertEqual(len(self.api.writes), 1)
+
+    def test_duplicate_gate_after_pending_refuses_success(self):
+        original = self.api.request
+        def race(method, path, body=None):
+            result = original(method, path, body)
+            if method == "POST" and path == PREFIX + "/check-runs":
+                self.api.gate_checks.append({**self.api.gate_checks[0], "id": 101})
+            return result
+        self.api.request = race
+        with self.assertRaisesRegex(ValueError, "Ambiguous"):
+            gate.publish(self.api, self.api, REPO, self.policy)
+        self.assertTrue(all(c["conclusion"] is None for c in self.api.gate_checks))

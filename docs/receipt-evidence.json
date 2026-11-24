@@ -196,6 +196,34 @@
           "anchor": "def test_live_scope_has_one_receipt_per_selected_version(self, check_ancestry):"
         }
       ]
+    },
+    {
+      "id": "v0-0-0-8",
+      "label": "Issue #14 · trusted gate publication and revocation",
+      "documented_in": [
+        {
+          "path": "install/branch/GATE.md",
+          "anchor": "## Sealed verdict and revocation"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "ledger/issue-versions.json",
+          "anchor": "\"issue\": 14,"
+        }
+      ],
+      "implemented_in": [
+        {
+          "path": "tools/gate.py",
+          "anchor": "def revoke(api, publisher, target, policy, check_id):"
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tests/test_gate.py",
+          "anchor": "def test_revoke_previous_green_even_after_state_changed(self):"
+        }
+      ]
     }
   ]
 }
