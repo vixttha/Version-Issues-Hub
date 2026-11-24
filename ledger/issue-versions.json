@@ -21,6 +21,16 @@
         "Each receipt identifies its own GitHub issue and the corresponding fix commit.",
         "A docs-only commit changes candidate and tested revisions while preserving both fix commits."
       ]
+    },
+    {
+      "issue": 9,
+      "version": "v0.0.0.3",
+      "state": "in_progress",
+      "acceptance": [
+        "Create a standalone Version-Issues-Hub branch from a pinned source without modifying product refs or copying source issue records.",
+        "Generate an adopter-specific empty ledger and provenance record; accept existing three-component baselines.",
+        "Refuse occupied branches, conflicting identity, and empty repositories without silently modifying the target. Verify creation using public-runner tests."
+      ]
     }
   ]
 }

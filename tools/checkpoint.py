@@ -9,8 +9,8 @@ import subprocess
 from tempfile import TemporaryDirectory
 
 
-LINE = re.compile(r"v0\.0\.(?:0|[1-9][0-9]*)")
-VERSION = re.compile(r"v0\.0\.(?:0|[1-9][0-9]*)\.[1-9][0-9]*")
+LINE = re.compile(r"v(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)")
+VERSION = re.compile(LINE.pattern + r"\.[1-9][0-9]*")
 REPOSITORY = re.compile(r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+")
 SHA = re.compile(r"[0-9a-f]{40}")
 STATES = {"assigned", "in_progress", "blocked", "deferred", "verified", "integrated", "retired"}
@@ -193,7 +193,7 @@ def receipt(ledger, version, checkout, env, event, parents=(), *, fix_sha):
         "issue_url": f"https://github.com/{repo}/issues/{record['issue']}",
         "version": version,
         "baseline_version": version.rsplit(".", 1)[0],
-        "target_version": f"v0.0.{version_number(version)[2] + 1}",
+        "target_version": f"v{version_number(version)[0]}.{version_number(version)[1]}.{version_number(version)[2] + 1}",
         "acceptance": record["acceptance"],
         "scope": "issue-version ledger and receipt validation",
         "outcome": "pass",

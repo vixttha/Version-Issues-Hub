@@ -6,4 +6,5 @@ Each issue version starts with its baseline project version. Issue versions `v0.
 
 Start with [the issue-version ledger](ledger/issue-versions.json), [the checkpoint guide](docs/v0.0.0.1.md), and [issue #1](https://github.com/vixttha/Version-Issues-Hub/issues/1) for the first verification record.
 
-The [Provenistem catalog](https://github.com/vixttha/Version-Issues-Hub/tree/Provenistem) tracks project ideas and their acceptance criteria.
+
+Standalone branch installation candidate: [v0.0.0.3](docs/v0.0.0.3.md). VIB owns its package and workflow independently of other templates.
