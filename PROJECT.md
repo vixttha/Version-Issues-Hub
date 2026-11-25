@@ -15,3 +15,7 @@ VIB remains independent of Provenistem. Both are complementary parts of the same
 ## Current candidate intake
 
 [19-checkpoint VIB candidate](https://github.com/vixttha/Version-Issues-Hub/tree/4fc9ac47462101b941ea2f78fc939d42a9de0032); v0.0.0.19 (unreleased). The public archive workflow pins this exact SHA. The eight- and five-checkpoint archives above are historical and immutable. Runtime updated from current Veraphify main; v0.0.9 remains preview. No release asserted.
+
+## .36 sharded candidate refresh (pending exact run)
+
+Source: [v0.0.0.36](https://github.com/vixttha/Version-Issues-Hub/tree/26e9fe8c019a33c5f84f77a37da70925505204e3). Historical .5/.8/.19 archives are immutable; this intake is candidate-only. All 36 bindings are accounted for: 35 code evidence features across 32+3 shards and the operational #40/.23 explicitly excluded from code evidence. Each shard uses its own directory with the same original project/version/source identity; the receipt indexes all feature lookups and digest pins. Preservation validates every shard and lookup before appending new bytes. No product release or acceptance implied.

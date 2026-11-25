@@ -4,6 +4,7 @@ import json
 import os
 from pathlib import Path
 import subprocess
+from archive_scope import scope
 
 root = Path.cwd()
 project = root / "vib"
@@ -47,45 +48,58 @@ for feature in features:
             if relation == "implemented_in":
                 citations.append({"path": path, "line": matches[0]})
     expected[feature["id"]] = citations
-if set(expected) != {v.replace(".", "-") for v in versions}:
-    raise ValueError("Unexpected checkpoint scope")
+receipt_scope = json.loads(git(project, "show", f"{source}:ledger/receipt-scope.json"))
+selected = receipt_scope["versions"]
+if set(receipt_scope["fixes"]) != set(selected):
+    raise ValueError("Fix scope mismatch")
+partitions = scope(versions, selected, features)
 if sum(len(git(project, "show", f"{source}:{p}")) for p in inventory) > 8 * 1024 * 1024:
     raise ValueError("Archive source budget exceeded")
-manifest["source_files"] = sorted({ref["path"] for feature in features for ref in feature["implemented_in"]})
-manifest_path = output / "manifest.json"
-manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
-evidence = output / "graphify"
-subprocess.run(["python", str(producer / "versions/v0.0.8/evidence_map.py"), str(manifest_path), str(evidence)], cwd=project, check=True)
-receipt = json.loads((evidence / "receipt.json").read_text(encoding="utf-8"))
-if receipt["source_commit"] != source or not receipt["mcp_verified"]:
-    raise ValueError("Graphify receipt not verified")
-archive = output / "archive"
 cli = root / "veraphify/veraphifiy.mjs"
-args = ["--archive", str(archive), "--project", identity, "--version", version, "--source", source]
-
-def call(command, *extra):
-    return json.loads(subprocess.check_output(["node", str(cli), command, *args, *extra], text=True))
-
-imported = call("import", "--checkout", str(project), "--evidence", str(evidence))
-entries = list(archive.glob("*.json"))
-if len(entries) != 1:
-    raise ValueError("Expected a single candidate archive")
-digest = hashlib.sha256(entries[0].read_bytes()).hexdigest()
-if digest != imported["archive_sha256"] or imported["veraphifiy_version"] != "v0.0.9":
-    raise ValueError("Unexpected archive hash or runtime")
-pin = ("--archive-sha256", digest)
-if call("verify", *pin) != imported:
-    raise ValueError("Archive verification mismatch")
 lookups = {}
-for feature, citations in expected.items():
-    result = call("lookup", *pin, "--feature", f"feature:{feature}")
-    if result["citations"] != citations or result["source"] != source:
-        raise ValueError(f"Incorrect citation: {feature}")
-    lookups[feature] = result
+shards = []
+for index, part in enumerate(partitions, 1):
+    folder = output / f"shard-{index:04d}"
+    folder.mkdir()
+    shard = {**manifest, "features": part}
+    shard["source_files"] = sorted({ref["path"] for feature in part for ref in feature["implemented_in"]})
+    manifest_path = folder / "manifest.json"
+    manifest_path.write_text(json.dumps(shard), encoding="utf-8")
+    evidence = folder / "graphify"
+    subprocess.run(["python", str(producer / "versions/v0.0.8/evidence_map.py"), str(manifest_path), str(evidence)], cwd=project, check=True)
+    receipt = json.loads((evidence / "receipt.json").read_text(encoding="utf-8"))
+    ids = [f["id"] for f in part]
+    if (receipt["source_commit"] != source or receipt["repository"] != identity or receipt["mcp_verified"] is not True
+            or set(receipt["feature_links"]) != {"feature:" + i for i in ids}
+            or receipt["graph_sha256"] != hashlib.sha256((evidence / "graph.json").read_bytes()).hexdigest()):
+        raise ValueError("Graphify shard receipt mismatch")
+    archive = folder / "archive"
+    args = ["--archive", str(archive), "--project", identity, "--version", version, "--source", source]
+    def call(command, *extra):
+        return json.loads(subprocess.check_output(["node", str(cli), command, *args, *extra], text=True))
+    imported = call("import", "--checkout", str(project), "--evidence", str(evidence))
+    entries = list(archive.glob("*.json"))
+    if len(entries) != 1:
+        raise ValueError("Expected one archive entry per isolated shard")
+    digest = hashlib.sha256(entries[0].read_bytes()).hexdigest()
+    if digest != imported["archive_sha256"] or imported["veraphifiy_version"] != "v0.0.9":
+        raise ValueError("Archive identity mismatch")
+    pin = ("--archive-sha256", digest)
+    if call("verify", *pin) != imported:
+        raise ValueError("Archive verification mismatch")
+    for feature in ids:
+        result = call("lookup", *pin, "--feature", f"feature:{feature}")
+        if result["citations"] != expected[feature] or result["source"] != source:
+            raise ValueError(f"Incorrect citation: {feature}")
+        lookups[feature] = result
+    shards.append({"directory": folder.name, "features": ids, "archive_sha256": digest})
+if set(lookups) != set(expected):
+    raise ValueError("Incomplete archive lookups")
 (output / "candidate-receipt.json").write_text(json.dumps({
-    "status": "candidate_only", "source": source, "version": version, "archive_sha256": digest,
+    "schema_version": 2, "status": "candidate_only", "source": source, "version": version,
     "runner_id": os.environ["GITHUB_RUN_ID"], "runner_attempt": os.environ["GITHUB_RUN_ATTEMPT"],
     "veraphify_source": git(root / "veraphify", "rev-parse", "HEAD").decode().strip(),
-    "lookups": lookups,
+    "versions": versions, "operational_exclusions": sorted(set(versions)-set(selected)),
+    "shards": shards, "lookups": lookups,
 }, indent=2) + "\n", encoding="utf-8")
-print(f"Verified {len(expected)} VIB candidate implementation citations")
+print(f"Verified {len(expected)} VIB candidate implementation citations across {len(shards)} shards; operational exclusions recorded separately")
