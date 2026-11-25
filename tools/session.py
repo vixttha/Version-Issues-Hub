@@ -744,6 +744,8 @@ def retry_scope(api, previous, fresh, number, rejection):
                 return sha
     expected = issue_view(previous["ledger"], previous["handoff"], number)
     history = previous["handoff"]["history"]
+    prior_ledger = previous["ledger"]
+    prior_schema = previous["handoff"]["schema_version"]
     for sha, _, _ in reversed(path):
         def read(file):
             return checkpoint.parse_json(install.read_text(api, prefix, file, sha))
@@ -751,11 +753,15 @@ def retry_scope(api, previous, fresh, number, rejection):
             raise ValueError("Installed manifest changed during contention")
         ledger, handoff = read(LEDGER), read(HANDOFF)
         validate_handoff(handoff, ledger)
-        checkpoint.check_history(ledger, previous["ledger"])
+        checkpoint.check_history(ledger, prior_ledger)
+        if handoff["schema_version"] < prior_schema:
+            raise ValueError("Handoff schema regressed during contention")
         if (handoff["history"][:len(history)] != history
                 or issue_view(ledger, handoff, number) != expected):
             raise ValueError("Issue or archive changed during contention; inspect before retrying")
         history = handoff["history"]
+        prior_ledger = ledger
+        prior_schema = handoff["schema_version"]
     return None
 
 

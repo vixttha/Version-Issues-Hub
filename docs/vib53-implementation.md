@@ -43,3 +43,5 @@ Compatibility guard: inspect the literal parallel schema capability in the byte-
 ## Bounded automatic contention recovery (isolated candidate)
 
 Separate experiment branch while live acceptance is rate-limited. Existing CLI commands keep original arguments. Parallel apply rebuilds only after typed pre-publication drift or definitive unthrottled 409/422 ref rejection and a bounded single-parent history read proving the issue's ledger, active record and archive unchanged at every intermediate commit. Replan must preserve issue intent (uncommitted version allocation may change). No blind write replay, no retry of ambiguous outcomes or rate-limit/permanent errors; exact integration policies unchanged. Four attempts and jitter reduce collisions, not a fairness guarantee. No production mutation.
+
+Qualification fixes: same-issue rejection test now competes with genuinely different intent, rather than potentially producing the same Git object. Added three consecutive real Git conflicts, single completion archive, product movement tests; intermediate ledger continuity and schema non-regression verified at each commit.

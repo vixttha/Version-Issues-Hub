@@ -550,6 +550,18 @@
         {
           "path": "tests/test_contention_recovery.py",
           "anchor": "def test_replan_changed_intent_refused(self):"
+        },
+        {
+          "path": "tests/test_contention_recovery.py",
+          "anchor": "def test_three_successive_real_git_conflicts_then_success(self):"
+        },
+        {
+          "path": "tests/test_contention_recovery.py",
+          "anchor": "def test_finish_archive_is_appended_once_after_conflict(self):"
+        },
+        {
+          "path": "tests/test_contention_recovery.py",
+          "anchor": "def test_product_change_refuses_replan(self):"
         }
       ]
     }

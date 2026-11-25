@@ -70,7 +70,7 @@ class RecoveryTests(unittest.TestCase):
         self.assertEqual(self.api.read(fresh["ref"],"notes/custom.md"),"keep me\n")
 
     def test_same_issue_change_stops_without_replaying(self):
-        self.inject(lambda: session.save(self.api,self.s,*self.claim(self.s,B),True,issue=B))
+        self.inject(lambda: session.save(self.api,self.s,*session.claim(self.api,self.s,B,["test"],"different intent"),True,issue=B))
         with self.assertRaisesRegex(ValueError,"Issue or archive changed"):
             self.recover(lambda s:self.claim(s,B),B)
         latest=session.load(self.api,REPO)
@@ -145,4 +145,45 @@ class RecoveryTests(unittest.TestCase):
             return session.claim(self.api,s,B,["test"],"original" if s["ref"]==self.s["ref"] else "changed")
         with self.assertRaisesRegex(ValueError,"intent changed"):
             self.recover(plan,B)
+        self.assertEqual(sum(m=="PATCH" for m,_,_ in self.api.writes),2)
+
+    def test_three_successive_real_git_conflicts_then_success(self):
+        api=self.api
+        original=api.request
+        competing=iter((250,251,252))
+        def race(method,path,body=None):
+            if method=="PATCH":
+                number=next(competing,None)
+                if number is not None:
+                    api.request=original
+                    current=session.load(api,REPO)
+                    session.save(api,current,*self.claim(current,number),True,issue=number)
+                    api.request=race
+            return original(method,path,body)
+        api.request=race
+        result=self.recover(lambda s:self.claim(s,B),B)
+        self.assertEqual(result["contention_retries"],3)
+        latest=session.load(api,REPO)
+        self.assertEqual([r["issue"] for r in latest["handoff"]["active"]],[A,B,250,251,252])
+        self.assertEqual(len(set(r["version"] for r in latest["ledger"]["issues"])),6)
+        self.assertEqual(sum(m=="PATCH" for m,_,_ in api.writes),8)
+
+    def test_finish_archive_is_appended_once_after_conflict(self):
+        api=self.api
+        result=session.save(api,self.s,*session.advance(api,self.s,"Head",issue=A,return_to_head=True),True,issue=A)
+        self.s=session.load(api,REPO,result["installed_sha"])
+        self.inject(lambda:session.save(api,self.s,*self.claim(self.s,C),True,issue=C))
+        result=self.recover(lambda s:session.finish(api,s,"blocked","owner decision",issue=A),A)
+        latest=session.load(api,REPO)
+        self.assertEqual(result["contention_retries"],1)
+        self.assertEqual([a["issue"] for a in latest["handoff"]["active"]],[C])
+        self.assertEqual(len(session.issue_view(latest["ledger"],latest["handoff"],A)[2]),1)
+        self.assertEqual(session.issue_view(latest["ledger"],latest["handoff"],A)[0]["state"],"blocked")
+
+    def test_product_change_refuses_replan(self):
+        session.save(self.api,self.s,*self.claim(self.s,C),True,issue=C)
+        product=self.api.commit(self.api.git("rev-parse",self.api.product+"^{tree}"),[self.api.product])
+        self.api.ref("main",product)
+        with self.assertRaisesRegex(ValueError,"product changed"):
+            self.recover(lambda s:self.claim(s,B),B)
         self.assertEqual(sum(m=="PATCH" for m,_,_ in self.api.writes),2)
