@@ -1,0 +1,70 @@
+{
+  "schema_version": 1,
+  "scope": "optional_navigation_snapshot",
+  "date": "2026-11-25",
+  "repository": "vixttha/Version-Issues-Hub",
+  "visibility": "public",
+  "private_branches_supported": false,
+  "systems": [
+    {
+      "name": "VIB",
+      "branch": "Version-Issues-Hub",
+      "observed_sha": "e4fa4c42898ddb9f05a133b64bd6b6f2cbbdc646",
+      "upstream_repository": "vixttha/Version-Issues-Hub",
+      "upstream_sha": "4fc9ac47462101b941ea2f78fc939d42a9de0032",
+      "version_status": "v0.0.1 target; not released",
+      "notes": "Active #40/v0.0.0.23 Worker; installed manifest and ledger protected. Standard candidate 5a6074d77ec37823f81c6d7ebb1f4593d969cd71; no package upgrade while qualification and handoff active.",
+      "required": false
+    },
+    {
+      "name": "Veraphify",
+      "branch": "Veraphify",
+      "observed_sha": "36cdaaa87c900b56072a24f7081aa0f92dc56f2c",
+      "upstream_repository": "vixttha/Veraphify",
+      "upstream_sha": "add4a029312c958a5e126990fc49e802c0112c27",
+      "version_status": "v0.0.9 preview",
+      "notes": "CLI differs only by local helper import path; helper relocation reviewed (relative profile path). Preserve project archives and separate evidence intake. No exact-head run found; refresh archive qualification separately.",
+      "required": false
+    },
+    {
+      "name": "README HQ",
+      "branch": "readme-hq",
+      "observed_sha": "a9cdd97c4ad111ed4bb3eb1efa4c9bafc306a9b4",
+      "upstream_repository": "vixttha/README-HQ",
+      "upstream_sha": "b1bbc9a72a5193afcaeaf823f097753070bfa43f",
+      "version_status": "v0.0.6",
+      "notes": "Checker differs only by added project workspace scan; upstream repair planning not a release. Preserve accepted unpublished VIB README and local history.",
+      "required": false
+    },
+    {
+      "name": "Brand Identity",
+      "branch": "Brand-Identity",
+      "observed_sha": "388c6ef968aa15edf3caa34e9de6819dcda24e7f",
+      "upstream_repository": "vixttha/Brand-Identity-Template",
+      "upstream_sha": "74a4666404fb4aa427881d0907cacbc8c65e2cfc",
+      "version_status": "v0.0.2 released upstream",
+      "notes": "Core kit verifier matches upstream tree; project creative/asset records and workflow intentionally differ. Preserve Circuit Industrial v2 lock; do not import upstream blank strategy or unrelated test-vault.",
+      "required": false
+    },
+    {
+      "name": "Lydite",
+      "branch": "Lydite-Test-Vault",
+      "observed_sha": "0a470ea20f5c45501f6a06a0f35e110c8b8642e5",
+      "upstream_repository": "vixttha/Lydite-Test-Vault-Template",
+      "upstream_sha": "eae4c9d9d56ed132b400d7c0f56a9babfe5cba07",
+      "version_status": "v0.0.4 released upstream; starter v0.0.3",
+      "notes": "Source inventory compared at 0a470ea20f5c45501f6a06a0f35e110c8b8642e5; matching shared runtime, host README/workflow differences, separate upstream workflows excluded. Active Agent 4, do not replace vault or repin tests mid-run.",
+      "required": false
+    },
+    {
+      "name": "Provenistem",
+      "branch": "Provenistem",
+      "observed_sha": "ee9a2fb78da8df3c525a5b3e99cb89c09610fc97",
+      "upstream_repository": "vixttha/Provenistem",
+      "upstream_sha": "e36fcd6d12633395e9b573228c0797ade9e775b0",
+      "version_status": "v0.0.2 historical package",
+      "notes": "All 29 upstream portable paths present; four shared differences are project README/agent guide and populated indexes. 11 ideas/14 features. Preserve records; no empty-starter overwrite.",
+      "required": false
+    }
+  ]
+}

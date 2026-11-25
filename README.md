@@ -11,6 +11,7 @@ Permanent reference branch for the product identity, architecture boundaries, ev
 | [Evidence reuse](EVIDENCE-REUSE.md) | Approved principle, applicability and freshness |
 | [Execution policy](EXECUTION-POLICY.md) | Public requirement and private research options |
 | [Conflict audit](CONFLICT-AUDIT.md) | Verified conflicts, resolutions and remaining qualification |
+| [Six-system ecosystem inventory](ECOSYSTEM.md) | Permanent branches, versions, upstream pins and privacy boundary |
 | [Decision and evidence register](DECISION-REGISTER.md) | Canonical references, dated observations, catalog and release boundaries |
 
 Authority: [owner-approved identity](https://github.com/vixttha/Version-Issues-Hub/issues/9#issuecomment-7172184112), [six laws](https://github.com/vixttha/Version-Issues-Hub/issues/27), [independent-agent direction](https://github.com/vixttha/Version-Issues-Hub/issues/53). GitHub issue records and reviewed product revisions remain canonical. This branch adds no authorization to claim work, merge, release, enable private execution, spend money or change repository visibility.

@@ -26,3 +26,6 @@ These are dated observations, not permanent pins for future active work. Refresh
 
 ## Maintenance
 Keep this branch a durable discussion and decision reference. Distinguish owner-approved decisions from proposals; append dated changes, link canonical issue/commit and preserve history. Never merge this branch wholesale into product or installed branch. No secrets, private project data or personal creator details. No CI runtime is introduced by this documentation branch.
+
+## Six-system inventory refresh
+See [ECOSYSTEM.md](ECOSYSTEM.md) and [machine-readable snapshot](ecosystem.json). All six dedicated branches exist; none is private in this public repository. Upstream comparison is review evidence, not an automated upgrade or feature acceptance.
