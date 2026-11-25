@@ -2,12 +2,18 @@
   "active": {
     "issue": 34,
     "version": "v0.0.0.32",
-    "phase": "Validate",
+    "phase": "Internal Auditor",
     "fix_sha": "d9994cfb699409d6d377e8edd72e8865c2cfa1e7",
     "candidate_sha": "1e85153765c0ca908f2ee44f2973ba59b0669c23",
     "pull_request": 2,
-    "evidence": [],
-    "next_action": "PR50 engineering merge verified exact preview tree and parents. Validate actual engineering SHA and PR2 proposed merge; optional gate remains disabled, live qualification and main integration pending."
+    "evidence": [
+      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45702627362/attempts/1",
+      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45702637970/attempts/1",
+      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45702627289/attempts/1",
+      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45702637962/attempts/1",
+      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45702638002/attempts/1"
+    ],
+    "next_action": "Post-merge engineering and PR2 preview all 11 public jobs passed; 136 tests each OS and checkout, five #34 regression cases and Graphify 156/155 verified from logs. Audit current CodeRabbit and main hold; no live hard enforcement claim."
   },
   "history": [
     {
