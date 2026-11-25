@@ -2,12 +2,18 @@
   "active": {
     "issue": 68,
     "version": "v0.0.0.33",
-    "phase": "Validate",
-    "next_action": "PR69 reviewed and engineering merged at a7ba4267f65a264c0c50c36bb2bedc3433f019ca. Verify exact merged push and aggregate PR2 evidence before engineering closure and staged main disposition.",
+    "phase": "Internal Auditor",
+    "next_action": "11/11 public jobs on actual engineering merge and aggregate preview; exact receipts downloaded, digest checked, Ubuntu/Windows logs and Graphify verified.",
     "fix_sha": "a8569d491bd93549dcd2011ca89e3e56d3ada50e",
     "candidate_sha": "a7ba4267f65a264c0c50c36bb2bedc3433f019ca",
     "pull_request": 2,
-    "evidence": []
+    "evidence": [
+      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45707152925/attempts/1",
+      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45707152816/attempts/1",
+      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45707163548/attempts/1",
+      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45707163551/attempts/1",
+      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45707163634/attempts/1"
+    ]
   },
   "history": [
     {
