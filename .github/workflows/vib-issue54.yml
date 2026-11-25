@@ -45,6 +45,18 @@ jobs:
       - name: PowerShell independent oracle
         if: always() && runner.os == 'Windows'
         run: python -B vault/vib/issue54/run.py powershell
+      - name: Python lifecycle faults
+        if: always()
+        run: python -B vault/vib/issue54/run.py faults
+      - name: Python evidence rejection controls
+        if: always()
+        run: python -B vault/vib/issue54/run.py evidence
+      - name: Bash ref and argument safety
+        if: always() && runner.os == 'Linux'
+        run: python -B vault/vib/issue54/run.py bash2
+      - name: PowerShell ref and argument safety
+        if: always() && runner.os == 'Windows'
+        run: python -B vault/vib/issue54/run.py powershell2
       - name: Retain probe evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
