@@ -97,7 +97,7 @@
         "Pass regression and live public read-only adoption checks plus Graphify."
       ],
       "issue": 23,
-      "state": "in_progress",
+      "state": "staged",
       "version": "v0.0.0.10"
     },
     {
