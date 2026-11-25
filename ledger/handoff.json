@@ -2,8 +2,8 @@
   "active": {
     "issue": 40,
     "version": "v0.0.0.23",
-    "phase": "Internal Auditor",
-    "next_action": "112 tests per checkout; nine public jobs and ten live cases green; all eight archives read back. Verify exact CodeRabbit and remaining thread scope, then return Head. #37 host trials separate.",
+    "phase": "Head",
+    "next_action": "Mechanical acceptance verified: 112 tests per checkout, 9/9 public jobs, 10/10 live cases, 48 receipts, all eight evidence archives and both graph digests. Exact CodeRabbit in_progress/null; final review remains held. #37 independent host acceptance resumed read-only, 0/2 fresh host transcripts; #34 optional race remains separate. PR49 repin pending; no main merge or release.",
     "fix_sha": "7ae6626e44d01d29b11968da28e6debd816f8c06",
     "candidate_sha": "7ae6626e44d01d29b11968da28e6debd816f8c06",
     "pull_request": 2,
