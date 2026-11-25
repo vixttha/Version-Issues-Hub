@@ -185,5 +185,19 @@ class RevisionGuardTests(unittest.TestCase):
                 self.p.check_current_engineering_matrix(spec)
 
 
+    def test_archive_rejects_wrong_source(self):
+        record = {"source":"wrong","version":"v0.0.0.36","versions":[],"operational_exclusions":["v0.0.0.23"]}
+        with self.assertRaisesRegex(ValueError,"source and full version"):
+            self.p.check_archive_scope(dict(record, shards=[]), {"issues":[]},{"versions":[]})
+
+    def test_archive_rejects_missing_shard(self):
+        record = {"source":self.p.M["engineering"]["head"],"version":"v0.0.0.36","versions":[],"operational_exclusions":["v0.0.0.23"],"shards":[],"lookups":{}}
+        with self.assertRaisesRegex(ValueError,"two shards"):
+            self.p.check_archive_scope(record,{"issues":[]},{"versions":[]})
+
+    def test_reconciled_dispositions_reject_assigned_closed(self):
+        with self.assertRaisesRegex(ValueError,"historical closure dispositions"):
+            self.p.check_canonical_dispositions({"issues":[{"issue":40,"state":"in_progress"}]+[{"issue":r["issue"],"state":"assigned"} for r in self.p.M["closed_checkpoints"]]}, {"history":[]})
+
 if __name__ == "__main__":
     unittest.main()

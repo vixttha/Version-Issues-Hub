@@ -2,7 +2,7 @@
   "schema": 1,
   "repository": "vixttha/Version-Issues-Hub",
   "main": "1b11865f79464ae7db9a648467e8c2c1cb898a02",
-  "installed_state": "1006e476782f06a33f4eb405eb18afb9cba434f0",
+  "installed_state": "3ad6e455e86231c43ddf2dcded91f8d2debb1744",
   "engineering": {
     "head": "26e9fe8c019a33c5f84f77a37da70925505204e3",
     "pr": 2,
@@ -119,7 +119,8 @@
     "#45 commercial brand clearance",
     "#46 final homepage derivative, source pin and publication approval",
     "#40 final exact candidate owner acceptance, integration and release approval",
-    "PR49 exact current review and Head disposition"
+    "PR49 exact current review and Head disposition",
+    "Self-install upgrade remains blocked by active/staged lifecycle guard; requalify after integration"
   ],
   "archive": {
     "head": "a9cdd97c4ad111ed4bb3eb1efa4c9bafc306a9b4",
@@ -129,7 +130,7 @@
     "jobs": 4,
     "attempt": 2
   },
-  "installed_phase": "Worker",
+  "installed_phase": "Head",
   "acceptance_review": {
     "head": "8e24a3a4145ba3e291d207477bfe95a7924cabc5",
     "pr": 52,
@@ -537,5 +538,21 @@
   "legal_blobs": {
     "LICENSE": "90abd0e6c64a135f42451762337a397bf27f4862",
     "VIB-NOTICE.md": "70dd8710828a38118965be3ca8be32457d106789"
-  }
+  },
+  "veraphify_current": {
+    "head": "439ea9a3446fd129408924da1949642ceda03a8d",
+    "source": "26e9fe8c019a33c5f84f77a37da70925505204e3",
+    "version": "v0.0.0.36",
+    "run": 45723922797,
+    "attempt": 1,
+    "artifact": 15072809424,
+    "artifact_digest": "sha256:e7e2ccda83a9a50dc9fbbe3ec9b7c54099f28b6f62c8b3f0e333ceb08d594497",
+    "receipt_blob": "588cf93dda2c4c341fa2dd651b9c0ef197b71449",
+    "archive_blobs": [
+      "30bcb882bc54a13afb96e297170f6f37b8e73cc1",
+      "8a374b2ca45b304be64f54fab0a1c00449c19ff6"
+    ],
+    "prior": "36cdaaa87c900b56072a24f7081aa0f92dc56f2c"
+  },
+  "installed_package_source": "4fc9ac47462101b941ea2f78fc939d42a9de0032"
 }

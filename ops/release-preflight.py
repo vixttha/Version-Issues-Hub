@@ -192,6 +192,62 @@ def check_active_checkpoint(active, other):
     check("competing issue refused", other["status"] == "blocked_other_active_issue")
 
 
+def check_canonical_dispositions(ledger, handoff):
+    expected = {r["issue"]: r["reason"] for r in M["closed_checkpoints"]}
+    actual = {r["issue"]: r["state"] for r in ledger["issues"]}
+    check("all 35 historical closure dispositions consistent",
+          set(expected) == set(actual) - {40}
+          and all(actual[n] == ("deferred" if reason == "not_planned" else "staged")
+                  for n, reason in expected.items()))
+    check("no false integration and only #40 active", actual.get(40) == "in_progress"
+          and list(actual.values()).count("staged") == 32
+          and list(actual.values()).count("deferred") == 3)
+    latest = {x["handoff"]["issue"]: x for x in handoff["history"]}
+    check("staged rows have retained Head decisions", all(
+          n in latest and latest[n]["disposition"] == "staged" and latest[n]["merged_sha"] is None
+          for n in actual if actual[n] == "staged"))
+
+def check_archive_scope(record, ledger, scope):
+    versions = [r["version"] for r in ledger["issues"]]
+    expected = {v.replace(".", "-") for v in scope["versions"]}
+    ids = [f for shard in record["shards"] for f in shard["features"]]
+    check("Veraphify .36 source and full version inventory",
+          record["source"] == M["engineering"]["head"]
+          and record["version"] == "v0.0.0.36" and record["versions"] == versions
+          and record["operational_exclusions"] == ["v0.0.0.23"])
+    check("Veraphify two shards cover exact 35 code checkpoints",
+          [len(x["features"]) for x in record["shards"]] == [32, 3]
+          and len(ids) == len(set(ids)) == len(expected) == 35
+          and set(ids) == expected == set(record["lookups"]))
+    check("Veraphify lookups bind exact source and shard digest", all(
+          record["lookups"][f]["source"] == record["source"]
+          and record["lookups"][f]["archive_sha256"] == shard["archive_sha256"]
+          for shard in record["shards"] for f in shard["features"]))
+
+def check_current_archive(ledger, scope, contents):
+    spec = M["veraphify_current"]
+    before, after = leaves(spec["prior"]), leaves(spec["head"])
+    old = {k:v for k,v in before.items() if k.startswith("archives/")}
+    check("all prior Veraphify archive blobs preserved",
+          len(old) == 7 and all(after.get(k)==v for k,v in old.items()))
+    prefix = f"archives/candidates/{spec['source']}/{spec['run']}-{spec['attempt']}/"
+    record = contents(prefix + "candidate-receipt.json", spec["head"])
+    check_archive_scope(record, ledger, scope)
+    check("retained archive exact receipt and shard blob pins",
+          after.get(prefix+"candidate-receipt.json")==spec["receipt_blob"]
+          and sorted(v for k,v in after.items() if k.startswith(prefix) and "/archive/" in k)
+          == sorted(spec["archive_blobs"]))
+    run = api(f"/actions/runs/{spec['run']}")
+    jobs = api(f"/actions/runs/{spec['run']}/attempts/{spec['attempt']}/jobs?per_page=100")
+    check("Veraphify public archive and preserve jobs passed",
+          run["conclusion"]=="success" and run["run_attempt"]==spec["attempt"]
+          and jobs["total_count"]==len(jobs["jobs"])==2
+          and {j["name"] for j in jobs["jobs"]}=={"archive","preserve"}
+          and all(j["conclusion"]=="success" and j["runner_group_name"]=="GitHub Actions" for j in jobs["jobs"]))
+    artifacts=api(f"/actions/runs/{spec['run']}/artifacts?per_page=100")["artifacts"]
+    check("Veraphify downloadable archive digest bound",
+          any(x["id"]==spec["artifact"] and x["digest"]==spec["artifact_digest"] and not x["expired"] for x in artifacts))
+
 def main():
     check("public repository identity", api("")["visibility"] == "public" and os.environ["GITHUB_REPOSITORY"] == REPO)
     check("main frozen", branch("main") == M["main"])
@@ -249,6 +305,13 @@ def main():
     ledger = contents("ledger/issue-versions.json", M["installed_state"])
     original = contents("ledger/issue-versions.json", M["engineering"]["head"])
     check_ledger_mappings(ledger, original)
+    check_canonical_dispositions(ledger, handoff)
+    scope = contents("ledger/receipt-scope.json", M["engineering"]["head"])
+    check_current_archive(ledger, scope, contents)
+    package = contents("vib-install.json", M["installed_state"])
+    check("installed package pin explicitly identified", package["source_sha"] == M["installed_package_source"] and package["enforcement"] == "disabled")
+    report["installed_package_source"] = package["source_sha"]
+    report["engineering_version"] = "v0.0.0.36"
     check("no second active ledger row", [x["issue"] for x in ledger["issues"] if x["state"] == "in_progress"] == [40])
     check_final_refs()
     report["mechanical"] = "passed"
