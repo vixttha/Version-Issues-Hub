@@ -207,3 +207,39 @@ class RecoveryTests(unittest.TestCase):
         fresh=session.load(self.api,REPO)
         with self.assertRaisesRegex(ValueError,"Installed package changed"):
             session.retry_scope(self.api,s,fresh,B,session.HandoffStale("advanced"))
+
+    def test_retired_row_cannot_be_reopened_during_unrelated_contention(self):
+        api = self.api
+        ledger = copy.deepcopy(self.s["ledger"])
+        from tools import checkpoint
+        checkpoint.register(ledger, 8, "v1.0.6", ["retired criterion"])
+        row = next(row for row in ledger["issues"] if row["issue"] == 8)
+        row["state"] = "retired"
+        baseline_tree = api.tree({session.LEDGER: install.render(ledger)},
+                                 api.git("rev-parse", self.s["ref"] + "^{tree}"))
+        baseline = api.commit(baseline_tree, [self.s["ref"]])
+        api.ref(install.BRANCH, baseline)
+        previous = session.load(api, REPO, baseline)
+        # A valid unrelated claim must remain recoverable with a retired row present.
+        valid = session.save(api, previous, *self.claim(previous, C), True, issue=C)
+        fresh = session.load(api, REPO, valid["installed_sha"])
+        self.assertIsNone(session.retry_scope(api, previous, fresh, B,
+                                              session.HandoffStale("advanced")))
+        changed = copy.deepcopy(fresh["ledger"])
+        next(row for row in changed["issues"] if row["issue"] == 8)["state"] = "blocked"
+        tree = api.tree({session.LEDGER: install.render(changed)},
+                        api.git("rev-parse", fresh["ref"] + "^{tree}"))
+        tampered = api.commit(tree, [fresh["ref"]])
+        api.ref(install.BRANCH, tampered)
+        observed = session.load(api, REPO, tampered)
+        before = list(api.writes)
+        with self.assertRaisesRegex(ValueError, "Terminal record changed"):
+            session.retry_scope(api, previous, observed, B, session.HandoffStale("advanced"))
+        self.assertEqual(api.writes, before)
+        # Detect a transient invalid intermediate state even if restored later.
+        restored = api.commit(api.git("rev-parse", fresh["ref"] + "^{tree}"), [tampered])
+        api.ref(install.BRANCH, restored)
+        final = session.load(api, REPO, restored)
+        with self.assertRaisesRegex(ValueError, "Terminal record changed"):
+            session.retry_scope(api, previous, final, B, session.HandoffStale("advanced"))
+        self.assertEqual(api.writes, before)

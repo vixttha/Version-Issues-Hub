@@ -773,8 +773,8 @@ def retry_scope(api, previous, fresh, number, rejection):
         for row in prior_ledger["issues"]:
             if current_rows[row["issue"]]["acceptance"] != row["acceptance"]:
                 raise ValueError("Historical acceptance changed during contention")
-            if row["state"] == "integrated" and current_rows[row["issue"]] != row:
-                raise ValueError("Integrated record changed during contention")
+            if row["state"] in ("integrated", "retired") and current_rows[row["issue"]] != row:
+                raise ValueError("Terminal record changed during contention")
         if handoff["schema_version"] < prior_schema:
             raise ValueError("Handoff schema regressed during contention")
         if (handoff["history"][:len(history)] != history
