@@ -2,14 +2,12 @@
   "active": {
     "issue": 40,
     "version": "v0.0.0.23",
-    "phase": "Head",
-    "next_action": "Mechanical evidence 216/216 accepted for historical installed snapshot. PR2/48 fresh CodeRabbit passed; #34 optional finding stays open. PR49 exact review still pending at latest read unless separately verified. Head holds integration until final PR49 review and rights/provenance disposition; confirm current installed-state readback and repin release report if needed. No main merge or release.",
-    "fix_sha": "4445ecc4ca6d54d8f4268c380ebe1e093a6b1069",
-    "candidate_sha": "4445ecc4ca6d54d8f4268c380ebe1e093a6b1069",
-    "pull_request": 49,
-    "evidence": [
-      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45665944043/attempts/1"
-    ]
+    "phase": "Worker",
+    "next_action": "Owner-authorized #40 rework: repair historical license review wording only on PR2; preserve operative legal blobs, no new issue/version or release.",
+    "fix_sha": null,
+    "candidate_sha": null,
+    "pull_request": null,
+    "evidence": []
   },
   "history": [
     {
@@ -44,6 +42,23 @@
       },
       "disposition": "rework",
       "decision": "Owner requested VIB workflow for exact PR49 validation and licensing integration. Rework stale candidate to current reviewed snapshot; preserve historical handoff and all installed package pins.",
+      "merged_sha": null
+    },
+    {
+      "handoff": {
+        "issue": 40,
+        "version": "v0.0.0.23",
+        "phase": "Head",
+        "next_action": "Mechanical evidence 216/216 accepted for historical installed snapshot. PR2/48 fresh CodeRabbit passed; #34 optional finding stays open. PR49 exact review still pending at latest read unless separately verified. Head holds integration until final PR49 review and rights/provenance disposition; confirm current installed-state readback and repin release report if needed. No main merge or release.",
+        "fix_sha": "4445ecc4ca6d54d8f4268c380ebe1e093a6b1069",
+        "candidate_sha": "4445ecc4ca6d54d8f4268c380ebe1e093a6b1069",
+        "pull_request": 49,
+        "evidence": [
+          "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45665944043/attempts/1"
+        ]
+      },
+      "disposition": "rework",
+      "decision": "Owner-authorized #40 rework: repair historical license review wording only on PR2; preserve operative legal blobs, no new issue/version or release.",
       "merged_sha": null
     }
   ],
