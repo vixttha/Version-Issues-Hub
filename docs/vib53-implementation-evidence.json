@@ -310,6 +310,26 @@
         {
           "path": "tests/test_issue_isolation.py",
           "anchor": "def test_stale_writer_cannot_publish_after_unrelated_transaction(self):"
+        },
+        {
+          "path": "tests/test_issue_isolation.py",
+          "anchor": "def test_distinct_pr_refresh_does_not_read_or_change_other_pr(self):"
+        },
+        {
+          "path": "tests/test_issue_isolation.py",
+          "anchor": "def test_terminal_issue_and_acceptance_cannot_be_reopened_by_save(self):"
+        },
+        {
+          "path": "tests/test_issue_isolation.py",
+          "anchor": "def test_legacy_save_can_infer_staged_reconciliation_without_touching_active(self):"
+        },
+        {
+          "path": "tests/test_issue_isolation.py",
+          "anchor": "def test_cli_wrong_issue_refuses_before_transition(self):"
+        },
+        {
+          "path": "tests/test_standard.py",
+          "anchor": "def test_unrelated_ledger_revision_requires_repin_not_new_run(self):"
         }
       ]
     }

@@ -504,12 +504,14 @@ def check_issue_delta(state, ledger, handoff, number=None):
     appended = handoff["history"][len(history):]
     previous, proposed = before_handoff["active"], handoff["active"]
     if number is None:
-        if previous is not None:
+        if previous != proposed and previous is not None:
             number = previous["issue"]
-        elif proposed is not None:
+        elif previous != proposed and proposed is not None:
             number = proposed["issue"]
         elif appended:
             number = appended[0]["handoff"]["issue"]
+        elif previous is not None:
+            number = previous["issue"]
         elif ledger == before_ledger and handoff == before_handoff:
             return
         else:

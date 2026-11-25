@@ -164,3 +164,74 @@ class IssueIsolationTests(unittest.TestCase):
             session.save(api,s,ledger,handoff,True,issue=B)
         self.assertEqual(s,before)
         self.assertEqual(api.writes,[])
+
+
+    def test_distinct_pr_refresh_does_not_read_or_change_other_pr(self):
+        api,s=self.staged_then_active()
+        original=self.issue_view(s,A)
+        pr_a=copy.deepcopy(api.pr)
+        run_a=copy.deepcopy(api.pre_run)
+        api.pr.update(number=9,head={"sha":NEXT,"repo":{"id":42}},merge_commit_sha="7"*40)
+        api.pre_run.update(id=125,head_sha=NEXT,pull_requests=[
+            {"number":9,"head":{"sha":NEXT},"base":{"sha":BASE}}])
+        original_request=api.request
+        reads=[]
+        def request(method,path,body=None):
+            reads.append(path)
+            if method=="GET" and path.endswith("/pulls/8"):
+                return pr_a
+            if method=="GET" and "/actions/runs/123" in path:
+                return run_a
+            return original_request(method,path,body)
+        api.request=request
+        run_b=RUN.replace("/123/","/125/")
+        for kw in ({"fix":FIX2,"candidate":NEXT,"pr":9},{"evidence":[run_b]},{},
+                   {"refresh":True},{"evidence":[run_b]},{}):
+            self.transition(api,s,session.advance(api,s,"B",**kw),B)
+        self.transition(api,s,session.finish(api,s,"staged","B staged"),B)
+        self.assertEqual(self.issue_view(s,A),original)
+        self.assertFalse(any("/pulls/8" in path or "/actions/runs/123" in path for path in reads))
+        self.assertEqual(session.inspect(api,s,A)["status"],"staged")
+        self.assertEqual(api.writes,[])
+
+    def test_terminal_issue_and_acceptance_cannot_be_reopened_by_save(self):
+        api,s=self.staged_then_active()
+        api.pr.update(state="closed",merged=True,merge_commit_sha=NEXT)
+        api.product=NEXT
+        isolated=copy.deepcopy(s)
+        isolated["handoff"]["active"]=None
+        self.apply(s,session.reconcile(api,s,A,"integrate A",policy=post_policy(isolated,A)))
+        ledger=copy.deepcopy(s["ledger"])
+        ledger["issues"][0]["state"]="assigned"
+        with self.assertRaisesRegex(ValueError,"terminal"):
+            session.save(api,s,ledger,copy.deepcopy(s["handoff"]),True,issue=A)
+        self.assertEqual(api.writes,[])
+
+    def test_legacy_save_can_infer_staged_reconciliation_without_touching_active(self):
+        api,s=self.staged_then_active()
+        api.pr.update(state="closed",merged=True,merge_commit_sha=NEXT)
+        api.product=NEXT
+        isolated=copy.deepcopy(s)
+        isolated["handoff"]["active"]=None
+        ledger,handoff=session.reconcile(api,s,A,"integrate A",policy=post_policy(isolated,A))
+        self.assertEqual(session.save(api,s,ledger,handoff)["status"],"planned")
+        self.assertEqual(handoff["active"],s["handoff"]["active"])
+
+    def test_cli_wrong_issue_refuses_before_transition(self):
+        import contextlib
+        import io
+        from unittest.mock import patch
+        api,s=self.staged_then_active()
+        for command in (["advance","--issue",str(A),"--note","wrong"],
+                        ["finish","blocked","--issue",str(A),"--decision","wrong","--owner-approved"]):
+            with patch("sys.argv",["session","--target","example/existing",*command]), \
+                 patch.object(session,"load",return_value=s), \
+                 patch.object(session,"advance") as advance, patch.object(session,"finish") as finish, \
+                 patch.object(session,"save") as save, contextlib.redirect_stderr(io.StringIO()) as err:
+                with self.assertRaises(SystemExit) as exc:
+                    session.main()
+                self.assertEqual(exc.exception.code,1)
+                self.assertIn("Requested issue does not own",err.getvalue())
+                advance.assert_not_called()
+                finish.assert_not_called()
+                save.assert_not_called()

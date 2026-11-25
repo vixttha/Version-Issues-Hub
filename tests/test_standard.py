@@ -71,3 +71,20 @@ class StandardTests(unittest.TestCase):
         self.state["handoff"]["history"][0]["handoff"].pop("integration_merge_sha")
         with self.assertRaisesRegex(ValueError,"unpinned"):
             standard.evaluate(self.api,REPO,self.policy)
+
+
+    def test_unrelated_ledger_revision_requires_repin_not_new_run(self):
+        before=copy.deepcopy(self.state["handoff"]["history"])
+        self.assertEqual(standard.evaluate(self.api,REPO,self.policy)["status"],"review_required")
+        self.state["ledger"]["issues"].append({"issue":249,"version":"v1.0.6.3",
+                                               "state":"blocked","acceptance":["Other work"]})
+        new_ref="2"*40
+        self.state["ref"]=new_ref
+        self.api.refs["Version-Issues-Hub"]=new_ref
+        # The old policy is still pinned to the old installed revision.
+        with self.assertRaisesRegex(ValueError,"Installed state advanced"):
+            standard.evaluate(self.api,REPO,self.policy)
+        self.policy["installed_sha"]=new_ref
+        self.assertEqual(standard.evaluate(self.api,REPO,self.policy)["status"],"review_required")
+        self.assertEqual(self.state["handoff"]["history"],before)
+        self.assertEqual(self.api.writes,[])
