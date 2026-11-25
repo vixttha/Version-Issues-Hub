@@ -317,6 +317,16 @@
         "Public regression tests demonstrate rerun, replacement proof, uncertain response, revocation failure and state drift during publication.",
         "Document residual non-atomic window and retain required live optional enforcement proof; Standard mode remains independent and disabled enforcement unchanged."
       ]
+    },
+    {
+      "issue": 68,
+      "version": "v0.0.0.33",
+      "state": "in_progress",
+      "acceptance": [
+        "A generic checkpoint branch uses an exact, validated canonical Worker record; missing or mismatched record fails closed.",
+        "Public push and PR preview validate the pinned Worker projection and preserve earlier checks.",
+        "Correct stale recovery freeze guidance; preserve existing mappings and receipt pins; public Ubuntu, Windows, Graphify and CodeRabbit review."
+      ]
     }
   ],
   "repository": "vixttha/Version-Issues-Hub",
