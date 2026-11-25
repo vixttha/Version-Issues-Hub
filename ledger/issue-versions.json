@@ -97,7 +97,7 @@
         "Pass regression and live public read-only adoption checks plus Graphify."
       ],
       "issue": 23,
-      "state": "assigned",
+      "state": "staged",
       "version": "v0.0.0.10"
     },
     {
@@ -107,7 +107,7 @@
         "Public runner and Graphify evidence; no product changes, no enforcement or independent LLM claims."
       ],
       "issue": 24,
-      "state": "assigned",
+      "state": "staged",
       "version": "v0.0.0.11"
     },
     {
@@ -117,7 +117,7 @@
         "Prepare exact archive without deleting branches; verify real disposable Git objects on public runners."
       ],
       "issue": 25,
-      "state": "assigned",
+      "state": "staged",
       "version": "v0.0.0.12"
     },
     {
@@ -341,11 +341,21 @@
     {
       "issue": 71,
       "version": "v0.0.0.35",
-      "state": "in_progress",
+      "state": "staged",
       "acceptance": [
         "Reject archived staged or integrated handoffs missing complete fix/candidate/PR fields or nonempty run-attempt evidence.",
         "Preserve legitimate blocked, deferred and rework archives and existing historical records.",
         "Test incomplete verification and valid dispositions; verify public Ubuntu/Windows, Graphify, CodeRabbit and exact engineering merge."
+      ]
+    },
+    {
+      "issue": 72,
+      "version": "v0.0.0.36",
+      "state": "in_progress",
+      "acceptance": [
+        "Reject malformed, empty and duplicate explicit receipt selections before generating any receipt.",
+        "Preserve valid default selection and historical singleton retrieval with original fix pins and ancestry checks.",
+        "Test negative and positive cases; pass public Ubuntu/Windows, Graphify, CodeRabbit and exact engineering merge verification."
       ]
     }
   ],

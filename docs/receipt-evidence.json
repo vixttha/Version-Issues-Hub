@@ -952,6 +952,34 @@
           "anchor": "def test_archived_success_requires_candidate_and_evidence(self):"
         }
       ]
+    },
+    {
+      "id": "v0-0-0-36",
+      "label": "Issue #72 · explicit receipt selection integrity",
+      "documented_in": [
+        {
+          "path": "docs/v0.0.0.36.md",
+          "anchor": "## Validate the complete selection before generating receipts"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "ledger/issue-versions.json",
+          "anchor": "\"issue\": 72,"
+        }
+      ],
+      "implemented_in": [
+        {
+          "path": "tools/checkpoint.py",
+          "anchor": "def receipts(ledger, scope, checkout, env, event, parents=(), *, versions=None, previous=None):"
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tests/test_checkpoint.py",
+          "anchor": "def test_explicit_receipt_selection_rejects_invalid_before_generation(self, ancestry, make_receipt):"
+        }
+      ]
     }
   ]
 }

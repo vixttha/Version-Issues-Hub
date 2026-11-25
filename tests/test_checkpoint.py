@@ -221,5 +221,38 @@ class ReceiptTests(unittest.TestCase):
         self.assertEqual(check_ancestry.call_count, len(scope["versions"]))
 
 
+    @patch.object(checkpoint, "receipt")
+    @patch.object(checkpoint, "verify_fix_ancestry")
+    def test_explicit_receipt_selection_rejects_invalid_before_generation(self, ancestry, make_receipt):
+        version = "v0.0.0.1"
+        scope = {"fixes": {version: self.fix}, "versions": [version]}
+        for selected in ([], (), version, 7, True, {version}, {"version": version},
+                         [version, version], [version, "v0.0.0.01"], [version, None],
+                         [version, []], [version, "v0.0.0.999"]):
+            with self.subTest(selected=selected), self.assertRaises(ValueError):
+                checkpoint.receipts(self.ledger, scope, self.tested, self.env, self.event,
+                                    versions=selected)
+        make_receipt.assert_not_called()
+        ancestry.assert_not_called()
+
+    @patch.object(checkpoint, "verify_fix_ancestry")
+    def test_explicit_receipt_selection_preserves_historical_singleton(self, ancestry):
+        self.ledger["issues"].append(row(7, "v0.0.0.2"))
+        scope = {"fixes": {"v0.0.0.1": self.fix, "v0.0.0.2": "e" * 40},
+                 "versions": ["v0.0.0.2"]}
+        self.env["GITHUB_EVENT_NAME"] = "push"
+        self.env["GITHUB_SHA"] = self.tested
+        self.event["after"] = self.tested
+        for selected in (["v0.0.0.1"], ("v0.0.0.1",)):
+            ancestry.reset_mock()
+            records = checkpoint.receipts(self.ledger, scope, self.tested, self.env,
+                                          self.event, versions=selected, previous=scope)
+            self.assertEqual([(r["issue"], r["fix_sha"]) for r in records], [(1, self.fix)])
+            ancestry.assert_called_once_with("v0.0.0.1", self.fix, self.tested)
+        records = checkpoint.receipts(self.ledger, scope, self.tested, self.env,
+                                      self.event, versions=["v0.0.0.2", "v0.0.0.1"])
+        self.assertEqual([r["issue"] for r in records], [7, 1])
+
+
 if __name__ == "__main__":
     unittest.main()

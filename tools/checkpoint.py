@@ -238,11 +238,17 @@ def write_json(path, data):
 
 def receipts(ledger, scope, checkout, env, event, parents=(), *, versions=None, previous=None):
     check_receipt_scope(ledger, scope, previous)
-    records = []
-    for version in scope["versions"] if versions is None else versions:
+    selected = scope["versions"] if versions is None else versions
+    if not isinstance(selected, (list, tuple)) or not selected:
+        raise ValueError("Receipt selection needs at least one version")
+    for version in selected:
         require(VERSION, version, "issue version")
         if version not in scope["fixes"]:
             raise ValueError(f"No fix revision for {version}")
+    if len(set(selected)) != len(selected):
+        raise ValueError("Receipt selection contains duplicate versions")
+    records = []
+    for version in selected:
         record = receipt(ledger, version, checkout, env, event, parents,
                          fix_sha=scope["fixes"][version])
         verify_fix_ancestry(version, record["fix_sha"], record["candidate_sha"])
