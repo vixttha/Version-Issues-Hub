@@ -2,11 +2,11 @@
   "active": {
     "issue": 40,
     "version": "v0.0.0.23",
-    "phase": "Worker",
-    "next_action": "Owner-authorized #40 rework: repair historical license review wording only on PR2; preserve operative legal blobs, no new issue/version or release.",
-    "fix_sha": null,
-    "candidate_sha": null,
-    "pull_request": null,
+    "phase": "Validate",
+    "next_action": "Validate historical licensing documentation repair on exact PR2 head, all other blobs identical. Public runner/Graphify and CodeRabbit required. PR49 repin remains separate after validation.",
+    "fix_sha": "e28e8a2e7360baf840c40dacf12ab91d5d7abd63",
+    "candidate_sha": "e28e8a2e7360baf840c40dacf12ab91d5d7abd63",
+    "pull_request": 2,
     "evidence": []
   },
   "history": [
