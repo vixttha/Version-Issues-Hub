@@ -57,6 +57,23 @@ class LedgerTests(unittest.TestCase):
                 checkpoint.check_history(after, before)
 
 
+    def test_history_preserves_ordered_acceptance_criteria(self):
+        before = ledger_with({**row(1, "v0.0.0.1"), "acceptance": ["First", "Second"]})
+        for criteria in (["Changed", "Second"], ["First"], ["First", "Second", "Third"],
+                         ["Second", "First"]):
+            with self.subTest(criteria=criteria):
+                after = copy.deepcopy(before)
+                after["issues"][0]["acceptance"] = criteria
+                with self.assertRaisesRegex(ValueError, "Historical acceptance criteria changed"):
+                    checkpoint.check_history(after, before)
+        after = copy.deepcopy(before)
+        after["issues"][0]["state"] = "retired"
+        after["issues"].append(row(2, "v0.0.0.2"))
+        after["issues"].reverse()
+        checkpoint.check_history(after, before)
+        self.assertEqual(before["issues"][0]["acceptance"], ["First", "Second"])
+
+
 class StrictJSONTests(unittest.TestCase):
     def test_nonfinite_parse_rejects_tokens_and_float_overflow(self):
         for token in ("NaN", "Infinity", "-Infinity", "1e999", "-1e999"):
