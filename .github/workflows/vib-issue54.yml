@@ -102,6 +102,12 @@ jobs:
       - name: PowerShell Git transaction controls
         if: always() && runner.os == 'Windows'
         run: python -B vault/vib/issue54/run.py powershell6
+      - name: Python evidence corruption controls
+        if: always()
+        run: python -B vault/vib/issue54/run.py artifact
+      - name: Independently audit evidence before upload
+        if: always()
+        run: python -B vault/vib/issue54/audit_evidence.py
       - name: Retain probe evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
