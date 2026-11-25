@@ -2,11 +2,11 @@
   "active": {
     "issue": 1,
     "version": "v0.0.0.1",
-    "phase": "Worker",
-    "next_action": "Owner directs individually reviewed merges and closure. Requalify original #1 fix on isolated main-target PR with scoped public runners and Graphify, preserve aggregate PR2 and every existing mapping. No stable release.",
-    "fix_sha": null,
-    "candidate_sha": null,
-    "pull_request": null,
+    "phase": "Validate",
+    "next_action": "Verify new #1-only PR exact head, proposed main merge, Ubuntu/Windows, Graphify and CodeRabbit. Preserve original fix ancestry. Do not merge before audit.",
+    "fix_sha": "f767cc133f8dba5ebb68b6530e8601dc66879e81",
+    "candidate_sha": "e99e66deaa4ff8e36e407457a20866159473798a",
+    "pull_request": 67,
     "evidence": []
   },
   "history": [
