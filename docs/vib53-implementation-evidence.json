@@ -91,7 +91,7 @@
         },
         {
           "path": "tools/session.py",
-          "anchor": "def finish(api, state, disposition, decision, *, policy=None):"
+          "anchor": "def finish(api, state, disposition, decision, *, policy=None, issue=None):"
         }
       ],
       "tested_by": [
@@ -129,7 +129,7 @@
       "changed_in": [
         {
           "path": "tools/session.py",
-          "anchor": "def finish(api, state, disposition, decision, *, policy=None):"
+          "anchor": "def finish(api, state, disposition, decision, *, policy=None, issue=None):"
         },
         {
           "path": "tools/session.py",
@@ -394,6 +394,74 @@
         {
           "path": "tests/test_stale_integration.py",
           "anchor": "def test_unpinned_empty_validate_inspection_requires_refresh(self):"
+        }
+      ]
+    },
+    {
+      "id": "vib53-parallel-active",
+      "label": "Owner-enabled independent active handoffs",
+      "documented_in": [
+        {
+          "path": "docs/vib53-implementation.md",
+          "anchor": "## Parallel active handoff candidate"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "tools/session.py",
+          "anchor": "def claim(api, state, number, criteria, note, *, resume_prior_line=False, parallel=False):"
+        }
+      ],
+      "implemented_in": [
+        {
+          "path": "tools/session.py",
+          "anchor": "def active_rows(handoff):"
+        },
+        {
+          "path": "tools/session.py",
+          "anchor": "def select_active(handoff, number=None):"
+        },
+        {
+          "path": "tools/session.py",
+          "anchor": "def check_issue_delta(state, ledger, handoff, number=None):"
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tests/test_parallel_handoff.py",
+          "anchor": "def test_parallel_opt_in_keeps_legacy_solo_and_existing_assignment(self):"
+        },
+        {
+          "path": "tests/test_parallel_handoff.py",
+          "anchor": "def test_independent_transitions_and_completion(self):"
+        },
+        {
+          "path": "tests/test_parallel_handoff.py",
+          "anchor": "def test_explicit_selection_even_when_only_one_parallel_issue(self):"
+        },
+        {
+          "path": "tests/test_parallel_handoff.py",
+          "anchor": "def test_parallel_tampering_and_downgrade_refused_before_write(self):"
+        },
+        {
+          "path": "tests/test_parallel_handoff.py",
+          "anchor": "def test_stale_writer_rejected_and_fresh_claim_keeps_distinct_versions(self):"
+        },
+        {
+          "path": "tests/test_parallel_handoff.py",
+          "anchor": "def test_one_hundred_issue_records_without_global_slot(self):"
+        },
+        {
+          "path": "tests/test_parallel_handoff.py",
+          "anchor": "def test_parallel_reconcile_preserves_other_active(self):"
+        },
+        {
+          "path": "tests/test_parallel_handoff.py",
+          "anchor": "def test_parallel_claim_refuses_enabled_gate_and_lifecycle_busy(self):"
+        },
+        {
+          "path": "tests/test_parallel_handoff.py",
+          "anchor": "def test_standard_unrelated_parallel_active_does_not_block_same_pr_does(self):"
         }
       ]
     }

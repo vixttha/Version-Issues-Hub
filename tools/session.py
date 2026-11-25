@@ -62,19 +62,64 @@ def validate_active(active, ledger):
     if active["evidence"] and any(v is None for v in fields):
         raise ValueError("Evidence requires a candidate")
 
+def active_rows(handoff):
+    """Read the legacy singleton or the explicitly enabled parallel collection."""
+    if type(handoff.get("schema_version")) is not int:
+        raise ValueError("Invalid handoff version")
+    if handoff["schema_version"] == 1:
+        active = handoff["active"]
+        if active is not None and not isinstance(active, dict):
+            raise ValueError("Invalid legacy active handoff")
+        return [] if active is None else [active]
+    if handoff["schema_version"] == 2 and isinstance(handoff["active"], list):
+        return handoff["active"]
+    raise ValueError("Invalid handoff version or active collection")
+
+
+def select_active(handoff, number=None):
+    rows = active_rows(handoff)
+    if number is None:
+        if handoff["schema_version"] == 2:
+            raise ValueError("Parallel handoff requires explicit --issue")
+        if not rows:
+            raise ValueError("No active handoff")
+        return rows[0]
+    number = issue_number(number)
+    selected = next((a for a in rows if a["issue"] == number), None)
+    if selected is None:
+        raise ValueError("Requested issue does not own an active handoff")
+    return selected
+
+
+def put_active(handoff, number, active):
+    if handoff["schema_version"] == 1:
+        handoff["active"] = active
+    else:
+        rows = [a for a in active_rows(handoff) if a["issue"] != number]
+        if active is not None:
+            rows.append(active)
+        handoff["active"] = sorted(rows, key=lambda a: a["issue"])
+
+
 def validate_handoff(handoff, ledger):
     if not isinstance(handoff, dict) or set(handoff) != {"schema_version", "active", "history"}:
         raise ValueError("Invalid handoff schema")
-    if type(handoff["schema_version"]) is not int or handoff["schema_version"] != 1 or not isinstance(handoff["history"], list):
-        raise ValueError("Invalid handoff version or history")
+    if not isinstance(handoff["history"], list):
+        raise ValueError("Invalid handoff history")
     checkpoint.bindings(ledger)
     in_progress = {row["issue"] for row in ledger["issues"] if row["state"] == "in_progress"}
-    if handoff["active"] is not None:
-        validate_active(handoff["active"], ledger)
-        if in_progress != {handoff["active"]["issue"]}:
+    rows = active_rows(handoff)
+    for active in rows:
+        validate_active(active, ledger)
+    numbers = [active["issue"] for active in rows]
+    if len(set(numbers)) != len(numbers):
+        raise ValueError("Duplicate active issue")
+    if handoff["schema_version"] == 2 and numbers != sorted(numbers):
+        raise ValueError("Parallel active collection must be sorted by issue")
+    if in_progress != set(numbers):
+        if handoff["schema_version"] == 1 and numbers:
             raise ValueError("Active issue must be the sole in-progress row; owner reconciliation required")
-    elif in_progress:
-        raise ValueError("Orphan in-progress issue without active handoff; owner reconciliation required")
+        raise ValueError("Orphan or unmatched in-progress issue without active handoff; owner reconciliation required")
     for record in handoff["history"]:
         if not isinstance(record, dict) or set(record) != {"handoff", "disposition", "decision", "merged_sha"}:
             raise ValueError("Invalid archived handoff")
@@ -225,8 +270,13 @@ def verify_candidate_runs(api, state, active, links):
     require_fresh_snapshot(api, state, active)
 
 def inspect(api, state, requested=None):
-    active = state["handoff"]["active"]
-    issue = requested if requested is not None else (active["issue"] if active else None)
+    handoff = state["handoff"]
+    validate_handoff(handoff, state["ledger"])
+    rows = active_rows(handoff)
+    issue = requested if requested is not None else (rows[0]["issue"] if len(rows) == 1 else None)
+    active = next((a for a in rows if a["issue"] == issue), None)
+    if handoff["schema_version"] == 1 and rows:
+        active = rows[0]
     info = None
     if issue is not None:
         item = get_issue(api, state, issue)
@@ -242,6 +292,8 @@ def inspect(api, state, requested=None):
     status = "staged" if staged is not None else ("head_scope_required" if active is None else "resume")
     if active and issue != active["issue"] and staged is None:
         status = "blocked_other_active_issue"
+    if issue is None and len(rows) > 1:
+        status = "issue_selection_required"
     if inspected and status in ("resume", "staged"):
         if inspected["pull_request"] is not None:
             try:
@@ -266,23 +318,32 @@ def inspect(api, state, requested=None):
             "repository": state["ledger"]["repository"], "baseline": state["manifest"]["baseline_version"],
             "target": state["manifest"]["target_version"], "issue": info, "active": active,
             "owner_merge_required": True, "evidence_verified": False,
-            "staged": staged}
+            "staged": staged, **({"active_issues": [a["issue"] for a in rows]}
+                                  if handoff["schema_version"] == 2 else {})}
 
-def claim(api, state, number, criteria, note, *, resume_prior_line=False):
+def claim(api, state, number, criteria, note, *, resume_prior_line=False, parallel=False):
     validate_handoff(state["handoff"], state["ledger"])
     item = get_issue(api, state, number)
     if item.get("state") != "open":
         raise ValueError("Only an open GitHub issue can be claimed")
     ledger = copy.deepcopy(state["ledger"])
     handoff = copy.deepcopy(state["handoff"])
-    active = handoff["active"]
+    rows = active_rows(handoff)
+    active = next((a for a in rows if a["issue"] == number), None)
     if active is not None:
-        if active["issue"] != number:
-            raise ValueError("Another issue owns the active handoff")
         record = next(x for x in ledger["issues"] if x["issue"] == number)
         if criteria and criteria != record["acceptance"]:
             raise ValueError("Existing acceptance criteria differ")
         return ledger, handoff
+    if parallel and handoff["schema_version"] == 1:
+        if state["manifest"].get("enforcement", "disabled") != "disabled":
+            raise ValueError("Parallel mode requires disabled optional enforcement")
+        handoff["schema_version"] = 2
+        handoff["active"] = rows
+    if handoff["schema_version"] == 1 and rows:
+        raise ValueError("Another issue owns the active handoff")
+    if handoff["schema_version"] == 2 and state["manifest"].get("enforcement", "disabled") != "disabled":
+        raise ValueError("Parallel mode requires disabled optional enforcement")
     baseline = state["manifest"]["baseline_version"]
     row = next((x for x in ledger["issues"] if x["issue"] == number), None)
     if row is not None and row["state"] in ("integrated", "retired"):
@@ -295,7 +356,7 @@ def claim(api, state, number, criteria, note, *, resume_prior_line=False):
         prior = next((r for r in reversed(handoff["history"]) if r["handoff"]["issue"] == number), None)
         if prior is None or prior["disposition"] != "staged":
             raise ValueError("Missing latest staged handoff")
-        handoff["active"] = refresh_candidate(api, state, prior["handoff"], note)
+        put_active(handoff, number, refresh_candidate(api, state, prior["handoff"], note))
         row["state"] = "in_progress"
         validate_handoff(handoff, ledger)
         return ledger, handoff
@@ -315,19 +376,18 @@ def claim(api, state, number, criteria, note, *, resume_prior_line=False):
     if criteria and criteria != row["acceptance"]:
         raise ValueError("Existing acceptance criteria differ")
     row["state"] = "in_progress"
-    handoff["active"] = {"issue": number, "version": version, "phase": "Worker",
+    put_active(handoff, number, {"issue": number, "version": version, "phase": "Worker",
                          "next_action": text(note, "next action"), "fix_sha": None,
-                         "candidate_sha": None, "pull_request": None, "evidence": []}
+                         "candidate_sha": None, "pull_request": None, "evidence": []})
+    validate_handoff(handoff, ledger)
     return ledger, handoff
 
 def advance(api, state, note, *, fix=None, candidate=None, pr=None, evidence=None,
-            rework=False, return_to_head=False, refresh=False):
+            rework=False, return_to_head=False, refresh=False, issue=None):
     validate_handoff(state["handoff"], state["ledger"])
     ledger = copy.deepcopy(state["ledger"])
     handoff = copy.deepcopy(state["handoff"])
-    active = handoff["active"]
-    if not active:
-        raise ValueError("No active handoff")
+    active = select_active(handoff, issue)
     active["next_action"] = text(note, "next action")
     phase = active["phase"]
     if sum((rework, return_to_head, refresh)) > 1:
@@ -337,8 +397,8 @@ def advance(api, state, note, *, fix=None, candidate=None, pr=None, evidence=Non
             raise ValueError("Refresh requires an existing PR candidate")
         if any(v is not None for v in (fix, candidate, pr)) or evidence:
             raise ValueError("Refresh preserves the original fix; do not supply replacement evidence")
-        previous = copy.deepcopy(state["handoff"]["active"])
-        handoff["active"] = refresh_candidate(api, state, previous, note)
+        previous = copy.deepcopy(select_active(state["handoff"], active["issue"]))
+        put_active(handoff, active["issue"], refresh_candidate(api, state, previous, note))
         handoff["history"].append({"handoff": previous, "disposition": "rework",
                                    "decision": "Refresh integration evidence: " + note, "merged_sha": None})
     elif rework:
@@ -355,7 +415,7 @@ def advance(api, state, note, *, fix=None, candidate=None, pr=None, evidence=Non
                     or existing.get("merged") is not False
                     or existing.get("state") not in ("open", "closed")):
                 raise ValueError("PR is merged or state is unverified; return to Head for owner reconciliation")
-        previous = copy.deepcopy(state["handoff"]["active"])
+        previous = copy.deepcopy(select_active(state["handoff"], active["issue"]))
         handoff["history"].append({"handoff": previous, "disposition": "rework",
                                    "decision": note, "merged_sha": None})
         active.update(phase="Worker", fix_sha=None, candidate_sha=None, pull_request=None, evidence=[])
@@ -383,12 +443,12 @@ def advance(api, state, note, *, fix=None, candidate=None, pr=None, evidence=Non
     validate_handoff(handoff, ledger)
     return ledger, handoff
 
-def finish(api, state, disposition, decision, *, policy=None):
+def finish(api, state, disposition, decision, *, policy=None, issue=None):
     validate_handoff(state["handoff"], state["ledger"])
     ledger = copy.deepcopy(state["ledger"])
     handoff = copy.deepcopy(state["handoff"])
-    active = handoff["active"]
-    if active is None or active["phase"] != "Head":
+    active = select_active(handoff, issue)
+    if active["phase"] != "Head":
         raise ValueError("Return to Head before deciding")
     if disposition not in ("blocked", "deferred", "staged", "integrated"):
         raise ValueError("Invalid disposition")
@@ -413,7 +473,8 @@ def finish(api, state, disposition, decision, *, policy=None):
     handoff["history"].append({"handoff": active, "disposition": disposition,
                                "decision": text(decision, "owner decision"), "merged_sha": merged})
     next(x for x in ledger["issues"] if x["issue"] == active["issue"])["state"] = disposition
-    handoff["active"] = None
+    put_active(handoff, active["issue"], None)
+    validate_handoff(handoff, ledger)
     return ledger, handoff
 
 def integration_decision(decision, policy):
@@ -502,16 +563,17 @@ def check_issue_delta(state, ledger, handoff, number=None):
     if handoff["history"][:len(history)] != history:
         raise ValueError("Historical handoff changed")
     appended = handoff["history"][len(history):]
-    previous, proposed = before_handoff["active"], handoff["active"]
+    previous = {a["issue"]: a for a in active_rows(before_handoff)}
+    proposed = {a["issue"]: a for a in active_rows(handoff)}
+    changed = {n for n in previous.keys() | proposed.keys() if previous.get(n) != proposed.get(n)}
+    migration = before_handoff["schema_version"] != handoff["schema_version"]
+    if migration and (before_handoff["schema_version"], handoff["schema_version"]) != (1, 2):
+        raise ValueError("Handoff schema downgrade is not supported")
     if number is None:
-        if previous != proposed and previous is not None:
-            number = previous["issue"]
-        elif previous != proposed and proposed is not None:
-            number = proposed["issue"]
-        elif appended:
+        if len(changed) == 1:
+            number = next(iter(changed))
+        elif not changed and appended:
             number = appended[0]["handoff"]["issue"]
-        elif previous is not None:
-            number = previous["issue"]
         elif ledger == before_ledger and handoff == before_handoff:
             return
         else:
@@ -530,9 +592,13 @@ def check_issue_delta(state, ledger, handoff, number=None):
             raise ValueError("Issue scope violation: existing acceptance criteria changed")
         if old_rows[number]["state"] in ("integrated", "retired") and new_rows[number] != old_rows[number]:
             raise ValueError("Issue scope violation: terminal issue changed")
-    if previous != proposed and any(a is not None and a["issue"] != number
-                                    for a in (previous, proposed)):
+    if changed - {number}:
         raise ValueError("Issue scope violation: unrelated active handoff changed")
+    if migration and (number in previous or number not in proposed or appended
+                      or state["manifest"].get("enforcement", "disabled") != "disabled"):
+        raise ValueError("Parallel migration requires a new owner-approved active claim")
+    if handoff["schema_version"] == 2 and state["manifest"].get("enforcement", "disabled") != "disabled":
+        raise ValueError("Parallel mode requires disabled optional enforcement")
     if any(r["handoff"]["issue"] != number for r in appended):
         raise ValueError("Issue scope violation: unrelated history appended")
     if number not in new_rows:
@@ -606,6 +672,7 @@ def main():
     c.add_argument("--acceptance", action="append", default=[])
     c.add_argument("--note", required=True)
     c.add_argument("--owner-approved", action="store_true")
+    c.add_argument("--parallel", action="store_true", help="Owner-approved opt-in to parallel handoffs when claiming a new active issue")
     c.add_argument("--resume-prior-line", action="store_true", help="Resume an eligible unresolved historical checkpoint without renumbering")
     a = sub.add_parser("advance")
     a.add_argument("--note", required=True)
@@ -643,25 +710,20 @@ def main():
             if args.command in ("claim", "finish", "reconcile") and not args.owner_approved:
                 raise ValueError("Explicit owner approval is required")
             if args.command in ("advance", "finish"):
-                active = state["handoff"]["active"]
-                if active is None:
-                    raise ValueError("No active handoff")
-                if args.issue is not None and args.issue != active["issue"]:
-                    raise ValueError("Requested issue does not own the active handoff")
-                scope = active["issue"]
+                scope = select_active(state["handoff"], args.issue)["issue"]
             else:
                 scope = args.issue
             if args.command == "claim":
                 ledger, handoff = claim(api, state, args.issue, args.acceptance, args.note,
-                    resume_prior_line=args.resume_prior_line)
+                    resume_prior_line=args.resume_prior_line, parallel=args.parallel)
             elif args.command == "advance":
                 ledger, handoff = advance(api, state, args.note, fix=args.fix, candidate=args.candidate,
-                    pr=args.pr, evidence=args.evidence, rework=args.rework, return_to_head=args.return_to_head, refresh=args.refresh)
+                    pr=args.pr, evidence=args.evidence, rework=args.rework, return_to_head=args.return_to_head, refresh=args.refresh, issue=scope)
             elif args.command in ("finish", "reconcile"):
                 from pathlib import Path
                 policy = checkpoint.parse_json(Path(args.policy).read_text(encoding="utf-8")) if args.policy else None
                 if args.command == "finish":
-                    ledger, handoff = finish(api, state, args.disposition, args.decision, policy=policy)
+                    ledger, handoff = finish(api, state, args.disposition, args.decision, policy=policy, issue=scope)
                 else:
                     ledger, handoff = reconcile(api, state, args.issue, args.decision, policy=policy)
             result = save(api, state, ledger, handoff, args.apply, issue=scope)

@@ -145,8 +145,12 @@ def evaluate_scope(api, target, policy, validate, verify_test):
             or manifest["source_sha"] != policy["source_sha"]
             or state["product_sha"] != policy["base_sha"]):
         raise ValueError("Owner policy does not match installed state")
-    if handoff["active"] is not None:
-        raise ValueError("Return every active handoff to Head before gate evaluation")
+    active_rows = session.active_rows(handoff)
+    if "publisher_app_id" in policy and handoff["schema_version"] == 2:
+        raise ValueError("Optional enforcement is not qualified for parallel mode")
+    if active_rows and (handoff["schema_version"] == 1 or
+            any(a["pull_request"] == policy["pull_request"] for a in active_rows)):
+        raise ValueError("Return relevant active handoffs to Head before gate evaluation")
     prefix = state["prefix"]
     assert_current_pr(api, prefix, policy)
     latest = {r["handoff"]["issue"]: r for r in handoff["history"]}

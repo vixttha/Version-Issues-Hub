@@ -3,8 +3,8 @@
 This is the owner-approved standalone Version-Issues-Hub workflow, not a product source branch and not Provenistem.
 
 1. Confirm the owner-authorized target repository, its exact dedicated branch `Version-Issues-Hub`, and the current branch SHA. Read vib-install.json, WORKFLOW.md, ledger/issue-versions.json, and ledger/handoff.json at that SHA. Verify package provenance and identity; if the manifest or branch is wrong, stop.
-2. Read the actual GitHub issue (not a PR). Head must accept scope and acceptance criteria before assignment. Never allocate another issue while a handoff is active. Never change historical issue mappings.
-3. Follow Head → Worker → Validate → Internal Auditor → Head, one active Worker. Only edit product code on the authorized product work branch, not the VIB branch. Do not merge the VIB branch into the product.
+2. Read the actual GitHub issue (not a PR). Head must accept scope and acceptance criteria before assignment. In legacy solo mode, never allocate another issue while a handoff is active. In owner-enabled parallel mode, claim only your assigned issue and use explicit issue selection. Never change historical issue mappings.
+3. Follow Head → Worker → Validate → Internal Auditor → Head, one active Worker per issue. Only edit product code on the authorized product work branch, not the VIB branch. Do not merge the VIB branch into the product.
 4. Use the cooperative handoff commands in WORKFLOW.md. Re-read the branch after a stale write; no force updates. Record candidate/fix SHAs, exact public-runner attempts and acceptance results. A green VIB schema test is not product acceptance.
 5. Owner approval controls integration and release. Instructions are cooperative; only a separately enabled and proven GitHub gate can enforce a merge rule. Never claim the gate is active based on this file.
 
@@ -43,4 +43,4 @@ A compatible agent may enumerate the target repository's branch refs, resolve th
 
 Installation convention: human or agent selects a reviewed exact source SHA, checks the dedicated target branch and collisions, follows this product's own installation guide, and records source/target SHA and preserved product state. Never merge a template workspace wholesale into product source. Existing installations require explicit reviewed upgrades; preserve local records and prior receipts. Optional evidence links do not authorize writes. No mandatory coordinator or other ecosystem tool.
 
-For each session write, verify that the intended issue alone changes: preserve every other ledger row, active handoff, and prior archive. Use `advance --issue NUMBER` / `finish --issue NUMBER` when working from a known issue. A staged issue can be reconciled with an exact owner policy while a different issue is active; do not edit that active slot. This is not permission to claim multiple active issues.
+For each session write, verify that the intended issue alone changes: preserve every other ledger row, active handoff, and prior archive. Use `advance --issue NUMBER` / `finish --issue NUMBER` when working from a known issue. A staged issue can be reconciled with an exact owner policy while a different issue is active; do not edit that active slot. Parallel mode requires owner-approved opt-in via claim --parallel; all subsequent mutations select the assigned issue explicitly.

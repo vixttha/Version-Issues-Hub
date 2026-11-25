@@ -33,3 +33,7 @@ Additional tests prove distinct-PR refresh makes no reads of the other PR or its
 ## Review closure repairs
 
 Candidate-bearing legacy handoffs report stale integration pins even without evidence. Standard advisory rechecks exact run attempts and workflow identity after all job mappings, then rechecks installed ref and proposed PR merge. Previously repaired transport and post-merge races remain covered. No enforcement change.
+
+## Parallel active handoff candidate
+
+Explicit owner-approved claim --parallel promotes the legacy singleton envelope to schema v2 sorted list without changing existing handoffs, acceptance, assignments or archives. Per-issue selection is required for v2 mutations, no implicit retargeting. Save compares active maps by issue and rejects unrelated edits and downgrade. Standard advisory permits unrelated active v2 PRs; optional gate fails closed, lifecycle remains idle-only. Solo v1 remains default, unchanged commands. Same-issue claim remains idempotent cooperative recovery, not an actor lease; stale ref transactions still require reload, not fairness certification. No production installation change.

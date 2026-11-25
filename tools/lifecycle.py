@@ -32,7 +32,7 @@ def idle_state(api, target, expected_sha):
     state = session.load(api, target, expected_sha)
     if state["manifest"].get("enforcement") != "disabled":
         raise ValueError("Disable and independently revoke enforced mode before lifecycle changes")
-    if state["handoff"]["active"] is not None or any(
+    if session.active_rows(state["handoff"]) or any(
             row["state"] in ("in_progress", "staged") for row in state["ledger"]["issues"]):
         raise ValueError("Finish active work and reconcile staged issues before lifecycle changes")
     return state

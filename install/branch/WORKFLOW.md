@@ -1,6 +1,6 @@
 # VIB workflow and handoff contract
 
-Head → Worker → Validate → Internal Auditor → Head. One active Worker. The owner controls scope, merges and releases. This branch contains independent VIB state; it must never be merged into the product.
+Head → Worker → Validate → Internal Auditor → Head. One active Worker per issue; default legacy solo mode retains a single active slot. The owner controls scope, merges and releases. This branch contains independent VIB state; it must never be merged into the product.
 
 ## Bootstrap from GitHub
 
@@ -13,7 +13,7 @@ python -m tools.session --target OWNER/REPO inspect
 python -m tools.session --target OWNER/REPO --expected-sha STATE_SHA claim 247 --acceptance "Observable test" --note "Authorized fix" --owner-approved
 ```
 
-The second command plans only. Add --apply after owner approval and authorization; use the newly returned SHA in each subsequent command. The CLI checks GitHub identity, pinned package contents, ledger, current handoff and actual issue. It refuses a different active issue. A repeated claim for the same issue does not allocate a new version.
+The second command plans only. Add --apply after owner approval and authorization; use the newly returned SHA in each subsequent command. The CLI checks GitHub identity, pinned package contents, ledger, current handoff and actual issue. In solo mode it refuses a different active issue. A repeated claim for the same issue does not allocate a new version.
 
 ## State transitions
 
@@ -24,11 +24,11 @@ The second command plans only. Add --apply after owner approval and authorizatio
 
 Every mutation is a dry run unless --apply is passed with the exact current --expected-sha. The tool writes only the ledger and handoff in a new fast-forward commit on this branch. A stale concurrent writer fails and must reload. Direct GitHub writes can bypass these cooperative constraints; no merge enforcement is active.
 
-The installed ledger must contain exactly one in-progress row matching the active handoff, or no in-progress rows when the slot is empty. Legacy orphan or competing rows stop recovery and writes with an explicit reconciliation error; no record is silently deleted or reassigned. An owner must review the historical state and authorize a separate repair.
+Legacy handoff schema v1 requires exactly one in-progress row matching the active handoff, or none when the slot is empty. Schema v2 uses a sorted active collection with exactly one handoff per in-progress issue. Legacy orphan or competing rows stop recovery and writes with an explicit reconciliation error; no record is silently deleted or reassigned. An owner must review the historical state and authorize a separate repair.
 
 ## Recovery when GitHub state changes
 
-Read-only inspect distinguishes a matching merged PR (`merged_reconciliation_required`), a closed unmerged PR (`closed_pr_rework_required`), a changed candidate (`stale_candidate`), an unverifiable PR state (`pr_state_unverified`), and a non-open active issue (`issue_reconciliation_required`). A different requested issue remains blocked while the active handoff exists. Normal verification transitions require an open issue and open unmerged PR. Return to Head for a recorded owner decision or rework as appropriate; a merged PR without required verification is not automatically accepted. No status changes the repository.
+Read-only inspect distinguishes a matching merged PR (`merged_reconciliation_required`), a closed unmerged PR (`closed_pr_rework_required`), a changed candidate (`stale_candidate`), an unverifiable PR state (`pr_state_unverified`), and a non-open active issue (`issue_reconciliation_required`). In solo mode a different requested issue remains blocked while the active handoff exists. Normal verification transitions require an open issue and open unmerged PR. Return to Head for a recorded owner decision or rework as appropriate; a merged PR without required verification is not automatically accepted. No status changes the repository.
 
 ## Connector-only hosts
 
@@ -52,7 +52,7 @@ Rework is allowed for an open issue with an open or closed-unmerged PR, includin
 
 ## Handoff write confirmation
 
-The existing session commands and owner approval rules are unchanged. Session save submits one non-force ref update. If its response is lost, the candidate commit is checked rather than submitting another write. A later descendant can confirm the original candidate only with matching ancestry, parent and tree. `installed_sha` is the exact committed handoff revision; if `observed_sha` differs, reload before the next action. An unconfirmed candidate is not success; inspect it before retrying. Throttle errors include a conservative delay when available, without retaining arbitrary headers. This transport foundation does not remove the single active assignment restriction or certify multi-agent operation.
+The existing session commands and owner approval rules are unchanged. Session save submits one non-force ref update. If its response is lost, the candidate commit is checked rather than submitting another write. A later descendant can confirm the original candidate only with matching ancestry, parent and tree. `installed_sha` is the exact committed handoff revision; if `observed_sha` differs, reload before the next action. An unconfirmed candidate is not success; inspect it before retrying. Throttle errors include a conservative delay when available, without retaining arbitrary headers. The transport foundation alone does not certify multi-agent operation.
 
 ## Post-merge acceptance
 
@@ -66,6 +66,12 @@ Refresh requires a new workflow run (not a rerun of an archived stale run ID). B
 
 ## Issue-scoped transaction integrity
 
-The existing session commands now check the proposed ledger/handoff delta against the intended issue before dry-run output or any write. Unrelated rows (including their order), active handoffs and archived records cannot change; history is append-only, existing acceptance criteria and terminal rows remain immutable. `advance --issue NUMBER` and `finish --issue NUMBER` optionally assert the intended active issue; claim and reconcile already take an issue number. The CLI always passes the selected scope to save; older Python callers infer it only from the active slot or a single archive append. Reconciliation of an already staged issue may proceed while a different issue occupies the single active slot, without editing that slot. The owner-reviewed post-merge policy must still match exactly. Standard pre-merge policy remains pinned to the installed revision and whole staged PR scope; an unrelated installed update requires a new current owner policy pin, not necessarily a new test run when the candidate/run remain valid. Actual candidate/base changes still invalidate related integration evidence. No parallel active slots, automatic retries, or new authorization boundary are introduced. Connector-only writers must enforce the same issue delta before publishing a non-force update.
+The existing session commands now check the proposed ledger/handoff delta against the intended issue before dry-run output or any write. Unrelated rows (including their order), active handoffs and archived records cannot change; history is append-only, existing acceptance criteria and terminal rows remain immutable. `advance --issue NUMBER` and `finish --issue NUMBER` optionally assert the intended active issue; claim and reconcile already take an issue number. The CLI always passes the selected scope to save; older Python callers infer it only from the active slot or a single archive append. Reconciliation of an already staged issue may proceed while a different issue occupies the single active slot, without editing that slot. The owner-reviewed post-merge policy must still match exactly. Standard pre-merge policy remains pinned to the installed revision and whole staged PR scope; an unrelated installed update requires a new current owner policy pin, not necessarily a new test run when the candidate/run remain valid. Actual candidate/base changes still invalidate related integration evidence. The isolation guard alone does not introduce automatic retries or a new authorization boundary. Connector-only writers must enforce the same issue delta before publishing a non-force update.
 
 When a staged reconciliation appends a record without changing the unrelated active slot, legacy save callers infer the staged issue from the append; explicitly passing the issue remains preferred.
+
+## Owner-enabled parallel handoffs (candidate)
+
+Don't change the way an agent uses VIB. Change the way VIB handles multiple agents using it.
+
+Existing installs start with schema v1 (solo), unchanged command forms. After an owner-approved package upgrade and explicit scope approval, claim a new active issue with `claim NUMBER --parallel --acceptance ... --note ... --owner-approved` (and `--apply` plus current expected SHA to publish). This converts only the handoff envelope to schema v2 in the same atomic commit as the claim. The legacy active record and all archives are preserved; no version reassignment. New installs still start solo. The v2 `active` field is an issue-sorted list; each active issue follows the same five-stage loop. Use `inspect --issue NUMBER`, `advance --issue NUMBER` and `finish ... --issue NUMBER`; without an issue, multi-active inspection lists issue IDs and mutations refuse even when only one v2 issue remains. Claim/reconcile retain their issue arguments. Same-issue claim is idempotent, not proof of exclusive actor ownership. Owner must assign different issues to different agents. Old package readers must not write v2 state; downgrade is refused. Optional trusted gate is not qualified for v2 and must be disabled; Standard can review a staged PR while unrelated v2 issues are active, but refuses active work on the same PR. Lifecycle still requires no active or staged issues. Git ref publication remains single atomic non-force update; stale plans fail closed and require fresh inspection, not blind retry. No fairness, automatic contention recovery, live 100-agent capacity, or authenticated per-agent leases are claimed by this candidate.
