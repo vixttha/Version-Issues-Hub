@@ -2,11 +2,11 @@
   "active": {
     "issue": 7,
     "version": "v0.0.0.2",
-    "phase": "Worker",
-    "next_action": "Review existing #7 stable per-issue receipts and original two-checkpoint dogfood, no new code.",
-    "fix_sha": null,
-    "candidate_sha": null,
-    "pull_request": null,
+    "phase": "Validate",
+    "next_action": "Review preserved two-checkpoint pilot and current scoped receipts without modifying product.",
+    "fix_sha": "fee90e84d981740938989c1a53f70a9570ae2293",
+    "candidate_sha": "95e05af7b2a675491a01f8450fb20db8871b1f41",
+    "pull_request": 2,
     "evidence": []
   },
   "history": [
