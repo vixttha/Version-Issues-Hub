@@ -87,7 +87,7 @@
         "Public-runner regression and Graphify pass; separate optional gate remains intact."
       ],
       "issue": 22,
-      "state": "assigned",
+      "state": "in_progress",
       "version": "v0.0.0.9"
     },
     {
