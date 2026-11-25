@@ -177,7 +177,7 @@
         "Verify live archival and separate recovery ref, preserving original installation and history; record public-runner evidence."
       ],
       "issue": 35,
-      "state": "in_progress",
+      "state": "staged",
       "version": "v0.0.0.18"
     },
     {
