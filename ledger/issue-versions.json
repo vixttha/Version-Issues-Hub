@@ -47,7 +47,7 @@
         "Prove the batched handoff and stale-candidate controls on public runners."
       ],
       "issue": 11,
-      "state": "in_progress",
+      "state": "staged",
       "version": "v0.0.0.5"
     },
     {
