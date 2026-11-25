@@ -6,6 +6,7 @@ import hashlib
 import json
 import os
 import re
+import random
 from tools import checkpoint, install
 
 PHASES = ("Worker", "Validate", "Internal Auditor", "Head")
@@ -633,6 +634,17 @@ def check_issue_delta(state, ledger, handoff, number=None):
         raise ValueError("Issue scope violation: terminal issue history appended")
 
 
+class HandoffStale(ValueError):
+    """A known pre-publication conflict: no ref PATCH was sent."""
+
+
+class HandoffRejected(install.ApiError):
+    """A definitive ref rejection, not an ambiguous transport outcome."""
+    def __init__(self, error, candidate, tree):
+        super().__init__(error.status, "PATCH", "git/refs", error.retry_after)
+        self.candidate_sha, self.tree_sha = candidate, tree
+
+
 def save(api, state, ledger, handoff, apply=False, *, issue=None):
     check_issue_delta(state, ledger, handoff, issue)
     if ledger == state["ledger"] and handoff == state["handoff"]:
@@ -647,7 +659,7 @@ def save(api, state, ledger, handoff, apply=False, *, issue=None):
         verify_candidate_runs(api, state, active, active["evidence"])
     prefix, old = state["prefix"], state["ref"]
     if install.read_ref(api, prefix, install.BRANCH) != old:
-        raise ValueError("Installed branch advanced; reload")
+        raise HandoffStale("Installed branch advanced; reload")
     commit = api.request("GET", prefix + "/git/commits/" + old)
     if commit.get("sha") != old:
         raise ValueError("Wrong installed commit")
@@ -672,6 +684,8 @@ def save(api, state, ledger, handoff, apply=False, *, issue=None):
         ambiguous = True
     except install.ApiError as error:
         # Rate limits and permanent errors must not trigger polling or resubmission.
+        if error.retry_after is None and error.status in (409, 422):
+            raise HandoffRejected(error, new, tree) from None
         if error.retry_after is not None or error.status not in (408, 500, 502, 503, 504):
             raise
         ambiguous = True
@@ -685,6 +699,112 @@ def save(api, state, ledger, handoff, apply=False, *, issue=None):
     if observed != new or ambiguous:
         result.update(observed_sha=observed, recovered_response=ambiguous)
     return result
+
+def issue_view(ledger, handoff, number):
+    """Snapshot every issue-local record, including all archived transitions."""
+    return (next((r for r in ledger["issues"] if r["issue"] == number), None),
+            next((a for a in active_rows(handoff) if a["issue"] == number), None),
+            [r for r in handoff["history"] if r["handoff"]["issue"] == number])
+
+
+def retry_scope(api, previous, fresh, number, rejection):
+    """Prove intervening single-parent commits did not touch this issue.
+
+    Reading only the two endpoint snapshots would miss a change-and-revert.
+    Bound ancestry work, reject rewrites/merges, and never trust an API error
+    alone as evidence of contention.
+    """
+    if (fresh["prefix"] != previous["prefix"] or fresh["manifest"] != previous["manifest"]
+            or fresh["product_sha"] != previous["product_sha"]):
+        raise ValueError("Package, repository or product changed; review before retrying")
+    old, cursor = previous["ref"], fresh["ref"]
+    if cursor == old:
+        raise rejection
+    prefix = fresh["prefix"]
+    path = []
+    for _ in range(32):
+        if cursor == old:
+            break
+        commit = api.request("GET", prefix + "/git/commits/" + cursor)
+        parents = commit.get("parents", [])
+        if commit.get("sha") != cursor or len(parents) != 1:
+            raise ValueError("Intervening history is not a verified linear handoff chain")
+        parent = install.require(install.SHA, parents[0].get("sha"), "intervening parent")
+        if parent == cursor:
+            raise ValueError("Invalid intervening parent")
+        path.append((cursor, commit, parent))
+        cursor = parent
+    if cursor != old:
+        raise ValueError("Contention ancestry bound exceeded; inspect before retrying")
+    if isinstance(rejection, HandoffRejected):
+        for sha, commit, parent in path:
+            if sha == rejection.candidate_sha:
+                if parent != old or commit.get("tree", {}).get("sha") != rejection.tree_sha:
+                    raise HandoffUnconfirmed(sha)
+                return sha
+    expected = issue_view(previous["ledger"], previous["handoff"], number)
+    history = previous["handoff"]["history"]
+    for sha, _, _ in reversed(path):
+        def read(file):
+            return checkpoint.parse_json(install.read_text(api, prefix, file, sha))
+        if read("vib-install.json") != previous["manifest"]:
+            raise ValueError("Installed manifest changed during contention")
+        ledger, handoff = read(LEDGER), read(HANDOFF)
+        validate_handoff(handoff, ledger)
+        checkpoint.check_history(ledger, previous["ledger"])
+        if (handoff["history"][:len(history)] != history
+                or issue_view(ledger, handoff, number) != expected):
+            raise ValueError("Issue or archive changed during contention; inspect before retrying")
+        history = handoff["history"]
+    return None
+
+
+def planned_issue_view(ledger, handoff, number, new_issue):
+    view = copy.deepcopy(issue_view(ledger, handoff, number))
+    if new_issue:
+        # An uncommitted allocation may change to the next available checkpoint.
+        for row in view[:2]:
+            if row is not None:
+                row["version"] = None
+    return view
+
+
+def recover_save(api, target, state, plan, issue, *, attempts=4):
+    """Replan only a proved unrelated, definitive conflict; never replay a PATCH."""
+    if type(attempts) is not int or not 1 <= attempts <= 4:
+        raise ValueError("Contention attempts must be between 1 and 4")
+    issue = issue_number(issue)
+    ledger, handoff = plan(state)
+    check_issue_delta(state, ledger, handoff, issue)
+    if handoff["schema_version"] != 2:
+        return save(api, state, ledger, handoff, True, issue=issue)
+    new_issue = issue_view(state["ledger"], state["handoff"], issue)[0] is None
+    intended = planned_issue_view(ledger, handoff, issue, new_issue)
+    for attempt in range(attempts):
+        try:
+            result = save(api, state, ledger, handoff, True, issue=issue)
+            if attempt:
+                result["contention_retries"] = attempt
+            return result
+        except (HandoffStale, HandoffRejected) as error:
+            # GitHub 422 may also mean validation failure or spam. Require
+            # observed ref movement, a linear chain and unchanged issue scope.
+            if attempt + 1 == attempts:
+                raise ValueError("Contention retry budget exhausted; no unconfirmed write replayed") from error
+            install.time.sleep(random.uniform(1, min(8, 2 ** (attempt + 1))))
+            fresh = load(api, target)
+            confirmed = retry_scope(api, state, fresh, issue, error)
+            if confirmed is not None:
+                return {"status":"saved", "installed_sha":confirmed,
+                        "observed_sha":fresh["ref"], "recovered_response":True,
+                        "contention_retries":attempt}
+            ledger, handoff = plan(fresh)
+            check_issue_delta(fresh, ledger, handoff, issue)
+            if (handoff["schema_version"] != 2 or
+                    planned_issue_view(ledger, handoff, issue, new_issue) != intended):
+                raise ValueError("Replanned issue intent changed; inspect before retrying")
+            state = fresh
+
 
 def main():
     p = argparse.ArgumentParser(description=__doc__)
@@ -739,20 +859,27 @@ def main():
                 scope = select_active(state["handoff"], args.issue)["issue"]
             else:
                 scope = args.issue
-            if args.command == "claim":
-                ledger, handoff = claim(api, state, args.issue, args.acceptance, args.note,
-                    resume_prior_line=args.resume_prior_line, parallel=args.parallel)
-            elif args.command == "advance":
-                ledger, handoff = advance(api, state, args.note, fix=args.fix, candidate=args.candidate,
-                    pr=args.pr, evidence=args.evidence, rework=args.rework, return_to_head=args.return_to_head, refresh=args.refresh, issue=scope)
-            elif args.command in ("finish", "reconcile"):
-                from pathlib import Path
-                policy = checkpoint.parse_json(Path(args.policy).read_text(encoding="utf-8")) if args.policy else None
+            from pathlib import Path
+            policy = (checkpoint.parse_json(Path(args.policy).read_text(encoding="utf-8"))
+                      if args.command in ("finish", "reconcile") and args.policy else None)
+            def plan(current):
+                if args.command == "claim":
+                    return claim(api, current, args.issue, args.acceptance, args.note,
+                        resume_prior_line=args.resume_prior_line, parallel=args.parallel)
+                if args.command == "advance":
+                    return advance(api, current, args.note, fix=args.fix, candidate=args.candidate,
+                        pr=args.pr, evidence=args.evidence, rework=args.rework,
+                        return_to_head=args.return_to_head, refresh=args.refresh, issue=scope)
                 if args.command == "finish":
-                    ledger, handoff = finish(api, state, args.disposition, args.decision, policy=policy, issue=scope)
-                else:
-                    ledger, handoff = reconcile(api, state, args.issue, args.decision, policy=policy)
-            result = save(api, state, ledger, handoff, args.apply, issue=scope)
+                    return finish(api, current, args.disposition, args.decision, policy=policy, issue=scope)
+                return reconcile(api, current, args.issue, args.decision, policy=policy)
+            # Exact owner post-merge policy pins must not be silently rewritten.
+            if args.apply and policy is None and args.command != "reconcile" and not (
+                    args.command == "finish" and args.disposition == "integrated"):
+                result = recover_save(api, args.target, state, plan, scope)
+            else:
+                ledger, handoff = plan(state)
+                result = save(api, state, ledger, handoff, args.apply, issue=scope)
         print(install.render(result), end="")
     except (ValueError, KeyError, TypeError, OSError, install.ApiError) as exc:
         p.exit(1, f"VIB session stopped: {exc}\n")

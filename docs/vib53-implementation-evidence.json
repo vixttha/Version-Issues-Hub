@@ -484,6 +484,74 @@
           "anchor": "def test_real_git_parallel_conflict_preserves_winner_and_reloaded_loser(self):"
         }
       ]
+    },
+    {
+      "id": "vib53-contention-recovery",
+      "label": "Bounded issue-local contention recovery",
+      "documented_in": [
+        {
+          "path": "docs/vib53-implementation.md",
+          "anchor": "## Bounded automatic contention recovery (isolated candidate)"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "tools/session.py",
+          "anchor": "def recover_save(api, target, state, plan, issue, *, attempts=4):"
+        }
+      ],
+      "implemented_in": [
+        {
+          "path": "tools/session.py",
+          "anchor": "def retry_scope(api, previous, fresh, number, rejection):"
+        },
+        {
+          "path": "tools/session.py",
+          "anchor": "def issue_view(ledger, handoff, number):"
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tests/test_contention_recovery.py",
+          "anchor": "def test_automatic_real_git_conflict_preserves_both_claims(self):"
+        },
+        {
+          "path": "tests/test_contention_recovery.py",
+          "anchor": "def test_same_issue_change_stops_without_replaying(self):"
+        },
+        {
+          "path": "tests/test_contention_recovery.py",
+          "anchor": "def test_advance_replans_only_unchanged_issue(self):"
+        },
+        {
+          "path": "tests/test_contention_recovery.py",
+          "anchor": "def test_prepublication_conflict_recovers_without_repeating_old_patch(self):"
+        },
+        {
+          "path": "tests/test_contention_recovery.py",
+          "anchor": "def test_ambiguous_and_rate_limited_writes_never_replay(self):"
+        },
+        {
+          "path": "tests/test_contention_recovery.py",
+          "anchor": "def test_bounded_exhaustion_no_infinite_retry(self):"
+        },
+        {
+          "path": "tests/test_contention_recovery.py",
+          "anchor": "def test_unchanged_ref_rejects_422_not_contention(self):"
+        },
+        {
+          "path": "tests/test_contention_recovery.py",
+          "anchor": "def test_intermediate_change_then_revert_is_not_safe(self):"
+        },
+        {
+          "path": "tests/test_contention_recovery.py",
+          "anchor": "def test_exact_committed_candidate_not_replayed(self):"
+        },
+        {
+          "path": "tests/test_contention_recovery.py",
+          "anchor": "def test_replan_changed_intent_refused(self):"
+        }
+      ]
     }
   ]
 }
