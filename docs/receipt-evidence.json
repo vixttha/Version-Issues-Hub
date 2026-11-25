@@ -896,6 +896,34 @@
           "anchor": "def test_generic_worker_record_is_exact(self):"
         }
       ]
+    },
+    {
+      "id": "v0-0-0-34",
+      "label": "Issue #70 · historical acceptance criteria integrity",
+      "documented_in": [
+        {
+          "path": "docs/v0.0.0.34.md",
+          "anchor": "## Immutable acceptance criteria"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "ledger/issue-versions.json",
+          "anchor": "\"issue\": 70,"
+        }
+      ],
+      "implemented_in": [
+        {
+          "path": "tools/checkpoint.py",
+          "anchor": "def check_history(ledger, previous):"
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tests/test_checkpoint.py",
+          "anchor": "def test_history_preserves_ordered_acceptance_criteria(self):"
+        }
+      ]
     }
   ]
 }
