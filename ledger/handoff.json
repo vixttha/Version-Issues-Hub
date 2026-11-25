@@ -2,12 +2,18 @@
   "active": {
     "issue": 10,
     "version": "v0.0.0.4",
-    "phase": "Validate",
+    "phase": "Internal Auditor",
     "fix_sha": "1a53dc83cd578faa26b8253e0699646ea58e2dbb",
     "candidate_sha": "1e85153765c0ca908f2ee44f2973ba59b0669c23",
     "pull_request": 2,
-    "evidence": [],
-    "next_action": "Original fix ancestor, host-neutral package docs and exact installed source blob/mode pins confirmed; validate existing bootstrap and handoff regression evidence. No product edits."
+    "evidence": [
+      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45702627362/attempts/1",
+      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45702637970/attempts/1",
+      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45702627289/attempts/1",
+      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45702637962/attempts/1",
+      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45702638002/attempts/1"
+    ],
+    "next_action": "136/136 on all four checkout/OS suites; seven named #10 bootstrap and handoff regressions pass, both exact v0.0.0.4 receipts, Graphify 156/155 twice, prior live BART fresh-process recovery verified. Independent host acceptance deferred under #37."
   },
   "history": [
     {
