@@ -123,3 +123,25 @@ class IntegrationTests(unittest.TestCase):
         api.run["event"]="workflow_dispatch"
         ledger,_=self.integrate(api,s,False,p)
         self.assertEqual(ledger["issues"][0]["state"],"integrated")
+
+
+    def test_earlier_mapped_run_rerun_during_later_mapping_rejected(self):
+        for staged in (False,True):
+            api,s,p=self.setup_case(staged)
+            checks=p["issues"][0]["criteria"][0]["checks"]
+            checks.append({**checks[0],"run":126})
+            original=api.request
+            second={**api.run,"id":126}
+            def request(method,path,body=None):
+                if "/actions/runs/126" in path:
+                    if path.endswith("/jobs?per_page=100"):
+                        api.run["run_attempt"]=2
+                        return {"total_count":1,"jobs":[{**api.jobs[0],"run_id":126}]}
+                    return second
+                return original(method,path,body)
+            api.request=request
+            before=copy.deepcopy(s)
+            with self.assertRaisesRegex(ValueError,"changed"):
+                self.integrate(api,s,staged,p)
+            self.assertEqual(s,before)
+            self.assertEqual(api.writes,[])

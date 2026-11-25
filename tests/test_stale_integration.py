@@ -201,3 +201,21 @@ class StaleIntegrationTests(unittest.TestCase):
         self.assertEqual(git.git("show",new_merge+":a.txt"),"A")
         self.assertEqual(git.git("show",new_merge+":b.txt"),"B")
         self.assertEqual(api.writes,[])
+
+
+    def test_earlier_premerge_run_rerun_during_later_run_rejected(self):
+        api,s=self.setup_case()
+        s["ledger"],s["handoff"]=session.advance(api,s,"refresh",refresh=True)
+        original=api.request
+        second={**api.pre_run,"id":125}
+        def request(method,path,body=None):
+            if "/actions/runs/125" in path:
+                api.pre_run["run_attempt"]=2
+                return second
+            return original(method,path,body)
+        api.request=request
+        before=copy.deepcopy(s)
+        with self.assertRaisesRegex(ValueError,"stale"):
+            session.advance(api,s,"two runs",evidence=[RUN,NEW_RUN])
+        self.assertEqual(s,before)
+        self.assertEqual(api.writes,[])

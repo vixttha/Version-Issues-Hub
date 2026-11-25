@@ -166,6 +166,10 @@
         {
           "path": "tests/test_post_merge.py",
           "anchor": "def test_dispatch_at_actual_revision_supported(self):"
+        },
+        {
+          "path": "tests/test_post_merge.py",
+          "anchor": "def test_earlier_mapped_run_rerun_during_later_mapping_rejected(self):"
         }
       ]
     },
@@ -234,6 +238,10 @@
         {
           "path": "tests/test_stale_integration.py",
           "anchor": "def test_real_git_other_merge_preserves_fix_but_invalidates_integration(self):"
+        },
+        {
+          "path": "tests/test_stale_integration.py",
+          "anchor": "def test_earlier_premerge_run_rerun_during_later_run_rejected(self):"
         }
       ]
     }

@@ -142,6 +142,20 @@ def verify_integration(api, state, active, pr, policy):
     for criterion in scope[0]["criteria"]:
         for test in criterion["checks"]:
             check_test(api, prefix, policy, links, test, post_merge=True)
+    # A run checked earlier may have been rerun while a later mapping was
+    # inspected. Recheck every unique run/attempt before returning a verdict.
+    mappings = {(test["run"], test["attempt"], test["workflow_id"])
+                for criterion in scope[0]["criteria"] for test in criterion["checks"]}
+    for run, attempt, workflow in sorted(mappings):
+        latest = api.request("GET", prefix + "/actions/runs/" + str(run))
+        if (latest.get("id") != run or latest.get("run_attempt") != attempt
+                or (latest.get("repository") or {}).get("id") != policy["repository_id"]
+                or (latest.get("head_repository") or {}).get("id") != policy["repository_id"]
+                or latest.get("workflow_id") != workflow
+                or latest.get("event") not in ("push", "workflow_dispatch")
+                or latest.get("head_sha") != merged or latest.get("head_branch") != policy["product_branch"]
+                or latest.get("status") != "completed" or latest.get("conclusion") != "success"):
+            raise ValueError("Post-merge run changed during review")
     assert_merged(session.get_pr(api, state, active))
     if install.read_ref(api, prefix, install.BRANCH) != state["ref"]:
         raise ValueError("Installed state advanced during post-merge review")

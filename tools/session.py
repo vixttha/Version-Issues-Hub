@@ -217,6 +217,11 @@ def verify_candidate_runs(api, state, active, links):
         root = state["prefix"] + "/actions/runs/" + str(run)
         for item in (api.request("GET", root), api.request("GET", root + "/attempts/" + str(attempt))):
             standard.check_pr_run(item, policy, run, attempt)
+    # Re-read every earlier run after all links were inspected.
+    for link in links:
+        run, attempt = map(int, re.search(r"/runs/([0-9]+)/attempts/([0-9]+)$", link).groups())
+        standard.check_pr_run(api.request("GET", state["prefix"] + "/actions/runs/" + str(run)),
+                              policy, run, attempt)
     require_fresh_snapshot(api, state, active)
 
 def inspect(api, state, requested=None):
@@ -283,8 +288,8 @@ def claim(api, state, number, criteria, note, *, resume_prior_line=False):
     if row is not None and row["state"] in ("integrated", "retired"):
         raise ValueError("Historical issue cannot be reclaimed")
     if row is not None and row["state"] == "staged":
-        if resume_prior_line:
-            raise ValueError("Staged issue requires normal owner-approved recovery")
+        if resume_prior_line or row["version"].rsplit(".", 1)[0] != baseline:
+            raise ValueError("Staged prior-line issue requires owner reconciliation")
         if criteria and criteria != row["acceptance"]:
             raise ValueError("Existing acceptance criteria differ")
         prior = next((r for r in reversed(handoff["history"]) if r["handoff"]["issue"] == number), None)
