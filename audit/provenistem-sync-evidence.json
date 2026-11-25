@@ -168,6 +168,58 @@
           "anchor": "def test_schema_loader_rejects_nonfinite_or_extreme_literals(self):"
         }
       ]
+    },
+    {
+      "id": "optional-adoption-ancestor-guard",
+      "label": "Block new destination beneath existing non-directory ancestor",
+      "implemented_in": [
+        {
+          "path": "provenistem/tools/adopter.py",
+          "anchor": "def plan(source, destination):"
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "provenistem/tests/test_adopter_profiles.py",
+          "anchor": "def test_new_destination_below_file_is_blocked(self):"
+        },
+        {
+          "path": "provenistem/tests/test_adopter_profiles.py",
+          "anchor": "def test_new_destination_below_missing_directories_is_available(self):"
+        }
+      ],
+      "documented_in": [
+        {
+          "path": "provenistem/INSTALLATION.md",
+          "anchor": "## Host-local review repairs"
+        }
+      ]
+    },
+    {
+      "id": "optional-json-equality",
+      "label": "Consistent exact JSON equality for const and enum",
+      "implemented_in": [
+        {
+          "path": "provenistem/tools/library.py",
+          "anchor": "def shape(value, schema, where):"
+        },
+        {
+          "path": "provenistem/tools/library.py",
+          "anchor": "def json_identity(value):"
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "provenistem/tests/test_v002_six_team_repairs.py",
+          "anchor": "def test_const_and_enum_json_value_equality(self):"
+        }
+      ],
+      "documented_in": [
+        {
+          "path": "provenistem/INSTALLATION.md",
+          "anchor": "## Host-local review repairs"
+        }
+      ]
     }
   ]
 }

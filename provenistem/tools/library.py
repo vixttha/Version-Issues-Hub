@@ -124,7 +124,7 @@ def valid_unicode(value):
 
 
 def json_identity(value):
-    """JSON value equality for uniqueItems; object key order is insignificant.
+    """JSON value equality for const, enum and uniqueItems; object key order is insignificant.
 
     Keep booleans distinct from numbers and treat 1 and 1.0 as equal.
     Caller must first enforce MAX_JSON_DEPTH on untrusted records.
@@ -157,9 +157,10 @@ def shape(value, schema, where):
              "integer": lambda x: type(x) is int}
     if kind in types and not types[kind](value):
         return [f"{where}: expected {kind}"]
-    if "const" in schema and (type(value) is not type(schema["const"]) or value != schema["const"]):
+    if "const" in schema and json_identity(value) != json_identity(schema["const"]):
         issues.append(f"{where}: const mismatch")
-    if "enum" in schema and value not in schema["enum"]:
+    if "enum" in schema and not any(json_identity(value) == json_identity(option)
+                                    for option in schema["enum"]):
         issues.append(f"{where}: invalid enum value")
     if isinstance(value, str):
         if len(value) < schema.get("minLength", 0):

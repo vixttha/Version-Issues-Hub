@@ -1,4 +1,6 @@
 """Synthetic cross-adopter compatibility fixtures; no private records copied."""
+import contextlib
+import io
 import json
 import re
 import shutil
@@ -198,6 +200,33 @@ class AdopterProfiles(unittest.TestCase):
         self.assertEqual(actions["features/schema/v1/feature.schema.json"], "ADD")
         self.assertEqual(adopter.main([str(dest)]), 1)
         self.assertEqual((dest / "ideas").read_text(), "HOST")
+
+    def test_new_destination_below_file_is_blocked(self):
+        parent = self.root / "host-file"
+        parent.write_bytes(b"HOST")
+        for dest in (parent / "provenistem", parent / "missing" / "provenistem"):
+            with self.subTest(dest=dest):
+                with self.assertRaisesRegex(ValueError, "ancestor is not a directory"):
+                    adopter.plan(ROOT, dest)
+                output = io.StringIO()
+                with contextlib.redirect_stdout(output):
+                    self.assertEqual(adopter.main([str(dest), "--source", str(ROOT)]), 2)
+                result = json.loads(output.getvalue())
+                self.assertEqual(result["status"], "BLOCKED")
+                self.assertFalse(result["writes"])
+                self.assertIn(str(parent), result["error"])
+                self.assertNotIn("entries", result)
+                self.assertEqual(parent.read_bytes(), b"HOST")
+                self.assertFalse(dest.exists())
+
+    def test_new_destination_below_missing_directories_is_available(self):
+        dest = self.root / "absent" / "nested" / "provenistem"
+        result = adopter.plan(ROOT, dest)
+        self.assertEqual(result["status"], "NEW_DESTINATION")
+        self.assertFalse(result["writes"])
+        self.assertTrue(result["entries"])
+        self.assertTrue(all(entry["action"] == "ADD" for entry in result["entries"]))
+        self.assertFalse((self.root / "absent").exists())
 
     def test_clean_host_plan_never_writes(self):
         dest = self.root / "brand-new-root"

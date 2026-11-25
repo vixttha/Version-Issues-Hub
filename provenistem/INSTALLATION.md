@@ -12,3 +12,7 @@ Source reconciliation: current upstream Provenistem v0.0.2 source `d64d0c73538e7
 ## Reviewed forward synchronization candidate
 
 Upstream source `8230fdb8162ed2ebf2966354563205dd6851f8e4` (`packages/provenistem/`) includes accepted decimal, Unicode and self-contained adoption repairs. This is an exact-source reconciliation, not a new release. Preserve nested discovery, host-neutrality exclusions, blocked-parent guard, stronger diagnostics and large-integer regression. Historical pins above remain intact. Host-owned installation notes and records are not portable copy inputs; full regression testing uses a clean synthetic starter. Populated host records use check and authorized build only. Never distribute host records or overwrite host paths.
+
+## Host-local review repairs
+
+The Brand Identity candidate adds a read-only ancestor guard for new destinations and applies the existing exact JSON identity helper to `const` and `enum`. These are local forward repairs relative to the accepted upstream pin, not an upstream release or a widened schema vocabulary. Preserve strict v1 integer validation. The ancestor case also tracks upstream Provenistem issue #2; reconcile upstream before claiming package parity. No change to the schemas, records, generated indexes or license.

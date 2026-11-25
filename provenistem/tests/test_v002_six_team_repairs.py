@@ -77,6 +77,28 @@ class SixTeamRepairs(unittest.TestCase):
         self.assertEqual(library.shape([True, 1], spec, "item"), [])
         self.assertEqual(library.shape([{"k": 1}, {"k": 2}], spec, "item"), [])
 
+    def test_const_and_enum_json_value_equality(self):
+        for left, right, equal in (
+            ("true", "1", False), ("false", "0", False),
+            ("1", "1.0", True), ("1e0", "1.00", True),
+            ("1.0000000000000001", "1.0", False),
+            ("[true]", "[1]", False),
+            ('{"x":[false]}', '{"x":[0]}', False),
+            ('{"a":1,"b":[2.0]}', '{"b":[2],"a":1.0}', True),
+            ("[1,2]", "[2,1]", False),
+            ("null", "false", False), ('"1"', "1", False),
+        ):
+            for a, b in ((left, right), (right, left)):
+                with self.subTest(left=a, right=b):
+                    value, expected = library.parse_json(a), library.parse_json(b)
+                    for spec in ({"const": expected}, {"enum": [expected]}):
+                        issues = library.shape(value, spec, "item")
+                        self.assertEqual(not issues, equal, (spec, issues))
+        self.assertTrue(library.shape(library.parse_json("1.0"),
+                                      {"type": "integer", "const": 1}, "item"))
+        self.assertTrue(library.shape(True, {"type": "integer", "enum": [1]}, "item"))
+        self.assertEqual(library.shape(1, {"type": "integer", "enum": [1]}, "item"), [])
+
     def numeric_record(self, literal):
         path = self.host / "ideas/records/IDEA-000001.json"
         path.write_text('{"id":"IDEA-000001","values":' + literal + '}', encoding="utf-8")
