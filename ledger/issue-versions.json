@@ -297,6 +297,16 @@
       "issue": 60,
       "state": "assigned",
       "version": "v0.0.0.30"
+    },
+    {
+      "acceptance": [
+        "Audit all extant branch heads and ledger snapshots; preserve historical refs, mappings, criteria and archive.",
+        "Restore missing version assignments and bind real historical fixes and engineering evidence without inventing lifecycle events or main integration.",
+        "Reconcile engineering projection against authoritative installed state; public Ubuntu/Windows, Graphify and CodeRabbit evidence; keep release and feature development frozen until correction accepted."
+      ],
+      "issue": 65,
+      "state": "in_progress",
+      "version": "v0.0.0.31"
     }
   ],
   "repository": "vixttha/Version-Issues-Hub",
