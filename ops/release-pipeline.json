@@ -255,5 +255,22 @@
     "jobs": 4,
     "attempt": 2
   },
-  "installed_phase": "Head"
+  "installed_phase": "Head",
+  "acceptance_review": {
+    "head": "abbf636f8bf9b1f6771e176cd872f19b378a82c0",
+    "pr": 52,
+    "merge": "d979a7c4488e66b8e3941ab3960c06125a8888be",
+    "runs": [
+      45654072130,
+      45654072366,
+      45654086207,
+      45654086408
+    ],
+    "live_runs": [
+      45654072366,
+      45654086207
+    ],
+    "jobs": 7,
+    "attempt": 1
+  }
 }

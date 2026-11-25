@@ -79,6 +79,37 @@ class RevisionGuardTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "competing issue refused"):
             self.p.check_active_checkpoint(active, {"status": "resume"})
 
+    def test_live_matrix_requires_both_jobs_and_artifacts(self):
+        run_id = 123
+        both_jobs = [{"name": n, "status": "completed", "conclusion": "success"} for n in ("live (core)", "live (external)")]
+        both_artifacts = [{"name": f"live-acceptance-{n}-{run_id}-1", "expired": False, "size_in_bytes": 10} for n in ("core", "external")]
+        def make_api(path):
+            if "/jobs?" in path:
+                return {"total_count": 2, "jobs": both_jobs}
+            return {"total_count": 2, "artifacts": both_artifacts}
+        with patch.object(self.p, "api", side_effect=make_api):
+            self.p.check_live_acceptance_matrix({"live_runs": [run_id], "attempt": 1})
+
+    def test_live_matrix_rejects_core_only(self):
+        run_id = 123
+        def make_api(path):
+            if "/jobs?" in path:
+                return {"total_count": 1, "jobs": [{"name": "live (core)", "status": "completed", "conclusion": "success"}]}
+            return {"total_count": 1, "artifacts": [{"name": f"live-acceptance-core-{run_id}-1", "expired": False, "size_in_bytes": 10}]}
+        with patch.object(self.p, "api", side_effect=make_api):
+            with self.assertRaisesRegex(ValueError, "core and external jobs"):
+                self.p.check_live_acceptance_matrix({"live_runs": [run_id], "attempt": 1})
+
+    def test_live_matrix_rejects_missing_external_artifact(self):
+        run_id = 123
+        def make_api(path):
+            if "/jobs?" in path:
+                return {"total_count": 2, "jobs": [{"name": name, "status": "completed", "conclusion": "success"} for name in ("live (core)", "live (external)")]}
+            return {"total_count": 1, "artifacts": [{"name": f"live-acceptance-core-{run_id}-1", "expired": False, "size_in_bytes": 10}]}
+        with patch.object(self.p, "api", side_effect=make_api):
+            with self.assertRaisesRegex(ValueError, "exact scoped artifacts"):
+                self.p.check_live_acceptance_matrix({"live_runs": [run_id], "attempt": 1})
+
     def test_head_self_reference_reports_stale_candidate(self):
         active = {"status": "stale_candidate", "active": {"issue": 40, "version": "v0.0.0.23",
                    "phase": "Head", "pull_request": 49, "candidate_sha": "historical"}}

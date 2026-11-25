@@ -66,6 +66,27 @@ def receipt(group, spec):
         if review["status"] != "completed" or review["conclusion"] != "success":
             report["blockers"].append(group + " CodeRabbit review not successful")
 
+def check_live_acceptance_matrix(spec):
+    """Require both scoped live jobs and both corresponding evidence artifacts."""
+    expected = {"live (core)", "live (external)"}
+    for run_id in spec["live_runs"]:
+        attempt = spec.get("attempts", {}).get(str(run_id), spec.get("attempt", 1))
+        jobs = api(f"/actions/runs/{run_id}/attempts/{attempt}/jobs?per_page=100")
+        check(f"acceptance live {run_id} complete job list", jobs["total_count"] == len(jobs["jobs"]))
+        check(f"acceptance live {run_id} core and external jobs",
+              {j["name"] for j in jobs["jobs"]} == expected
+              and len(jobs["jobs"]) == 2
+              and all(j["status"] == "completed" and j["conclusion"] == "success" for j in jobs["jobs"]))
+        artifacts = api(f"/actions/runs/{run_id}/artifacts?per_page=100")
+        check(f"acceptance live {run_id} complete artifacts list",
+              artifacts["total_count"] == len(artifacts["artifacts"]))
+        names = {f"live-acceptance-{scope}-{run_id}-{attempt}" for scope in ("core", "external")}
+        matching = [a for a in artifacts["artifacts"] if a["name"] in names]
+        check(f"acceptance live {run_id} exact scoped artifacts",
+              len(matching) == 2 and {a["name"] for a in matching} == names
+              and all(not a["expired"] and a["size_in_bytes"] > 0 for a in matching))
+
+
 def check_inspected_revisions(active, other):
     check("product revision frozen after inspection",
           active["product_sha"] == M["main"] and other["product_sha"] == M["main"])
@@ -105,8 +126,9 @@ def main():
     check("accepted README frozen", branch("readme-hq") == M["readme"])
     check("homepage branch pinned", branch("review/vib-homepage-preflight") == M["homepage"]["head"])
     check("self state pinned", branch("Version-Issues-Hub") == M["installed_state"])
-    for key in ("engineering", "licensing_review", "homepage", "archive"):
+    for key in ("engineering", "licensing_review", "homepage", "archive", "acceptance_review"):
         receipt(key, M[key])
+    check_live_acceptance_matrix(M["acceptance_review"])
     original = leaves(M["readme"])
     derivative = leaves(M["homepage"]["head"])
     frozen = {k:v for k,v in original.items() if k.startswith("workspace/v0.0.1/accepted/")}
