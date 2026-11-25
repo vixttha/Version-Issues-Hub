@@ -347,6 +347,16 @@
         "Preserve legitimate blocked, deferred and rework archives and existing historical records.",
         "Test incomplete verification and valid dispositions; verify public Ubuntu/Windows, Graphify, CodeRabbit and exact engineering merge."
       ]
+    },
+    {
+      "issue": 72,
+      "version": "v0.0.0.36",
+      "state": "in_progress",
+      "acceptance": [
+        "Reject malformed, empty and duplicate explicit receipt selections before generating any receipt.",
+        "Preserve valid default selection and historical singleton retrieval with original fix pins and ancestry checks.",
+        "Test negative and positive cases; pass public Ubuntu/Windows, Graphify, CodeRabbit and exact engineering merge verification."
+      ]
     }
   ],
   "repository": "vixttha/Version-Issues-Hub",
