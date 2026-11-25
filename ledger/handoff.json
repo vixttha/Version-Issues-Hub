@@ -2,12 +2,14 @@
   "active": {
     "issue": 40,
     "version": "v0.0.0.23",
-    "phase": "Validate",
-    "next_action": "Review exact PR49 refreshed preflight: 21 tests and 268 mechanical assertions; release remains blocked.",
+    "phase": "Internal Auditor",
+    "next_action": "Actual public run and logs successful; downloaded report SHA-256 120f281b2b8344f24c272e2384f07528eadfa378e75bcc90507025d10e30c4cd and CRC verified. Check evidence and remaining gates.",
     "fix_sha": "f82633832749574920a73ddd25ec51ab0b57e023",
     "candidate_sha": "f82633832749574920a73ddd25ec51ab0b57e023",
     "pull_request": 49,
-    "evidence": []
+    "evidence": [
+      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45722764432/attempts/1"
+    ]
   },
   "history": [
     {
