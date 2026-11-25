@@ -26,7 +26,7 @@ import test_artifact as artifact
 from test_mutation import mutation_case
 from tools import checkpoint,install,lifecycle,session,gate
 from record import Result,flatten,verdict
-from archive import inspect_zip
+import archive
 
 P=c.PRODUCT
 def ledger(): return {"schema_version":1,"repository":"example/product","issues":[]}
@@ -42,7 +42,7 @@ class B07(unittest.TestCase):
     def test_original_harness_optimized_guard(self):
         # Extract actual assertion AST into a harmless isolated child, not a live runner.
         source=(HERE.parents[1]/"vib/run_cases.py").read_text(encoding="utf-8")
-        node=next(n for n in ast.walk(ast.parse(source)) if isinstance(n,ast.Assert) and "Product checkout mismatch" in ast.unparse(n))
+        node=next(n for n in ast.walk(ast.parse(source)) if isinstance(n,ast.If) and "Product checkout mismatch" in ast.unparse(n))
         fragment=ast.unparse(node)
         script="product_sha='wrong'; plan={'product_sha':'expected'}\n"+fragment
         normal=subprocess.run([sys.executable,"-B","-c",script],capture_output=True,timeout=20)
@@ -153,7 +153,7 @@ class B10(unittest.TestCase):
             p=Path(d)/"fixture.zip"
             with zipfile.ZipFile(p,"w") as z:
                 for name,data in entries:z.writestr(name,data)
-            return inspect_zip(p,expected,hashlib.sha256(p.read_bytes()).hexdigest())
+            return archive.inspect_zip(p,expected,hashlib.sha256(p.read_bytes()).hexdigest())
     def test_valid(self):
         self.assertEqual(self.archive([("a.txt",b"x")],{"a.txt"}),{"a.txt":b"x"})
     def test_missing(self):
@@ -175,7 +175,7 @@ class B10(unittest.TestCase):
         with tempfile.TemporaryDirectory() as d:
             p=Path(d)/"a.zip"
             with zipfile.ZipFile(p,"w") as z:z.writestr("a",b"x")
-            with self.assertRaises(ValueError):inspect_zip(p,{"a"},"0"*64)
+            with self.assertRaises(ValueError):archive.inspect_zip(p,{"a"},"0"*64)
 
 class B11(unittest.TestCase):
     def test_real_loopback_response(self):
@@ -335,10 +335,14 @@ def main():
     expected=json.loads((HERE/"catalog.json").read_text(encoding="utf-8"))[batch]
     actual=[x.id().split(".",1)[1] for x in flatten(suite)]
     if sorted(actual)!=expected or len(set(actual))!=len(actual):raise RuntimeError("Frozen inventory mismatch")
-    result=unittest.TextTestRunner(verbosity=2,resultclass=Result).run(suite)
+    stream=io.StringIO()
+    result=unittest.TextTestRunner(stream=stream,verbosity=2,resultclass=Result).run(suite)
+    log=stream.getvalue().encode("utf-8")
+    print(stream.getvalue(),flush=True)
     passed=sorted(x.split(".",1)[1] for x in result.passed)
     out=Path(os.environ["RUNNER_TEMP"])/"vib-advanced";out.mkdir(exist_ok=True)
-    report={"batch":batch,"vault_sha":os.environ["GITHUB_SHA"],"product_sha":c.PIN,"run":os.environ["GITHUB_RUN_ID"],"attempt":os.environ["GITHUB_RUN_ATTEMPT"],"expected":expected,"passed":passed,"failures":[x.id().split(".",1)[1] for x,_ in result.failures],"errors":[x.id().split(".",1)[1] for x,_ in result.errors],"skipped":[x.id().split(".",1)[1] for x,_ in result.skipped],"outcome":"pass" if verdict(expected,passed,result.testsRun,result.wasSuccessful()) else "fail"}
+    (out/(batch+".log")).write_bytes(log)
+    report={"log_sha256":hashlib.sha256(log).hexdigest(),"batch":batch,"vault_sha":os.environ["GITHUB_SHA"],"product_sha":c.PIN,"run":os.environ["GITHUB_RUN_ID"],"attempt":os.environ["GITHUB_RUN_ATTEMPT"],"expected":expected,"passed":passed,"failures":[x.id().split(".",1)[1] for x,_ in result.failures],"errors":[x.id().split(".",1)[1] for x,_ in result.errors],"skipped":[x.id().split(".",1)[1] for x,_ in result.skipped],"outcome":"pass" if verdict(expected,passed,result.testsRun,result.wasSuccessful()) else "fail"}
     (out/(batch+".json")).write_text(json.dumps(report,indent=2)+"\n",encoding="utf-8")
     print("VIB_ADVANCED "+json.dumps(report),flush=True)
     raise SystemExit(0 if report["outcome"]=="pass" else 1)

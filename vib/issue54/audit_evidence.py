@@ -28,7 +28,11 @@ def read_json(path):
         raise ValueError("Missing regular evidence file")
     return json.loads(path.read_text(encoding="utf-8"),object_pairs_hook=strict_object)
 
-def verify(root,kind,count,vault,product,run,attempt):
+def verify(root,kind,count,vault,product,run,attempt,*,expected_ids=None):
+    if expected_ids is None:
+        expected_ids=json.loads((Path(__file__).with_name("case-identities.json")).read_text(encoding="utf-8"))[kind]
+    if len(expected_ids)!=count or len(set(expected_ids))!=count:
+        raise ValueError("Invalid frozen inventory")
     if type(count) is not int or count<=0: raise ValueError("Invalid expected count")
     if not re.fullmatch(r"[0-9a-f]{40}",vault) or not re.fullmatch(r"[0-9a-f]{40}",product):
         raise ValueError("Invalid revision")
@@ -41,7 +45,7 @@ def verify(root,kind,count,vault,product,run,attempt):
     ids=data.get("passed_ids")
     if not isinstance(ids,list) or any(not isinstance(x,str) or not x.strip() for x in ids):
         raise ValueError("Invalid test identities")
-    if len(set(ids))!=len(ids) or len(ids)>count:
+    if len(set(ids))!=len(ids) or len(ids)>count or not set(ids).issubset(expected_ids):
         raise ValueError("Duplicate or excessive test identities")
     log=root/(kind+".log")
     if not log.is_file() or log.is_symlink(): raise ValueError("Missing regular log")

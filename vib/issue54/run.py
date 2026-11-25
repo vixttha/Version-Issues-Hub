@@ -68,7 +68,8 @@ else:
     ids=re.findall(r"^PASS ((?:BA7|PS7|BA6|PS6|BA5|PS5|BA4|PS4|BA3|PS3|BA2|PS2|BA|PS)-\S+)",log,re.M)
     expected=8 if kind in ("bash7","powershell7") else 14 if kind in ("bash4","powershell4") else 12 if kind in ("bash3","powershell3","bash5","powershell5","bash6","powershell6") else 19 if kind in ("bash2","powershell2") else 15
     passed=len(ids)==expected and len(set(ids))==expected
-passed=passed and result.returncode==0 and head(vault)==v and head(product)==pin
+frozen=json.loads((here/"case-identities.json").read_text(encoding="utf-8"))[kind]
+passed=passed and sorted(ids)==frozen and result.returncode==0 and head(vault)==v and head(product)==pin
 report={"vault_sha":v,"product_sha":pin,"run_id":os.environ["GITHUB_RUN_ID"],"attempt":os.environ["GITHUB_RUN_ATTEMPT"],"os":platform.platform(),"python":platform.python_version(),"kind":kind,"expected_count":expected,"passed_ids":ids,"exit_code":result.returncode,"log_sha256":hashlib.sha256(raw).hexdigest(),"outcome":"pass" if passed else "fail"}
 (out/(kind+".json")).write_text(json.dumps(report,indent=2)+"\n",encoding="utf-8")
 print(json.dumps(report),flush=True)

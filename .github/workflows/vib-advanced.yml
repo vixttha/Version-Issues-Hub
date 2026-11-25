@@ -104,14 +104,9 @@ jobs:
         env:
           COVERAGE_FILE: ${{ runner.temp }}/.vib-coverage
         run: python -m coverage run --append --branch --source=tools ../vault/vib/advanced/qualify.py 09
-      - name: Bash independent platform and byte oracles
-        if: always() && runner.os == 'Linux'
-        shell: bash
-        run: bash vault/vib/advanced/platform.sh
-      - name: PowerShell independent platform and byte oracles
-        if: always() && runner.os == 'Windows'
-        shell: pwsh
-        run: pwsh -NoProfile -File vault/vib/advanced/platform.ps1
+      - name: Independent platform and byte oracles with receipts
+        if: always()
+        run: python vault/vib/advanced/shell.py
       - name: Measure branches and missing lines
         if: always()
         working-directory: product
@@ -128,7 +123,7 @@ jobs:
           path: ${{ runner.temp }}/vib-advanced
           if-no-files-found: error
   prior-zip:
-    if: github.event.repository.private == false
+    if: github.event.repository.private == false && github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     permissions:

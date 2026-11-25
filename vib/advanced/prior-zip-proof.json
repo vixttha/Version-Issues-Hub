@@ -1,0 +1,29 @@
+{
+  "run_id": "45680605695",
+  "attempt": 1,
+  "vault_sha": "2f2f29d801956d021aa8ae8d272a804a4212a35e",
+  "product_sha": "7ae6626e44d01d29b11968da28e6debd816f8c06",
+  "method": "GitHub connector download; independent ZIP byte verification in analysis runtime, no product tests executed locally",
+  "artifacts": [
+    {
+      "id": 15054156538,
+      "os": "Linux",
+      "sha256": "4a6541072b5c14b238356c79ac832a21ad974817222e585e5e2151f5cd6d561d",
+      "members": 60,
+      "verified_suite_log_digests": 22,
+      "passed": 533,
+      "expected": 542
+    },
+    {
+      "id": 15054916015,
+      "os": "Windows",
+      "sha256": "e90a98f28fbd7cce3cf9461e2c558f72f55f458f5d207fb7dec0b5dc51170193",
+      "members": 60,
+      "verified_suite_log_digests": 22,
+      "passed": 533,
+      "expected": 542
+    }
+  ],
+  "automated_attempt": "45683200835 prior-zip failed HTTP 403 rate limit; no blind retry",
+  "limitations": "Checks embedded receipt identities and log hashes; historical expected ID catalog established separately from exact prior public logs and nine explicit red probe names."
+}

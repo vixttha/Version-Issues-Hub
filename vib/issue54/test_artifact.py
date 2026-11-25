@@ -28,7 +28,7 @@ class Artifact(unittest.TestCase):
         self.report.write_text(json.dumps(self.data),encoding="utf-8")
         self.ids.write_text(json.dumps(self.data["passed_ids"]),encoding="utf-8")
     def verify(self):
-        return audit.verify(self.root,self.kind,2,self.vault,self.product,"123","2")
+        return audit.verify(self.root,self.kind,2,self.vault,self.product,"123","2",expected_ids=["a","b"])
     def rejected(self):
         with self.assertRaises(ValueError): self.verify()
     def test_positive(self):
