@@ -219,3 +219,15 @@ class StaleIntegrationTests(unittest.TestCase):
             session.advance(api,s,"two runs",evidence=[RUN,NEW_RUN])
         self.assertEqual(s,before)
         self.assertEqual(api.writes,[])
+
+    def test_unpinned_empty_validate_inspection_requires_refresh(self):
+        api,s=Fake(),state()
+        s["ledger"],s["handoff"]=session.claim(api,s,247,["test"],"Fix")
+        self.assertEqual(session.inspect(api,s)["status"],"resume")
+        s["ledger"],s["handoff"]=session.advance(api,s,"candidate",fix=FIX,candidate=CANDIDATE,pr=8)
+        for key in session.PIN_KEYS:
+            s["handoff"]["active"].pop(key)
+        before=copy.deepcopy(s)
+        self.assertEqual(session.inspect(api,s)["status"],"stale_integration_evidence")
+        self.assertEqual(s,before)
+        self.assertEqual(api.writes,[])

@@ -255,7 +255,7 @@ def inspect(api, state, requested=None):
                     status = "closed_pr_rework_required"
                 elif pr.get("state") != "open" or pr.get("merged") is not False:
                     status = "pr_state_unverified"
-                elif inspected.get("evidence") or PIN_KEYS <= set(inspected):
+                else:
                     try:
                         require_fresh_snapshot(api, state, inspected)
                     except (ValueError, KeyError, TypeError):

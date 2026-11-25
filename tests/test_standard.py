@@ -88,3 +88,38 @@ class StandardTests(unittest.TestCase):
         self.assertEqual(standard.evaluate(self.api,REPO,self.policy)["status"],"review_required")
         self.assertEqual(self.state["handoff"]["history"],before)
         self.assertEqual(self.api.writes,[])
+
+    def test_rerun_during_standard_job_inspection_rejected(self):
+        original = self.api.request
+        reads=0
+        def delayed(method,path,body=None):
+            nonlocal reads
+            result=original(method,path,body)
+            if "/jobs?" in path:
+                reads+=1
+                if reads==2:
+                    self.api.run["run_attempt"]=2
+            return result
+        self.api.request=delayed
+        with self.assertRaisesRegex(ValueError,"stale"):
+            standard.evaluate(self.api,REPO,self.policy)
+        self.assertEqual(reads,2)
+        self.assertEqual(self.api.writes,[])
+
+    def test_earlier_standard_run_changes_during_later_mapping(self):
+        self.policy["issues"][1]["criteria"][0]["checks"][0]["run"]=125
+        self.state["handoff"]["history"][1]["handoff"]["evidence"]=[
+            self.state["handoff"]["history"][1]["handoff"]["evidence"][0].replace("/123/","/125/")]
+        original=self.api.request
+        later={**self.api.run,"id":125}
+        def request(method,path,body=None):
+            if "/actions/runs/125" in path:
+                if "/jobs?" in path:
+                    self.api.run["run_attempt"]=2
+                    return {"total_count":len(self.api.jobs),"jobs":self.api.jobs}
+                return later
+            return original(method,path,body)
+        self.api.request=request
+        with self.assertRaisesRegex(ValueError,"stale"):
+            standard.evaluate(self.api,REPO,self.policy)
+        self.assertEqual(self.api.writes,[])

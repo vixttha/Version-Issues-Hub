@@ -167,6 +167,20 @@ def evaluate(api, target, policy):
     if meta.get("private") is not False or meta.get("id") != policy["repository_id"]:
         raise ValueError("Standard public-runner profile requires a public target")
     result = gate.evaluate_scope(api, target, policy, validate_policy, check_test)
+    # Recheck all mappings after job/step inspection, including earlier runs.
+    prefix = install.repo_path(target)
+    mappings = {(t["run"], t["attempt"], t["workflow_id"])
+                for row in policy["issues"] for c in row["criteria"] for t in c["checks"]}
+    for run, attempt, workflow in sorted(mappings):
+        root = prefix + "/actions/runs/" + str(run)
+        for path in (root + "/attempts/" + str(attempt), root):
+            item = api.request("GET", path)
+            check_pr_run(item, policy, run, attempt)
+            if item.get("workflow_id") != workflow:
+                raise ValueError("Run workflow changed during review")
+    if install.read_ref(api, prefix, install.BRANCH) != policy["installed_sha"]:
+        raise ValueError("Installed state advanced during Standard review")
+    gate.assert_current_pr(api, prefix, policy)
     # Metadata cannot establish what arbitrary product workflows executed.
     return {**result, "status": "review_required", "check": "VIB / standard advisory",
             "mode": "standard", "published": False, "merge_enforced": False,

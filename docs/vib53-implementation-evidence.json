@@ -360,6 +360,42 @@
           "anchor": "def test_unrelated_ledger_revision_requires_repin_not_new_run(self):"
         }
       ]
+    },
+    {
+      "id": "vib53-review-freshness",
+      "label": "Legacy candidate inspection and Standard final attempt checks",
+      "documented_in": [
+        {
+          "path": "docs/vib53-implementation.md",
+          "anchor": "## Review closure repairs"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "tools/session.py",
+          "anchor": "def inspect(api, state, requested=None):"
+        }
+      ],
+      "implemented_in": [
+        {
+          "path": "tools/standard.py",
+          "anchor": "def evaluate(api, target, policy):"
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tests/test_standard.py",
+          "anchor": "def test_rerun_during_standard_job_inspection_rejected(self):"
+        },
+        {
+          "path": "tests/test_standard.py",
+          "anchor": "def test_earlier_standard_run_changes_during_later_mapping(self):"
+        },
+        {
+          "path": "tests/test_stale_integration.py",
+          "anchor": "def test_unpinned_empty_validate_inspection_requires_refresh(self):"
+        }
+      ]
     }
   ]
 }
