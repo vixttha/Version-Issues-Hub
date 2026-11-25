@@ -1,5 +1,14 @@
 {
-  "active": null,
+  "active": {
+    "issue": 33,
+    "version": "v0.0.0.17",
+    "phase": "Worker",
+    "next_action": "Owner-authorized historical closure recovery; no product edits or new version.",
+    "fix_sha": null,
+    "candidate_sha": null,
+    "pull_request": null,
+    "evidence": []
+  },
   "history": [
     {
       "decision": "PR49 CodeRabbit finding 4682051116: rework exact product SHA comparisons and add regression checks; preserve previous evidence.",
