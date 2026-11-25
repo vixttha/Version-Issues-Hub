@@ -1,0 +1,75 @@
+name: VIB tri-runtime adversarial qualification
+on:
+  push:
+    branches: [Lydite-Test-Vault]
+    paths: ['vib/tri-adversarial/**', '.github/workflows/vib-tri-adversarial.yml']
+permissions:
+  contents: read
+jobs:
+  execute:
+    if: github.event.repository.private == false
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [ubuntu-24.04, windows-latest]
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 10
+    env:
+      VIB_CHECKOUT: ${{ github.workspace }}/product
+      PYTHONDONTWRITEBYTECODE: '1'
+      GH_TOKEN: ''
+      GITHUB_TOKEN: ''
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          path: vault
+          persist-credentials: false
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          path: product
+          ref: '5a6074d77ec37823f81c6d7ebb1f4593d969cd71'
+          persist-credentials: false
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
+        with:
+          python-version: '3.12'
+      - name: Reproducible single-file distribution
+        run: |
+          python vault/vib/tri-adversarial/package.py bundle-a.py
+          python vault/vib/tri-adversarial/package.py bundle-b.py
+          python -c "from pathlib import Path; import hashlib; a=Path('bundle-a.py').read_bytes(); b=Path('bundle-b.py').read_bytes(); assert a==b; print('TR_PACKAGE_SHA256',hashlib.sha256(a).hexdigest())"
+      - name: Execute packaged transaction scenarios
+        run: python -B bundle-a.py
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: tr-${{ matrix.runner }}
+          path: ${{ runner.temp }}/tri-adversarial
+          if-no-files-found: error
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: package-${{ matrix.runner }}
+          path: bundle-a.py
+  audit:
+    needs: execute
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          pattern: tr-*
+          path: evidence
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          pattern: package-*
+          path: packages
+      - name: Native syntax and cross-machine package check
+        run: |
+          bash -n vib/tri-adversarial/challenger.sh
+          python -B vib/tri-adversarial/package.py rebuilt.py
+          cmp rebuilt.py packages/package-ubuntu-24.04/bundle-a.py
+          cmp rebuilt.py packages/package-windows-latest/bundle-a.py
+      - name: Independent evidence reconstruction
+        run: python -B vib/tri-adversarial/reconcile.py evidence

@@ -1,0 +1,3 @@
+# Tri-runtime adversarial pilot
+
+Owner approved: VIB #63; upstream Lydite #126. Initial implementation TR-01/02/03/05/09 subset, four frozen scenarios, separate fresh audit. Real session.claim/save; local adapter approximates API, no network; recovery reconstructs state from Git, not full session.load. Fast-forward emulator uses merge-base and local CAS; not live API proof. Existing singleton must block competing issue. No product writes. TR-04/06/07/08/10 and actual process kill remain pending. Exact candidate 5a6074d77ec37823f81c6d7ebb1f4593d969cd71. Reproducible source distribution built on both OS, raw Git bundles independently checked. Read-only workflow permissions. Prior Batch 17 remains unqualified.
