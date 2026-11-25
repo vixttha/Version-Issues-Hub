@@ -27,6 +27,11 @@ jobs:
         run: |
           python tools/checkpoint.py check --previous-ref "$PREVIOUS_SHA"
           python -B -m unittest discover -s tests -v
+      - name: Verify recovered self-use projection at pinned canonical Worker state
+        if: github.head_ref == 'plan/self-use-recovery-65' || github.ref == 'refs/heads/plan/self-use-recovery-65'
+        run: |
+          git fetch --no-tags origin 50787c1ca54287dea130c04ff754ab2a1b4f9caf
+          python -m tools.self_use_preflight --installed-ref 50787c1ca54287dea130c04ff754ab2a1b4f9caf --issue 65
       - name: Write the selected issue verification receipts
         run: python tools/checkpoint.py receipts "$RUNNER_TEMP/issue-receipts"
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
