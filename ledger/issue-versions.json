@@ -229,6 +229,74 @@
       "issue": 40,
       "state": "deferred",
       "version": "v0.0.0.23"
+    },
+    {
+      "acceptance": [
+        "An interrupted readback after successful recovery-ref creation is safely resumed only when the existing ref matches the exact final revision; divergent or moving refs fail closed.",
+        "An occupied self-install branch is verified against its own pinned package and rejects duplicate installation without changing product or installed refs.",
+        "Preserve historical fix and recovery evidence; pass bounded public-runner regression and Graphify mapping without claiming release or live adopter writes."
+      ],
+      "issue": 39,
+      "state": "assigned",
+      "version": "v0.0.0.24"
+    },
+    {
+      "acceptance": [
+        "Separate live core and external adopter checks while requiring both successful scopes for full acceptance; retain independent evidence for every case.",
+        "Verify occupied README HQ read-only without false absence claims, and verify BART historical package independently of current package; bounded GET-only RemoteDisconnected recovery.",
+        "Reconcile changed live job names, matrix counts, and artifact contracts in release preflight before release; pass exact-revision public GitHub runner and Graphify checks."
+      ],
+      "issue": 51,
+      "state": "assigned",
+      "version": "v0.0.0.25"
+    },
+    {
+      "acceptance": [
+        "Staging and gate evaluation require explicit state=open and merged is False.",
+        "Integration/reconciliation require coherent state=closed and merged is True, with existing exact identity and revision checks.",
+        "All eight negative probes reject without writes; positive controls and existing suites pass on public Ubuntu and Windows; exact SHA evidence and owner review."
+      ],
+      "issue": 56,
+      "state": "assigned",
+      "version": "v0.0.0.26"
+    },
+    {
+      "acceptance": [
+        "Require an actual nonnegative integer total_count (not bool or float) and an exact matching list length.",
+        "Test true/false, float, missing, negative, mismatched and valid zero/nonzero counts; preserve incomplete-collection rejection and full suite evidence on both public platforms.",
+        "No release or live check publication until separately accepted."
+      ],
+      "issue": 57,
+      "state": "assigned",
+      "version": "v0.0.0.27"
+    },
+    {
+      "acceptance": [
+        "Reproduce and identify exact byte/mode mismatch and root cause; add focused negative and positive regressions.",
+        "Verify unchanged integrity rejection for actual tampering and run all suites on standard free public Ubuntu and Windows runners.",
+        "Record exact candidate and run/attempt receipts; no live writes."
+      ],
+      "issue": 54,
+      "state": "assigned",
+      "version": "v0.0.0.28"
+    },
+    {
+      "acceptance": [
+        "Reject duplicate wire JSON keys including nested and escaped names; accept valid controls and reject malformed responses including invalid UTF-8.",
+        "Do not retry ambiguous writes; redact errors; exact SHA Ubuntu/Windows receipts."
+      ],
+      "issue": 61,
+      "state": "assigned",
+      "version": "v0.0.0.29"
+    },
+    {
+      "acceptance": [
+        "Reject nonfinite JSON tokens and values before atomic publication, preserving existing bytes on failure.",
+        "Test strict parse/persistence and valid numeric round trips on Ubuntu and Windows; no unrelated changes."
+      ],
+      "issue": 60,
+      "state": "assigned",
+      "version": "v0.0.0.30"
     }
   ],
   "repository": "vixttha/Version-Issues-Hub",
