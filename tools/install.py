@@ -12,6 +12,11 @@ from urllib.error import HTTPError, URLError
 from urllib.parse import quote
 from urllib.request import Request, build_opener, HTTPRedirectHandler
 
+if __package__:
+    from . import checkpoint
+else:  # Preserve direct script invocation.
+    import checkpoint
+
 SOURCE = "vixttha/Version-Issues-Hub"
 BRANCH = "Version-Issues-Hub"
 SHA = re.compile(r"[0-9a-f]{40}")
@@ -89,7 +94,12 @@ class GitHub:
                 time.sleep(delay)
             try:
                 with self.opener.open(req, timeout=30) as response:
-                    return json.load(response)
+                    try:
+                        return json.load(response, object_pairs_hook=checkpoint.unique_keys)
+                    except ValueError:
+                        # A malformed write response is uncertain; never replay the write.
+                        caution = "; inspect before retrying any write" if method != "GET" else ""
+                        raise ValueError(f"Invalid GitHub JSON response ({method} {api_operation(path)}){caution}") from None
             except HTTPError as exc:
                 code = exc.code
                 exc.close()
