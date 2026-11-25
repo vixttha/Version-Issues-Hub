@@ -131,7 +131,7 @@
       "implemented_in": [
         {
           "path": "tools/session.py",
-          "anchor": "def reconcile(api, state, number, decision):"
+          "anchor": "def reconcile(api, state, number, decision, *, policy=None):"
         }
       ],
       "tested_by": [
