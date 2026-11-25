@@ -320,5 +320,29 @@ class InstallerTests(unittest.TestCase):
             req.assert_called_once()
 
 
+    def test_api_rejects_nonfinite_wire_values_without_retry(self):
+        api = install.GitHub(None)
+        for raw in (b'{"value":NaN}', b'{"value":Infinity}', b'{"value":-Infinity}',
+                    b'{"value":1e999}'):
+            with self.subTest(raw=raw), \
+                 patch.object(api.opener, "open", return_value=io.BytesIO(raw)) as req:
+                with self.assertRaisesRegex(ValueError, "Invalid GitHub JSON response"):
+                    api.request("PATCH", PREFIX + "/git/refs")
+                req.assert_called_once()
+
+    def test_nonfinite_outgoing_json_is_rejected_before_request(self):
+        api = install.GitHub(None)
+        for number in (float("nan"), float("inf"), -float("inf")):
+            body = {"nested": [number]}
+            with self.subTest(number=number), patch.object(api.opener, "open") as req:
+                with self.assertRaises(ValueError):
+                    api.request("POST", PREFIX + "/git/trees", body)
+                req.assert_not_called()
+                with self.assertRaises(ValueError):
+                    install.render(body)
+        data = {"value": 1.25, "string": "Infinity"}
+        self.assertEqual(checkpoint.parse_json(install.render(data)), data)
+
+
 if __name__ == "__main__":
     unittest.main()

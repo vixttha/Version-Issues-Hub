@@ -84,7 +84,7 @@ class GitHub:
         headers = {"Accept": "application/vnd.github+json", "X-GitHub-Api-Version": "2022-11-28"}
         if self.token:
             headers["Authorization"] = "Bearer " + self.token
-        data = None if body is None else json.dumps(body).encode()
+        data = None if body is None else json.dumps(body, allow_nan=False).encode()
         if data is not None:
             headers["Content-Type"] = "application/json"
         req = Request("https://api.github.com" + path, data=data, headers=headers, method=method)
@@ -95,7 +95,7 @@ class GitHub:
             try:
                 with self.opener.open(req, timeout=30) as response:
                     try:
-                        return json.load(response, object_pairs_hook=checkpoint.unique_keys)
+                        return checkpoint.parse_json(response.read())
                     except ValueError:
                         # A malformed write response is uncertain; never replay the write.
                         caution = "; inspect before retrying any write" if method != "GET" else ""
@@ -196,7 +196,7 @@ def source_files(api, source_sha):
     return files
 
 def render(data):
-    return json.dumps(data, indent=2, sort_keys=True) + "\n"
+    return json.dumps(data, indent=2, sort_keys=True, allow_nan=False) + "\n"
 
 def require_publishable_package(files):
     """Reject incomplete or review-only legal packages; not a license enforcement service."""
