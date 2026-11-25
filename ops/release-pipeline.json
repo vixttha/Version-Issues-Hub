@@ -1,0 +1,558 @@
+{
+  "schema": 1,
+  "repository": "vixttha/Version-Issues-Hub",
+  "main": "1b11865f79464ae7db9a648467e8c2c1cb898a02",
+  "installed_state": "3ad6e455e86231c43ddf2dcded91f8d2debb1744",
+  "engineering": {
+    "head": "26e9fe8c019a33c5f84f77a37da70925505204e3",
+    "pr": 2,
+    "base": "1b11865f79464ae7db9a648467e8c2c1cb898a02",
+    "merge": "c1031e86afe1702d0f0f092a5203a9d1e83da0f4",
+    "runs": [
+      45713361976,
+      45713361959,
+      45713368275,
+      45713368267,
+      45713368324
+    ],
+    "jobs": 11,
+    "live_runs": [
+      45713361959,
+      45713368267
+    ],
+    "receipt_runs": [
+      {
+        "run": 45713361976,
+        "event": "push"
+      },
+      {
+        "run": 45713368275,
+        "event": "pull_request"
+      }
+    ],
+    "attempt": 1
+  },
+  "licensing_review": {
+    "head": "70242433f07d49e9d78f900eccc7745aa7063838",
+    "pr": 48,
+    "merge": "db714e30b1d306fcac49bf44639b0038609cadd6",
+    "runs": [
+      45665549458,
+      45665549764,
+      45665560799,
+      45665560758,
+      45665561089
+    ],
+    "jobs": 9,
+    "live_runs": [
+      45665549764,
+      45665560758
+    ],
+    "receipt_runs": [
+      {
+        "run": 45665549458,
+        "event": "push"
+      },
+      {
+        "run": 45665560799,
+        "event": "pull_request"
+      }
+    ],
+    "merged": true,
+    "integrated_sha": "44573ae95e143116caacd891c842065a6d32743f",
+    "base": "75a16c185f404400b453d3a8a4b5a7becfdea024"
+  },
+  "homepage": {
+    "head": "15868e46c97c0b93d132dc02492e6b7b046e244f",
+    "runs": [
+      45418472015
+    ],
+    "jobs": 2
+  },
+  "brand": "388c6ef968aa15edf3caa34e9de6819dcda24e7f",
+  "readme": "a9cdd97c4ad111ed4bb3eb1efa4c9bafc306a9b4",
+  "queue": [
+    {
+      "issue": 37,
+      "title": "Phase 4 closure — independent host acceptance and fresh remote CLI confirmation",
+      "classification": "release_blocker"
+    },
+    {
+      "issue": 38,
+      "title": "Optional Provenistem library: preserve decimal literals if numeric schemas are supported",
+      "classification": "optional_separate"
+    },
+    {
+      "issue": 40,
+      "title": "Release hold: finalize VIB brand and README HQ presentation before v0.0.1",
+      "classification": "release_blocker"
+    },
+    {
+      "issue": 44,
+      "title": "README HQ visual audit: distinguish transient GitHub asset decode failures from presentation regressions",
+      "classification": "visual_evidence"
+    },
+    {
+      "issue": 45,
+      "title": "Commercial clearance: investigate existing VIB software-brand use before launch",
+      "classification": "release_blocker"
+    },
+    {
+      "issue": 46,
+      "title": "Homepage promotion must preserve agent discovery and refresh source pin without editing accepted README archive",
+      "classification": "release_blocker"
+    },
+    {
+      "issue": 53,
+      "title": "Architecture: agent-count-independent VIB workflow scalability",
+      "classification": "optional_separate"
+    },
+    {
+      "issue": 63,
+      "title": "Pilot Tri-Runtime Adversarial Verification Engine in isolated Lydite vault",
+      "classification": "optional_separate"
+    }
+  ],
+  "release_blockers": [
+    "#37 two qualified independent host trials and final acceptance",
+    "#44 actual final homepage visual evidence",
+    "#45 commercial brand clearance",
+    "#46 final homepage derivative, source pin and publication approval",
+    "#40 final exact candidate owner acceptance, integration and release approval",
+    "PR49 exact current review and Head disposition",
+    "Self-install upgrade remains blocked by active/staged lifecycle guard; requalify after integration"
+  ],
+  "archive": {
+    "head": "a9cdd97c4ad111ed4bb3eb1efa4c9bafc306a9b4",
+    "runs": [
+      45399038888
+    ],
+    "jobs": 4,
+    "attempt": 2
+  },
+  "installed_phase": "Head",
+  "acceptance_review": {
+    "head": "8e24a3a4145ba3e291d207477bfe95a7924cabc5",
+    "pr": 52,
+    "merge": "c96147423a081f768dc19823dbf54ea1ff5b3bb4",
+    "runs": [
+      45655265078,
+      45655265001,
+      45655283573,
+      45655284120,
+      45655283632
+    ],
+    "live_runs": [
+      45655265001,
+      45655284120
+    ],
+    "jobs": 9,
+    "attempt": 1,
+    "receipt_runs": [
+      {
+        "run": 45655265078,
+        "event": "push"
+      },
+      {
+        "run": 45655283573,
+        "event": "pull_request"
+      }
+    ],
+    "merged": true,
+    "integrated_sha": "75a16c185f404400b453d3a8a4b5a7becfdea024",
+    "base": "265e0e4724bc409b16d2605fc4d59d2f3f658eaf"
+  },
+  "closed_checkpoints": [
+    {
+      "issue": 1,
+      "version": "v0.0.0.1",
+      "reason": "completed"
+    },
+    {
+      "issue": 7,
+      "version": "v0.0.0.2",
+      "reason": "completed"
+    },
+    {
+      "issue": 9,
+      "version": "v0.0.0.3",
+      "reason": "completed"
+    },
+    {
+      "issue": 10,
+      "version": "v0.0.0.4",
+      "reason": "completed"
+    },
+    {
+      "issue": 11,
+      "version": "v0.0.0.5",
+      "reason": "completed"
+    },
+    {
+      "issue": 12,
+      "version": "v0.0.0.6",
+      "reason": "not_planned"
+    },
+    {
+      "issue": 13,
+      "version": "v0.0.0.7",
+      "reason": "completed"
+    },
+    {
+      "issue": 14,
+      "version": "v0.0.0.8",
+      "reason": "not_planned"
+    },
+    {
+      "issue": 22,
+      "version": "v0.0.0.9",
+      "reason": "completed"
+    },
+    {
+      "issue": 23,
+      "version": "v0.0.0.10",
+      "reason": "completed"
+    },
+    {
+      "issue": 24,
+      "version": "v0.0.0.11",
+      "reason": "completed"
+    },
+    {
+      "issue": 25,
+      "version": "v0.0.0.12",
+      "reason": "completed"
+    },
+    {
+      "issue": 26,
+      "version": "v0.0.0.13",
+      "reason": "completed"
+    },
+    {
+      "issue": 29,
+      "version": "v0.0.0.14",
+      "reason": "completed"
+    },
+    {
+      "issue": 30,
+      "version": "v0.0.0.15",
+      "reason": "completed"
+    },
+    {
+      "issue": 31,
+      "version": "v0.0.0.16",
+      "reason": "completed"
+    },
+    {
+      "issue": 33,
+      "version": "v0.0.0.17",
+      "reason": "completed"
+    },
+    {
+      "issue": 35,
+      "version": "v0.0.0.18",
+      "reason": "completed"
+    },
+    {
+      "issue": 36,
+      "version": "v0.0.0.19",
+      "reason": "completed"
+    },
+    {
+      "issue": 41,
+      "version": "v0.0.0.20",
+      "reason": "completed"
+    },
+    {
+      "issue": 42,
+      "version": "v0.0.0.21",
+      "reason": "completed"
+    },
+    {
+      "issue": 43,
+      "version": "v0.0.0.22",
+      "reason": "completed"
+    },
+    {
+      "issue": 39,
+      "version": "v0.0.0.24",
+      "reason": "completed"
+    },
+    {
+      "issue": 51,
+      "version": "v0.0.0.25",
+      "reason": "completed"
+    },
+    {
+      "issue": 56,
+      "version": "v0.0.0.26",
+      "reason": "completed"
+    },
+    {
+      "issue": 57,
+      "version": "v0.0.0.27",
+      "reason": "completed"
+    },
+    {
+      "issue": 54,
+      "version": "v0.0.0.28",
+      "reason": "completed"
+    },
+    {
+      "issue": 61,
+      "version": "v0.0.0.29",
+      "reason": "completed"
+    },
+    {
+      "issue": 60,
+      "version": "v0.0.0.30",
+      "reason": "completed"
+    },
+    {
+      "issue": 65,
+      "version": "v0.0.0.31",
+      "reason": "completed"
+    },
+    {
+      "issue": 34,
+      "version": "v0.0.0.32",
+      "reason": "not_planned"
+    },
+    {
+      "issue": 68,
+      "version": "v0.0.0.33",
+      "reason": "completed"
+    },
+    {
+      "issue": 70,
+      "version": "v0.0.0.34",
+      "reason": "completed"
+    },
+    {
+      "issue": 71,
+      "version": "v0.0.0.35",
+      "reason": "completed"
+    },
+    {
+      "issue": 72,
+      "version": "v0.0.0.36",
+      "reason": "completed"
+    }
+  ],
+  "licensing_history": {
+    "head": "d1e8e1a922446d137a793d1fded105f427122ec5",
+    "runs": [
+      45421603402,
+      45421603459,
+      45421619822
+    ],
+    "attempts": {
+      "45421603402": 1,
+      "45421603459": 2,
+      "45421619822": 1
+    },
+    "jobs": 4
+  },
+  "closed_issues": [
+    {
+      "issue": 1,
+      "reason": "completed"
+    },
+    {
+      "issue": 7,
+      "reason": "completed"
+    },
+    {
+      "issue": 9,
+      "reason": "completed"
+    },
+    {
+      "issue": 10,
+      "reason": "completed"
+    },
+    {
+      "issue": 11,
+      "reason": "completed"
+    },
+    {
+      "issue": 12,
+      "reason": "not_planned"
+    },
+    {
+      "issue": 13,
+      "reason": "completed"
+    },
+    {
+      "issue": 14,
+      "reason": "not_planned"
+    },
+    {
+      "issue": 15,
+      "reason": "not_planned"
+    },
+    {
+      "issue": 16,
+      "reason": "completed"
+    },
+    {
+      "issue": 17,
+      "reason": "completed"
+    },
+    {
+      "issue": 18,
+      "reason": "completed"
+    },
+    {
+      "issue": 19,
+      "reason": "completed"
+    },
+    {
+      "issue": 20,
+      "reason": "completed"
+    },
+    {
+      "issue": 21,
+      "reason": "completed"
+    },
+    {
+      "issue": 22,
+      "reason": "completed"
+    },
+    {
+      "issue": 23,
+      "reason": "completed"
+    },
+    {
+      "issue": 24,
+      "reason": "completed"
+    },
+    {
+      "issue": 25,
+      "reason": "completed"
+    },
+    {
+      "issue": 26,
+      "reason": "completed"
+    },
+    {
+      "issue": 27,
+      "reason": "completed"
+    },
+    {
+      "issue": 29,
+      "reason": "completed"
+    },
+    {
+      "issue": 30,
+      "reason": "completed"
+    },
+    {
+      "issue": 31,
+      "reason": "completed"
+    },
+    {
+      "issue": 33,
+      "reason": "completed"
+    },
+    {
+      "issue": 34,
+      "reason": "not_planned"
+    },
+    {
+      "issue": 35,
+      "reason": "completed"
+    },
+    {
+      "issue": 36,
+      "reason": "completed"
+    },
+    {
+      "issue": 39,
+      "reason": "completed"
+    },
+    {
+      "issue": 41,
+      "reason": "completed"
+    },
+    {
+      "issue": 42,
+      "reason": "completed"
+    },
+    {
+      "issue": 43,
+      "reason": "completed"
+    },
+    {
+      "issue": 47,
+      "reason": "completed"
+    },
+    {
+      "issue": 51,
+      "reason": "completed"
+    },
+    {
+      "issue": 54,
+      "reason": "completed"
+    },
+    {
+      "issue": 56,
+      "reason": "completed"
+    },
+    {
+      "issue": 57,
+      "reason": "completed"
+    },
+    {
+      "issue": 60,
+      "reason": "completed"
+    },
+    {
+      "issue": 61,
+      "reason": "completed"
+    },
+    {
+      "issue": 65,
+      "reason": "completed"
+    },
+    {
+      "issue": 68,
+      "reason": "completed"
+    },
+    {
+      "issue": 70,
+      "reason": "completed"
+    },
+    {
+      "issue": 71,
+      "reason": "completed"
+    },
+    {
+      "issue": 72,
+      "reason": "completed"
+    },
+    {
+      "issue": 73,
+      "reason": "completed"
+    }
+  ],
+  "legal_blobs": {
+    "LICENSE": "90abd0e6c64a135f42451762337a397bf27f4862",
+    "VIB-NOTICE.md": "70dd8710828a38118965be3ca8be32457d106789"
+  },
+  "veraphify_current": {
+    "head": "439ea9a3446fd129408924da1949642ceda03a8d",
+    "source": "26e9fe8c019a33c5f84f77a37da70925505204e3",
+    "version": "v0.0.0.36",
+    "run": 45723922797,
+    "attempt": 1,
+    "artifact": 15072809424,
+    "artifact_digest": "sha256:e7e2ccda83a9a50dc9fbbe3ec9b7c54099f28b6f62c8b3f0e333ceb08d594497",
+    "receipt_blob": "588cf93dda2c4c341fa2dd651b9c0ef197b71449",
+    "archive_blobs": [
+      "30bcb882bc54a13afb96e297170f6f37b8e73cc1",
+      "8a374b2ca45b304be64f54fab0a1c00449c19ff6"
+    ],
+    "prior": "36cdaaa87c900b56072a24f7081aa0f92dc56f2c"
+  },
+  "installed_package_source": "4fc9ac47462101b941ea2f78fc939d42a9de0032"
+}
