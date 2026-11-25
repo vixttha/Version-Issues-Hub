@@ -10,6 +10,7 @@ from tools import checkpoint, install
 PHASES = ("Worker", "Validate", "Internal Auditor", "Head")
 ACTIVE_KEYS = {"issue", "version", "phase", "next_action", "fix_sha",
                "candidate_sha", "pull_request", "evidence"}
+PIN_KEYS = {"integration_base_sha", "integration_merge_sha"}
 HANDOFF = "ledger/handoff.json"
 LEDGER = "ledger/issue-versions.json"
 
@@ -33,7 +34,7 @@ def evidence_links(repo, links):
     return links
 
 def validate_active(active, ledger):
-    if not isinstance(active, dict) or set(active) != ACTIVE_KEYS:
+    if not isinstance(active, dict) or set(active) not in (ACTIVE_KEYS, ACTIVE_KEYS | PIN_KEYS):
         raise ValueError("Invalid active handoff schema")
     issue_number(active["issue"])
     if checkpoint.bindings(ledger).get(active["issue"]) != active["version"]:
@@ -48,6 +49,11 @@ def validate_active(active, ledger):
         issue_number(fields[2])
     if active["phase"] in ("Validate", "Internal Auditor") and any(v is None for v in fields):
         raise ValueError("Verification handoff requires a fix, candidate and PR")
+    if PIN_KEYS <= set(active):
+        if active["phase"] == "Worker" or any(v is None for v in fields):
+            raise ValueError("Integration pins require a candidate")
+        for key in PIN_KEYS:
+            install.require(install.SHA, active[key], key)
     evidence_links(ledger["repository"], active["evidence"])
     if active["phase"] == "Internal Auditor" and not active["evidence"]:
         raise ValueError("Auditor handoff requires evidence references")
@@ -147,6 +153,58 @@ def require_open_pr(api, state, active):
         raise ValueError("PR is not open and unmerged; return to Head or rework")
     return pr
 
+
+def integration_snapshot(api, state, active):
+    """Read the current ordinary PR test merge, including its actual parents."""
+    pr = require_open_pr(api, state, active)
+    prefix = state["prefix"]
+    if (pr.get("head", {}).get("repo") or {}).get("id") != state["manifest"]["target_repository_id"]:
+        raise ValueError("PR head repository changed or unsupported")
+    base = install.require(install.SHA, pr["base"].get("sha"), "PR base")
+    merged = install.require(install.SHA, pr.get("merge_commit_sha"), "proposed merge")
+    if install.read_ref(api, prefix, state["manifest"]["product_branch"]) != base:
+        raise ValueError("Product base changed; refresh integration evidence")
+    commit = api.request("GET", prefix + "/git/commits/" + merged)
+    if (commit.get("sha") != merged or [p["sha"] for p in commit["parents"]] !=
+            [base, active["candidate_sha"]] or base == active["candidate_sha"]):
+        raise ValueError("Proposed merge parents changed or unsupported")
+    if install.read_ref(api, prefix, state["manifest"]["product_branch"]) != base:
+        raise ValueError("Product base changed during inspection")
+    return {"integration_base_sha": base, "integration_merge_sha": merged}
+
+def require_fresh_snapshot(api, state, active):
+    current = integration_snapshot(api, state, active)
+    if any(active.get(key) != value for key, value in current.items()):
+        raise ValueError("Stale or unpinned integration evidence; refresh and revalidate")
+    return current
+
+def refresh_candidate(api, state, active, note):
+    """Keep the original fix only when the current PR still contains it."""
+    from tools import gate
+    if get_issue(api, state, active["issue"]).get("state") != "open":
+        raise ValueError("Issue is not open; owner reconciliation required")
+    pr = api.request("GET", state["prefix"] + "/pulls/" + str(issue_number(active["pull_request"])))
+    candidate = install.require(install.SHA, pr["head"]["sha"], "current PR head")
+    refreshed = {**active, "candidate_sha": candidate, "phase": "Validate",
+                 "next_action": text(note, "next action"), "evidence": []}
+    refreshed.update(integration_snapshot(api, state, refreshed))
+    gate.check_ancestry(api, state["prefix"], active["fix_sha"], candidate)
+    require_fresh_snapshot(api, state, refreshed)
+    return refreshed
+
+def verify_candidate_runs(api, state, active, links):
+    from tools import standard
+    require_fresh_snapshot(api, state, active)
+    policy = {"repository_id": state["manifest"]["target_repository_id"],
+              "pull_request": active["pull_request"], "head_sha": active["candidate_sha"],
+              "base_sha": active["integration_base_sha"], "merge_sha": active["integration_merge_sha"]}
+    for link in links:
+        run, attempt = map(int, re.search(r"/runs/([0-9]+)/attempts/([0-9]+)$", link).groups())
+        root = state["prefix"] + "/actions/runs/" + str(run)
+        for item in (api.request("GET", root), api.request("GET", root + "/attempts/" + str(attempt))):
+            standard.check_pr_run(item, policy, run, attempt)
+    require_fresh_snapshot(api, state, active)
+
 def inspect(api, state, requested=None):
     active = state["handoff"]["active"]
     issue = requested if requested is not None else (active["issue"] if active else None)
@@ -155,13 +213,20 @@ def inspect(api, state, requested=None):
         item = get_issue(api, state, issue)
         info = {"number": issue, "title": item.get("title"), "state": item.get("state"),
                 "version": checkpoint.bindings(state["ledger"]).get(issue)}
-    status = "head_scope_required" if active is None else "resume"
-    if active and issue != active["issue"]:
+    staged = None
+    if issue is not None and any(r["issue"] == issue and r["state"] == "staged" for r in state["ledger"]["issues"]):
+        prior = next((r for r in reversed(state["handoff"]["history"]) if r["handoff"]["issue"] == issue), None)
+        if prior is None or prior["disposition"] != "staged":
+            raise ValueError("Missing latest staged handoff")
+        staged = prior["handoff"]
+    inspected = staged if staged is not None else active
+    status = "staged" if staged is not None else ("head_scope_required" if active is None else "resume")
+    if active and issue != active["issue"] and staged is None:
         status = "blocked_other_active_issue"
-    if active and status == "resume":
-        if active["pull_request"] is not None:
+    if inspected and status in ("resume", "staged"):
+        if inspected["pull_request"] is not None:
             try:
-                pr = get_pr(api, state, active)
+                pr = get_pr(api, state, inspected)
             except ValueError:
                 status = "stale_candidate"
             else:
@@ -171,12 +236,18 @@ def inspect(api, state, requested=None):
                     status = "closed_pr_rework_required"
                 elif pr.get("state") != "open" or pr.get("merged") is not False:
                     status = "pr_state_unverified"
-        if status == "resume" and info["state"] != "open":
+                elif inspected.get("evidence") or PIN_KEYS <= set(inspected):
+                    try:
+                        require_fresh_snapshot(api, state, inspected)
+                    except (ValueError, KeyError, TypeError):
+                        status = "stale_integration_evidence"
+        if status in ("resume", "staged") and info["state"] != "open":
             status = "issue_reconciliation_required"
     return {"status": status, "installed_sha": state["ref"], "product_sha": state["product_sha"],
             "repository": state["ledger"]["repository"], "baseline": state["manifest"]["baseline_version"],
             "target": state["manifest"]["target_version"], "issue": info, "active": active,
-            "owner_merge_required": True, "evidence_verified": False}
+            "owner_merge_required": True, "evidence_verified": False,
+            "staged": staged}
 
 def claim(api, state, number, criteria, note, *, resume_prior_line=False):
     validate_handoff(state["handoff"], state["ledger"])
@@ -197,6 +268,18 @@ def claim(api, state, number, criteria, note, *, resume_prior_line=False):
     row = next((x for x in ledger["issues"] if x["issue"] == number), None)
     if row is not None and row["state"] in ("integrated", "retired"):
         raise ValueError("Historical issue cannot be reclaimed")
+    if row is not None and row["state"] == "staged":
+        if resume_prior_line:
+            raise ValueError("Staged issue requires normal owner-approved recovery")
+        if criteria and criteria != row["acceptance"]:
+            raise ValueError("Existing acceptance criteria differ")
+        prior = next((r for r in reversed(handoff["history"]) if r["handoff"]["issue"] == number), None)
+        if prior is None or prior["disposition"] != "staged":
+            raise ValueError("Missing latest staged handoff")
+        handoff["active"] = refresh_candidate(api, state, prior["handoff"], note)
+        row["state"] = "in_progress"
+        validate_handoff(handoff, ledger)
+        return ledger, handoff
     if row is not None and row["version"].rsplit(".", 1)[0] != baseline:
         prior_line = row["version"].rsplit(".", 1)[0]
         if (checkpoint.version_number(prior_line) >= checkpoint.version_number(baseline)
@@ -219,7 +302,7 @@ def claim(api, state, number, criteria, note, *, resume_prior_line=False):
     return ledger, handoff
 
 def advance(api, state, note, *, fix=None, candidate=None, pr=None, evidence=None,
-            rework=False, return_to_head=False):
+            rework=False, return_to_head=False, refresh=False):
     validate_handoff(state["handoff"], state["ledger"])
     ledger = copy.deepcopy(state["ledger"])
     handoff = copy.deepcopy(state["handoff"])
@@ -228,9 +311,18 @@ def advance(api, state, note, *, fix=None, candidate=None, pr=None, evidence=Non
         raise ValueError("No active handoff")
     active["next_action"] = text(note, "next action")
     phase = active["phase"]
-    if rework and return_to_head:
+    if sum((rework, return_to_head, refresh)) > 1:
         raise ValueError("Choose one transition")
-    if rework:
+    if refresh:
+        if phase == "Worker" or active["pull_request"] is None:
+            raise ValueError("Refresh requires an existing PR candidate")
+        if any(v is not None for v in (fix, candidate, pr)) or evidence:
+            raise ValueError("Refresh preserves the original fix; do not supply replacement evidence")
+        previous = copy.deepcopy(state["handoff"]["active"])
+        handoff["active"] = refresh_candidate(api, state, previous, note)
+        handoff["history"].append({"handoff": previous, "disposition": "rework",
+                                   "decision": "Refresh integration evidence: " + note, "merged_sha": None})
+    elif rework:
         if phase == "Worker":
             raise ValueError("Already in Worker phase")
         if get_issue(api, state, active["issue"]).get("state") != "open":
@@ -248,6 +340,8 @@ def advance(api, state, note, *, fix=None, candidate=None, pr=None, evidence=Non
         handoff["history"].append({"handoff": previous, "disposition": "rework",
                                    "decision": note, "merged_sha": None})
         active.update(phase="Worker", fix_sha=None, candidate_sha=None, pull_request=None, evidence=[])
+        for key in PIN_KEYS:
+            active.pop(key, None)
     elif return_to_head:
         if phase == "Head":
             raise ValueError("Already at Head")
@@ -257,12 +351,13 @@ def advance(api, state, note, *, fix=None, candidate=None, pr=None, evidence=Non
     elif phase == "Worker":
         active.update(phase="Validate", fix_sha=fix, candidate_sha=candidate, pull_request=pr, evidence=[])
         validate_active(active, ledger)
-        require_open_pr(api, state, active)
+        active.update(integration_snapshot(api, state, active))
     elif phase == "Validate":
-        require_open_pr(api, state, active)
-        active.update(phase="Internal Auditor", evidence=evidence_links(ledger["repository"], evidence or []))
+        links = evidence_links(ledger["repository"], evidence or [])
+        verify_candidate_runs(api, state, active, links)
+        active.update(phase="Internal Auditor", evidence=links)
     elif phase == "Internal Auditor":
-        require_open_pr(api, state, active)
+        verify_candidate_runs(api, state, active, active["evidence"])
         active["phase"] = "Head"
     else:
         raise ValueError("Head must decide or return to Worker")
@@ -286,8 +381,9 @@ def finish(api, state, disposition, decision, *, policy=None):
             raise ValueError("Integration requires recorded verification evidence")
         pr = get_pr(api, state, active)
         if disposition == "staged":
-            if pr.get("state") != "open" or pr.get("merged") is True:
+            if pr.get("state") != "open" or pr.get("merged") is not False:
                 raise ValueError("Staging requires an open unmerged PR")
+            verify_candidate_runs(api, state, active, active["evidence"])
         else:
             if pr.get("merged") is not True:
                 raise ValueError("GitHub does not report the PR merged")
@@ -437,6 +533,7 @@ def main():
     a.add_argument("--pr", type=int)
     a.add_argument("--evidence", action="append", default=[])
     a.add_argument("--rework", action="store_true")
+    a.add_argument("--refresh", action="store_true", help="Keep original fix and checkpoint; archive stale evidence and revalidate current PR")
     a.add_argument("--return-to-head", action="store_true")
     f = sub.add_parser("finish")
     f.add_argument("disposition", choices=["blocked", "deferred", "staged", "integrated"])
@@ -467,7 +564,7 @@ def main():
                     resume_prior_line=args.resume_prior_line)
             elif args.command == "advance":
                 ledger, handoff = advance(api, state, args.note, fix=args.fix, candidate=args.candidate,
-                    pr=args.pr, evidence=args.evidence, rework=args.rework, return_to_head=args.return_to_head)
+                    pr=args.pr, evidence=args.evidence, rework=args.rework, return_to_head=args.return_to_head, refresh=args.refresh)
             elif args.command in ("finish", "reconcile"):
                 from pathlib import Path
                 policy = checkpoint.parse_json(Path(args.policy).read_text(encoding="utf-8")) if args.policy else None

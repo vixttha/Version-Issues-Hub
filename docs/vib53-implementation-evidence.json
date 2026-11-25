@@ -168,6 +168,62 @@
           "anchor": "def test_dispatch_at_actual_revision_supported(self):"
         }
       ]
+    },
+    {
+      "id": "vib53-stale-integration-evidence",
+      "label": "Preserve fix and checkpoint across changed integration candidate",
+      "documented_in": [
+        {
+          "path": "docs/vib53-implementation.md",
+          "anchor": "## Stale integration evidence recovery"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "tools/session.py",
+          "anchor": "def integration_snapshot(api, state, active):"
+        }
+      ],
+      "implemented_in": [
+        {
+          "path": "tools/session.py",
+          "anchor": "def refresh_candidate(api, state, active, note):"
+        },
+        {
+          "path": "tools/standard.py",
+          "anchor": "def check_pr_run(item, policy, run, attempt):"
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tests/test_stale_integration.py",
+          "anchor": "def test_other_merge_invalidates_active_and_staged_without_mutation(self):"
+        },
+        {
+          "path": "tests/test_stale_integration.py",
+          "anchor": "def test_refresh_keeps_fix_version_and_history_and_rejects_old_run(self):"
+        },
+        {
+          "path": "tests/test_stale_integration.py",
+          "anchor": "def test_staged_reclaim_preserves_original_fix_and_slot(self):"
+        },
+        {
+          "path": "tests/test_stale_integration.py",
+          "anchor": "def test_changed_head_missing_fix_refuses_refresh(self):"
+        },
+        {
+          "path": "tests/test_stale_integration.py",
+          "anchor": "def test_legacy_active_without_pins_remains_readable_but_cannot_stage(self):"
+        },
+        {
+          "path": "tests/test_stale_integration.py",
+          "anchor": "def test_base_changes_during_run_read_cannot_advance(self):"
+        },
+        {
+          "path": "tests/test_stale_integration.py",
+          "anchor": "def test_unrelated_installed_state_is_not_product_base(self):"
+        }
+      ]
     }
   ]
 }

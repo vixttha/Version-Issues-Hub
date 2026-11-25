@@ -14,6 +14,7 @@ NEXT = "f" * 40
 RUN = "https://github.com/" + REPO + "/actions/runs/123/attempts/1"
 POST_RUN = "https://github.com/" + REPO + "/actions/runs/124/attempts/1"
 BASE = "1" * 40
+PROPOSED = "3" * 40
 FIX2 = "2" * 40
 
 def state():
@@ -27,7 +28,10 @@ class Fake:
     def __init__(self):
         self.ref = HEAD
         self.writes = []
-        self.product = NEXT
+        self.product = BASE
+        self.pre_run = {"id":123,"run_attempt":1,"repository":{"id":42},"event":"pull_request",
+                        "head_sha":CANDIDATE,"status":"completed","conclusion":"success",
+                        "pull_requests":[{"number":8,"head":{"sha":CANDIDATE},"base":{"sha":BASE}}]}
         self.merge_parents = [{"sha": BASE}, {"sha": CANDIDATE}]
         self.run = {"id":124,"run_attempt":1,"repository":{"id":42},"head_repository":{"id":42},
                     "workflow_id":52,"event":"push","head_branch":"trunk","head_sha":NEXT,
@@ -35,21 +39,25 @@ class Fake:
         self.jobs = [{"id":987,"name":"test","run_id":124,"run_attempt":1,"head_sha":NEXT,
                       "status":"completed","conclusion":"success",
                       "steps":[{"name":"Run acceptance","status":"completed","conclusion":"success"}]}]
-        self.pr = {"number": 8, "head": {"sha": CANDIDATE},
-                   "base": {"ref": "trunk", "repo": {"id": 42}},
-                   "state": "open", "merged": False, "merge_commit_sha": NEXT}
+        self.pr = {"number": 8, "head": {"sha": CANDIDATE,"repo":{"id":42}},
+                   "base": {"ref": "trunk", "sha":BASE, "repo": {"id": 42}},
+                   "state": "open", "merged": False, "merge_commit_sha": PROPOSED}
     def request(self, method, path, body=None):
         if method != "GET":
             self.writes.append((method, path, body))
         if method == "GET" and path == "/repos/" + REPO:
             return {"id":42,"full_name":REPO,"private":False,"default_branch":"trunk"}
         if method == "GET" and path.endswith("/git/ref/heads/trunk"):
-            return {"ref":"refs/heads/trunk","object":{"type":"commit","sha":self.product}}
+            return {"ref":"refs/heads/trunk","object":{"type":"commit","sha": self.product}}
+        if method == "GET" and path.endswith("/git/commits/" + self.pr["merge_commit_sha"]) and self.pr["merged"] is False:
+            return {"sha":self.pr["merge_commit_sha"],"parents":[{"sha":self.pr["base"]["sha"]},{"sha":self.pr["head"]["sha"]}]}
+        if method == "GET" and (path.endswith("/actions/runs/123") or path.endswith("/actions/runs/123/attempts/1")):
+            return self.pre_run
         if method == "GET" and path.endswith("/git/commits/" + NEXT):
             return {"sha":NEXT,"tree":{"sha":TREE},"parents":self.merge_parents}
         if method == "GET" and "/compare/" in path:
             first,last = path.rsplit("/",1)[1].split("...")
-            ok = (first in (FIX,FIX2) and last==CANDIDATE) or (first==NEXT and last in (NEXT,HEAD))
+            ok = (first in (FIX,FIX2) and last in (CANDIDATE,NEXT)) or (first==NEXT and last in (NEXT,HEAD))
             return {"status":("identical" if first==last else "ahead") if ok else "diverged",
                     "merge_base_commit":{"sha":first if ok else BASE}}
         if method == "GET" and path.endswith("/attempts/1/jobs?per_page=100"):
@@ -119,7 +127,8 @@ class SessionTests(unittest.TestCase):
         self.assertEqual(self.state["handoff"]["active"]["phase"], "Head")
         with self.assertRaisesRegex(ValueError, "merged"):
             session.finish(self.api, self.state, "integrated", "Owner accepted")
-        self.api.pr.update(state="closed", merged=True)
+        self.api.pr.update(state="closed", merged=True, merge_commit_sha=NEXT)
+        self.api.product=NEXT
         ledger, handoff = session.finish(self.api, self.state, "integrated", "Owner accepted", policy=post_policy(self.state))
         self.assertIsNone(handoff["active"])
         self.assertEqual(handoff["history"][0]["merged_sha"], NEXT)
@@ -214,7 +223,8 @@ class SessionTests(unittest.TestCase):
             self.api, self.state, "staged", "Owner stages second issue")
         with self.assertRaisesRegex(ValueError, "merged"):
             session.reconcile(self.api, self.state, 247, "Owner integrates")
-        self.api.pr.update(state="closed", merged=True)
+        self.api.pr.update(state="closed", merged=True, merge_commit_sha=NEXT)
+        self.api.product=NEXT
         for issue in (247, 248):
             self.state["ledger"], self.state["handoff"] = session.reconcile(
                 self.api, self.state, issue, "Owner integrates", policy=post_policy(self.state, issue))
@@ -236,7 +246,8 @@ class SessionTests(unittest.TestCase):
         self.api.pr.update(state="open", merged=False)
         self.claim()
         self.assertEqual(self.state["handoff"]["active"]["version"], "v1.0.6.1")
-        self.advance(fix=FIX, candidate=NEXT, pr=8)
+        self.assertEqual(self.state["handoff"]["active"]["fix_sha"], FIX)
+        self.api.pre_run.update(head_sha=NEXT, pull_requests=[{"number":8,"head":{"sha":NEXT},"base":{"sha":BASE}}])
         self.advance(evidence=[RUN])
         self.advance(rework=True)
         old = self.state["handoff"]["history"]
@@ -249,7 +260,8 @@ class SessionTests(unittest.TestCase):
     def test_inspect_distinguishes_closed_and_merged_pr(self):
         self.claim()
         self.advance(fix=FIX, candidate=CANDIDATE, pr=8)
-        self.api.pr.update(state="closed", merged=True)
+        self.api.pr.update(state="closed", merged=True, merge_commit_sha=NEXT)
+        self.api.product=NEXT
         before = copy.deepcopy(self.state)
         self.assertEqual(session.inspect(self.api, self.state)["status"], "merged_reconciliation_required")
         with self.assertRaisesRegex(ValueError, "merged"):
@@ -259,7 +271,8 @@ class SessionTests(unittest.TestCase):
         self.assertEqual(session.inspect(self.api, self.state)["status"], "closed_pr_rework_required")
         with self.assertRaisesRegex(ValueError, "not open"):
             self.advance(evidence=[RUN])
-        self.api.pr.update(state="open", merged=False, draft=True)
+        self.api.pr.update(state="open", merged=False, draft=True, merge_commit_sha=PROPOSED)
+        self.api.product=BASE
         self.assertEqual(session.inspect(self.api, self.state)["status"], "resume")
         self.api.pr["head"]["sha"] = NEXT
         self.assertEqual(session.inspect(self.api, self.state)["status"], "stale_candidate")

@@ -13,7 +13,8 @@ class IntegrationTests(unittest.TestCase):
             s["ledger"],s["handoff"] = session.advance(api,s,"next",**kwargs)
         if staged:
             s["ledger"],s["handoff"] = session.finish(api,s,"staged","Stage")
-        api.pr.update(state="closed",merged=True)
+        api.pr.update(state="closed",merged=True,merge_commit_sha=NEXT)
+        api.product=NEXT
         return api,s,post_policy(s)
 
     def integrate(self, api, s, staged, policy):

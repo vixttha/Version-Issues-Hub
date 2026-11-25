@@ -168,6 +168,13 @@ def evaluate_scope(api, target, policy, validate, verify_test):
         if (active["version"] != row["version"] or active["fix_sha"] != row["fix_sha"]
                 or active["candidate_sha"] != policy["head_sha"] or active["pull_request"] != policy["pull_request"]):
             raise ValueError("Issue fix or staged PR candidate does not match policy")
+        # Standard requires fresh staged pins. Optional trusted gate also refuses
+        # mismatched pins when present; its existing exact merge attestation
+        # remains the legacy compatibility path.
+        if (session.PIN_KEYS <= set(active) or "publisher_app_id" not in policy) and (
+                active.get("integration_base_sha") != policy["base_sha"]
+                or active.get("integration_merge_sha") != policy["merge_sha"]):
+            raise ValueError("Stale or unpinned staged integration evidence; refresh and revalidate")
         if [c["text"] for c in row["criteria"]] != record["acceptance"]:
             raise ValueError("Every accepted criterion must be mapped exactly")
         check_ancestry(api, prefix, row["fix_sha"], policy["head_sha"])

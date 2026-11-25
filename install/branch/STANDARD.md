@@ -17,3 +17,5 @@ Standard Phase 3: read-only metadata validation, positive/negative tests on publ
 ## Post-merge use of Standard mappings
 
 `session finish integrated` and `session reconcile` reuse this policy format with one issue and the actual two-parent merge SHA/base, not the PR's synthetic merge. See WORKFLOW.md. The run must be a successful push or workflow_dispatch on the product branch at that exact SHA, with matching current attempt, job identity and successful mapped steps. The owner-reviewed decision must still establish actual checkout, commands, public hosted runner and criterion outcomes. Other merge methods/events are not yet qualified. Existing pre-merge Standard evaluation is unchanged.
+
+Standard evaluation also requires the staged handoff's proposed-merge/base pins to match the live policy. Legacy unpinned staged rows must be refreshed through the existing claim workflow. Head-only Actions metadata without the exact PR base/head association cannot establish integration freshness. Previous run receipts remain historical; review the actual checkout on the new candidate.

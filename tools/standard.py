@@ -40,6 +40,21 @@ def validate_policy(policy):
                 if any(not isinstance(s, str) or not s.strip() for s in steps) or len(steps) != len(set(steps)):
                     raise ValueError("Invalid steps")
 
+def check_pr_run(item, policy, run, attempt):
+    """A head-only run without an exact base association is not integration evidence."""
+    if (item.get("id") != run or item.get("run_attempt") != attempt
+            or (item.get("repository") or {}).get("id") != policy["repository_id"]
+            or item.get("event") != "pull_request"
+            or item.get("head_sha") not in (policy["head_sha"], policy["merge_sha"])
+            or item.get("status") != "completed" or item.get("conclusion") != "success"):
+        raise ValueError("Run is stale, unsuccessful or unrelated")
+    prs = item.get("pull_requests") or []
+    if ((prs or item["head_sha"] != policy["merge_sha"])
+            and not any(p.get("number") == policy["pull_request"]
+                        and (p.get("head") or {}).get("sha") == policy["head_sha"]
+                        and (p.get("base") or {}).get("sha") == policy["base_sha"] for p in prs)):
+        raise ValueError("Run PR association does not match current head and base")
+
 def check_test(api, prefix, policy, evidence, test, *, post_merge=False):
     run, attempt = test["run"], test["attempt"]
     url = f"https://github.com/{policy['repository']}/actions/runs/{run}/attempts/{attempt}"
@@ -58,12 +73,8 @@ def check_test(api, prefix, policy, evidence, test, *, post_merge=False):
                     or (item.get("head_repository") or {}).get("id") != policy["repository_id"]))
                 or item.get("status") != "completed" or item.get("conclusion") != "success"):
             raise ValueError("Run is stale, unsuccessful or unrelated")
-        # GitHub may omit the PR association. If present it must match.
-        prs = item.get("pull_requests") or []
-        if not post_merge and prs and not any(p.get("number") == policy["pull_request"]
-                           and p["head"]["sha"] == policy["head_sha"]
-                           and p["base"]["sha"] == policy["base_sha"] for p in prs):
-            raise ValueError("Run PR association does not match")
+        if not post_merge:
+            check_pr_run(item, policy, run, attempt)
     jobs = gate.exact_collection(api, root + "/attempts/" + str(attempt) + "/jobs?per_page=100", "jobs")
     matches = [j for j in jobs if j.get("name") == test["job_name"]]
     if len(matches) != 1 or matches[0].get("status") != "completed" or matches[0].get("conclusion") != "success":

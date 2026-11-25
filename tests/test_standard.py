@@ -59,3 +59,15 @@ class StandardTests(unittest.TestCase):
         self.api.request=lambda method,path,body=None: {"id":42,"private":True}
         with self.assertRaisesRegex(ValueError,"public target"):
             standard.evaluate(self.api,REPO,self.policy)
+
+
+    def test_head_only_run_without_base_association_rejected(self):
+        self.api.run["pull_requests"]=[]
+        with self.assertRaisesRegex(ValueError,"association"):
+            standard.evaluate(self.api,REPO,self.policy)
+
+    def test_legacy_unpinned_stage_requires_refresh(self):
+        self.state["handoff"]["history"][0]["handoff"].pop("integration_base_sha")
+        self.state["handoff"]["history"][0]["handoff"].pop("integration_merge_sha")
+        with self.assertRaisesRegex(ValueError,"unpinned"):
+            standard.evaluate(self.api,REPO,self.policy)
