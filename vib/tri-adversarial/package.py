@@ -7,7 +7,9 @@ import sys
 
 root=Path(__file__).resolve().parent
 names=("executor.py","challenger.sh","auditor.ps1","contract.json")
-payload={n:base64.b64encode((root/n).read_bytes()).decode("ascii") for n in names}
+raw={n:(root/n).read_bytes() for n in names}
+if any(b"\r\n" in value for value in raw.values()):raise RuntimeError("Noncanonical source checkout; expected LF")
+payload={n:base64.b64encode(v).decode("ascii") for n,v in raw.items()}
 hashes={n:hashlib.sha256(base64.b64decode(v)).hexdigest() for n,v in payload.items()}
 header="PAYLOAD="+repr(payload)+"\nHASHES="+repr(hashes)+"\n"
 launcher="""import base64,hashlib,subprocess,sys,tempfile
