@@ -167,7 +167,10 @@ def safe_git(self, *args, data=None):
         input=None if data is None else data.encode("utf-8"), env=env, timeout=20).decode("utf-8").strip()
 
 def safe_read(self, sha, path):
-    return git(self.path, "show", sha+":"+path).decode("utf-8")
+    try:
+        return git(self.path, "show", sha+":"+path).decode("utf-8")
+    except subprocess.CalledProcessError as exc:
+        raise install.ApiError(404) from exc
 
 class LifecycleNegative(unittest.TestCase):
     def setUp(self):
@@ -190,14 +193,19 @@ class LifecycleNegative(unittest.TestCase):
         path="README.md"
         a.git("read-tree",a.old)
         if remove:
-            a.git("update-index","--force-remove","--",path)
+            a.git("update-index","--index-info",data="0 "+("0"*40)+"\t"+path+"\n")
         else:
             oid=a.git("hash-object","-w","--stdin",data=value)
             a.git("update-index","--add","--cacheinfo",mode or "100644",oid,path)
         changed=a.commit(a.git("write-tree"),[a.old])
         a.ref(install.BRANCH,changed)
-        with self.assertRaisesRegex(ValueError,"pinned bytes or mode"):
-            lifecycle.upgrade(a,original.REPO,changed,original.NEW,apply=True,owner_approved=True)
+        if remove:
+            with self.assertRaises(install.ApiError) as caught:
+                lifecycle.upgrade(a,original.REPO,changed,original.NEW,apply=True,owner_approved=True)
+            self.assertEqual(caught.exception.status,404)
+        else:
+            with self.assertRaisesRegex(ValueError,"Installed package (?:does not match pinned source|path differs from pinned bytes or mode)"):
+                lifecycle.upgrade(a,original.REPO,changed,original.NEW,apply=True,owner_approved=True)
         self.assertEqual(a.writes,[])
         self.assertEqual(a.ref(install.BRANCH),changed)
         self.assertEqual(a.ref("main"),a.product)

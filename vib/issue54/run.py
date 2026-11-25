@@ -30,7 +30,7 @@ raw=result.stdout
 log=raw.decode("utf-8",errors="replace")
 print(log,flush=True)
 if kind=="python":
-    ids=re.findall(r"^(test_[^\s]+) \([^)]*\) \.\.\. ok",log,re.M)
+    ids=re.findall(r"^test_[^\s]+ \(([^)]*)\) \.\.\. ok",log,re.M)
     expected=67
     passed=len(ids)==expected and len(set(ids))==expected and not re.search(r"\b(skipped|expected failures|unexpected successes)=",log)
 else:
