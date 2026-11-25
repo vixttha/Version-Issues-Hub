@@ -69,9 +69,13 @@ class Bytes(unittest.TestCase):
         self.assertEqual(actual, predicted)
         self.assertEqual(old_oid, oracle(predicted))
         self.assertEqual(actual == raw, os.linesep == "\n")
-        print("VIB54_TRANSPORT " + json.dumps({"platform": sys.platform, "expected_hex": raw.hex(),
+        observation = {"platform": sys.platform, "expected_hex": raw.hex(),
               "observed_hex": actual.hex(), "expected_oid": oracle(raw), "observed_oid": old_oid,
-              "expected_length": len(raw), "observed_length": len(actual)}), flush=True)
+              "expected_length": len(raw), "observed_length": len(actual)}
+        if "RUNNER_TEMP" in os.environ:
+            out = Path(os.environ["RUNNER_TEMP"]) / "issue54"
+            out.mkdir(exist_ok=True)
+            (out / "transport.json").write_text(json.dumps(observation, indent=2)+"\n", encoding="utf-8")
 
     def test_text_read_hides_crlf(self):
         raw = b"a\r\nb\r\n"
