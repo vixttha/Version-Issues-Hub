@@ -1,0 +1,41 @@
+name: VIB version integrity independent regression
+on:
+  push:
+    branches: [Lydite-Test-Vault]
+    paths: ['vib/version-integrity/**', '.github/workflows/vib-version-integrity.yml']
+permissions:
+  contents: read
+jobs:
+  verify:
+    if: github.event.repository.private == false
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [ubuntu-24.04, windows-latest]
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          path: vault
+          persist-credentials: false
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          path: engineering
+          ref: '26e9fe8c019a33c5f84f77a37da70925505204e3'
+          persist-credentials: false
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          path: installed
+          ref: '3ad6e455e86231c43ddf2dcded91f8d2debb1744'
+          persist-credentials: false
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          path: prior
+          ref: 'e2ce4baf398750e81ac9ab2138095b666bd41a2d'
+          persist-credentials: false
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
+        with:
+          python-version: '3.12'
+      - name: Independently check immutable mappings, history, scopes and installed bytes
+        run: python vault/vib/version-integrity/test_version_integrity.py
