@@ -2,12 +2,14 @@
   "active": {
     "issue": 40,
     "version": "v0.0.0.23",
-    "phase": "Validate",
-    "next_action": "Worker candidate reconciles engineering and licensing pins. Validate exact run 45665944043 and pending external review; historical installed snapshot used by preflight is not current ref.",
+    "phase": "Internal Auditor",
+    "next_action": "216/216 mechanical checks passed; artifact 15048030825 digest and CRC verified. Licensing proposed merge receipts and Graphify plus both live scopes independently checked. Audit pending CodeRabbit on PR2/48/49, rights confirmation, and current installed handoff drift from historical preflight pin; no merge.",
     "fix_sha": "4445ecc4ca6d54d8f4268c380ebe1e093a6b1069",
     "candidate_sha": "4445ecc4ca6d54d8f4268c380ebe1e093a6b1069",
     "pull_request": 49,
-    "evidence": []
+    "evidence": [
+      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45665944043/attempts/1"
+    ]
   },
   "history": [
     {
