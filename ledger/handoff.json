@@ -2,12 +2,18 @@
   "active": {
     "issue": 40,
     "version": "v0.0.0.23",
-    "phase": "Validate",
-    "next_action": "Validate historical licensing documentation repair on exact PR2 head, all other blobs identical. Public runner/Graphify and CodeRabbit required. PR49 repin remains separate after validation.",
+    "phase": "Head",
+    "next_action": "Validate returns to Head blocked: documentation-only repair verified; 107 tests per checkout, Graphify 121/120 twice, legal blobs unchanged. Live push core self_install ValueError and both external README HQ AssertionError; PR core passed. Investigate adopter snapshot drift versus deterministic defect before rerun; no bypass. Historical notice CodeRabbit thread no longer unresolved, fresh review still running. PR49 repin pending.",
     "fix_sha": "e28e8a2e7360baf840c40dacf12ab91d5d7abd63",
     "candidate_sha": "e28e8a2e7360baf840c40dacf12ab91d5d7abd63",
     "pull_request": 2,
-    "evidence": []
+    "evidence": [
+      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45670758522/attempts/1",
+      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45670778354/attempts/1",
+      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45670758045/attempts/1",
+      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45670778290/attempts/1",
+      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45670778353/attempts/1"
+    ]
   },
   "history": [
     {
