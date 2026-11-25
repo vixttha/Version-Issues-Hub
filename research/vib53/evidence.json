@@ -1,0 +1,59 @@
+{
+  "title": "VIB #53 research-only transaction evidence",
+  "features": [
+    {
+      "id": "research-53-cas",
+      "label": "Synthetic compare-and-swap and replay",
+      "documented_in": [
+        {
+          "path": "research/vib53/README.md",
+          "anchor": "## Experiment boundary"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "research/vib53/test_transactions.py",
+          "anchor": "class Store:"
+        }
+      ],
+      "implemented_in": [
+        {
+          "path": "research/vib53/test_transactions.py",
+          "anchor": "def cas(self, parent, candidate):"
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "research/vib53/test_transactions.py",
+          "anchor": "def test_distinct_issues_contention_and_recovery(self):"
+        },
+        {
+          "path": "research/vib53/test_transactions.py",
+          "anchor": "def test_ambiguous_success_and_intent(self):"
+        }
+      ]
+    },
+    {
+      "id": "research-53-readback",
+      "label": "Current readback limitation",
+      "documented_in": [
+        {
+          "path": "research/vib53/README.md",
+          "anchor": "## Experiment boundary"
+        }
+      ],
+      "implemented_in": [
+        {
+          "path": "tools/install.py",
+          "anchor": "def wait_ref(api, prefix, branch, expected, previous=None):"
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "research/vib53/test_transactions.py",
+          "anchor": "def test_current_readback_limitation(self):"
+        }
+      ]
+    }
+  ]
+}
