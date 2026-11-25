@@ -18,9 +18,9 @@ Owner direction: Agent 4 owns the VIB testing workspace, not product implementat
 
 ## Work sequence
 1. Inventory current product coverage and run all ten pinned Python suites using the existing Lydite per-suite receipt runner.
-2. Review the language-role matrix with the owner. Proposed roles are not approved; no selection or new language implementation now.
-3. After owner selection, develop one scoped negative/positive case at a time with reproducible evidence. Prioritize actual VIB defects rather than duplicate tests written in every language.
+2. Follow the [permanent language responsibility charter](language-roles.md) established under the owner's role-review instruction. New language implementation and first work package remain separately scoped.
+3. After owner/Head scope selection, develop one scoped negative/positive case at a time with reproducible evidence. Prioritize actual VIB defects rather than duplicate tests written in every language.
 4. Future contention research (#53) remains separate; offline model and simulated clients must not be described as actual independent agent trials (#37).
 
 ## Evidence boundary
-Lydite records mechanical outcomes only. Existing template language examples are not VIB integration tests. Graphify archive checks are not agent acceptance. Standard VIB remains advisory, and merge/release authority remains with the owner. Current status is setup, pending exact new-run evidence and owner language decisions.
+Lydite records mechanical outcomes only. Existing template language examples are not VIB integration tests. Graphify archive checks are not agent acceptance. Standard VIB remains advisory, and merge/release authority remains with the owner. Current status: permanent responsibility charter recorded; prior Ubuntu pass and Windows lifecycle failure (#54) retained; new case implementation and repair remain pending owner scope.

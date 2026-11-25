@@ -26,7 +26,7 @@ Lydite is available under the [MIT License](LICENSE). Include a copy of the lice
 
 ## VIB project Test Vault
 
-[Agent 4 operating scope](vib/AGENT-4.md) · [Language role review](vib/language-roles.md) · [Adoption and baseline history](VIB-ADOPTION.md).
+[Agent 4 operating scope](vib/AGENT-4.md) · [Permanent language responsibilities](vib/language-roles.md) · [Adoption and baseline history](VIB-ADOPTION.md).
 
 [Project cases](vib/cases.md) · [Pinned plan](vib/plan.json) · [Runner](vib/run_cases.py). This workspace tests a separately pinned product checkout; the original template language tests remain separate.
 
