@@ -40,7 +40,7 @@ def validate_policy(policy):
                 if any(not isinstance(s, str) or not s.strip() for s in steps) or len(steps) != len(set(steps)):
                     raise ValueError("Invalid steps")
 
-def check_test(api, prefix, policy, evidence, test):
+def check_test(api, prefix, policy, evidence, test, *, post_merge=False):
     run, attempt = test["run"], test["attempt"]
     url = f"https://github.com/{policy['repository']}/actions/runs/{run}/attempts/{attempt}"
     if url not in evidence:
@@ -50,13 +50,17 @@ def check_test(api, prefix, policy, evidence, test):
         if (item.get("id") != run or item.get("run_attempt") != attempt
                 or item["repository"]["id"] != policy["repository_id"]
                 or item.get("workflow_id") != test["workflow_id"]
-                or item.get("event") != "pull_request"
-                or item.get("head_sha") not in (policy["head_sha"], policy["merge_sha"])
+                or (not post_merge and (item.get("event") != "pull_request"
+                    or item.get("head_sha") not in (policy["head_sha"], policy["merge_sha"])))
+                or (post_merge and (item.get("event") not in ("push", "workflow_dispatch")
+                    or item.get("head_sha") != policy["merge_sha"]
+                    or item.get("head_branch") != policy["product_branch"]
+                    or (item.get("head_repository") or {}).get("id") != policy["repository_id"]))
                 or item.get("status") != "completed" or item.get("conclusion") != "success"):
             raise ValueError("Run is stale, unsuccessful or unrelated")
         # GitHub may omit the PR association. If present it must match.
         prs = item.get("pull_requests") or []
-        if prs and not any(p.get("number") == policy["pull_request"]
+        if not post_merge and prs and not any(p.get("number") == policy["pull_request"]
                            and p["head"]["sha"] == policy["head_sha"]
                            and p["base"]["sha"] == policy["base_sha"] for p in prs):
             raise ValueError("Run PR association does not match")
@@ -65,12 +69,72 @@ def check_test(api, prefix, policy, evidence, test):
     if len(matches) != 1 or matches[0].get("status") != "completed" or matches[0].get("conclusion") != "success":
         raise ValueError("Required job missing or unsuccessful")
     job = matches[0]
+    if post_merge and (job.get("run_id") != run or job.get("run_attempt") != attempt
+            or job.get("head_sha") != policy["merge_sha"]):
+        raise ValueError("Post-merge job identity mismatch")
     for step in test["steps"]:
         matches = [s for s in job.get("steps", []) if s.get("name") == step]
         if len(matches) != 1 or matches[0].get("status") != "completed" or matches[0].get("conclusion") != "success":
             raise ValueError("Required step missing or unsuccessful")
+    if post_merge:
+        latest = api.request("GET", root)
+        if latest.get("id") != run or latest.get("run_attempt") != attempt or latest.get("status") != "completed" or latest.get("conclusion") != "success":
+            raise ValueError("Post-merge run changed during review")
     return {"run": run, "attempt": attempt, "job_id": gate.positive(job["id"], "job ID"),
             "url": url, "checkout_review_required": True}
+
+
+def verify_integration(api, state, active, pr, policy):
+    """Reuse Standard mappings for one issue's actual merged revision; read-only."""
+    if policy is None:
+        raise ValueError("Integration requires an owner-reviewed post-merge policy")
+    validate_policy(policy)
+    prefix, manifest, ledger = state["prefix"], state["manifest"], state["ledger"]
+    merged = install.require(install.SHA, pr.get("merge_commit_sha"), "merged revision")
+    if (policy["repository"] != ledger["repository"]
+            or policy["repository_id"] != manifest["target_repository_id"]
+            or policy["product_branch"] != manifest["product_branch"]
+            or policy["source_sha"] != manifest["source_sha"]
+            or policy["installed_sha"] != state["ref"]
+            or policy["pull_request"] != active["pull_request"]
+            or policy["head_sha"] != active["candidate_sha"]
+            or policy["merge_sha"] != merged):
+        raise ValueError("Post-merge policy identity or revision mismatch")
+    meta = api.request("GET", prefix)
+    if (meta.get("id") != policy["repository_id"] or meta.get("private") is not False
+            or meta.get("full_name") != policy["repository"]
+            or meta.get("default_branch") != policy["product_branch"]):
+        raise ValueError("Post-merge verification requires the matching public repository")
+    row = next(r for r in ledger["issues"] if r["issue"] == active["issue"])
+    scope = policy["issues"]
+    if (len(scope) != 1 or scope[0]["issue"] != active["issue"]
+            or scope[0]["version"] != active["version"]
+            or scope[0]["fix_sha"] != active["fix_sha"]
+            or [c["text"] for c in scope[0]["criteria"]] != row["acceptance"]):
+        raise ValueError("Post-merge policy must map every criterion of this issue exactly")
+    def assert_merged(value):
+        if (value.get("merged") is not True or value.get("state") != "closed"
+                or value.get("merge_commit_sha") != merged):
+            raise ValueError("Actual merged PR identity changed or is unverified")
+        commit = api.request("GET", prefix + "/git/commits/" + merged)
+        if (commit.get("sha") != merged or
+                [p["sha"] for p in commit["parents"]] != [policy["base_sha"], policy["head_sha"]]
+                or policy["base_sha"] == policy["head_sha"] or merged in (policy["base_sha"], policy["head_sha"])):
+            raise ValueError("Unsupported merge history or incorrect actual merge parents")
+        target = install.require(install.SHA, install.read_ref(api, prefix, policy["product_branch"]), "current product revision")
+        gate.check_ancestry(api, prefix, merged, target)
+    assert_merged(pr)
+    gate.check_ancestry(api, prefix, active["fix_sha"], policy["head_sha"])
+    links = list(dict.fromkeys(
+        f"https://github.com/{policy['repository']}/actions/runs/{test['run']}/attempts/{test['attempt']}"
+        for criterion in scope[0]["criteria"] for test in criterion["checks"]))
+    for criterion in scope[0]["criteria"]:
+        for test in criterion["checks"]:
+            check_test(api, prefix, policy, links, test, post_merge=True)
+    assert_merged(session.get_pr(api, state, active))
+    if install.read_ref(api, prefix, install.BRANCH) != state["ref"]:
+        raise ValueError("Installed state advanced during post-merge review")
+    return merged, links
 
 def evaluate(api, target, policy):
     validate_policy(policy)

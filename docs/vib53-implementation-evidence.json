@@ -79,7 +79,7 @@
         },
         {
           "path": "tools/session.py",
-          "anchor": "def finish(api, state, disposition, decision):"
+          "anchor": "def finish(api, state, disposition, decision, *, policy=None):"
         }
       ],
       "tested_by": [
@@ -102,6 +102,58 @@
         {
           "path": "tests/test_merge_history.py",
           "anchor": "def test_conditional_ref_rejects_stale_base(self):"
+        }
+      ]
+    },
+    {
+      "id": "vib53-post-merge-acceptance",
+      "label": "Actual merged revision acceptance in both session paths",
+      "documented_in": [
+        {
+          "path": "docs/vib53-implementation.md",
+          "anchor": "## Post-merge acceptance repair"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "tools/session.py",
+          "anchor": "def finish(api, state, disposition, decision, *, policy=None):"
+        },
+        {
+          "path": "tools/session.py",
+          "anchor": "def reconcile(api, state, number, decision, *, policy=None):"
+        }
+      ],
+      "implemented_in": [
+        {
+          "path": "tools/standard.py",
+          "anchor": "def verify_integration(api, state, active, pr, policy):"
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tests/test_post_merge.py",
+          "anchor": "def test_both_paths_require_policy_and_preserve_original_state(self):"
+        },
+        {
+          "path": "tests/test_post_merge.py",
+          "anchor": "def test_both_paths_archive_post_merge_evidence_and_exact_mapping(self):"
+        },
+        {
+          "path": "tests/test_post_merge.py",
+          "anchor": "def test_invalid_run_job_or_step_rejected_on_both_paths(self):"
+        },
+        {
+          "path": "tests/test_post_merge.py",
+          "anchor": "def test_wrong_scope_or_merge_history_rejected(self):"
+        },
+        {
+          "path": "tests/test_post_merge.py",
+          "anchor": "def test_rerun_during_job_read_is_not_accepted(self):"
+        },
+        {
+          "path": "tests/test_post_merge.py",
+          "anchor": "def test_dispatch_at_actual_revision_supported(self):"
         }
       ]
     }

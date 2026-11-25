@@ -12,11 +12,14 @@ CANDIDATE = "d" * 40
 TREE = "e" * 40
 NEXT = "f" * 40
 RUN = "https://github.com/" + REPO + "/actions/runs/123/attempts/1"
+POST_RUN = "https://github.com/" + REPO + "/actions/runs/124/attempts/1"
+BASE = "1" * 40
+FIX2 = "2" * 40
 
 def state():
     return {"prefix": "/repos/" + REPO, "ref": HEAD, "product_sha": HEAD,
             "manifest": {"baseline_version": "v1.0.6", "target_version": "v1.0.7",
-                         "product_branch": "trunk", "target_repository_id": 42},
+                         "product_branch": "trunk", "target_repository_id": 42, "source_sha": PIN},
             "ledger": {"schema_version": 1, "repository": REPO, "issues": []},
             "handoff": {"schema_version": 1, "active": None, "history": []}}
 
@@ -24,12 +27,35 @@ class Fake:
     def __init__(self):
         self.ref = HEAD
         self.writes = []
+        self.product = NEXT
+        self.merge_parents = [{"sha": BASE}, {"sha": CANDIDATE}]
+        self.run = {"id":124,"run_attempt":1,"repository":{"id":42},"head_repository":{"id":42},
+                    "workflow_id":52,"event":"push","head_branch":"trunk","head_sha":NEXT,
+                    "status":"completed","conclusion":"success"}
+        self.jobs = [{"id":987,"name":"test","run_id":124,"run_attempt":1,"head_sha":NEXT,
+                      "status":"completed","conclusion":"success",
+                      "steps":[{"name":"Run acceptance","status":"completed","conclusion":"success"}]}]
         self.pr = {"number": 8, "head": {"sha": CANDIDATE},
                    "base": {"ref": "trunk", "repo": {"id": 42}},
                    "state": "open", "merged": False, "merge_commit_sha": NEXT}
     def request(self, method, path, body=None):
         if method != "GET":
             self.writes.append((method, path, body))
+        if method == "GET" and path == "/repos/" + REPO:
+            return {"id":42,"full_name":REPO,"private":False,"default_branch":"trunk"}
+        if method == "GET" and path.endswith("/git/ref/heads/trunk"):
+            return {"ref":"refs/heads/trunk","object":{"type":"commit","sha":self.product}}
+        if method == "GET" and path.endswith("/git/commits/" + NEXT):
+            return {"sha":NEXT,"tree":{"sha":TREE},"parents":self.merge_parents}
+        if method == "GET" and "/compare/" in path:
+            first,last = path.rsplit("/",1)[1].split("...")
+            ok = (first in (FIX,FIX2) and last==CANDIDATE) or (first==NEXT and last in (NEXT,HEAD))
+            return {"status":("identical" if first==last else "ahead") if ok else "diverged",
+                    "merge_base_commit":{"sha":first if ok else BASE}}
+        if method == "GET" and path.endswith("/attempts/1/jobs?per_page=100"):
+            return {"total_count":len(self.jobs),"jobs":self.jobs}
+        if method == "GET" and (path.endswith("/actions/runs/124") or path.endswith("/actions/runs/124/attempts/1")):
+            return self.run
         if method == "GET" and "/issues/" in path:
             return {"number": int(path.split("/")[-1]), "state": "open", "title": "Issue"}
         if method == "GET" and "/pulls/" in path:
@@ -50,6 +76,18 @@ class Fake:
             self.ref = NEXT
             return {}
         raise AssertionError((method, path))
+
+
+def post_policy(s, number=247):
+    active = s["handoff"]["active"] or next(
+        r["handoff"] for r in reversed(s["handoff"]["history"]) if r["handoff"]["issue"]==number)
+    row = next(r for r in s["ledger"]["issues"] if r["issue"]==number)
+    return {"schema_version":1,"repository":REPO,"repository_id":42,"product_branch":"trunk",
+            "source_sha":PIN,"installed_sha":s["ref"],"pull_request":8,"head_sha":CANDIDATE,
+            "base_sha":BASE,"merge_sha":NEXT,"issues":[{"issue":number,"version":row["version"],
+            "fix_sha":active["fix_sha"],"criteria":[{"text":criterion,"checks":[
+                {"run":124,"attempt":1,"workflow_id":52,"job_name":"test","steps":["Run acceptance"]}
+            ]} for criterion in row["acceptance"]]}]}
 
 class SessionTests(unittest.TestCase):
     def setUp(self):
@@ -81,8 +119,8 @@ class SessionTests(unittest.TestCase):
         self.assertEqual(self.state["handoff"]["active"]["phase"], "Head")
         with self.assertRaisesRegex(ValueError, "merged"):
             session.finish(self.api, self.state, "integrated", "Owner accepted")
-        self.api.pr["merged"] = True
-        ledger, handoff = session.finish(self.api, self.state, "integrated", "Owner accepted")
+        self.api.pr.update(state="closed", merged=True)
+        ledger, handoff = session.finish(self.api, self.state, "integrated", "Owner accepted", policy=post_policy(self.state))
         self.assertIsNone(handoff["active"])
         self.assertEqual(handoff["history"][0]["merged_sha"], NEXT)
         self.assertEqual(ledger["issues"][0]["state"], "integrated")
@@ -169,7 +207,7 @@ class SessionTests(unittest.TestCase):
         self.state["ledger"], self.state["handoff"] = session.claim(
             self.api, self.state, 248, ["test second"], "Fix second")
         self.assertEqual(self.state["handoff"]["active"]["version"], "v1.0.6.2")
-        self.advance(fix=NEXT, candidate=CANDIDATE, pr=8)
+        self.advance(fix=FIX2, candidate=CANDIDATE, pr=8)
         self.advance(evidence=[RUN])
         self.advance()
         self.state["ledger"], self.state["handoff"] = session.finish(
@@ -179,7 +217,7 @@ class SessionTests(unittest.TestCase):
         self.api.pr.update(state="closed", merged=True)
         for issue in (247, 248):
             self.state["ledger"], self.state["handoff"] = session.reconcile(
-                self.api, self.state, issue, "Owner integrates")
+                self.api, self.state, issue, "Owner integrates", policy=post_policy(self.state, issue))
         self.assertEqual([r["state"] for r in self.state["ledger"]["issues"]], ["integrated", "integrated"])
         self.assertEqual([r["disposition"] for r in self.state["handoff"]["history"]],
                          ["staged", "staged", "integrated", "integrated"])

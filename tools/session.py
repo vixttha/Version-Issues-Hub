@@ -269,7 +269,7 @@ def advance(api, state, note, *, fix=None, candidate=None, pr=None, evidence=Non
     validate_handoff(handoff, ledger)
     return ledger, handoff
 
-def finish(api, state, disposition, decision):
+def finish(api, state, disposition, decision, *, policy=None):
     validate_handoff(state["handoff"], state["ledger"])
     ledger = copy.deepcopy(state["ledger"])
     handoff = copy.deepcopy(state["handoff"])
@@ -279,6 +279,8 @@ def finish(api, state, disposition, decision):
     if disposition not in ("blocked", "deferred", "staged", "integrated"):
         raise ValueError("Invalid disposition")
     merged = None
+    if policy is not None and disposition != "integrated":
+        raise ValueError("Post-merge policy applies only to integration")
     if disposition in ("staged", "integrated"):
         if not active["evidence"]:
             raise ValueError("Integration requires recorded verification evidence")
@@ -289,14 +291,23 @@ def finish(api, state, disposition, decision):
         else:
             if pr.get("merged") is not True:
                 raise ValueError("GitHub does not report the PR merged")
-            merged = install.require(install.SHA, pr["merge_commit_sha"], "merged revision")
+            from tools import standard
+            merged, links = standard.verify_integration(api, state, active, pr, policy)
+            active["evidence"] = list(dict.fromkeys(active["evidence"] + links))
+            decision = integration_decision(decision, policy)
     handoff["history"].append({"handoff": active, "disposition": disposition,
                                "decision": text(decision, "owner decision"), "merged_sha": merged})
     next(x for x in ledger["issues"] if x["issue"] == active["issue"])["state"] = disposition
     handoff["active"] = None
     return ledger, handoff
 
-def reconcile(api, state, number, decision):
+def integration_decision(decision, policy):
+    # Preserve the exact reviewed mapping in the existing decision field, without
+    # changing the v1 archive schema or rewriting earlier receipts.
+    return text(decision, "owner decision") + "\nPost-merge policy: " + json.dumps(
+        policy, sort_keys=True, separators=(",", ":"), ensure_ascii=True)
+
+def reconcile(api, state, number, decision, *, policy=None):
     validate_handoff(state["handoff"], state["ledger"])
     ledger = copy.deepcopy(state["ledger"])
     handoff = copy.deepcopy(state["handoff"])
@@ -312,9 +323,13 @@ def reconcile(api, state, number, decision):
     pr = get_pr(api, state, active)
     if pr.get("merged") is not True:
         raise ValueError("GitHub does not report the PR merged")
+    if not active["evidence"]:
+        raise ValueError("Integration requires recorded verification evidence")
+    from tools import standard
+    merged, links = standard.verify_integration(api, state, active, pr, policy)
+    active["evidence"] = list(dict.fromkeys(active["evidence"] + links))
     handoff["history"].append({"handoff": active, "disposition": "integrated",
-        "decision": text(decision, "owner decision"), "merged_sha": install.require(
-            install.SHA, pr["merge_commit_sha"], "merged revision")})
+        "decision": integration_decision(decision, policy), "merged_sha": merged})
     row["state"] = "integrated"
     return ledger, handoff
 
@@ -431,6 +446,8 @@ def main():
     i.add_argument("issue", type=int)
     i.add_argument("--decision", required=True)
     i.add_argument("--owner-approved", action="store_true")
+    for command in (f, i):
+        command.add_argument("--policy", help="Owner-reviewed Standard post-merge policy JSON (required for integration)")
     for command in (c, a, f, i):
         command.add_argument("--apply", action="store_true")
     args = p.parse_args()
@@ -451,13 +468,16 @@ def main():
             elif args.command == "advance":
                 ledger, handoff = advance(api, state, args.note, fix=args.fix, candidate=args.candidate,
                     pr=args.pr, evidence=args.evidence, rework=args.rework, return_to_head=args.return_to_head)
-            elif args.command == "finish":
-                ledger, handoff = finish(api, state, args.disposition, args.decision)
-            else:
-                ledger, handoff = reconcile(api, state, args.issue, args.decision)
+            elif args.command in ("finish", "reconcile"):
+                from pathlib import Path
+                policy = checkpoint.parse_json(Path(args.policy).read_text(encoding="utf-8")) if args.policy else None
+                if args.command == "finish":
+                    ledger, handoff = finish(api, state, args.disposition, args.decision, policy=policy)
+                else:
+                    ledger, handoff = reconcile(api, state, args.issue, args.decision, policy=policy)
             result = save(api, state, ledger, handoff, args.apply)
         print(install.render(result), end="")
-    except (ValueError, KeyError, OSError, install.ApiError) as exc:
+    except (ValueError, KeyError, TypeError, OSError, install.ApiError) as exc:
         p.exit(1, f"VIB session stopped: {exc}\n")
 
 if __name__ == "__main__":
