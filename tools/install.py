@@ -9,6 +9,7 @@ import re
 import sys
 import time
 from email.utils import parsedate_to_datetime
+from http.client import IncompleteRead
 from urllib.error import HTTPError, URLError
 from urllib.parse import quote
 from urllib.request import Request, build_opener, HTTPRedirectHandler
@@ -65,15 +66,19 @@ def retry_delay(status, headers, now):
             else:
                 date = parsedate_to_datetime(retry)
                 if date.tzinfo is None:
-                    return max(delays + [60])
-                delays.append(math.ceil(date.timestamp() - now))
-        if exhausted:
+                    delays.append(60)
+                else:
+                    delays.append(math.ceil(date.timestamp() - now))
+    except (TypeError, ValueError, OverflowError, OSError):
+        # A malformed Retry-After must not discard the independent reset bound.
+        delays.append(60)
+    if exhausted:
+        try:
             reset = headers.get("X-RateLimit-Reset")
             if reset is not None and re.fullmatch(r"[0-9]{1,12}", reset):
                 delays.append(math.ceil(int(reset) - now))
-    except (TypeError, ValueError, OverflowError, OSError):
-        # A malformed throttle header cannot authorize an immediate retry.
-        delays.append(60)
+        except (TypeError, ValueError, OverflowError, OSError):
+            delays.append(60)
     return max(delays)
 
 class ApiTransportError(OSError):
@@ -127,6 +132,10 @@ class GitHub:
                 exc.close()
                 if delay_hint is not None or code not in (500, 502, 503, 504) or attempt == len(delays) - 1:
                     raise ApiError(code, method, api_operation(path), delay_hint) from None
+            except IncompleteRead:
+                # Response may be truncated after the server applied a write.
+                # Never repeat that write or expose partial response bytes.
+                raise ApiTransportError(method, api_operation(path), False) from None
             except (TimeoutError, URLError) as exc:
                 timed_out = isinstance(exc, TimeoutError) or (
                     isinstance(exc, URLError) and isinstance(exc.reason, TimeoutError))

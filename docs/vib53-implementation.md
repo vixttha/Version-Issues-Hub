@@ -13,3 +13,5 @@ Five real disposable Git tests characterize ancestry, equal tree/different SHA, 
 ## Post-merge acceptance repair
 
 Existing `finish` and `reconcile` now require the existing Standard policy shape scoped to one issue for new integrated dispositions. Verify live public repo, actual ordinary merge parents, target membership, fix ancestry, exact product-branch push/dispatch run/attempt, workflow, job and required steps. Preserve prior evidence and append post-merge URLs plus canonical policy in the existing owner decision field. No new schema or runtime dependency. Owner-reviewed checkout and criterion judgment remain mandatory; metadata alone cannot establish actual test semantics. Unsupported history/events stop safely. No claim of atomic external merge prevention or global parallel state. Tests exercise both real session entry points with simulated API responses.
+
+CodeRabbit follow-up: parse independent throttle bounds even if Retry-After is malformed; normalize truncated response bodies into a redacted transport failure without repeating writes. The existing handoff confirmation path retains candidate identity. Three targeted tests exercise these cases.

@@ -2,6 +2,7 @@
 import io
 import json
 import unittest
+from http.client import IncompleteRead
 from urllib.error import HTTPError
 from unittest.mock import patch
 from tools import install, session
@@ -149,4 +150,53 @@ class TransactionTests(unittest.TestCase):
             self.assertEqual(latest["handoff"],handoff)
             self.assertEqual(api.read(api.later,"notes/unrelated.md"),"other transaction\n")
             self.assertEqual(api.ref("main"),api.product)
+            self.assertEqual(sum(m=="PATCH" for m,_,_ in api.writes),1)
+
+
+    def test_malformed_retry_after_preserves_reset_bound(self):
+        for value in ("invalid", "Thu, 01 Jan 1970 00:05:00"):
+            with self.subTest(value=value):
+                self.assertEqual(install.retry_delay(403, {
+                    "Retry-After":value,"X-RateLimit-Remaining":"0",
+                    "X-RateLimit-Reset":"500"},100),400)
+        self.assertEqual(install.retry_delay(429,{
+            "Retry-After":"600","X-RateLimit-Remaining":"0",
+            "X-RateLimit-Reset":"invalid"},100),600)
+
+    def test_truncated_response_is_normalized_without_retry(self):
+        class Broken(io.BytesIO):
+            def read(self,*args):
+                raise IncompleteRead(b"private-data",10)
+        for method in ("PATCH","GET"):
+            api=install.GitHub("token")
+            with patch.object(api.opener,"open",return_value=Broken()) as call:
+                with self.assertRaises(install.ApiTransportError) as error:
+                    api.request(method,"/repos/example/private/git/refs/heads/test")
+                self.assertEqual(call.call_count,1)
+                self.assertNotIn("private-data",str(error.exception))
+
+    def test_truncated_patch_and_readback_preserve_candidate(self):
+        class Broken(io.BytesIO):
+            def read(self,*args):
+                raise IncompleteRead(b"private-data",10)
+        for readback_fails in (False,True):
+            transport=install.GitHub("token")
+            api=Remote("normal")
+            original=api.request
+            def request(method,path,body=None):
+                result=original(method,path,body)
+                if method=="PATCH" or (readback_fails and method=="GET" and
+                        "/git/ref/heads/" in path and api.ref==NEXT):
+                    with patch.object(transport.opener,"open",return_value=Broken()):
+                        return transport.request(method,path,body)
+                return result
+            api.request=request
+            if readback_fails:
+                with self.assertRaises(session.HandoffUnconfirmed) as error:
+                    self.save(api)
+                self.assertEqual(error.exception.candidate_sha,NEXT)
+            else:
+                result=self.save(api)
+                self.assertEqual(result["installed_sha"],NEXT)
+                self.assertTrue(result["recovered_response"])
             self.assertEqual(sum(m=="PATCH" for m,_,_ in api.writes),1)

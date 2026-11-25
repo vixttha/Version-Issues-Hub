@@ -54,6 +54,18 @@
         {
           "path": "tests/test_transaction_confirmation.py",
           "anchor": "def test_real_git_descendant_preserves_both_transactions(self):"
+        },
+        {
+          "path": "tests/test_transaction_confirmation.py",
+          "anchor": "def test_malformed_retry_after_preserves_reset_bound(self):"
+        },
+        {
+          "path": "tests/test_transaction_confirmation.py",
+          "anchor": "def test_truncated_response_is_normalized_without_retry(self):"
+        },
+        {
+          "path": "tests/test_transaction_confirmation.py",
+          "anchor": "def test_truncated_patch_and_readback_preserve_candidate(self):"
         }
       ]
     },
