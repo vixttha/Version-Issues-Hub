@@ -19,6 +19,22 @@ from test_mutation import mutation_case
 from tools import checkpoint,gate,install,lifecycle,session
 from record import run_suite
 
+class RefOracle(unittest.TestCase):
+    def test_unexpected(self):
+        class API:
+            def __init__(self): self.calls=0
+            def request(self,m,p,b=None):
+                self.calls+=1
+                sha=comp.s.FIX if self.calls==1 else comp.s.NEXT
+                return {"ref":"refs/heads/"+install.BRANCH,"object":{"type":"commit","sha":sha}}
+        from unittest.mock import patch
+        api=API()
+        with patch.object(install.time,"sleep") as sleep:
+            with self.assertRaisesRegex(ValueError,"Unexpected"):
+                install.wait_ref(api,"/synthetic",install.BRANCH,comp.s.NEXT,comp.s.HEAD)
+            self.assertEqual(api.calls,1)
+            sleep.assert_not_called()
+
 class Mutants(unittest.TestCase): pass
 mutants=[
     ("receipt_checkout",checkpoint,"receipt",'if checkout != require(SHA, env["GITHUB_SHA"], "workflow checkout"):','if False:',rec.Receipt,"test_wrong_checkout"),
@@ -28,7 +44,7 @@ mutants=[
     ("gate_evidence",gate,"check_test",'if details not in evidence:','if False:',qual.Scope,"test_only_other_issue_has_run"),
     ("archive_collision",lifecycle,"prepare_retirement",'if existing not in (None,expected_sha):','if False:',qual.Archive,"test_archive_collision"),
     ("archive_owner",lifecycle,"prepare_retirement",'if not owner_approved:','if False:',qual.Archive,"test_no_approval"),
-    ("ref_readback_unexpected",install,"wait_ref",'if observed != previous:','if False:',intr.Readback,"test_unexpected_read_stops"),
+    ("ref_readback_unexpected",install,"wait_ref",'if observed != previous:','if False:',RefOracle,"test_unexpected"),
 ]
 for name,module,fn,old,new,cls,method in mutants:
     setattr(Mutants,"test_"+name,mutation_case(module,fn,old,new,cls,method))

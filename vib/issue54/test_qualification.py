@@ -174,8 +174,8 @@ class Archive(unittest.TestCase):
     def adopter(self,baseline):
         a=self.a
         a.git("update-ref","-d","refs/heads/"+install.BRANCH,self.initial)
-        package=dict(c.original.NEW_FILES)
-        with patch.object(install,"source_files",return_value=package):
+        package={dest:c.git(c.PRODUCT,"show",c.PIN+":"+src).decode("utf-8") for src,dest in install.PACKAGE.items()}
+        with patch.object(install,"source_files",side_effect=lambda api,sha:dict(package)):
             plan=install.install(a,c.original.REPO,c.original.NEW,baseline)
             self.assertEqual(plan["status"],"planned")
             result=install.install(a,c.original.REPO,c.original.NEW,baseline,True)
@@ -183,12 +183,22 @@ class Archive(unittest.TestCase):
             state=session.load(a,c.original.REPO,ref)
             self.assertEqual(state["ledger"]["issues"],[])
             self.assertEqual(state["manifest"]["baseline_version"],baseline)
-            self.assertEqual(checkpoint.register(state["ledger"],101,baseline,["test"]),(baseline+".1",True))
+            ledger=copy.deepcopy(state["ledger"])
+            self.assertEqual(checkpoint.register(ledger,101,baseline,["test"]),(baseline+".1",True))
+            saved=session.save(a,state,ledger,state["handoff"],True)
+            self.assertEqual(saved["status"],"saved")
+            self.assertEqual(a.git("rev-parse",saved["installed_sha"]+"^"),ref)
             self.assertEqual(a.git("rev-parse",ref+"^"),a.product)
             self.assertEqual(a.ref("main"),a.product)
+            ref=saved["installed_sha"]
             retired=lifecycle.prepare_retirement(a,c.original.REPO,ref,apply=True,owner_approved=True)
             self.assertEqual(a.ref(retired["archive_branch"]),ref)
             self.assertEqual(a.ref(install.BRANCH),ref)
+            a.git("update-ref","-d","refs/heads/"+install.BRANCH,ref)
+            a.git("update-ref","refs/heads/"+install.BRANCH,a.ref(retired["archive_branch"]),"0"*40)
+            restored=session.load(a,c.original.REPO,ref)
+            self.assertEqual(restored["ledger"],ledger)
+            self.assertEqual(a.ref("main"),a.product)
             for path,value in package.items(): self.assertEqual(a.read(ref,path),value)
     def test_adopter_zero(self): self.adopter("v0.0.0")
     def test_adopter_existing(self): self.adopter("v1.9.99")
