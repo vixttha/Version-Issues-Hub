@@ -1,12 +1,12 @@
 {
   "active": {
-    "candidate_sha": null,
+    "candidate_sha": "26e9fe8c019a33c5f84f77a37da70925505204e3",
     "evidence": [],
-    "fix_sha": null,
+    "fix_sha": "cc5de51d5ca2e03622ac18d2c3bf0933f33e252e",
     "issue": 12,
-    "next_action": "Record owner decision on optional enforcement using the existing issue version and original fix.",
-    "phase": "Worker",
-    "pull_request": null,
+    "next_action": "Review existing simulated engineering evidence and the owner-approved deferral",
+    "phase": "Validate",
+    "pull_request": 2,
     "version": "v0.0.0.6"
   },
   "history": [
