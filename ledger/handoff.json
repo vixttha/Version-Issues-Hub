@@ -2,12 +2,20 @@
   "active": {
     "issue": 23,
     "version": "v0.0.0.10",
-    "phase": "Validate",
-    "next_action": "Validate original package pin recovery, occupied branch refusal, BART live recovery and Graphify.",
+    "phase": "Internal Auditor",
+    "next_action": "Historical #23 audit verifies literal package mapping, BART recovery and occupied-ref refusal; current exact Ubuntu/Windows historical pin/occupied-branch regressions and live external scope pass, issue receipts and graph hashes match.",
     "fix_sha": "65dc35530f98d489b15b0b4fbf147818e1bdf5eb",
     "candidate_sha": "07a73f55a2b1f7ecbf873a3921f1e397034a88e6",
     "pull_request": 2,
-    "evidence": []
+    "evidence": [
+      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45711463464/attempts/1",
+      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45711463521/attempts/1",
+      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45711477945/attempts/1",
+      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45711477773/attempts/1",
+      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45711477645/attempts/1",
+      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45336994168/attempts/1",
+      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45338267547/attempts/1"
+    ]
   },
   "history": [
     {
