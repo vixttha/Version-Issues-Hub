@@ -29,3 +29,9 @@ Keep this branch a durable discussion and decision reference. Distinguish owner-
 
 ## Six-system inventory refresh
 See [ECOSYSTEM.md](ECOSYSTEM.md) and [machine-readable snapshot](ecosystem.json). All six dedicated branches exist; none is private in this public repository. Upstream comparison is review evidence, not an automated upgrade or feature acceptance.
+
+## VIB-ECOSYSTEM-BOUNDARY-001 — Owner approved (2026-11-25)
+
+Retain all six independent permanent branches and maintain `VIB-Product-Direction` as their optional strategic reference, without making it another required system.
+
+Each system retains its own purpose, version, entrypoint, history and authority. The reference branch is documentation only: no runtime dependency, central registry requirement, orchestration, mandatory installation, synchronization, or new release gate. Its absence or stale inventory must not prevent independent operation. Preserve the six engineering laws, owner authority, project-local data and normal issue-version workflow. No automatic branch merges, upgrades or reassignment. This is a documented lifecycle decision, not mechanical branch protection or branch-level privacy. The repository remains public; use eligible free standard GitHub-hosted runners for engineering verification. Private execution remains separate research. Approval does not accept pending implementation, tests or releases.

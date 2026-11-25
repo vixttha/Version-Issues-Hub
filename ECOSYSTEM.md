@@ -2,6 +2,12 @@
 
 This optional navigation record documents the six independent systems inside VIB. It is not a required registry or installation engine. Each tool retains its source, version, local state, own responsibilities and owner authority. VIB-Product-Direction is a separate documentation branch, not a seventh product.
 
+## VIB-ECOSYSTEM-BOUNDARY-001 — Owner approved (2026-11-25)
+
+Retain all six independent permanent branches and maintain `VIB-Product-Direction` as their optional strategic reference, without making it another required system.
+
+Each system retains its own purpose, version, entrypoint, history and authority. The reference branch is documentation only: no runtime dependency, central registry requirement, orchestration, mandatory installation, synchronization, or new release gate. Its absence or stale inventory must not prevent independent operation. Preserve the six engineering laws, owner authority, project-local data and normal issue-version workflow. No automatic branch merges, upgrades or reassignment. This is a documented lifecycle decision, not mechanical branch protection or branch-level privacy. The repository remains public; use eligible free standard GitHub-hosted runners for engineering verification. Private execution remains separate research. Approval does not accept pending implementation, tests or releases.
+
 ## Privacy and permanence
 
 All six dedicated refs already exist. The repository is public: **none is a private branch**. GitHub visibility is repository-wide. No visibility changes or private transfer are authorized by this inventory. True private storage requires a separately authorized private repository or a deliberate repository-wide visibility change; public fork history cannot be retroactively made private. Preserve the free standard public-runner policy; do not copy confidential files into public workspaces. Permanent means retained until an explicit lifecycle decision, not branch protection. [GitHub visibility](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/managing-repository-settings/setting-repository-visibility) · [billing](https://docs.github.com/en/actions/concepts/billing-and-usage).
