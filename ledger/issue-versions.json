@@ -1,234 +1,234 @@
 {
   "issues": [
     {
-      "issue": 1,
-      "version": "v0.0.0.1",
-      "state": "assigned",
       "acceptance": [
         "Resolve GitHub issue #1 to v0.0.0.1 and retain that mapping through repeated registration.",
         "Reject duplicate, deleted, or changed issue-version assignments.",
         "Publish a public CI receipt for issue #1 with the fix revision, tested checkout, and exact run attempt."
-      ]
+      ],
+      "issue": 1,
+      "state": "assigned",
+      "version": "v0.0.0.1"
     },
     {
-      "issue": 7,
-      "version": "v0.0.0.2",
-      "state": "assigned",
       "acceptance": [
         "The original two-checkpoint dogfood PR scope produces exactly two receipts, one per checkpoint; later scopes produce one receipt per selected checkpoint.",
         "Each receipt identifies its own GitHub issue and the corresponding fix commit.",
         "A docs-only commit changes candidate and tested revisions while preserving both fix commits."
-      ]
+      ],
+      "issue": 7,
+      "state": "assigned",
+      "version": "v0.0.0.2"
     },
     {
-      "issue": 9,
-      "version": "v0.0.0.3",
-      "state": "assigned",
       "acceptance": [
         "Create a standalone Version-Issues-Hub branch from a pinned source without modifying product refs or copying source issue records.",
         "Generate an adopter-specific empty ledger and provenance record; accept existing three-component baselines.",
         "Refuse occupied branches, conflicting identity, and empty repositories without silently modifying the target. Verify creation using public-runner tests."
-      ]
+      ],
+      "issue": 9,
+      "state": "assigned",
+      "version": "v0.0.0.3"
     },
     {
-      "issue": 10,
-      "version": "v0.0.0.4",
-      "state": "assigned",
       "acceptance": [
         "Ship a host-neutral AGENTS.md and workflow guide only on the dedicated install branch.",
         "Recover the active issue and phase from the pinned installed package and GitHub without chat history; reject target mismatch and tampering.",
         "Serialize cooperative claims and handoff changes, reject competing claims and stale writes, retain owner merge authority; test on public runners."
-      ]
+      ],
+      "issue": 10,
+      "state": "assigned",
+      "version": "v0.0.0.4"
     },
     {
-      "issue": 11,
-      "version": "v0.0.0.5",
-      "state": "assigned",
       "acceptance": [
         "Stage two sequential issues on one PR without declaring integration.",
         "Reject reconciliation until GitHub reports the exact candidate merged; preserve earlier fix/evidence history through rework.",
         "Prove the batched handoff and stale-candidate controls on public runners."
-      ]
+      ],
+      "issue": 11,
+      "state": "assigned",
+      "version": "v0.0.0.5"
     },
     {
-      "issue": 12,
-      "version": "v0.0.0.6",
-      "state": "assigned",
       "acceptance": [
         "Validate the complete owner-pinned staged scope and exact proposed merge SHA, including per-issue fix ancestry and criterion mapping.",
         "Reject stale, missing, skipped or candidate-writable check evidence; publish only an independently sourced success check when explicitly enabled.",
         "Run positive/negative public-runner unit controls and document the separate live GitHub ruleset pilot; do not claim actual merge enforcement before live proof."
-      ]
+      ],
+      "issue": 12,
+      "state": "assigned",
+      "version": "v0.0.0.6"
     },
     {
-      "issue": 13,
-      "version": "v0.0.0.7",
-      "state": "assigned",
       "acceptance": [
         "Preserve the historical exactly-two dogfood assertion as a scope-specific pilot criterion.",
         "Generate exactly one receipt for every selected checkpoint at the current scope; preserve each pinned fix revision.",
         "Run the regression on public GitHub-hosted runners."
-      ]
+      ],
+      "issue": 13,
+      "state": "assigned",
+      "version": "v0.0.0.7"
     },
     {
-      "issue": 14,
-      "version": "v0.0.0.8",
-      "state": "assigned",
       "acceptance": [
         "Publish pending first and confirm trusted App identity before a successful gate verdict.",
         "Reject duplicate and changed-state verdict publication; revoke exact original check and verify failure readback.",
         "Test simulated controls using public GitHub runners; preserve the live ruleset pilot as a separate completion requirement."
-      ]
+      ],
+      "issue": 14,
+      "state": "assigned",
+      "version": "v0.0.0.8"
     },
     {
-      "issue": 22,
-      "version": "v0.0.0.9",
-      "state": "assigned",
       "acceptance": [
         "Standard mode is default and does not require App, rulesets or live hard-enforcement pilot.",
         "Read-only validation rejects stale, missing or unsuccessful run evidence and reports mandatory checkout/owner review, never automatic merge enforcement.",
         "Public-runner regression and Graphify pass; separate optional gate remains intact."
-      ]
+      ],
+      "issue": 22,
+      "state": "assigned",
+      "version": "v0.0.0.9"
     },
     {
-      "issue": 23,
-      "version": "v0.0.0.10",
-      "state": "assigned",
       "acceptance": [
         "Read and verify the historical pinned package map without executing historical source.",
         "Recover existing BART state and refuse an occupied branch without modifying it.",
         "Pass regression and live public read-only adoption checks plus Graphify."
-      ]
+      ],
+      "issue": 23,
+      "state": "assigned",
+      "version": "v0.0.0.10"
     },
     {
-      "issue": 24,
-      "version": "v0.0.0.11",
-      "state": "assigned",
       "acceptance": [
         "Verify newly created isolated AlderVale install at its historical source and tree, with adopter-only empty ledger.",
         "Recover BART and AlderVale via fresh processes using real GitHub reads; verify existing-branch refusal and actual issue lookup.",
         "Public runner and Graphify evidence; no product changes, no enforcement or independent LLM claims."
-      ]
+      ],
+      "issue": 24,
+      "state": "assigned",
+      "version": "v0.0.0.11"
     },
     {
-      "issue": 25,
-      "version": "v0.0.0.12",
-      "state": "assigned",
       "acceptance": [
         "Owner-approved dry-run-first upgrade preserves ledger, handoff and adopter files and only advances dedicated branch.",
         "Reject active/staged work, enabled enforcement, stale revisions, non-descendant source pins and path conflicts.",
         "Prepare exact archive without deleting branches; verify real disposable Git objects on public runners."
-      ]
+      ],
+      "issue": 25,
+      "state": "assigned",
+      "version": "v0.0.0.12"
     },
     {
-      "issue": 26,
-      "version": "v0.0.0.13",
-      "state": "assigned",
       "acceptance": [
         "Exercise CLI install, upgrade, archive, fixture-only removal and recovery using actual Git objects with simulated GitHub API.",
         "Prove competing writer cannot be overwritten and product/state blobs remain unchanged.",
         "Run real public GitHub read-only CLI planning in README HQ, without installation or repair-plan changes; public-runner tests and Graphify."
-      ]
+      ],
+      "issue": 26,
+      "state": "assigned",
+      "version": "v0.0.0.13"
     },
     {
-      "issue": 29,
-      "version": "v0.0.0.14",
-      "state": "assigned",
       "acceptance": [
         "Run actual CLI install and upgrade against a real isolated public GitHub repository on a standard hosted runner.",
         "Verify exact state digests and product ref, duplicate/stale refusal, durable archive and fresh process recovery.",
         "Preserve live installation and archive; no automatic deletion or live adopter mutation; record exact public-runner evidence."
-      ]
+      ],
+      "issue": 29,
+      "state": "assigned",
+      "version": "v0.0.0.14"
     },
     {
-      "issue": 30,
-      "version": "v0.0.0.15",
-      "state": "assigned",
       "acceptance": [
         "Bound post-write read-only ref confirmation; accept only expected SHA and tolerate only absence or known prior SHA.",
         "Reject divergent and exhausted readback without repeating writes; public-runner regression.",
         "Resume exact existing pilot installation and prove actual upgrade/archive without recreating or deleting live refs."
-      ]
+      ],
+      "issue": 30,
+      "state": "assigned",
+      "version": "v0.0.0.15"
     },
     {
-      "issue": 31,
-      "version": "v0.0.0.16",
-      "state": "assigned",
       "acceptance": [
         "Report operation-class context for GitHub HTTP errors without logging secrets, bodies, or arbitrary paths.",
         "Retry only transient GET 5xx within a fixed bound; never retry POST/PATCH/DELETE.",
         "Repeat exact isolated pilot recovery once and capture live upgrade/archive outcome, retaining original failures."
-      ]
+      ],
+      "issue": 31,
+      "state": "assigned",
+      "version": "v0.0.0.16"
     },
     {
-      "issue": 33,
-      "version": "v0.0.0.17",
-      "state": "assigned",
       "acceptance": [
         "Bound retry of direct and wrapped GitHub GET timeouts including response reads.",
         "Redact transport details and refuse retry of uncertain mutations; fail closed on other URL errors.",
         "Public runner regression and exact receipt/Graphify evidence; retain unresolved live remote upgrade separately."
-      ]
+      ],
+      "issue": 33,
+      "state": "assigned",
+      "version": "v0.0.0.17"
     },
     {
-      "issue": 35,
-      "version": "v0.0.0.18",
-      "state": "assigned",
       "acceptance": [
         "Explicit prepared upgrade creates verified objects without moving refs; reject missing owner approval.",
         "Apply exact expected-old non-force connector update to isolated live pilot; verify entire tree, state and product SHA independently.",
         "Verify live archival and separate recovery ref, preserving original installation and history; record public-runner evidence."
-      ]
+      ],
+      "issue": 35,
+      "state": "assigned",
+      "version": "v0.0.0.18"
     },
     {
-      "issue": 36,
-      "version": "v0.0.0.19",
-      "state": "assigned",
       "acceptance": [
         "Reload read-only acceptance snapshot only after demonstrated installed-ref advance, bounded to three attempts.",
         "Reject unrelated errors, disagreement or exhausted attempts; preserve stale-state guard.",
         "Repair historical Graphify navigation without modifying fix pins; public-runner evidence."
-      ]
+      ],
+      "issue": 36,
+      "state": "assigned",
+      "version": "v0.0.0.19"
     },
     {
-      "issue": 41,
-      "version": "v0.0.0.20",
-      "state": "assigned",
       "acceptance": [
         "Distinguish exact merged, closed-unmerged, stale and non-open issue states without mutation.",
         "Reject normal verification of non-open issues or PRs while preserving owner-controlled return to Head and rework.",
         "Public runner regression and revision-bound Graphify evidence."
-      ]
+      ],
+      "issue": 41,
+      "state": "assigned",
+      "version": "v0.0.0.20"
     },
     {
-      "issue": 42,
-      "version": "v0.0.0.21",
-      "state": "assigned",
       "acceptance": [
         "Require exactly one in-progress issue matching the active handoff or none when idle.",
         "Reject orphan, competing and mismatched rows before cooperative mutation; preserve historical records.",
         "Public runner regression and revision-bound Graphify evidence."
-      ]
+      ],
+      "issue": 42,
+      "state": "assigned",
+      "version": "v0.0.0.21"
     },
     {
-      "issue": 43,
-      "version": "v0.0.0.22",
-      "state": "assigned",
       "acceptance": [
         "Allow explicit owner-approved recovery of open assigned, blocked or deferred prior-line issues without remapping.",
         "Refuse terminal, staged, future-line and new rows under prior-line flag; preserve original acceptance and current lease.",
         "Public runner regression and revision-bound Graphify evidence."
-      ]
+      ],
+      "issue": 43,
+      "state": "assigned",
+      "version": "v0.0.0.22"
     },
     {
-      "issue": 40,
-      "version": "v0.0.0.23",
-      "state": "in_progress",
       "acceptance": [
         "Build a read-only, exact-revision release preflight on GitHub public runners and record evidence; no automatic merge or release.",
         "Reconcile all open issues into release requirements, historical integration candidates, and separately scoped backlog without rewriting existing version mappings.",
         "Return to Head with blockers and owner approval boundaries; preserve frozen engineering, brand, README and prior grants."
-      ]
+      ],
+      "issue": 40,
+      "state": "deferred",
+      "version": "v0.0.0.23"
     }
   ],
   "repository": "vixttha/Version-Issues-Hub",

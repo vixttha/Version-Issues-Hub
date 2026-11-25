@@ -1,20 +1,5 @@
 {
-  "active": {
-    "candidate_sha": "449e4b493daa1f9906396dae49877a32333c418d",
-    "evidence": [
-      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45688979982/attempts/1",
-      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45688990364/attempts/1",
-      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45688990414/attempts/1",
-      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45688990352/attempts/1",
-      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45688980048/attempts/1"
-    ],
-    "fix_sha": "6e428f222c7aa7a35a8d398bde2846ac0e3b9657",
-    "issue": 40,
-    "next_action": "Owner-directed workflow correction: release hold remains; return to Head before deferring #40. Preserve actual evidence and acknowledge umbrella-checkpoint error. Recovery issue #65.",
-    "phase": "Head",
-    "pull_request": 2,
-    "version": "v0.0.0.23"
-  },
+  "active": null,
   "history": [
     {
       "decision": "PR49 CodeRabbit finding 4682051116: rework exact product SHA comparisons and add regression checks; preserve previous evidence.",
@@ -124,6 +109,27 @@
         "fix_sha": "82cfa7272ad83b044e7d4e9760133dc8a443f102",
         "issue": 40,
         "next_action": "Batch 1 scoped defect audit complete; #40 release hold persists (full PR2 review, independent hosts and other release gates). Owner requests next three-issue batch; return for bounded JSON repair rework and isolated #53 qualification review.",
+        "phase": "Head",
+        "pull_request": 2,
+        "version": "v0.0.0.23"
+      },
+      "merged_sha": null
+    },
+    {
+      "decision": "Owner instructed correct VIB self-use before continuing development. Defer release coordination #40, not closure; preserve exact evidence and release hold. Recovery tracked in #65; no main integration or release.",
+      "disposition": "deferred",
+      "handoff": {
+        "candidate_sha": "449e4b493daa1f9906396dae49877a32333c418d",
+        "evidence": [
+          "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45688979982/attempts/1",
+          "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45688990364/attempts/1",
+          "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45688990414/attempts/1",
+          "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45688990352/attempts/1",
+          "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45688980048/attempts/1"
+        ],
+        "fix_sha": "6e428f222c7aa7a35a8d398bde2846ac0e3b9657",
+        "issue": 40,
+        "next_action": "Owner-directed workflow correction: release hold remains; return to Head before deferring #40. Preserve actual evidence and acknowledge umbrella-checkpoint error. Recovery issue #65.",
         "phase": "Head",
         "pull_request": 2,
         "version": "v0.0.0.23"
