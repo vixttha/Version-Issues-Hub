@@ -1,0 +1,20 @@
+{
+  "version": "v0.0.0.2",
+  "issue": 7,
+  "source": "fee90e84d981740938989c1a53f70a9570ae2293",
+  "source_kind": "historical_engineering_fix",
+  "tree": "2d171dca028cbe36ae072acadf3f145cefe8d8f0",
+  "graphify_version": "0.9.109",
+  "mode": "code-only AST",
+  "reconstructed": true,
+  "historical_test_claim": false,
+  "nodes": 80,
+  "edges": 139,
+  "tracked_code_files": [
+    "tests/test_checkpoint.py",
+    "tools/checkpoint.py"
+  ],
+  "graph_sha256": "618001e111d0caf68e2caf27ceadcf391cd41511d9b221613180df1d05c95645",
+  "run": "45725059483",
+  "attempt": "1"
+}

@@ -1,0 +1,22 @@
+{
+  "version": "v0.0.0.23",
+  "issue": 40,
+  "source": "a472e04f4c2cc781c654000d6c0567e703f32791",
+  "source_kind": "operational_preflight_revision",
+  "release_status": "open",
+  "preflight_run": 45724188129,
+  "tree": "495f627ae83c8b5e9d18268267d0a0fe04767da7",
+  "graphify_version": "0.9.109",
+  "mode": "code-only AST",
+  "reconstructed": true,
+  "historical_test_claim": false,
+  "nodes": 99,
+  "edges": 143,
+  "tracked_code_files": [
+    "ops/release-preflight.py",
+    "ops/test_release_preflight.py"
+  ],
+  "graph_sha256": "0c6ac2ecd7dad2b5f8e562e8e9d3bfe3339d1c548d9a0c08fb5aad87c949c757",
+  "run": "45725059483",
+  "attempt": "1"
+}
