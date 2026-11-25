@@ -2,12 +2,19 @@
   "active": {
     "issue": 36,
     "version": "v0.0.0.19",
-    "phase": "Validate",
-    "next_action": "Verify bounded snapshot reload, preserved stale guard and repaired historical Graphify mapping.",
+    "phase": "Internal Auditor",
+    "next_action": "Four 146-test suites pass observed-ref-advance-only reload, unrelated failure, exhaustion and whole-check drift controls. Current public live push/PR and stale guard tests pass; repaired #25 anchor and #36 mapping both present in exact verified Graphify archives. Original fix ancestry and receipt binding verified.",
     "fix_sha": "733a4e51357df6acb8ffc2ddedaede664df22c35",
     "candidate_sha": "26e9fe8c019a33c5f84f77a37da70925505204e3",
     "pull_request": 2,
-    "evidence": []
+    "evidence": [
+      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45713361976/attempts/1",
+      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45713361959/attempts/1",
+      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45713368275/attempts/1",
+      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45713368267/attempts/1",
+      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45713368324/attempts/1",
+      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45357923198/attempts/1"
+    ]
   },
   "history": [
     {
