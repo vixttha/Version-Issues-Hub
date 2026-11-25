@@ -10,8 +10,8 @@
     ],
     "fix_sha": "fee90e84d981740938989c1a53f70a9570ae2293",
     "issue": 7,
-    "next_action": "Historical two-receipt scope and one receipt per selected checkpoint, with original fixes preserved across candidate revisions. Verified exact push and PR receipt and Graphify bindings.",
-    "phase": "Internal Auditor",
+    "next_action": "Original fix ancestry, retained criteria, 11 public jobs, exact issue receipts and Graphify mappings verified. Engineering disposition only.",
+    "phase": "Head",
     "pull_request": 2,
     "version": "v0.0.0.2"
   },
