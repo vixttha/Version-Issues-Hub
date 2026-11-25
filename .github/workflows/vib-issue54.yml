@@ -1,0 +1,51 @@
+name: VIB issue 54 core probes
+on:
+  push:
+    branches: [Lydite-Test-Vault]
+    paths:
+      - 'vib/issue54/**'
+      - '.github/workflows/vib-issue54.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  core:
+    if: github.event.repository.private == false
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [ubuntu-24.04, windows-latest]
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          path: vault
+          persist-credentials: false
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          path: product
+          ref: '7ae6626e44d01d29b11968da28e6debd816f8c06'
+          persist-credentials: false
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
+        with:
+          python-version: '3.12'
+      - name: Python independent regressions
+        env:
+          VIB_CHECKOUT: ${{ github.workspace }}/product
+          PYTHONDONTWRITEBYTECODE: '1'
+          PYTHONUTF8: '1'
+        run: python -B vault/vib/issue54/run.py python
+      - name: Bash independent oracle
+        if: always() && runner.os == 'Linux'
+        run: python -B vault/vib/issue54/run.py bash
+      - name: PowerShell independent oracle
+        if: always() && runner.os == 'Windows'
+        run: python -B vault/vib/issue54/run.py powershell
+      - name: Retain probe evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: issue54-${{ matrix.runner }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/issue54/
+          if-no-files-found: error
