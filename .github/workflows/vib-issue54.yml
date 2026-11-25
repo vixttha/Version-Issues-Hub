@@ -87,6 +87,12 @@ jobs:
       - name: Python adversarial partial PR metadata
         if: always()
         run: python -B vault/vib/issue54/run.py partial
+      - name: Bash Git path identity
+        if: always() && runner.os == 'Linux'
+        run: python -B vault/vib/issue54/run.py bash5
+      - name: PowerShell Git path identity
+        if: always() && runner.os == 'Windows'
+        run: python -B vault/vib/issue54/run.py powershell5
       - name: Retain probe evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02

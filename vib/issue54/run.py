@@ -23,6 +23,8 @@ cmd={"python":[sys.executable,"-B",str(here/"test_core.py")],
      "partial":[sys.executable,"-B",str(here/"test_partial_metadata.py")],
      "ancestry":[sys.executable,"-B",str(here/"test_ancestry.py")],
      "completion":[sys.executable,"-B",str(here/"test_completion.py")],
+     "bash5":["bash",str(here/"paths.sh")],
+     "powershell5":["pwsh","-NoProfile","-File",str(here/"paths.ps1")],
      "bash4":["bash",str(here/"history.sh")],
      "powershell4":["pwsh","-NoProfile","-File",str(here/"history.ps1")],
      "receipt":[sys.executable,"-B",str(here/"test_receipt.py")],
@@ -54,8 +56,8 @@ if kind in ("python","diagnostic","faults","evidence","schema","mutation","recei
     expected={"python":67,"diagnostic":13,"faults":38,"evidence":12,"schema":47,"mutation":14,"receipt":24,"completion":60,"partial":9,"ancestry":14}[kind]
     passed=len(ids)==expected and len(set(ids))==expected and not re.search(r"\b(skipped|expected failures|unexpected successes)=",log)
 else:
-    ids=re.findall(r"^PASS ((?:BA4|PS4|BA3|PS3|BA2|PS2|BA|PS)-\S+)",log,re.M)
-    expected=14 if kind in ("bash4","powershell4") else 12 if kind in ("bash3","powershell3") else 19 if kind in ("bash2","powershell2") else 15
+    ids=re.findall(r"^PASS ((?:BA5|PS5|BA4|PS4|BA3|PS3|BA2|PS2|BA|PS)-\S+)",log,re.M)
+    expected=14 if kind in ("bash4","powershell4") else 12 if kind in ("bash3","powershell3","bash5","powershell5") else 19 if kind in ("bash2","powershell2") else 15
     passed=len(ids)==expected and len(set(ids))==expected
 passed=passed and result.returncode==0 and head(vault)==v and head(product)==pin
 report={"vault_sha":v,"product_sha":pin,"run_id":os.environ["GITHUB_RUN_ID"],"attempt":os.environ["GITHUB_RUN_ATTEMPT"],"os":platform.platform(),"python":platform.python_version(),"kind":kind,"expected_count":expected,"passed_ids":ids,"exit_code":result.returncode,"log_sha256":hashlib.sha256(raw).hexdigest(),"outcome":"pass" if passed else "fail"}
