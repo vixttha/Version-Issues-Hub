@@ -167,7 +167,7 @@
         "Public runner regression and exact receipt/Graphify evidence; retain unresolved live remote upgrade separately."
       ],
       "issue": 33,
-      "state": "in_progress",
+      "state": "staged",
       "version": "v0.0.0.17"
     },
     {
