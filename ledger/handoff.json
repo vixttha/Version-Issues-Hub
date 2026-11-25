@@ -2,12 +2,15 @@
   "active": {
     "issue": 1,
     "version": "v0.0.0.1",
-    "phase": "Validate",
-    "next_action": "Verify new #1-only PR exact head, proposed main merge, Ubuntu/Windows, Graphify and CodeRabbit. Preserve original fix ancestry. Do not merge before audit.",
+    "phase": "Internal Auditor",
+    "next_action": "Public push and proposed merge all six jobs green; 8 tests per OS/checkout, exact receipts generated, Graphify 6 nodes/5 edges both. Preview parents/tree confirmed. Audit diff, artifact metadata and fresh CodeRabbit before Head decision.",
     "fix_sha": "f767cc133f8dba5ebb68b6530e8601dc66879e81",
     "candidate_sha": "e99e66deaa4ff8e36e407457a20866159473798a",
     "pull_request": 67,
-    "evidence": []
+    "evidence": [
+      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45705444690/attempts/1",
+      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45705456095/attempts/1"
+    ]
   },
   "history": [
     {
