@@ -2,11 +2,11 @@
   "active": {
     "issue": 23,
     "version": "v0.0.0.10",
-    "phase": "Worker",
-    "next_action": "Owner-authorized historical recovery and closure review; no product edits or new version.",
-    "fix_sha": null,
-    "candidate_sha": null,
-    "pull_request": null,
+    "phase": "Validate",
+    "next_action": "Validate original package pin recovery, occupied branch refusal, BART live recovery and Graphify.",
+    "fix_sha": "65dc35530f98d489b15b0b4fbf147818e1bdf5eb",
+    "candidate_sha": "07a73f55a2b1f7ecbf873a3921f1e397034a88e6",
+    "pull_request": 2,
     "evidence": []
   },
   "history": [
