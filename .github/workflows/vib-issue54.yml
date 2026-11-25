@@ -81,6 +81,12 @@ jobs:
       - name: PowerShell independent Git ancestry
         if: always() && runner.os == 'Windows'
         run: python -B vault/vib/issue54/run.py powershell4
+      - name: Python actual Git ancestry guard
+        if: always()
+        run: python -B vault/vib/issue54/run.py ancestry
+      - name: Python adversarial partial PR metadata
+        if: always()
+        run: python -B vault/vib/issue54/run.py partial
       - name: Retain probe evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02

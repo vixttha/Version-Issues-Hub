@@ -20,6 +20,8 @@ if v != os.environ["GITHUB_SHA"] or head(product)!=pin:
 kind=sys.argv[1]
 cmd={"python":[sys.executable,"-B",str(here/"test_core.py")],
      "diagnostic":[sys.executable,"-B",str(here/"diagnostic.py")],
+     "partial":[sys.executable,"-B",str(here/"test_partial_metadata.py")],
+     "ancestry":[sys.executable,"-B",str(here/"test_ancestry.py")],
      "completion":[sys.executable,"-B",str(here/"test_completion.py")],
      "bash4":["bash",str(here/"history.sh")],
      "powershell4":["pwsh","-NoProfile","-File",str(here/"history.ps1")],
@@ -44,12 +46,12 @@ log=raw.decode("utf-8",errors="replace")
 print(log,flush=True)
 if kind=="python" and (out/"transport.json").is_file():
     print("VIB54_TRANSPORT "+(out/"transport.json").read_text(encoding="utf-8"),flush=True)
-if kind in ("python","diagnostic","faults","evidence","schema","mutation","receipt","completion"):
+if kind in ("python","diagnostic","faults","evidence","schema","mutation","receipt","completion","partial","ancestry"):
     ids=re.findall(r"^test_[^\s]+ \(([^)]*)\) \.\.\. ok",log,re.M)
     if kind!="python":
         identity_file=out/(kind+"-identities.json")
         ids=json.loads(identity_file.read_text(encoding="utf-8")) if identity_file.is_file() else []
-    expected={"python":67,"diagnostic":13,"faults":38,"evidence":12,"schema":47,"mutation":14,"receipt":24,"completion":60}[kind]
+    expected={"python":67,"diagnostic":13,"faults":38,"evidence":12,"schema":47,"mutation":14,"receipt":24,"completion":60,"partial":9,"ancestry":14}[kind]
     passed=len(ids)==expected and len(set(ids))==expected and not re.search(r"\b(skipped|expected failures|unexpected successes)=",log)
 else:
     ids=re.findall(r"^PASS ((?:BA4|PS4|BA3|PS3|BA2|PS2|BA|PS)-\S+)",log,re.M)
