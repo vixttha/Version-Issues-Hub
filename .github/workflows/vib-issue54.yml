@@ -16,7 +16,7 @@ jobs:
       matrix:
         runner: [ubuntu-24.04, windows-latest]
     runs-on: ${{ matrix.runner }}
-    timeout-minutes: 12
+    timeout-minutes: 16
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
@@ -108,6 +108,18 @@ jobs:
       - name: Python seeded allocation and workflow traces
         if: always()
         run: python -B vault/vib/issue54/run.py traces
+      - name: Python critical lifecycle qualification
+        if: always()
+        run: python -B vault/vib/issue54/run.py qualification
+      - name: Python high-priority qualification
+        if: always()
+        run: python -B vault/vib/issue54/run.py high
+      - name: Bash concurrent refs and archive controls
+        if: always() && runner.os == 'Linux'
+        run: python -B vault/vib/issue54/run.py bash7
+      - name: PowerShell concurrent refs and archive controls
+        if: always() && runner.os == 'Windows'
+        run: python -B vault/vib/issue54/run.py powershell7
       - name: Independently audit evidence before upload
         if: always()
         run: python -B vault/vib/issue54/audit_evidence.py

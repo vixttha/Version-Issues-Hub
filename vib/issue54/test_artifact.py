@@ -60,8 +60,8 @@ class Artifact(unittest.TestCase):
     def test_wrong_runner_inventory(self):
         with self.assertRaises(ValueError): audit.inventory("Unknown")
     def test_platform_inventory(self):
-        self.assertEqual(sum(audit.inventory("Linux").values()),463)
-        self.assertEqual(sum(audit.inventory("Windows").values()),463)
+        self.assertEqual(sum(audit.inventory("Linux").values()),542)
+        self.assertEqual(sum(audit.inventory("Windows").values()),542)
         self.assertNotIn("powershell",audit.inventory("Linux"))
         self.assertNotIn("bash",audit.inventory("Windows"))
 

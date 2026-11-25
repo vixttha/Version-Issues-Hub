@@ -20,6 +20,10 @@ if v != os.environ["GITHUB_SHA"] or head(product)!=pin:
 kind=sys.argv[1]
 cmd={"python":[sys.executable,"-B",str(here/"test_core.py")],
      "diagnostic":[sys.executable,"-B",str(here/"diagnostic.py")],
+     "qualification":[sys.executable,"-B",str(here/"test_qualification.py")],
+     "high":[sys.executable,"-B",str(here/"test_high.py")],
+     "bash7":["bash",str(here/"races.sh")],
+     "powershell7":["pwsh","-NoProfile","-File",str(here/"races.ps1")],
      "traces":[sys.executable,"-B",str(here/"test_traces.py")],
      "artifact":[sys.executable,"-B",str(here/"test_artifact.py")],
      "interruptions":[sys.executable,"-B",str(here/"test_interruptions.py")],
@@ -53,16 +57,16 @@ log=raw.decode("utf-8",errors="replace")
 print(log,flush=True)
 if kind=="python" and (out/"transport.json").is_file():
     print("VIB54_TRANSPORT "+(out/"transport.json").read_text(encoding="utf-8"),flush=True)
-if kind in ("python","diagnostic","faults","evidence","schema","mutation","receipt","completion","partial","ancestry","interruptions","artifact","traces"):
+if kind in ("python","diagnostic","faults","evidence","schema","mutation","receipt","completion","partial","ancestry","interruptions","artifact","traces","qualification","high"):
     ids=re.findall(r"^test_[^\s]+ \(([^)]*)\) \.\.\. ok",log,re.M)
     if kind!="python":
         identity_file=out/(kind+"-identities.json")
         ids=json.loads(identity_file.read_text(encoding="utf-8")) if identity_file.is_file() else []
-    expected={"python":67,"diagnostic":13,"faults":38,"evidence":12,"schema":47,"mutation":14,"receipt":24,"completion":60,"partial":9,"ancestry":14,"interruptions":41,"artifact":24,"traces":16}[kind]
+    expected={"python":67,"diagnostic":13,"faults":38,"evidence":12,"schema":47,"mutation":14,"receipt":24,"completion":60,"partial":9,"ancestry":14,"interruptions":41,"artifact":24,"traces":16,"qualification":34,"high":37}[kind]
     passed=len(ids)==expected and len(set(ids))==expected and not re.search(r"\b(skipped|expected failures|unexpected successes)=",log)
 else:
-    ids=re.findall(r"^PASS ((?:BA6|PS6|BA5|PS5|BA4|PS4|BA3|PS3|BA2|PS2|BA|PS)-\S+)",log,re.M)
-    expected=14 if kind in ("bash4","powershell4") else 12 if kind in ("bash3","powershell3","bash5","powershell5","bash6","powershell6") else 19 if kind in ("bash2","powershell2") else 15
+    ids=re.findall(r"^PASS ((?:BA7|PS7|BA6|PS6|BA5|PS5|BA4|PS4|BA3|PS3|BA2|PS2|BA|PS)-\S+)",log,re.M)
+    expected=8 if kind in ("bash7","powershell7") else 14 if kind in ("bash4","powershell4") else 12 if kind in ("bash3","powershell3","bash5","powershell5","bash6","powershell6") else 19 if kind in ("bash2","powershell2") else 15
     passed=len(ids)==expected and len(set(ids))==expected
 passed=passed and result.returncode==0 and head(vault)==v and head(product)==pin
 report={"vault_sha":v,"product_sha":pin,"run_id":os.environ["GITHUB_RUN_ID"],"attempt":os.environ["GITHUB_RUN_ATTEMPT"],"os":platform.platform(),"python":platform.python_version(),"kind":kind,"expected_count":expected,"passed_ids":ids,"exit_code":result.returncode,"log_sha256":hashlib.sha256(raw).hexdigest(),"outcome":"pass" if passed else "fail"}
