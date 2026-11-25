@@ -1,22 +1,5 @@
 {
-  "active": {
-    "issue": 24,
-    "version": "v0.0.0.11",
-    "phase": "Head",
-    "next_action": "Solo audit confirms original connector-install/read-only scope, not a fresh independent LLM or CLI apply claim.",
-    "fix_sha": "e3f5f917307f38372277b7aecae3652c85935f80",
-    "candidate_sha": "07a73f55a2b1f7ecbf873a3921f1e397034a88e6",
-    "pull_request": 2,
-    "evidence": [
-      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45711463464/attempts/1",
-      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45711463521/attempts/1",
-      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45711477945/attempts/1",
-      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45711477773/attempts/1",
-      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45711477645/attempts/1",
-      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45336994168/attempts/1",
-      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45338267547/attempts/1"
-    ]
-  },
+  "active": null,
   "history": [
     {
       "decision": "PR49 CodeRabbit finding 4682051116: rework exact product SHA comparisons and add regression checks; preserve previous evidence.",
@@ -451,6 +434,29 @@
         "phase": "Head",
         "next_action": "Solo audit: all original criteria met within read-only scope, no adopter upgrade or independent host claim.",
         "fix_sha": "65dc35530f98d489b15b0b4fbf147818e1bdf5eb",
+        "candidate_sha": "07a73f55a2b1f7ecbf873a3921f1e397034a88e6",
+        "pull_request": 2,
+        "evidence": [
+          "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45711463464/attempts/1",
+          "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45711463521/attempts/1",
+          "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45711477945/attempts/1",
+          "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45711477773/attempts/1",
+          "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45711477645/attempts/1",
+          "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45336994168/attempts/1",
+          "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45338267547/attempts/1"
+        ]
+      },
+      "disposition": "staged",
+      "decision": "Owner-authorized historical engineering closure, original fix and current exact evidence preserved; main integration pending.",
+      "merged_sha": null
+    },
+    {
+      "handoff": {
+        "issue": 24,
+        "version": "v0.0.0.11",
+        "phase": "Head",
+        "next_action": "Solo audit confirms original connector-install/read-only scope, not a fresh independent LLM or CLI apply claim.",
+        "fix_sha": "e3f5f917307f38372277b7aecae3652c85935f80",
         "candidate_sha": "07a73f55a2b1f7ecbf873a3921f1e397034a88e6",
         "pull_request": 2,
         "evidence": [

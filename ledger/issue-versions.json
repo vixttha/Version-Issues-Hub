@@ -107,7 +107,7 @@
         "Public runner and Graphify evidence; no product changes, no enforcement or independent LLM claims."
       ],
       "issue": 24,
-      "state": "in_progress",
+      "state": "staged",
       "version": "v0.0.0.11"
     },
     {
