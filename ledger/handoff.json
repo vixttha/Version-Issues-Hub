@@ -1,11 +1,17 @@
 {
   "active": {
     "candidate_sha": "95e05af7b2a675491a01f8450fb20db8871b1f41",
-    "evidence": [],
+    "evidence": [
+      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45698345230/attempts/1",
+      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45698358367/attempts/1",
+      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45698345281/attempts/1",
+      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45698358329/attempts/1",
+      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45698358388/attempts/1"
+    ],
     "fix_sha": "6e321de7cc488d548d56ed2bece08673a9a7f8b1",
     "issue": 65,
-    "next_action": "Recovery #65 original receipt fix plus final #66 changes merged into engineering; validate exact integrated head and aggregate PR2 proposed merge. No main merge; historical disposition and independent host limits remain.",
-    "phase": "Validate",
+    "next_action": "All 11 exact merged-head/aggregate preview public jobs passed; 131/131 each on Ubuntu/Windows push/PR, Graphify 151/150 each. Audit ten historical closure dispositions and 19 open mappings; independent agent trial remains separate.",
+    "phase": "Internal Auditor",
     "pull_request": 2,
     "version": "v0.0.0.31"
   },
