@@ -751,7 +751,8 @@ def retry_scope(api, previous, fresh, number, rejection):
     expected = issue_view(previous["ledger"], previous["handoff"], number)
     history = previous["handoff"]["history"]
     prior_ledger = previous["ledger"]
-    prior_schema = previous["handoff"]["schema_version"]
+    prior_handoff = previous["handoff"]
+    prior_schema = prior_handoff["schema_version"]
     from tools import lifecycle
     _, old_entries = lifecycle.tree_entries(api, prefix, old)
     package_paths = previous["manifest"]["package_files_sha256"]
@@ -780,8 +781,23 @@ def retry_scope(api, previous, fresh, number, rejection):
         if (handoff["history"][:len(history)] != history
                 or issue_view(ledger, handoff, number) != expected):
             raise ValueError("Issue or archive changed during contention; inspect before retrying")
+        # Validate every adjacent transaction under its own inferred issue scope,
+        # not the issue being retried. This also protects terminal archive appends.
+        previous_rows = {row["issue"]: row for row in prior_ledger["issues"]}
+        before_active = {row["issue"]: row for row in active_rows(prior_handoff)}
+        after_active = {row["issue"]: row for row in active_rows(handoff)}
+        changed = {n for n in previous_rows.keys() | current_rows.keys()
+                   if previous_rows.get(n) != current_rows.get(n)}
+        changed.update(n for n in before_active.keys() | after_active.keys()
+                       if before_active.get(n) != after_active.get(n))
+        changed.update(record["handoff"]["issue"] for record in handoff["history"][len(history):])
+        if len(changed) > 1:
+            raise ValueError("Multiple issue scopes changed during contention")
+        historical = {**previous, "ledger": prior_ledger, "handoff": prior_handoff}
+        check_issue_delta(historical, ledger, handoff, next(iter(changed), None))
         history = handoff["history"]
         prior_ledger = ledger
+        prior_handoff = handoff
         prior_schema = handoff["schema_version"]
     return None
 
