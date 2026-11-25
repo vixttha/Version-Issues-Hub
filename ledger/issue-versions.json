@@ -27,7 +27,7 @@
         "Refuse occupied branches, conflicting identity, and empty repositories without silently modifying the target. Verify creation using public-runner tests."
       ],
       "issue": 9,
-      "state": "staged",
+      "state": "in_progress",
       "version": "v0.0.0.3"
     },
     {
