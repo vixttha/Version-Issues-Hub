@@ -2,11 +2,11 @@
   "active": {
     "issue": 70,
     "version": "v0.0.0.34",
-    "phase": "Worker",
-    "next_action": "Repair historical acceptance criteria drift; no unrelated work.",
-    "fix_sha": null,
-    "candidate_sha": null,
-    "pull_request": null,
+    "phase": "Validate",
+    "next_action": "PR74 merged engineering only; exact merge and PR2 preview verification before closure.",
+    "fix_sha": "a8facf5b7e809ee72230d9e109263e31da264346",
+    "candidate_sha": "635377fbe9165859ad486469aef295e3052d5af9",
+    "pull_request": 2,
     "evidence": []
   },
   "history": [
