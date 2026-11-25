@@ -12,15 +12,18 @@ from pathlib import Path
 import library
 
 PACKAGE_ROOTS = ("ideas", "features", "templates")
-PACKAGE_TOPLEVEL = ("LIBRARY-AGENT-GUIDE.md",)
+PACKAGE_TOPLEVEL = ("README.md", "LICENSE", "LIBRARY-AGENT-GUIDE.md")
 PACKAGE_DOCS = {
     "ADOPTION.md", "ISOLATION.md", "LIFECYCLE.md",
     "ONE-WAY-BOUNDARY.md", "PROVENANCE.md",
+    "PORTABILITY-AND-MODULE-CONTRACT.md", "PORTABILITY-AND-MODULE-CONTRACT.json",
+    "PRODUCT-SCOPE-LOCK.md",
 }
 PACKAGE_TOOL_FILES = {"library.py", "adopter.py"}
 PACKAGE_TEST_FILES = {
     "test_library.py", "test_one_way_boundary.py", "test_hardening.py",
     "test_adopter_profiles.py", "test_v002_six_team_repairs.py",
+    "test_modularity_contract.py", "test_unicode_index_integrity.py",
 }
 
 

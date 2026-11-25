@@ -1,0 +1,55 @@
+name: Optional Provenistem synchronization evidence
+on:
+  pull_request:
+    branches: [Lydite-Test-Vault]
+    paths:
+      - 'provenistem/**'
+      - 'audit/provenistem-sync-evidence.json'
+      - 'audit/verify_provenistem_sync.py'
+      - '.github/workflows/provenistem-sync-evidence.yml'
+permissions:
+  contents: read
+jobs:
+  graphify:
+    if: github.event.repository.private == false
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      GRAPHIFY_QUERY_LOG_DISABLE: '1'
+      PYTHONHASHSEED: '0'
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          path: source
+          persist-credentials: false
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          repository: vixttha/README-HQ
+          ref: 788f2127d3cf004ac5615d21364f5b56e4f7dd31
+          path: graphify-kit
+          persist-credentials: false
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
+        with:
+          python-version: '3.12'
+      - name: Verify exact-source evidence graph
+        working-directory: source
+        run: |
+          kit=../graphify-kit/graphify-hq/template/v0.0.8
+          python -m pip install --require-hashes --no-deps --only-binary=:all: -r "$kit/requirements.txt"
+          python -m pip check
+          output="$RUNNER_TEMP/provenistem-sync-evidence"
+          mkdir -p "$output"
+          python - "$output/manifest.json" <<'PY'
+          import json, os, sys
+          from pathlib import Path
+          m = json.loads(Path('audit/provenistem-sync-evidence.json').read_text())
+          m['repository'] = os.environ['GITHUB_REPOSITORY']
+          m['source_commit'] = os.environ['GITHUB_SHA']
+          Path(sys.argv[1]).write_text(json.dumps(m, indent=2) + '\n')
+          PY
+          python "$kit/evidence_map.py" "$output/manifest.json" "$output"
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: provenistem-sync-evidence-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/provenistem-sync-evidence
+          if-no-files-found: error
