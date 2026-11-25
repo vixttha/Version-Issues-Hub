@@ -2,11 +2,11 @@
   "active": {
     "issue": 68,
     "version": "v0.0.0.33",
-    "phase": "Worker",
-    "next_action": "Continue from engineering .32, repair generic forward preflight. Synchronize exact canonical projection before product edits, no main merge.",
-    "fix_sha": null,
-    "candidate_sha": null,
-    "pull_request": null,
+    "phase": "Validate",
+    "next_action": "PR69 reviewed and engineering merged at a7ba4267f65a264c0c50c36bb2bedc3433f019ca. Verify exact merged push and aggregate PR2 evidence before engineering closure and staged main disposition.",
+    "fix_sha": "a8569d491bd93549dcd2011ca89e3e56d3ada50e",
+    "candidate_sha": "a7ba4267f65a264c0c50c36bb2bedc3433f019ca",
+    "pull_request": 2,
     "evidence": []
   },
   "history": [
