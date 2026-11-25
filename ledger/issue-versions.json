@@ -307,6 +307,16 @@
       "issue": 65,
       "state": "staged",
       "version": "v0.0.0.31"
+    },
+    {
+      "issue": 34,
+      "version": "v0.0.0.32",
+      "state": "in_progress",
+      "acceptance": [
+        "Re-evaluate bound run attempts and proof identities after success publication, revoke the exact check on changed or uncertain evidence, and do not retry success writes.",
+        "Public regression tests demonstrate rerun, replacement proof, uncertain response, revocation failure and state drift during publication.",
+        "Document residual non-atomic window and retain required live optional enforcement proof; Standard mode remains independent and disabled enforcement unchanged."
+      ]
     }
   ],
   "repository": "vixttha/Version-Issues-Hub",
