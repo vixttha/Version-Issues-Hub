@@ -34,6 +34,8 @@ if kind=="python" and (out/"transport.json").is_file():
     print("VIB54_TRANSPORT "+(out/"transport.json").read_text(encoding="utf-8"),flush=True)
 if kind in ("python","diagnostic"):
     ids=re.findall(r"^test_[^\s]+ \(([^)]*)\) \.\.\. ok",log,re.M)
+    if kind=="diagnostic":
+        ids=json.loads((out/"diagnostic-identities.json").read_text(encoding="utf-8")) if (out/"diagnostic-identities.json").is_file() else []
     expected=67 if kind=="python" else 13
     passed=len(ids)==expected and len(set(ids))==expected and not re.search(r"\b(skipped|expected failures|unexpected successes)=",log)
 else:
