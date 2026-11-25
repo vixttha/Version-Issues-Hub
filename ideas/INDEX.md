@@ -12,3 +12,6 @@
 | IDEA-000006 | Derive an evidence map from project records | captured | not\_planned |
 | IDEA-000007 | Independent agent handoff acceptance | captured | not\_planned |
 | IDEA-000008 | Agent-count-independent VIB workflow scalability | adopted | planned |
+| IDEA-000009 | Permanent project-local VIB identity | adopted | not\_applicable |
+| IDEA-000010 | Issue-specific reuse of verified evidence | adopted | planned |
+| IDEA-000011 | Repository visibility and execution policy research | exploring | not\_planned |

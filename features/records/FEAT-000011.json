@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "id": "FEAT-000011",
+  "title": "Independent parallel issue handoffs",
+  "summary": "Owner-enabled parallel schema candidate keeps legacy solo default and same five-stage lifecycle per issue. No fixed team or mandatory coordinator.",
+  "kind": "workflow",
+  "lifecycle_status": "in_progress",
+  "implementation_status": "in_progress",
+  "idea_ids": [
+    "IDEA-000002",
+    "IDEA-000008",
+    "IDEA-000009"
+  ],
+  "acceptance_criteria": [
+    "Preserve v1 recovery and explicit compatible migration.",
+    "Qualify 1–100 simulated clients separately from real independent hosts; no live capacity claim.",
+    "No cross-issue changes or automatic merge."
+  ],
+  "testing": {
+    "status": "in_progress"
+  },
+  "evidence": [
+    {
+      "kind": "implementation",
+      "claim": "Draft parallel handoff design and compatibility limits.",
+      "source_sha": "6f6d7b8b29690bb7dac34f07e1a55b20a7e25cb7",
+      "source_path": "install/branch/WORKFLOW.md",
+      "receipt": "https://github.com/vixttha/Version-Issues-Hub/pull/55"
+    },
+    {
+      "kind": "test",
+      "claim": "Historical 177 tests per platform; separate live checks failed at this candidate.",
+      "source_sha": "43040573cbc06664dd12f72e817d4b6cb121c1a7",
+      "source_path": "tools/session.py",
+      "receipt": "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45681170548/attempts/1"
+    }
+  ],
+  "release_membership": "NOT_ASSERTED"
+}

@@ -1,0 +1,46 @@
+{
+  "schema_version": 1,
+  "id": "IDEA-000010",
+  "title": "Issue-specific reuse of verified evidence",
+  "summary": "Reuse verified evidence. Preserve its origin. Confirm its applicability. Revalidate affected or uncertain scope. Keep acceptance issue-specific and owner-controlled. No cross-revision proof substitution, mandatory cache or new agent role.",
+  "kind": "process",
+  "origin": {
+    "created_by": "joint",
+    "source": "https://github.com/vixttha/Version-Issues-Hub/issues/9#issuecomment-7172184112"
+  },
+  "lifecycle_status": "adopted",
+  "implementation_status": "planned",
+  "testing": {
+    "status": "planned"
+  },
+  "importance": "high",
+  "complexity": "high",
+  "categories": [
+    "verification",
+    "persistence"
+  ],
+  "benefits": [
+    "Avoid unnecessary identical executions while preserving exact receipt provenance."
+  ],
+  "risks": [
+    "Missing, stale or uncertain proof requires revalidation; independent host trials and owner decisions cannot be inherited."
+  ],
+  "related_ideas": [
+    "IDEA-000003",
+    "IDEA-000008"
+  ],
+  "evidence": [
+    {
+      "relation": "context",
+      "claim": "Candidate documents reuse after unrelated installed-state change with refreshed policy.",
+      "repository": "vixttha/Version-Issues-Hub",
+      "commit": "6f6d7b8b29690bb7dac34f07e1a55b20a7e25cb7",
+      "path": "install/branch/WORKFLOW.md"
+    }
+  ],
+  "decision": {
+    "decided_by": "owner",
+    "decided_at": "2026-11-25T19:21:31Z",
+    "reason": "Owner approved product identity and evidence principle; timestamp is the canonical GitHub decision record, not chat timestamp. https://github.com/vixttha/Version-Issues-Hub/issues/9#issuecomment-7172184112"
+  }
+}

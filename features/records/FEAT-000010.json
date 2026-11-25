@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "id": "FEAT-000010",
+  "title": "Issue-scoped evidence and transaction isolation",
+  "summary": "Candidate guards unrelated ledger rows, active handoffs and archives; exact issue criteria and historical receipts remain separate.",
+  "kind": "capability",
+  "lifecycle_status": "in_progress",
+  "implementation_status": "in_progress",
+  "idea_ids": [
+    "IDEA-000008",
+    "IDEA-000010"
+  ],
+  "acceptance_criteria": [
+    "Unrelated issue writes preserve other rows, history and handoffs.",
+    "Reject stale integration pins; preserve original fix and archive."
+  ],
+  "testing": {
+    "status": "in_progress"
+  },
+  "evidence": [
+    {
+      "kind": "implementation",
+      "claim": "Implemented in draft PR55; full qualification incomplete.",
+      "source_sha": "6f6d7b8b29690bb7dac34f07e1a55b20a7e25cb7",
+      "source_path": "tools/session.py",
+      "receipt": "https://github.com/vixttha/Version-Issues-Hub/pull/55"
+    },
+    {
+      "kind": "test",
+      "claim": "162 tests per Ubuntu and Windows at historical isolation candidate, not latest acceptance.",
+      "source_sha": "a6a993cb5cfd18a2491e7a7217928a8d6ae52d24",
+      "source_path": "tools/session.py",
+      "receipt": "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45679526963/attempts/1"
+    }
+  ],
+  "release_membership": "NOT_ASSERTED"
+}

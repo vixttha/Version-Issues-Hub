@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "id": "FEAT-000013",
+  "title": "Exact-revision qualifying evidence reuse",
+  "summary": "Reference qualifying original execution for each independently reviewed issue; unrelated ledger changes may require a fresh policy pin rather than rerunning identical evidence.",
+  "kind": "workflow",
+  "lifecycle_status": "in_progress",
+  "implementation_status": "in_progress",
+  "idea_ids": [
+    "IDEA-000003",
+    "IDEA-000010"
+  ],
+  "acceptance_criteria": [
+    "Keep original run, attempt and tested checkout immutable.",
+    "Independently match every criterion and current policy; revalidate affected or uncertain scope.",
+    "No automatic approval transfer or cross-revision test skipping."
+  ],
+  "testing": {
+    "status": "in_progress"
+  },
+  "evidence": [
+    {
+      "kind": "implementation",
+      "claim": "Draft documents limited reuse; not general test selection.",
+      "source_sha": "6f6d7b8b29690bb7dac34f07e1a55b20a7e25cb7",
+      "source_path": "install/branch/WORKFLOW.md",
+      "receipt": "https://github.com/vixttha/Version-Issues-Hub/pull/55"
+    }
+  ],
+  "release_membership": "NOT_ASSERTED"
+}

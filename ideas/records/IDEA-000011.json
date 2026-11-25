@@ -1,0 +1,50 @@
+{
+  "schema_version": 1,
+  "id": "IDEA-000011",
+  "title": "Repository visibility and execution policy research",
+  "summary": "Preserve current public free standard hosted runner policy. Explore private standard hosted allowance or owner-approved spend, private self-hosted runners and direct local execution as distinct provenance. No private execution approval or release gate is implied.",
+  "kind": "research",
+  "origin": {
+    "created_by": "joint",
+    "source": "https://github.com/vixttha/Version-Issues-Hub/issues/9#issuecomment-7172184112"
+  },
+  "lifecycle_status": "exploring",
+  "implementation_status": "not_planned",
+  "testing": {
+    "status": "untested"
+  },
+  "importance": "high",
+  "complexity": "high",
+  "categories": [
+    "privacy",
+    "execution policy",
+    "portability"
+  ],
+  "benefits": [
+    "Same branch and workflow across authorized environments."
+  ],
+  "risks": [
+    "Private evidence exposure, mutable local runner state, unexpected billing, visibility changes and false public-runner equivalence."
+  ],
+  "related_ideas": [
+    "IDEA-000003",
+    "IDEA-000009",
+    "IDEA-000010"
+  ],
+  "evidence": [
+    {
+      "relation": "context",
+      "claim": "Current public-runner profile excludes private execution.",
+      "repository": "vixttha/Version-Issues-Hub",
+      "commit": "7ae6626e44d01d29b11968da28e6debd816f8c06",
+      "path": "install/branch/STANDARD.md"
+    },
+    {
+      "relation": "context",
+      "claim": "Private target guard remains present.",
+      "repository": "vixttha/Version-Issues-Hub",
+      "commit": "6f6d7b8b29690bb7dac34f07e1a55b20a7e25cb7",
+      "path": "tools/standard.py"
+    }
+  ]
+}

@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "id": "FEAT-000012",
+  "title": "Issue-local contention recovery",
+  "summary": "Stacked draft candidate replans bounded proven unrelated conflicts without blind replay of ambiguous writes. No fairness or live concurrency guarantee.",
+  "kind": "capability",
+  "lifecycle_status": "in_progress",
+  "implementation_status": "in_progress",
+  "idea_ids": [
+    "IDEA-000008",
+    "IDEA-000010"
+  ],
+  "acceptance_criteria": [
+    "Preserve intervening committed state and original intent; no duplicate version or lost receipts.",
+    "Bound attempts; refuse ambiguous writes, same-issue conflicts and stale exact integration policy."
+  ],
+  "testing": {
+    "status": "in_progress"
+  },
+  "evidence": [
+    {
+      "kind": "implementation",
+      "claim": "Isolated draft candidate, not merged or installed.",
+      "source_sha": "ad54f0dab089674633f2892e8612ae1df86882e0",
+      "source_path": "tools/session.py",
+      "receipt": "https://github.com/vixttha/Version-Issues-Hub/pull/59"
+    },
+    {
+      "kind": "test",
+      "claim": "Existing public Ubuntu/Windows and Graphify jobs succeeded at exact candidate; full acceptance remains open.",
+      "source_sha": "ad54f0dab089674633f2892e8612ae1df86882e0",
+      "source_path": "tools/session.py",
+      "receipt": "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45683166613/attempts/1"
+    }
+  ],
+  "release_membership": "NOT_ASSERTED"
+}

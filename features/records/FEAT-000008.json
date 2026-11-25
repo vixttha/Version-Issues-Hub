@@ -12,7 +12,7 @@
   ],
   "acceptance_criteria": [
     "Preserve adopter files and reject stale state.",
-    "Archive without automatic deletion; corrected fresh remote CLI apply remains pending."
+    "Archive without automatic deletion; corrected fresh same-repository CLI apply is recorded; independent host and owner acceptance remain pending."
   ],
   "testing": {
     "status": "in_progress"
@@ -31,6 +31,13 @@
       "source_sha": "4fc9ac47462101b941ea2f78fc939d42a9de0032",
       "source_path": ".github/workflows/verify-checkpoint.yml",
       "receipt": "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45357923198/attempts/1"
+    },
+    {
+      "kind": "other",
+      "claim": "Standard contract context; #37 records corrected fresh same-repository CLI apply. No broad private qualification.",
+      "source_sha": "7ae6626e44d01d29b11968da28e6debd816f8c06",
+      "source_path": "install/branch/STANDARD.md",
+      "receipt": "https://github.com/vixttha/Version-Issues-Hub/issues/37"
     }
   ],
   "release_membership": "NOT_ASSERTED"

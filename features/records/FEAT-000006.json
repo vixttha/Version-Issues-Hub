@@ -2,7 +2,7 @@
   "schema_version": 1,
   "id": "FEAT-000006",
   "title": "Read-only Provenistem and Graphify navigation",
-  "summary": "Provide a browsable Ideas and Features catalog and a graph linked to the design checkpoint.",
+  "summary": "Provide a browsable Ideas and Features catalog and a graph linked to the design checkpoint. Optional navigation only; VIB must operate with Provenistem and Graphify absent.",
   "kind": "integration",
   "lifecycle_status": "planned",
   "implementation_status": "planned",

@@ -2,7 +2,7 @@
   "schema_version": 1,
   "id": "FEAT-000002",
   "title": "VIB handoff and batch review",
-  "summary": "Carry issue versions through one active worker and recover state from GitHub.",
+  "summary": "Carry issue versions through one active worker and recover state from GitHub. Historical solo scope; prospective parallel work is separately tracked in FEAT-000011. The same five-stage workflow remains.",
   "kind": "workflow",
   "lifecycle_status": "planned",
   "implementation_status": "planned",

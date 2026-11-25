@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "id": "FEAT-000014",
+  "title": "Private repository execution profiles",
+  "summary": "Research-only proposal for private hosted, self-hosted and direct-local evidence policies; no product mode, paid execution, local registration or private qualification authorized.",
+  "kind": "capability",
+  "lifecycle_status": "proposed",
+  "implementation_status": "not_planned",
+  "idea_ids": [
+    "IDEA-000009",
+    "IDEA-000011"
+  ],
+  "acceptance_criteria": [
+    "Explicit owner-approved policy, provenance and privacy boundary.",
+    "Keep public hosted free policy unchanged and reject unapproved billing or visibility changes.",
+    "Qualify private acceptance separately; never represent local output as hosted Actions evidence."
+  ],
+  "testing": {
+    "status": "untested"
+  },
+  "evidence": [
+    {
+      "kind": "other",
+      "claim": "Current contract explicitly excludes private execution.",
+      "source_sha": "7ae6626e44d01d29b11968da28e6debd816f8c06",
+      "source_path": "install/branch/STANDARD.md",
+      "receipt": "https://github.com/vixttha/Version-Issues-Hub/issues/9#issuecomment-7172184112"
+    }
+  ],
+  "release_membership": "NOT_ASSERTED"
+}

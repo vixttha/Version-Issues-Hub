@@ -2,7 +2,7 @@
   "schema_version": 1,
   "id": "FEAT-000004",
   "title": "GitHub required-check pilot",
-  "summary": "Demonstrate merge behavior using a disposable target and its actual ruleset.",
+  "summary": "Demonstrate merge behavior using a disposable target and its actual ruleset. Optional hard enforcement only; not a Standard adoption or release gate.",
   "kind": "integration",
   "lifecycle_status": "planned",
   "implementation_status": "planned",

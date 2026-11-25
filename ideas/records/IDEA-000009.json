@@ -1,0 +1,53 @@
+{
+  "schema_version": 1,
+  "id": "IDEA-000009",
+  "title": "Permanent project-local VIB identity",
+  "summary": "VIB is a permanent dedicated Version-Issues-Hub branch inside each adopter's GitHub repository, not a hosted service or orchestration system. Preserve the five-stage workflow, stable checkpoints, six laws and owner-controlled lifecycle.",
+  "kind": "product",
+  "origin": {
+    "created_by": "joint",
+    "source": "https://github.com/vixttha/Version-Issues-Hub/issues/9#issuecomment-7172184112"
+  },
+  "lifecycle_status": "adopted",
+  "implementation_status": "not_applicable",
+  "testing": {
+    "status": "untested"
+  },
+  "importance": "high",
+  "complexity": "high",
+  "categories": [
+    "product identity",
+    "standalone installation"
+  ],
+  "benefits": [
+    "Persistent engineering state independent of agent sessions."
+  ],
+  "risks": [
+    "Permanent does not imply branch protection or immutable refs; explicit archival and retirement remain supported."
+  ],
+  "related_ideas": [
+    "IDEA-000001",
+    "IDEA-000008"
+  ],
+  "evidence": [
+    {
+      "relation": "context",
+      "claim": "Existing six laws remain unchanged.",
+      "repository": "vixttha/Version-Issues-Hub",
+      "commit": "7ae6626e44d01d29b11968da28e6debd816f8c06",
+      "path": "ENGINEERING-LAWS.md"
+    },
+    {
+      "relation": "context",
+      "claim": "Dedicated branch entrypoint and owner authority.",
+      "repository": "vixttha/Version-Issues-Hub",
+      "commit": "7ae6626e44d01d29b11968da28e6debd816f8c06",
+      "path": "install/branch/AGENTS.md"
+    }
+  ],
+  "decision": {
+    "decided_by": "owner",
+    "decided_at": "2026-11-25T19:21:31Z",
+    "reason": "Owner approved product identity and evidence principle; timestamp is the canonical GitHub decision record, not chat timestamp. https://github.com/vixttha/Version-Issues-Hub/issues/9#issuecomment-7172184112"
+  }
+}

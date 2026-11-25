@@ -13,3 +13,8 @@
 | FEAT-000007 | Standard advisory validation | implemented | implemented |
 | FEAT-000008 | Owner-controlled installation lifecycle | implemented | implemented |
 | FEAT-000009 | Concurrent adopter snapshot recovery | implemented | implemented |
+| FEAT-000010 | Issue-scoped evidence and transaction isolation | in\_progress | in\_progress |
+| FEAT-000011 | Independent parallel issue handoffs | in\_progress | in\_progress |
+| FEAT-000012 | Issue-local contention recovery | in\_progress | in\_progress |
+| FEAT-000013 | Exact-revision qualifying evidence reuse | in\_progress | in\_progress |
+| FEAT-000014 | Private repository execution profiles | proposed | not\_planned |
