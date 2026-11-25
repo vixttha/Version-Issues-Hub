@@ -348,9 +348,11 @@ def confirm_handoff(api, prefix, old, new, tree):
 
 class HandoffUnconfirmed(ValueError):
     """An exact candidate is available for inspection, not blind resubmission."""
-    def __init__(self, candidate):
+    def __init__(self, candidate, retry_after=None):
         self.candidate_sha = candidate
-        super().__init__("Handoff outcome unconfirmed; inspect candidate " + candidate + " before retrying")
+        self.retry_after = retry_after
+        delay = f"; wait at least {retry_after} seconds before inspecting" if retry_after is not None else ""
+        super().__init__("Handoff outcome unconfirmed; inspect candidate " + candidate + " before retrying" + delay)
 
 def save(api, state, ledger, handoff, apply=False):
     validate_handoff(state["handoff"], state["ledger"])
@@ -376,11 +378,13 @@ def save(api, state, ledger, handoff, apply=False):
     new = api.request("POST", prefix + "/git/commits", {"message": "VIB cooperative handoff",
         "tree": install.require(install.SHA, tree, "handoff tree"), "parents": [old]})["sha"]
     install.require(install.SHA, new, "handoff commit")
+    if new == old:
+        raise ValueError("Proposed handoff commit equals its parent")
     # Fast-forward-only CAS: a divergent writer cannot overwrite a competing handoff.
     ambiguous = False
     try:
         api.request("PATCH", prefix + "/git/refs/heads/" + install.BRANCH, {"sha": new, "force": False})
-    except install.ApiTransportError:
+    except (install.ApiTransportError, json.JSONDecodeError):
         ambiguous = True
     except install.ApiError as error:
         # Rate limits and permanent errors must not trigger polling or resubmission.
@@ -389,7 +393,9 @@ def save(api, state, ledger, handoff, apply=False):
         ambiguous = True
     try:
         observed = confirm_handoff(api, prefix, old, new, tree)
-    except (ValueError, KeyError, TypeError, OSError, install.ApiError):
+    except install.ApiError as error:
+        raise HandoffUnconfirmed(new, error.retry_after) from None
+    except (ValueError, KeyError, TypeError, OSError):
         raise HandoffUnconfirmed(new) from None
     result = {"status": "saved", "installed_sha": new}
     if observed != new or ambiguous:

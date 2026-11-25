@@ -46,6 +46,10 @@
         {
           "path": "tests/test_transaction_confirmation.py",
           "anchor": "def test_throttle_header_never_retries_or_leaks(self):"
+        },
+        {
+          "path": "tests/test_transaction_confirmation.py",
+          "anchor": "def test_readback_throttle_retains_delay_and_candidate(self):"
         }
       ]
     }

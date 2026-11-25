@@ -1,5 +1,6 @@
 """Production session transaction qualification; no external writes."""
 import io
+import json
 import unittest
 from urllib.error import HTTPError
 from unittest.mock import patch
@@ -15,10 +16,14 @@ class Remote(Fake):
     def request(self, method, path, body=None):
         if method == "PATCH":
             result = super().request(method,path,body)
-            if self.outcome in ("descendant","lost_descendant","divergent","wrong_tree"):
+            if self.outcome in ("descendant","lost_descendant","divergent","wrong_tree","wrong_parent"):
                 self.ref = LATER
             if self.outcome in ("lost","lost_descendant"):
                 raise install.ApiTransportError("PATCH","git/refs",True)
+            if self.outcome == "lost_http":
+                raise install.ApiError(503)
+            if self.outcome == "bad_json":
+                raise json.JSONDecodeError("response","",0)
             if self.outcome == "lost_before":
                 self.ref = HEAD
                 raise install.ApiTransportError("PATCH","git/refs",True)
@@ -37,7 +42,7 @@ class Remote(Fake):
                     "merge_base_commit":{"sha":NEXT}}
         if method == "GET" and path.endswith("/git/commits/"+NEXT):
             return {"sha":NEXT,"tree":{"sha":HEAD if self.outcome=="wrong_tree" else TREE},
-                    "parents":[{"sha":HEAD}]}
+                    "parents":[{"sha":LATER if self.outcome=="wrong_parent" else HEAD}]}
         return super().request(method,path,body)
 
 class TransactionTests(unittest.TestCase):
@@ -47,17 +52,17 @@ class TransactionTests(unittest.TestCase):
         return session.save(api,s,ledger,handoff,True)
 
     def test_descendant_and_lost_response_confirm_once(self):
-        for outcome in ("descendant","lost","lost_descendant"):
+        for outcome in ("descendant","lost","lost_descendant","lost_http","bad_json"):
             with self.subTest(outcome=outcome):
                 api=Remote(outcome)
                 result=self.save(api)
                 self.assertEqual(result["installed_sha"],NEXT)
                 self.assertEqual(result["observed_sha"],api.ref)
-                self.assertEqual(result["recovered_response"],outcome.startswith("lost"))
+                self.assertEqual(result["recovered_response"],outcome!="descendant")
                 self.assertEqual(sum(m=="PATCH" for m,_,_ in api.writes),1)
 
     def test_unconfirmed_commit_never_resubmitted(self):
-        for outcome in ("lost_before","divergent","wrong_tree"):
+        for outcome in ("lost_before","divergent","wrong_tree","wrong_parent"):
             with self.subTest(outcome=outcome):
                 api=Remote(outcome)
                 with patch.object(install.time,"sleep"), self.assertRaises(session.HandoffUnconfirmed) as error:
@@ -91,3 +96,12 @@ class TransactionTests(unittest.TestCase):
             self.assertEqual(raised.exception.retry_after,120)
             self.assertNotIn("secret",str(raised.exception))
             sleep.assert_not_called()
+
+    def test_readback_throttle_retains_delay_and_candidate(self):
+        api=Remote("lost")
+        with patch.object(session,"confirm_handoff",side_effect=install.ApiError(429,retry_after=180)):
+            with self.assertRaises(session.HandoffUnconfirmed) as error:
+                self.save(api)
+        self.assertEqual(error.exception.candidate_sha,NEXT)
+        self.assertEqual(error.exception.retry_after,180)
+        self.assertEqual(sum(m=="PATCH" for m,_,_ in api.writes),1)
