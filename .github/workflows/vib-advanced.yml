@@ -1,0 +1,144 @@
+name: VIB advanced qualification batches 7-16
+on:
+  push:
+    branches: [Lydite-Test-Vault]
+    paths:
+      - 'vib/advanced/**'
+      - '.github/workflows/vib-advanced.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  qualification:
+    if: github.event.repository.private == false
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [ubuntu-24.04, windows-latest]
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 20
+    env:
+      VIB_CHECKOUT: ${{ github.workspace }}/product
+      PYTHONDONTWRITEBYTECODE: '1'
+      PYTHONUTF8: '1'
+      GH_TOKEN: ''
+      GITHUB_TOKEN: ''
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          path: vault
+          persist-credentials: false
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          path: product
+          ref: '7ae6626e44d01d29b11968da28e6debd816f8c06'
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
+        with:
+          python-version: '3.12'
+      - name: Install test-only coverage instrument
+        run: python -m pip install coverage==7.10.7
+      - name: Original product suite with branch coverage
+        working-directory: product
+        env:
+          COVERAGE_FILE: ${{ runner.temp }}/.vib-coverage
+        run: python -m coverage run --branch --source=tools -m unittest discover -s tests -v
+      - name: Batch 10 Python qualification
+        if: always()
+        working-directory: product
+        env:
+          COVERAGE_FILE: ${{ runner.temp }}/.vib-coverage
+        run: python -m coverage run --append --branch --source=tools ../vault/vib/advanced/qualify.py 10
+      - name: Batch 11 Python qualification
+        if: always()
+        working-directory: product
+        env:
+          COVERAGE_FILE: ${{ runner.temp }}/.vib-coverage
+        run: python -m coverage run --append --branch --source=tools ../vault/vib/advanced/qualify.py 11
+      - name: Batch 12 Python qualification
+        if: always()
+        working-directory: product
+        env:
+          COVERAGE_FILE: ${{ runner.temp }}/.vib-coverage
+        run: python -m coverage run --append --branch --source=tools ../vault/vib/advanced/qualify.py 12
+      - name: Batch 13 Python qualification
+        if: always()
+        working-directory: product
+        env:
+          COVERAGE_FILE: ${{ runner.temp }}/.vib-coverage
+        run: python -m coverage run --append --branch --source=tools ../vault/vib/advanced/qualify.py 13
+      - name: Batch 14 Python qualification
+        if: always()
+        working-directory: product
+        env:
+          COVERAGE_FILE: ${{ runner.temp }}/.vib-coverage
+        run: python -m coverage run --append --branch --source=tools ../vault/vib/advanced/qualify.py 14
+      - name: Batch 15 Python qualification
+        if: always()
+        working-directory: product
+        env:
+          COVERAGE_FILE: ${{ runner.temp }}/.vib-coverage
+        run: python -m coverage run --append --branch --source=tools ../vault/vib/advanced/qualify.py 15
+      - name: Batch 16 Python qualification
+        if: always()
+        working-directory: product
+        env:
+          COVERAGE_FILE: ${{ runner.temp }}/.vib-coverage
+        run: python -m coverage run --append --branch --source=tools ../vault/vib/advanced/qualify.py 16
+      - name: Batch 07 Python qualification
+        if: always()
+        working-directory: product
+        env:
+          COVERAGE_FILE: ${{ runner.temp }}/.vib-coverage
+        run: python -m coverage run --append --branch --source=tools ../vault/vib/advanced/qualify.py 07
+      - name: Batch 08 Python qualification
+        if: always()
+        working-directory: product
+        env:
+          COVERAGE_FILE: ${{ runner.temp }}/.vib-coverage
+        run: python -m coverage run --append --branch --source=tools ../vault/vib/advanced/qualify.py 08
+      - name: Batch 09 Python qualification
+        if: always()
+        working-directory: product
+        env:
+          COVERAGE_FILE: ${{ runner.temp }}/.vib-coverage
+        run: python -m coverage run --append --branch --source=tools ../vault/vib/advanced/qualify.py 09
+      - name: Bash independent platform and byte oracles
+        if: always() && runner.os == 'Linux'
+        shell: bash
+        run: bash vault/vib/advanced/platform.sh
+      - name: PowerShell independent platform and byte oracles
+        if: always() && runner.os == 'Windows'
+        shell: pwsh
+        run: pwsh -NoProfile -File vault/vib/advanced/platform.ps1
+      - name: Measure branches and missing lines
+        if: always()
+        working-directory: product
+        env:
+          COVERAGE_FILE: ${{ runner.temp }}/.vib-coverage
+        run: python -m coverage json -o "${{ runner.temp }}/vib-advanced/coverage.json"
+      - name: Audit frozen inventory and exact revisions
+        if: always()
+        run: python vault/vib/advanced/audit.py
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: advanced-${{ matrix.runner }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/vib-advanced
+          if-no-files-found: error
+  prior-zip:
+    if: github.event.repository.private == false
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      actions: read
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Download prior exact-SHA artifacts and independently verify ZIP
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python vib/advanced/prior_zip.py
