@@ -72,6 +72,15 @@ jobs:
       - name: Python receipt metadata and atomic replacement
         if: always()
         run: python -B vault/vib/issue54/run.py receipt
+      - name: Python completion and gate rejection
+        if: always()
+        run: python -B vault/vib/issue54/run.py completion
+      - name: Bash independent Git ancestry
+        if: always() && runner.os == 'Linux'
+        run: python -B vault/vib/issue54/run.py bash4
+      - name: PowerShell independent Git ancestry
+        if: always() && runner.os == 'Windows'
+        run: python -B vault/vib/issue54/run.py powershell4
       - name: Retain probe evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
