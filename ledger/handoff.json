@@ -1,12 +1,12 @@
 {
   "active": {
-    "candidate_sha": null,
+    "candidate_sha": "449e4b493daa1f9906396dae49877a32333c418d",
     "evidence": [],
-    "fix_sha": null,
+    "fix_sha": "6e428f222c7aa7a35a8d398bde2846ac0e3b9657",
     "issue": 40,
-    "next_action": "Owner-directed batch 2 under #40 release stabilization: repair #61 strict HTTP JSON decoding, then #60 nonfinite parse/persistence; independent #53 qualification review only until separate migration/integration acceptance. Preserve batch 1, main and existing agent branches.",
-    "phase": "Worker",
-    "pull_request": null,
+    "next_action": "Batch 2 #61/#60 PR62 merged into engineering at exact reviewed tree. Run public validation of new PR2 head and proposed merge, retain separate #53 experimental qualification and release hold.",
+    "phase": "Validate",
+    "pull_request": 2,
     "version": "v0.0.0.23"
   },
   "history": [
