@@ -1,0 +1,70 @@
+{
+  "schema_version": 1,
+  "id": "IDEA-000008",
+  "title": "Independent parallel VIB lanes with self-managed verified checkpoints",
+  "summary": "Extend VIB prospectively from one global active Worker to independent owner-authorized issue lanes that recover state, develop, validate and deliver without cross-thread dependencies. Preserve Solo mode, stable issue versions, exact evidence, dedicated branch installation, owner authority and independent product scope.",
+  "kind": "architecture",
+  "origin": {
+    "created_by": "joint",
+    "source": "Owner-approved direction 2026-11-25, recorded in https://github.com/vixttha/Version-Issues-Hub/issues/53 (VIB-PARALLEL-INDEPENDENCE-001)."
+  },
+  "lifecycle_status": "adopted",
+  "implementation_status": "planned",
+  "testing": {
+    "status": "planned"
+  },
+  "importance": "critical",
+  "complexity": "very_high",
+  "categories": [
+    "workflow",
+    "parallel development",
+    "agent independence",
+    "verification",
+    "recovery"
+  ],
+  "benefits": [
+    "Independent ChatGPT or compatible agent sessions do not require another thread to coordinate or validate routine work.",
+    "Persistent issue-level state and conflict-safe version allocation preserve progress and reduce redundant coordination.",
+    "Preserve existing Solo installations and qualify Parallel mode without delaying the current release."
+  ],
+  "risks": [
+    "Concurrent claims or stale writes may duplicate checkpoint assignments or lose state unless atomic non-force updates and idempotent retry are verified.",
+    "Overlapping changes may invalidate evidence; lane isolation cannot eliminate real code dependencies.",
+    "Self-review is not independent review, and Standard VIB does not enforce GitHub merges.",
+    "Unbounded expansion could delay releases or duplicate other ecosystem products; qualify five lanes and measure actual completion benefit."
+  ],
+  "related_ideas": [
+    "IDEA-000001",
+    "IDEA-000002",
+    "IDEA-000003",
+    "IDEA-000007"
+  ],
+  "evidence": [
+    {
+      "relation": "context",
+      "claim": "Existing source defines one active Worker; new Parallel mode must prospectively supersede only the global active slot restriction.",
+      "repository": "vixttha/Version-Issues-Hub",
+      "commit": "44573ae95e143116caacd891c842065a6d32743f",
+      "path": "install/branch/WORKFLOW.md"
+    },
+    {
+      "relation": "context",
+      "claim": "All six ecosystem laws remain in force; no mandatory coordinator or dependencies.",
+      "repository": "vixttha/Version-Issues-Hub",
+      "commit": "44573ae95e143116caacd891c842065a6d32743f",
+      "path": "ENGINEERING-LAWS.md"
+    },
+    {
+      "relation": "context",
+      "claim": "Original single-writer idea is preserved as historical context and Solo mode.",
+      "repository": "vixttha/Version-Issues-Hub",
+      "commit": "be2b4224dade8dc297f5be59b7e94847f5e2e75e",
+      "path": "ideas/records/IDEA-000002.json"
+    }
+  ],
+  "decision": {
+    "decided_by": "owner",
+    "decided_at": "2026-11-25T17:49:24Z",
+    "reason": "Owner approved the architecture direction; timestamp records public decision issue creation, not exact chat approval time. See https://github.com/vixttha/Version-Issues-Hub/issues/53. No implementation, integration or release acceptance is asserted."
+  }
+}

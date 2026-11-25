@@ -11,3 +11,4 @@
 | IDEA-000005 | Keep public development and product readiness distinct | captured | not\_planned |
 | IDEA-000006 | Derive an evidence map from project records | captured | not\_planned |
 | IDEA-000007 | Independent agent handoff acceptance | captured | not\_planned |
+| IDEA-000008 | Independent parallel VIB lanes with self-managed verified checkpoints | adopted | planned |
