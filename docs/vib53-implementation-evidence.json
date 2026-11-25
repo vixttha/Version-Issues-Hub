@@ -23,7 +23,7 @@
         },
         {
           "path": "tools/session.py",
-          "anchor": "def save(api, state, ledger, handoff, apply=False, *, issue=None):"
+          "anchor": "def save(api, state, ledger, handoff, apply=False, *, issue=None, operation_id=None):"
         }
       ],
       "tested_by": [
@@ -257,7 +257,7 @@
       "changed_in": [
         {
           "path": "tools/session.py",
-          "anchor": "def save(api, state, ledger, handoff, apply=False, *, issue=None):"
+          "anchor": "def save(api, state, ledger, handoff, apply=False, *, issue=None, operation_id=None):"
         }
       ],
       "implemented_in": [
@@ -325,7 +325,7 @@
       "changed_in": [
         {
           "path": "tools/session.py",
-          "anchor": "def save(api, state, ledger, handoff, apply=False, *, issue=None):"
+          "anchor": "def save(api, state, ledger, handoff, apply=False, *, issue=None, operation_id=None):"
         }
       ],
       "implemented_in": [
@@ -698,6 +698,40 @@
         {
           "path": "tests/test_contention_recovery.py",
           "anchor": "def test_changed_blob_bytes_must_match_tree(self):"
+        }
+      ]
+    },
+    {
+      "id": "vib53-continuation-matrix",
+      "label": "Two-round qualification and residual limitations",
+      "documented_in": [
+        {
+          "path": "docs/vib53-implementation.md",
+          "anchor": "## Repeated workload qualification"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "tests/test_vib53_qualification.py",
+          "anchor": "class QualificationTests(unittest.TestCase):"
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tests/test_vib53_qualification.py",
+          "anchor": "def test_bounded_concurrent_workloads(self):"
+        },
+        {
+          "path": "tests/test_vib53_qualification.py",
+          "anchor": "def test_starvation_counterexample_with_real_production_retry(self):"
+        },
+        {
+          "path": "tests/test_vib53_qualification.py",
+          "anchor": "def test_fresh_process_claim_replay_has_no_durable_pending_identity(self):"
+        },
+        {
+          "path": "tests/test_vib53_qualification.py",
+          "anchor": "def test_real_git_legacy_upgrade_and_parallel_opt_in(self):"
         }
       ]
     }

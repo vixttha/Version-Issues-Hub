@@ -646,6 +646,9 @@ class HandoffRejected(install.ApiError):
 
 
 def save(api, state, ledger, handoff, apply=False, *, issue=None, operation_id=None):
+    if operation_id is not None and (not isinstance(operation_id, str)
+            or not re.fullmatch(r"[0-9a-f]{64}", operation_id)):
+        raise ValueError("Invalid operation identity")
     check_issue_delta(state, ledger, handoff, issue)
     if ledger == state["ledger"] and handoff == state["handoff"]:
         return {"status": "unchanged", "installed_sha": state["ref"]}
@@ -670,8 +673,6 @@ def save(api, state, ledger, handoff, apply=False, *, issue=None, operation_id=N
     })["sha"]
     message = "VIB cooperative handoff"
     if operation_id is not None:
-        if not isinstance(operation_id, str) or not re.fullmatch(r"[0-9a-f]{64}", operation_id):
-            raise ValueError("Invalid operation identity")
         message += "\n\nVIB-Operation: " + operation_id
     new = api.request("POST", prefix + "/git/commits", {"message": message,
         "tree": install.require(install.SHA, tree, "handoff tree"), "parents": [old]})["sha"]
