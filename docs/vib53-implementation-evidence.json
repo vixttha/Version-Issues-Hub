@@ -50,6 +50,10 @@
         {
           "path": "tests/test_transaction_confirmation.py",
           "anchor": "def test_readback_throttle_retains_delay_and_candidate(self):"
+        },
+        {
+          "path": "tests/test_transaction_confirmation.py",
+          "anchor": "def test_real_git_descendant_preserves_both_transactions(self):"
         }
       ]
     }

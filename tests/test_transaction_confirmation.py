@@ -105,3 +105,48 @@ class TransactionTests(unittest.TestCase):
         self.assertEqual(error.exception.candidate_sha,NEXT)
         self.assertEqual(error.exception.retry_after,180)
         self.assertEqual(sum(m=="PATCH" for m,_,_ in api.writes),1)
+
+
+    def test_real_git_descendant_preserves_both_transactions(self):
+        import tempfile
+        import subprocess
+        from test_lifecycle import GitApi, REPO as TARGET, PREFIX, OLD_FILES
+
+        class GitRemote(GitApi):
+            def request(self, method, path, body=None):
+                if method=="GET" and "/issues/" in path:
+                    return {"number":int(path.rsplit("/",1)[1]),"state":"open"}
+                if method=="GET" and path.startswith(PREFIX+"/compare/"):
+                    base,head=path.rsplit("/",1)[1].split("...")
+                    ancestor=self.git("merge-base",base,head)
+                    return {"status":"ahead" if ancestor==base else "diverged",
+                            "base_commit":{"sha":base},"merge_base_commit":{"sha":ancestor},
+                            "behind_by":int(self.git("rev-list","--count",head+".."+base)),
+                            "ahead_by":int(self.git("rev-list","--count",base+".."+head))}
+                if method=="GET" and path.startswith(PREFIX+"/git/commits/"):
+                    data=super().request(method,path,body)
+                    data["parents"]=[{"sha":p} for p in self.git("show","-s","--format=%P",data["sha"]).split()]
+                    return data
+                result=super().request(method,path,body)
+                if method=="PATCH":
+                    self.accepted=body["sha"]
+                    tree=self.tree({"notes/unrelated.md":"other transaction\n"},self.git("rev-parse",self.accepted+"^{tree}"))
+                    self.later=self.commit(tree,[self.accepted])
+                    self.git("update-ref","refs/heads/"+install.BRANCH,self.later,self.accepted)
+                    raise install.ApiTransportError("PATCH","git/refs",True)
+                return result
+        with tempfile.TemporaryDirectory() as temp:
+            api=GitRemote(temp)
+            with patch.object(install,"source_files",return_value=OLD_FILES), patch.object(install,"read_text",side_effect=lambda api,prefix,path,ref:api.read(ref,path)):
+                s=session.load(api,TARGET,api.old)
+                ledger,handoff=session.claim(api,s,247,["test"],"Fix")
+                result=session.save(api,s,ledger,handoff,True)
+                latest=session.load(api,TARGET,api.later)
+            self.assertEqual(result["installed_sha"],api.accepted)
+            self.assertEqual(result["observed_sha"],api.later)
+            self.assertTrue(result["recovered_response"])
+            self.assertEqual(latest["ledger"],ledger)
+            self.assertEqual(latest["handoff"],handoff)
+            self.assertEqual(api.read(api.later,"notes/unrelated.md"),"other transaction\n")
+            self.assertEqual(api.ref("main"),api.product)
+            self.assertEqual(sum(m=="PATCH" for m,_,_ in api.writes),1)

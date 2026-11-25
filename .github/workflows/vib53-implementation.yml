@@ -45,7 +45,7 @@ jobs:
       - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
         with:
           python-version: '3.12'
-      - name: Map research evidence at exact checkout
+      - name: Map implementation evidence at exact checkout
         working-directory: vib
         run: |
           kit=../graphify-kit/graphify-hq/template/v0.0.8
@@ -64,6 +64,6 @@ jobs:
           python "$kit/evidence_map.py" "$output/manifest.json" "$output"
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         with:
-          name: vib53-research-map
-          path: ${{ runner.temp }}/vib53-research
+          name: vib53-implementation-map
+          path: ${{ runner.temp }}/vib53-implementation
           if-no-files-found: error
