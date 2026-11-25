@@ -1,0 +1,83 @@
+name: VIB unpublished root README rehearsal
+on:
+  push:
+    branches: [review/vib-homepage-v36]
+permissions:
+  contents: read
+jobs:
+  verify-root:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
+        with:
+          python-version: '3.12'
+      - name: Exact root and archive checks
+        run: |
+          git fetch --no-tags origin 9e4f997c0df141ab3c547b98da7ad9273acf96ca a9cdd97c4ad111ed4bb3eb1efa4c9bafc306a9b4 3ad6e455e86231c43ddf2dcded91f8d2debb1744
+          python - <<'PY'
+          import subprocess
+          def git(*args): return subprocess.check_output(['git', *args],text=True).strip()
+          legal='26e9fe8c019a33c5f84f77a37da70925505204e3'
+          draft='9e4f997c0df141ab3c547b98da7ad9273acf96ca'
+          archive='a9cdd97c4ad111ed4bb3eb1efa4c9bafc306a9b4'
+          assert git('rev-parse','HEAD:README.md') != git('rev-parse',draft+':workspace/v0.0.3/DRAFT.md')
+          assert git('diff','--name-only',legal,'HEAD').splitlines() == ['.github/workflows/vib-homepage-root-rehearsal.yml','README.md','assets/vib-logo-light.svg','assets/vib-logo.svg','tools/check_vib_homepage_root.cjs']
+          for name, sha in [('vib-logo.svg','3bf0564bc56d57159a6d1baf4d5baa9b4b5b3893'),('vib-logo-light.svg','df709a42fee10fcfada6747298dcda18f1465731')]:
+              assert git('rev-parse','HEAD:assets/'+name) == sha == git('rev-parse',draft+':workspace/v0.0.3/assets/'+name)
+          assert git('rev-parse','HEAD:LICENSE') == '90abd0e6c64a135f42451762337a397bf27f4862'
+          assert git('rev-parse','HEAD:VIB-NOTICE.md') == '70dd8710828a38118965be3ca8be32457d106789'
+          assert git('diff','--name-only',archive,draft,'--','workspace/v0.0.1') == ''
+          original=git('show',legal+':README.md')
+          marker=original[original.index('<!-- agent-capability:v1'):original.index('-->',original.index('<!-- agent-capability:v1'))+3]
+          text=git('show','HEAD:README.md')
+          assert text.count(marker)==1 and 'not approved for publication' in text and '146 regression tests' in text and legal in text
+          print('Root, archive, discovery, approved legal bytes and exact derivative verified')
+          PY
+      - name: Replay documented read-only quickstart
+        working-directory: ${{ runner.temp }}
+        run: |
+          git clone https://github.com/vixttha/Version-Issues-Hub.git vib-root
+          cd vib-root
+          git checkout --detach 26e9fe8c019a33c5f84f77a37da70925505204e3
+          python -m tools.session --target vixttha/Version-Issues-Hub inspect > "$RUNNER_TEMP/vib-inspect.json"
+          python - <<'PY'
+          import json,os,subprocess
+          from pathlib import Path
+          x=json.loads((Path(os.environ['RUNNER_TEMP'])/'vib-inspect.json').read_text())
+          assert x['status'] in ('resume','stale_candidate') and x['active']['issue']==40 and x['active']['version']=='v0.0.0.23' and x['active']['phase']=='Head'
+          assert x['owner_merge_required'] is True and x['evidence_verified'] is False
+          assert x['installed_sha']=='3ad6e455e86231c43ddf2dcded91f8d2debb1744'
+          assert x['product_sha']=='1b11865f79464ae7db9a648467e8c2c1cb898a02'
+          assert subprocess.check_output(['git','ls-remote','origin','refs/heads/Version-Issues-Hub'],text=True).split()[0]==x['installed_sha']
+          print(json.dumps(x,indent=2))
+          PY
+  render-root:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: '24.22.3'
+          package-manager-cache: false
+      - run: node --check tools/check_vib_homepage_root.cjs
+      - run: |
+          npm install --prefix "$RUNNER_TEMP/vib-browser" --no-audit --no-fund --save-exact playwright@1.56.1
+          "$RUNNER_TEMP/vib-browser/node_modules/.bin/playwright" install chromium --with-deps
+      - run: NODE_PATH="$RUNNER_TEMP/vib-browser/node_modules" node tools/check_vib_homepage_root.cjs
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        if: always()
+        with:
+          name: vib-root-rehearsal-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/vib-readme-visual/
+          if-no-files-found: warn
+          retention-days: 7
