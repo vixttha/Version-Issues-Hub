@@ -1,20 +1,5 @@
 {
-  "active": {
-    "issue": 68,
-    "version": "v0.0.0.33",
-    "phase": "Head",
-    "next_action": "Solo internal audit passed; nested PR69 CodeRabbit exact head success, zero unresolved threads; owner engineering closure authorized. Main PR2 stays open.",
-    "fix_sha": "a8569d491bd93549dcd2011ca89e3e56d3ada50e",
-    "candidate_sha": "a7ba4267f65a264c0c50c36bb2bedc3433f019ca",
-    "pull_request": 2,
-    "evidence": [
-      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45707152925/attempts/1",
-      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45707152816/attempts/1",
-      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45707163548/attempts/1",
-      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45707163551/attempts/1",
-      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45707163634/attempts/1"
-    ]
-  },
+  "active": null,
   "history": [
     {
       "decision": "PR49 CodeRabbit finding 4682051116: rework exact product SHA comparisons and add regression checks; preserve previous evidence.",
@@ -314,6 +299,27 @@
       },
       "disposition": "staged",
       "decision": "Compensating restoration of pre-error staged #1 disposition on PR2 at its ORIGINAL tested candidate; not a fresh audit, no evidence repinning or main merge. Preserve original historical archive.",
+      "merged_sha": null
+    },
+    {
+      "handoff": {
+        "issue": 68,
+        "version": "v0.0.0.33",
+        "phase": "Head",
+        "next_action": "Solo internal audit passed; nested PR69 CodeRabbit exact head success, zero unresolved threads; owner engineering closure authorized. Main PR2 stays open.",
+        "fix_sha": "a8569d491bd93549dcd2011ca89e3e56d3ada50e",
+        "candidate_sha": "a7ba4267f65a264c0c50c36bb2bedc3433f019ca",
+        "pull_request": 2,
+        "evidence": [
+          "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45707152925/attempts/1",
+          "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45707152816/attempts/1",
+          "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45707163548/attempts/1",
+          "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45707163551/attempts/1",
+          "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45707163634/attempts/1"
+        ]
+      },
+      "disposition": "staged",
+      "decision": "Owner-approved engineering closure: PR69 merged at a7ba4267f65a264c0c50c36bb2bedc3433f019ca; all merged and aggregate public checks passed. Staged means pending main PR2 integration only; no main or release approval.",
       "merged_sha": null
     }
   ],
