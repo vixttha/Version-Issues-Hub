@@ -1,12 +1,12 @@
 {
   "active": {
-    "candidate_sha": null,
+    "candidate_sha": "26e9fe8c019a33c5f84f77a37da70925505204e3",
     "evidence": [],
-    "fix_sha": null,
+    "fix_sha": "fbb76a77f896fb39290a1b862e7dde1a74ae3a8a",
     "issue": 9,
-    "next_action": "Review existing v0.0.0.3 engineering scope and original fix for closure",
-    "phase": "Worker",
-    "pull_request": null,
+    "next_action": "Verify existing engineering work on exact aggregate candidate",
+    "phase": "Validate",
+    "pull_request": 2,
     "version": "v0.0.0.3"
   },
   "history": [
