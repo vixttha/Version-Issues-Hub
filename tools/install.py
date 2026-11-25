@@ -8,6 +8,8 @@ import os
 import re
 import sys
 import time
+from email.utils import parsedate_to_datetime
+from http.client import IncompleteRead
 from urllib.error import HTTPError, URLError
 from urllib.parse import quote
 from urllib.request import Request, build_opener, HTTPRedirectHandler
@@ -40,10 +42,70 @@ HISTORICAL_LEGAL_PATHS = {
 }
 
 class ApiError(RuntimeError):
-    def __init__(self, status, method=None, operation=None):
+    def __init__(self, status, method=None, operation=None, retry_after=None):
         context = f" ({method} {operation})" if method and operation else ""
-        super().__init__(f"GitHub API returned HTTP {status}{context}")
+        delay = f"; retry no earlier than {retry_after} seconds (inspect before any write)" if retry_after is not None else ""
+        super().__init__(f"GitHub API returned HTTP {status}{context}{delay}")
         self.status = status
+        self.retry_after = retry_after
+        self.method = method
+        self.operation = operation
+
+
+def cli_error(parser, label, exc):
+    # Preserve the human-readable diagnostic and a strictly typed machine receipt.
+    message = f"{label}: {exc}\n"
+    if isinstance(exc, ApiError) and exc.retry_after is not None:
+        message += json.dumps({"kind": "vib_api_delay", "status": exc.status,
+                               "retry_after": exc.retry_after}, sort_keys=True) + "\n"
+    parser.exit(1, message)
+
+
+def raise_cli_delay(stderr):
+    """Propagate only the numeric receipt from a failed read-only child CLI."""
+    if not isinstance(stderr, str) or not stderr.strip():
+        return
+    try:
+        record = json.loads(stderr.strip().splitlines()[-1])
+    except ValueError:
+        return
+    if (isinstance(record, dict) and set(record) == {"kind", "status", "retry_after"}
+            and record["kind"] == "vib_api_delay"
+            and type(record["status"]) is int and 400 <= record["status"] <= 599
+            and type(record["retry_after"]) is int and 0 <= record["retry_after"] <= 10**12):
+        raise ApiError(record["status"], "GET", retry_after=record["retry_after"])
+
+
+def retry_delay(status, headers, now):
+    """Retain numeric throttle timing only; never retain arbitrary header values."""
+    import math
+    headers = headers or {}
+    retry = headers.get("Retry-After")
+    exhausted = headers.get("X-RateLimit-Remaining") == "0"
+    if retry is None and not exhausted and status != 429:
+        return None
+    delays = [60] if status in (403, 429) or exhausted else [0]
+    try:
+        if retry is not None:
+            if re.fullmatch(r"[0-9]{1,12}", retry):
+                delays.append(int(retry))
+            else:
+                date = parsedate_to_datetime(retry)
+                if date.tzinfo is None:
+                    delays.append(60)
+                else:
+                    delays.append(math.ceil(date.timestamp() - now))
+    except (TypeError, ValueError, OverflowError, OSError):
+        # A malformed Retry-After must not discard the independent reset bound.
+        delays.append(60)
+    if exhausted:
+        try:
+            reset = headers.get("X-RateLimit-Reset")
+            if reset is not None and re.fullmatch(r"[0-9]{1,12}", reset):
+                delays.append(math.ceil(int(reset) - now))
+        except (TypeError, ValueError, OverflowError, OSError):
+            delays.append(60)
+    return max(delays)
 
 class ApiTransportError(OSError):
     """Transport failure with only safe operation context, never request details."""
@@ -92,9 +154,14 @@ class GitHub:
                     return json.load(response)
             except HTTPError as exc:
                 code = exc.code
+                delay_hint = retry_delay(code, exc.headers, time.time())
                 exc.close()
-                if code not in (500, 502, 503, 504) or attempt == len(delays) - 1:
-                    raise ApiError(code, method, api_operation(path)) from None
+                if delay_hint is not None or code not in (500, 502, 503, 504) or attempt == len(delays) - 1:
+                    raise ApiError(code, method, api_operation(path), delay_hint) from None
+            except IncompleteRead:
+                # Response may be truncated after the server applied a write.
+                # Never repeat that write or expose partial response bytes.
+                raise ApiTransportError(method, api_operation(path), False) from None
             except (TimeoutError, URLError) as exc:
                 timed_out = isinstance(exc, TimeoutError) or (
                     isinstance(exc, URLError) and isinstance(exc.reason, TimeoutError))
@@ -283,7 +350,7 @@ def main():
     try:
         print(render(install(GitHub(token), args.target, args.source_sha, args.baseline, args.apply)), end="")
     except (ValueError, ApiError, KeyError, OSError) as exc:
-        p.exit(1, f"Install stopped: {exc}\n")
+        cli_error(p, "Install stopped", exc)
 
 if __name__ == "__main__":
     main()
