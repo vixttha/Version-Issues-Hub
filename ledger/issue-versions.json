@@ -227,7 +227,7 @@
         "Return to Head with blockers and owner approval boundaries; preserve frozen engineering, brand, README and prior grants."
       ],
       "issue": 40,
-      "state": "deferred",
+      "state": "in_progress",
       "version": "v0.0.0.23"
     },
     {
