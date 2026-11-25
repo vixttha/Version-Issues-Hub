@@ -19,6 +19,7 @@ if v != os.environ["GITHUB_SHA"] or head(product)!=pin:
     raise RuntimeError("Checkout identity mismatch")
 kind=sys.argv[1]
 cmd={"python":[sys.executable,"-B",str(here/"test_core.py")],
+     "diagnostic":[sys.executable,"-B",str(here/"diagnostic.py")],
      "bash":["bash",str(here/"core.sh")],
      "powershell":["pwsh","-NoProfile","-File",str(here/"core.ps1")]}[kind]
 env=dict(os.environ,VIB_CHECKOUT=str(product),PYTHONDONTWRITEBYTECODE="1",PYTHONUTF8="1")
@@ -29,9 +30,11 @@ raw=result.stdout
 (out/(kind+".log")).write_bytes(raw)
 log=raw.decode("utf-8",errors="replace")
 print(log,flush=True)
-if kind=="python":
+if kind=="python" and (out/"transport.json").is_file():
+    print("VIB54_TRANSPORT "+(out/"transport.json").read_text(encoding="utf-8"),flush=True)
+if kind in ("python","diagnostic"):
     ids=re.findall(r"^test_[^\s]+ \(([^)]*)\) \.\.\. ok",log,re.M)
-    expected=67
+    expected=67 if kind=="python" else 13
     passed=len(ids)==expected and len(set(ids))==expected and not re.search(r"\b(skipped|expected failures|unexpected successes)=",log)
 else:
     ids=re.findall(r"^PASS ((?:BA|PS)-\S+)",log,re.M)

@@ -36,6 +36,9 @@ jobs:
           PYTHONDONTWRITEBYTECODE: '1'
           PYTHONUTF8: '1'
         run: python -B vault/vib/issue54/run.py python
+      - name: Original lifecycle diagnostic with byte-safe transport
+        if: always()
+        run: python -B vault/vib/issue54/run.py diagnostic
       - name: Bash independent oracle
         if: always() && runner.os == 'Linux'
         run: python -B vault/vib/issue54/run.py bash

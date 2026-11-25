@@ -26,7 +26,7 @@ spec.loader.exec_module(original)
 
 def git(root, *args, data=None):
     env = dict(os.environ, GIT_CONFIG_NOSYSTEM="1", GIT_CONFIG_GLOBAL=os.devnull)
-    return subprocess.check_output(["git", "-C", str(root), *args], input=data, env=env, timeout=20)
+    return subprocess.check_output(["git", "-C", str(root), *args], input=data, env=env, stderr=subprocess.PIPE, timeout=20)
 
 def oracle(raw):
     return hashlib.sha1(b"blob " + str(len(raw)).encode("ascii") + b"\0" + raw).hexdigest()
