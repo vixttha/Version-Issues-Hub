@@ -4,3 +4,6 @@ Owner approved: VIB #63; upstream Lydite #126. Initial implementation TR-01/02/0
 
 
 Expanded candidate: 449e4b493daa1f9906396dae49877a32333c418d. 12 deterministic schedules × three criteria sets (plain, Unicode/metacharacters, embedded line endings) = 36 actual singleton claim scenarios per OS. Object creation before/after interruption, early competing claims, stale and unexpected readbacks. Preserve original four cases. Exact receipts and independent reconstruction, not live network or process termination. Lydite #127: https://github.com/vixttha/Lydite-Test-Vault-Template/issues/127 .
+
+
+Independent adversarial audit: 8 coherent forged-history variants per OS. A disposable commit is generated with the same parent, rewritten semantic state, updated final reference, complete updated SHA-256 inventory and updated receipt. Bash must accept its structural Git evidence, while the independent PowerShell model must reject the specific semantic defect. The source runner does not generate these adversarial controls. Recovery readback is also bound to the exact expected revision. The 11 earlier negative controls remain; 27 total negative executions on the fresh audit runner.

@@ -34,6 +34,8 @@ switch($s.fault){
 }
 $recover=@($r.observations|Where-Object {$_.kind -ceq 'recovery-read'})
 Check ($recover.Count -eq 1) 'recovery read'
+$expectedRecoveryRef=if($s.fault -in @('before','tree-before','tree-after','commit-before','commit-after')){(Get-Content -LiteralPath (Join-Path $Root 'base.txt') -Raw).Trim()}else{$r.final}
+Check ($recover[0].sha -ceq $expectedRecoveryRef) 'recovery revision'
 if($s.fault -in @('tree-before','tree-after','commit-before','commit-after','compete-tree','compete-commit','stale','unexpected')){
   Check (@($r.observations|Where-Object {$_.kind -ceq $s.fault}).Count -eq 1) 'fault marker'
 }
