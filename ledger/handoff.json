@@ -2,11 +2,11 @@
   "active": {
     "issue": 26,
     "version": "v0.0.0.13",
-    "phase": "Worker",
-    "next_action": "Owner-authorized historical closure recovery, no product edits or new version.",
-    "fix_sha": null,
-    "candidate_sha": null,
-    "pull_request": null,
+    "phase": "Validate",
+    "next_action": "Review historical CLI fixture and README HQ read-only plan, current repaired Windows baseline and exact receipts.",
+    "fix_sha": "b6b9d281e55bfed85729533087838f202ae30530",
+    "candidate_sha": "26e9fe8c019a33c5f84f77a37da70925505204e3",
+    "pull_request": 2,
     "evidence": []
   },
   "history": [
