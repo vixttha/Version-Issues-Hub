@@ -1,106 +1,106 @@
 {
   "active": {
+    "candidate_sha": "5a6074d77ec37823f81c6d7ebb1f4593d969cd71",
+    "evidence": [],
+    "fix_sha": "82cfa7272ad83b044e7d4e9760133dc8a443f102",
     "issue": 40,
-    "version": "v0.0.0.23",
-    "phase": "Worker",
-    "next_action": "Repair strict PR-state and collection validation, then byte-exact Windows fixture; validate isolated engineering PR on public Ubuntu/Windows.",
-    "fix_sha": null,
-    "candidate_sha": null,
-    "pull_request": null,
-    "evidence": []
+    "next_action": "Batch #56/#57/#54 engineering PR58 merged with exact tested tree. Validate PR2 current head on public Ubuntu/Windows, Graphify, live acceptance and CodeRabbit; preserve release hold.",
+    "phase": "Validate",
+    "pull_request": 2,
+    "version": "v0.0.0.23"
   },
   "history": [
     {
+      "decision": "PR49 CodeRabbit finding 4682051116: rework exact product SHA comparisons and add regression checks; preserve previous evidence.",
+      "disposition": "rework",
       "handoff": {
-        "issue": 40,
-        "version": "v0.0.0.23",
-        "phase": "Head",
-        "next_action": "Mechanical preflight passed 87 checks. #40 remains active at Head: review PR49 CodeRabbit and reconcile remaining #47, #37, #45, #46 plus final acceptance. No merge or release authorized; re-pin pipeline after reviewed state/candidate changes.",
-        "fix_sha": "f6dc3fae91a73bdead758ea8427308c191a73ade",
         "candidate_sha": "f6dc3fae91a73bdead758ea8427308c191a73ade",
-        "pull_request": 49,
         "evidence": [
           "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45420692986/attempts/1"
-        ]
+        ],
+        "fix_sha": "f6dc3fae91a73bdead758ea8427308c191a73ade",
+        "issue": 40,
+        "next_action": "Mechanical preflight passed 87 checks. #40 remains active at Head: review PR49 CodeRabbit and reconcile remaining #47, #37, #45, #46 plus final acceptance. No merge or release authorized; re-pin pipeline after reviewed state/candidate changes.",
+        "phase": "Head",
+        "pull_request": 49,
+        "version": "v0.0.0.23"
       },
-      "disposition": "rework",
-      "decision": "PR49 CodeRabbit finding 4682051116: rework exact product SHA comparisons and add regression checks; preserve previous evidence.",
       "merged_sha": null
     },
     {
+      "decision": "Owner requested VIB workflow for exact PR49 validation and licensing integration. Rework stale candidate to current reviewed snapshot; preserve historical handoff and all installed package pins.",
+      "disposition": "rework",
       "handoff": {
-        "issue": 40,
-        "version": "v0.0.0.23",
-        "phase": "Head",
-        "next_action": "PR49 repair verified: seven regression tests and 91 mechanical checks passed; original review thread resolved. Await fresh exact-head CodeRabbit completion before step two. No merge or release.",
-        "fix_sha": "e20f35d92f9b11523b18c7c11b6f9630b620a4b0",
         "candidate_sha": "e20f35d92f9b11523b18c7c11b6f9630b620a4b0",
-        "pull_request": 49,
         "evidence": [
           "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45423191525/attempts/1"
-        ]
+        ],
+        "fix_sha": "e20f35d92f9b11523b18c7c11b6f9630b620a4b0",
+        "issue": 40,
+        "next_action": "PR49 repair verified: seven regression tests and 91 mechanical checks passed; original review thread resolved. Await fresh exact-head CodeRabbit completion before step two. No merge or release.",
+        "phase": "Head",
+        "pull_request": 49,
+        "version": "v0.0.0.23"
       },
-      "disposition": "rework",
-      "decision": "Owner requested VIB workflow for exact PR49 validation and licensing integration. Rework stale candidate to current reviewed snapshot; preserve historical handoff and all installed package pins.",
       "merged_sha": null
     },
     {
+      "decision": "Owner-authorized #40 rework: repair historical license review wording only on PR2; preserve operative legal blobs, no new issue/version or release.",
+      "disposition": "rework",
       "handoff": {
-        "issue": 40,
-        "version": "v0.0.0.23",
-        "phase": "Head",
-        "next_action": "Mechanical evidence 216/216 accepted for historical installed snapshot. PR2/48 fresh CodeRabbit passed; #34 optional finding stays open. PR49 exact review still pending at latest read unless separately verified. Head holds integration until final PR49 review and rights/provenance disposition; confirm current installed-state readback and repin release report if needed. No main merge or release.",
-        "fix_sha": "4445ecc4ca6d54d8f4268c380ebe1e093a6b1069",
         "candidate_sha": "4445ecc4ca6d54d8f4268c380ebe1e093a6b1069",
-        "pull_request": 49,
         "evidence": [
           "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45665944043/attempts/1"
-        ]
+        ],
+        "fix_sha": "4445ecc4ca6d54d8f4268c380ebe1e093a6b1069",
+        "issue": 40,
+        "next_action": "Mechanical evidence 216/216 accepted for historical installed snapshot. PR2/48 fresh CodeRabbit passed; #34 optional finding stays open. PR49 exact review still pending at latest read unless separately verified. Head holds integration until final PR49 review and rights/provenance disposition; confirm current installed-state readback and repin release report if needed. No main merge or release.",
+        "phase": "Head",
+        "pull_request": 49,
+        "version": "v0.0.0.23"
       },
-      "disposition": "rework",
-      "decision": "Owner-authorized #40 rework: repair historical license review wording only on PR2; preserve operative legal blobs, no new issue/version or release.",
       "merged_sha": null
     },
     {
+      "decision": "Owner-authorized #40 repair: observed concurrent VIB and README HQ ref advances during failed live jobs. Retry only explicitly verified snapshot movement, preserve fail-closed invalid proofs and read-only behavior. No product package change.",
+      "disposition": "rework",
       "handoff": {
-        "issue": 40,
-        "version": "v0.0.0.23",
-        "phase": "Head",
-        "next_action": "Validate returns to Head blocked: documentation-only repair verified; 107 tests per checkout, Graphify 121/120 twice, legal blobs unchanged. Live push core self_install ValueError and both external README HQ AssertionError; PR core passed. Investigate adopter snapshot drift versus deterministic defect before rerun; no bypass. Historical notice CodeRabbit thread no longer unresolved, fresh review still running. PR49 repin pending.",
-        "fix_sha": "e28e8a2e7360baf840c40dacf12ab91d5d7abd63",
         "candidate_sha": "e28e8a2e7360baf840c40dacf12ab91d5d7abd63",
-        "pull_request": 2,
         "evidence": [
           "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45670758522/attempts/1",
           "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45670778354/attempts/1",
           "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45670758045/attempts/1",
           "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45670778290/attempts/1",
           "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45670778353/attempts/1"
-        ]
+        ],
+        "fix_sha": "e28e8a2e7360baf840c40dacf12ab91d5d7abd63",
+        "issue": 40,
+        "next_action": "Validate returns to Head blocked: documentation-only repair verified; 107 tests per checkout, Graphify 121/120 twice, legal blobs unchanged. Live push core self_install ValueError and both external README HQ AssertionError; PR core passed. Investigate adopter snapshot drift versus deterministic defect before rerun; no bypass. Historical notice CodeRabbit thread no longer unresolved, fresh review still running. PR49 repin pending.",
+        "phase": "Head",
+        "pull_request": 2,
+        "version": "v0.0.0.23"
       },
-      "disposition": "rework",
-      "decision": "Owner-authorized #40 repair: observed concurrent VIB and README HQ ref advances during failed live jobs. Retry only explicitly verified snapshot movement, preserve fail-closed invalid proofs and read-only behavior. No product package change.",
       "merged_sha": null
     },
     {
+      "decision": "Owner-approved repair #56/#57 then #54, under #40 release checkpoint; preserve prior evidence.",
+      "disposition": "rework",
       "handoff": {
-        "issue": 40,
-        "version": "v0.0.0.23",
-        "phase": "Head",
-        "next_action": "Mechanical acceptance verified: 112 tests per checkout, 9/9 public jobs, 10/10 live cases, 48 receipts, all eight evidence archives and both graph digests. Exact CodeRabbit in_progress/null; final review remains held. #37 independent host acceptance resumed read-only, 0/2 fresh host transcripts; #34 optional race remains separate. PR49 repin pending; no main merge or release.",
-        "fix_sha": "7ae6626e44d01d29b11968da28e6debd816f8c06",
         "candidate_sha": "7ae6626e44d01d29b11968da28e6debd816f8c06",
-        "pull_request": 2,
         "evidence": [
           "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45671873055/attempts/1",
           "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45671894372/attempts/1",
           "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45671894285/attempts/1",
           "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45671873088/attempts/1",
           "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45671894120/attempts/1"
-        ]
+        ],
+        "fix_sha": "7ae6626e44d01d29b11968da28e6debd816f8c06",
+        "issue": 40,
+        "next_action": "Mechanical acceptance verified: 112 tests per checkout, 9/9 public jobs, 10/10 live cases, 48 receipts, all eight evidence archives and both graph digests. Exact CodeRabbit in_progress/null; final review remains held. #37 independent host acceptance resumed read-only, 0/2 fresh host transcripts; #34 optional race remains separate. PR49 repin pending; no main merge or release.",
+        "phase": "Head",
+        "pull_request": 2,
+        "version": "v0.0.0.23"
       },
-      "disposition": "rework",
-      "decision": "Owner-approved repair #56/#57 then #54, under #40 release checkpoint; preserve prior evidence.",
       "merged_sha": null
     }
   ],
