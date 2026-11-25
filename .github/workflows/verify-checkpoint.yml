@@ -4,7 +4,7 @@ on:
   push:
     branches: ['plan/**', main]
   pull_request:
-    branches: [main]
+    branches: [main, 'plan/v0.0.0.1']
 
 permissions:
   contents: read
