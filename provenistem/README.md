@@ -24,6 +24,8 @@ A human can use the files directly in GitHub. An LLM can read and suggest edits 
 
 For optional validation add `tools/`; for optional tests also add `tests/` to the complete basic copy. From the library root (for this nested layout, `cd provenistem` from the host repository root), use `python tools/library.py check` for record/index validation and `python tools/library.py build` only when authorized to regenerate derived indexes. Run `python -m unittest discover -s tests -v` only in a clean, isolated starter or synthetic test copy with empty canonical record directories. Do not run the full source-distribution regression suite against a populated host or remove its records to satisfy a test. Only a clean starter uses `python tools/library.py check --expect-empty`. Python is optional for manual record use. The read-only `python tools/adopter.py <host-library-root>` planner does not authorize copying or overwriting; reconcile host differences first.
 
+### Exact numeric identity (forward repair)
+
 The optional validator preserves exact decimal literals when parsing JSON for value identity, including `uniqueItems`. Numerically equal values (such as `1` and `1.0`) remain equal; booleans remain distinct. Nonfinite and excessive decimal exponents are rejected. The existing v1 schema types remain object, array, string and integer; this repair does not enable a new `number` schema type or loosen integer validation.
 
 No GitHub Actions workflow, runner configuration, release authorization, or development test-arm file is included in this portable package. Any CI is optional and host-owned. Prior source/host test receipts do not imply independent external security certification.
