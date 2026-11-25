@@ -137,7 +137,7 @@
         "Preserve live installation and archive; no automatic deletion or live adopter mutation; record exact public-runner evidence."
       ],
       "issue": 29,
-      "state": "in_progress",
+      "state": "staged",
       "version": "v0.0.0.14"
     },
     {
