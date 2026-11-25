@@ -243,3 +243,38 @@ class RecoveryTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "Terminal record changed"):
             session.retry_scope(api, previous, final, B, session.HandoffStale("advanced"))
         self.assertEqual(api.writes, before)
+
+    def test_unrelated_terminal_archive_append_is_refused(self):
+        api, previous = self.api, self.s
+        handoff = copy.deepcopy(previous["handoff"])
+        record = next(record for record in handoff["history"]
+                      if record["disposition"] == "integrated")
+        handoff["history"].append(copy.deepcopy(record))
+        tree = api.tree({session.HANDOFF: install.render(handoff)},
+                        api.git("rev-parse", previous["ref"] + "^{tree}"))
+        pin = api.commit(tree, [previous["ref"]])
+        api.ref(install.BRANCH, pin)
+        fresh = session.load(api, REPO, pin)
+        self.assertEqual(fresh["ledger"], previous["ledger"])
+        before = list(api.writes)
+        with self.assertRaisesRegex(ValueError, "terminal issue history appended"):
+            session.retry_scope(api, previous, fresh, B, session.HandoffStale("advanced"))
+        self.assertEqual(api.writes, before)
+
+    def test_intervening_multi_issue_transaction_is_refused(self):
+        api, previous = self.api, self.s
+        ledger, handoff = self.claim(previous, C)
+        # A second unrelated active issue in the same untrusted commit is not a
+        # legal single-issue transaction, even if the recovery target is unchanged.
+        intermediate = {**previous, "ledger": ledger, "handoff": handoff}
+        ledger, handoff = self.claim(intermediate, C + 1)
+        tree = api.tree({session.LEDGER: install.render(ledger),
+                         session.HANDOFF: install.render(handoff)},
+                        api.git("rev-parse", previous["ref"] + "^{tree}"))
+        pin = api.commit(tree, [previous["ref"]])
+        api.ref(install.BRANCH, pin)
+        fresh = session.load(api, REPO, pin)
+        before = list(api.writes)
+        with self.assertRaisesRegex(ValueError, "Multiple issue scopes changed"):
+            session.retry_scope(api, previous, fresh, B, session.HandoffStale("advanced"))
+        self.assertEqual(api.writes, before)
