@@ -2,12 +2,20 @@
   "active": {
     "issue": 24,
     "version": "v0.0.0.11",
-    "phase": "Validate",
-    "next_action": "Verify original AlderVale installation provenance, cross-project fresh read-only recovery, and no adopter writes.",
+    "phase": "Internal Auditor",
+    "next_action": "Original verified AlderVale isolated tree and empty adopter ledger, historical fresh processes and actual issue lookup; current read-only adoption and public regression, exact receipts and Graphify pass.",
     "fix_sha": "e3f5f917307f38372277b7aecae3652c85935f80",
     "candidate_sha": "07a73f55a2b1f7ecbf873a3921f1e397034a88e6",
     "pull_request": 2,
-    "evidence": []
+    "evidence": [
+      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45711463464/attempts/1",
+      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45711463521/attempts/1",
+      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45711477945/attempts/1",
+      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45711477773/attempts/1",
+      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45711477645/attempts/1",
+      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45336994168/attempts/1",
+      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45338267547/attempts/1"
+    ]
   },
   "history": [
     {
