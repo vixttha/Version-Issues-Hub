@@ -48,7 +48,7 @@ class StaleIntegrationTests(unittest.TestCase):
         self.assertEqual(active["evidence"],[])
         self.assertEqual(s["handoff"]["history"][-1]["handoff"],old)
         before=copy.deepcopy(s)
-        with self.assertRaisesRegex(ValueError,"association"):
+        with self.assertRaisesRegex(ValueError,"Archived run"):
             session.advance(api,s,"old run",evidence=[RUN])
         self.assertEqual(s,before)
         # Different exact run, now bound to the new base/head.
@@ -116,3 +116,88 @@ class StaleIntegrationTests(unittest.TestCase):
         api,s=self.setup_case()
         s["ref"]="7"*40
         self.assertEqual(session.inspect(api,s)["status"],"resume")
+
+
+    def test_archived_run_cannot_be_relabelled_or_rerun(self):
+        api,s=self.setup_case()
+        self.move_base(api)
+        s["ledger"],s["handoff"]=session.advance(api,s,"refresh",refresh=True)
+        api.pre_run.update(run_attempt=2,pull_requests=[
+            {"number":8,"head":{"sha":CANDIDATE},"base":{"sha":NEW_BASE}}])
+        before=copy.deepcopy(s)
+        with self.assertRaisesRegex(ValueError,"Archived run"):
+            session.advance(api,s,"rerun old",evidence=[RUN.replace("/attempts/1","/attempts/2")])
+        self.assertEqual(s,before)
+        self.assertEqual(api.writes,[])
+
+    def test_staged_plan_rechecked_before_write_and_ref_publish(self):
+        for during_objects in (False,True):
+            api,s=self.setup_case()
+            ledger,handoff=session.finish(api,s,"staged","stage")
+            before=copy.deepcopy(s)
+            if during_objects:
+                original=api.request
+                def request(method,path,body=None):
+                    result=original(method,path,body)
+                    if method=="POST" and path.endswith("/git/commits"):
+                        self.move_base(api)
+                    return result
+                api.request=request
+            else:
+                self.move_base(api)
+            with self.assertRaisesRegex(ValueError,"Stale"):
+                session.save(api,s,ledger,handoff,apply=True)
+            self.assertEqual(s,before)
+            self.assertFalse(any(method=="PATCH" for method,_,_ in api.writes))
+
+    def test_real_git_other_merge_preserves_fix_but_invalidates_integration(self):
+        from test_merge_history import MergeHistoryTests
+        git=MergeHistoryTests()
+        git.setUp()
+        self.addCleanup(git.doCleanups)
+        old_base=git.base
+        git.git("checkout","-b","agent-b")
+        fix=git.commit_file("b.txt","B\n","agent B")
+        git.git("checkout","-b","old-merge",old_base)
+        git.git("merge","--no-ff","-m","old proposal",fix)
+        old_merge=git.git("rev-parse","HEAD")
+        git.git("checkout","-b","agent-a",old_base)
+        a=git.commit_file("a.txt","A\n","agent A")
+        git.git("checkout","target")
+        git.git("merge","--no-ff","-m","integrate A",a)
+        new_base=git.git("rev-parse","HEAD")
+        git.git("checkout","-b","new-merge",new_base)
+        git.git("merge","--no-ff","-m","new proposal B",fix)
+        new_merge=git.git("rev-parse","HEAD")
+        api,s=Fake(),state()
+        api.product=old_base
+        api.pr["head"]["sha"]=fix
+        api.pr["base"]["sha"]=old_base
+        api.pr["merge_commit_sha"]=old_merge
+        api.pre_run.update(head_sha=old_merge,pull_requests=[])
+        original=api.request
+        def request(method,path,body=None):
+            if method=="GET" and "/git/commits/" in path:
+                sha=path.rsplit("/",1)[1]
+                return {"sha":sha,"parents":[{"sha":p} for p in git.git("show","-s","--format=%P",sha).split()]}
+            if method=="GET" and "/compare/" in path:
+                first,last=path.rsplit("/",1)[1].split("...")
+                ancestor=git.git("merge-base",first,last)
+                return {"status":"ahead" if ancestor==first else "diverged",
+                        "merge_base_commit":{"sha":ancestor}}
+            return original(method,path,body)
+        api.request=request
+        s["ledger"],s["handoff"]=session.claim(api,s,247,["test"],"Fix")
+        for kw in ({"fix":fix,"candidate":fix,"pr":8},{"evidence":[RUN]},{}):
+            s["ledger"],s["handoff"]=session.advance(api,s,"next",**kw)
+        api.product=new_base
+        api.pr["base"]["sha"]=new_base
+        api.pr["merge_commit_sha"]=new_merge
+        self.assertEqual(session.inspect(api,s)["status"],"stale_integration_evidence")
+        s["ledger"],s["handoff"]=session.advance(api,s,"refresh",refresh=True)
+        self.assertEqual(s["handoff"]["active"]["fix_sha"],fix)
+        self.assertEqual(s["handoff"]["active"]["integration_merge_sha"],new_merge)
+        self.assertEqual(s["handoff"]["history"][-1]["handoff"]["integration_merge_sha"],old_merge)
+        self.assertEqual(git.git("show",new_merge+":a.txt"),"A")
+        self.assertEqual(git.git("show",new_merge+":b.txt"),"B")
+        self.assertEqual(api.writes,[])

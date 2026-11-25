@@ -168,8 +168,11 @@ def integration_snapshot(api, state, active):
     if (commit.get("sha") != merged or [p["sha"] for p in commit["parents"]] !=
             [base, active["candidate_sha"]] or base == active["candidate_sha"]):
         raise ValueError("Proposed merge parents changed or unsupported")
-    if install.read_ref(api, prefix, state["manifest"]["product_branch"]) != base:
-        raise ValueError("Product base changed during inspection")
+    observed = require_open_pr(api, state, active)
+    if (observed["base"].get("sha") != base or observed.get("merge_commit_sha") != merged
+            or (observed.get("head", {}).get("repo") or {}).get("id") != state["manifest"]["target_repository_id"]
+            or install.read_ref(api, prefix, state["manifest"]["product_branch"]) != base):
+        raise ValueError("Product base or proposed merge changed during inspection")
     return {"integration_base_sha": base, "integration_merge_sha": merged}
 
 def require_fresh_snapshot(api, state, active):
@@ -198,8 +201,19 @@ def verify_candidate_runs(api, state, active, links):
     policy = {"repository_id": state["manifest"]["target_repository_id"],
               "pull_request": active["pull_request"], "head_sha": active["candidate_sha"],
               "base_sha": active["integration_base_sha"], "merge_sha": active["integration_merge_sha"]}
+    # An old run must not be re-labelled as fresh by a rerun or mutable PR
+    # association. Keep its original record; require a new run for changed pins.
+    invalidated = set()
+    for record in state["handoff"]["history"]:
+        old = record["handoff"]
+        if (old["issue"] == active["issue"] and
+                any(old.get(k) != active.get(k) for k in PIN_KEYS | {"candidate_sha", "pull_request"})):
+            invalidated.update(int(re.search(r"/runs/([0-9]+)/", link).group(1))
+                               for link in old["evidence"])
     for link in links:
         run, attempt = map(int, re.search(r"/runs/([0-9]+)/attempts/([0-9]+)$", link).groups())
+        if run in invalidated:
+            raise ValueError("Archived run belongs to stale integration evidence; use a new run")
         root = state["prefix"] + "/actions/runs/" + str(run)
         for item in (api.request("GET", root), api.request("GET", root + "/attempts/" + str(attempt))):
             standard.check_pr_run(item, policy, run, attempt)
@@ -475,6 +489,12 @@ def save(api, state, ledger, handoff, apply=False):
         return {"status": "unchanged", "installed_sha": state["ref"]}
     if not apply:
         return {"status": "planned", "ledger": ledger, "handoff": handoff}
+    # Recheck proof for newly staged rows before persisting. A stale stage
+    # must not be published merely because its earlier plan was successful.
+    staged = [record["handoff"] for record in handoff["history"][len(state["handoff"]["history"]):]
+              if record["disposition"] == "staged"]
+    for active in staged:
+        verify_candidate_runs(api, state, active, active["evidence"])
     prefix, old = state["prefix"], state["ref"]
     if install.read_ref(api, prefix, install.BRANCH) != old:
         raise ValueError("Installed branch advanced; reload")
@@ -491,6 +511,9 @@ def save(api, state, ledger, handoff, apply=False):
     install.require(install.SHA, new, "handoff commit")
     if new == old:
         raise ValueError("Proposed handoff commit equals its parent")
+    # Recheck after creating the objects, immediately before publishing the ref.
+    for active in staged:
+        verify_candidate_runs(api, state, active, active["evidence"])
     # Fast-forward-only CAS: a divergent writer cannot overwrite a competing handoff.
     ambiguous = False
     try:

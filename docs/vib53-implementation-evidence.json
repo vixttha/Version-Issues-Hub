@@ -222,6 +222,18 @@
         {
           "path": "tests/test_stale_integration.py",
           "anchor": "def test_unrelated_installed_state_is_not_product_base(self):"
+        },
+        {
+          "path": "tests/test_stale_integration.py",
+          "anchor": "def test_archived_run_cannot_be_relabelled_or_rerun(self):"
+        },
+        {
+          "path": "tests/test_stale_integration.py",
+          "anchor": "def test_staged_plan_rechecked_before_write_and_ref_publish(self):"
+        },
+        {
+          "path": "tests/test_stale_integration.py",
+          "anchor": "def test_real_git_other_merge_preserves_fix_but_invalidates_integration(self):"
         }
       ]
     }

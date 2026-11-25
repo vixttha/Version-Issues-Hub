@@ -51,7 +51,7 @@ class Fake:
             return {"ref":"refs/heads/trunk","object":{"type":"commit","sha": self.product}}
         if method == "GET" and path.endswith("/git/commits/" + self.pr["merge_commit_sha"]) and self.pr["merged"] is False:
             return {"sha":self.pr["merge_commit_sha"],"parents":[{"sha":self.pr["base"]["sha"]},{"sha":self.pr["head"]["sha"]}]}
-        if method == "GET" and (path.endswith("/actions/runs/123") or path.endswith("/actions/runs/123/attempts/1")):
+        if method == "GET" and (path.endswith("/actions/runs/" + str(self.pre_run["id"])) or path.endswith("/actions/runs/" + str(self.pre_run["id"]) + "/attempts/1")):
             return self.pre_run
         if method == "GET" and path.endswith("/git/commits/" + NEXT):
             return {"sha":NEXT,"tree":{"sha":TREE},"parents":self.merge_parents}
@@ -247,8 +247,8 @@ class SessionTests(unittest.TestCase):
         self.claim()
         self.assertEqual(self.state["handoff"]["active"]["version"], "v1.0.6.1")
         self.assertEqual(self.state["handoff"]["active"]["fix_sha"], FIX)
-        self.api.pre_run.update(head_sha=NEXT, pull_requests=[{"number":8,"head":{"sha":NEXT},"base":{"sha":BASE}}])
-        self.advance(evidence=[RUN])
+        self.api.pre_run.update(id=125, head_sha=NEXT, pull_requests=[{"number":8,"head":{"sha":NEXT},"base":{"sha":BASE}}])
+        self.advance(evidence=[RUN.replace("/123/","/125/")])
         self.advance(rework=True)
         old = self.state["handoff"]["history"]
         self.assertEqual(old[0]["handoff"]["fix_sha"], FIX)
