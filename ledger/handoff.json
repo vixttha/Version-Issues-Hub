@@ -2,12 +2,18 @@
   "active": {
     "issue": 9,
     "version": "v0.0.0.3",
-    "phase": "Validate",
-    "next_action": "Review existing standalone installation without changing live adopters; independent host and optional enforcement remain separate.",
+    "phase": "Internal Auditor",
+    "next_action": "Both exact checkouts pass isolated install, wrong/empty target and occupied branch refusal; audit original package and adopter-specific state criteria.",
     "fix_sha": "fbb76a77f896fb39290a1b862e7dde1a74ae3a8a",
     "candidate_sha": "95e05af7b2a675491a01f8450fb20db8871b1f41",
     "pull_request": 2,
-    "evidence": []
+    "evidence": [
+      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45698345230/attempts/1",
+      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45698358367/attempts/1",
+      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45698345281/attempts/1",
+      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45698358329/attempts/1",
+      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45698358388/attempts/1"
+    ]
   },
   "history": [
     {
