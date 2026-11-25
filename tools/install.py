@@ -8,6 +8,7 @@ import os
 import re
 import sys
 import time
+from email.utils import parsedate_to_datetime
 from urllib.error import HTTPError, URLError
 from urllib.parse import quote
 from urllib.request import Request, build_opener, HTTPRedirectHandler
@@ -40,10 +41,40 @@ HISTORICAL_LEGAL_PATHS = {
 }
 
 class ApiError(RuntimeError):
-    def __init__(self, status, method=None, operation=None):
+    def __init__(self, status, method=None, operation=None, retry_after=None):
         context = f" ({method} {operation})" if method and operation else ""
-        super().__init__(f"GitHub API returned HTTP {status}{context}")
+        delay = f"; retry no earlier than {retry_after} seconds (inspect before any write)" if retry_after is not None else ""
+        super().__init__(f"GitHub API returned HTTP {status}{context}{delay}")
         self.status = status
+        self.retry_after = retry_after
+
+
+def retry_delay(status, headers, now):
+    """Retain numeric throttle timing only; never retain arbitrary header values."""
+    import math
+    headers = headers or {}
+    retry = headers.get("Retry-After")
+    exhausted = headers.get("X-RateLimit-Remaining") == "0"
+    if retry is None and not exhausted and status != 429:
+        return None
+    delays = [60] if status in (403, 429) or exhausted else [0]
+    try:
+        if retry is not None:
+            if re.fullmatch(r"[0-9]{1,12}", retry):
+                delays.append(int(retry))
+            else:
+                date = parsedate_to_datetime(retry)
+                if date.tzinfo is None:
+                    return max(delays + [60])
+                delays.append(math.ceil(date.timestamp() - now))
+        if exhausted:
+            reset = headers.get("X-RateLimit-Reset")
+            if reset is not None and re.fullmatch(r"[0-9]{1,12}", reset):
+                delays.append(math.ceil(int(reset) - now))
+    except (TypeError, ValueError, OverflowError, OSError):
+        # A malformed throttle header cannot authorize an immediate retry.
+        delays.append(60)
+    return max(delays)
 
 class ApiTransportError(OSError):
     """Transport failure with only safe operation context, never request details."""
@@ -92,9 +123,10 @@ class GitHub:
                     return json.load(response)
             except HTTPError as exc:
                 code = exc.code
+                delay_hint = retry_delay(code, exc.headers, time.time())
                 exc.close()
-                if code not in (500, 502, 503, 504) or attempt == len(delays) - 1:
-                    raise ApiError(code, method, api_operation(path)) from None
+                if delay_hint is not None or code not in (500, 502, 503, 504) or attempt == len(delays) - 1:
+                    raise ApiError(code, method, api_operation(path), delay_hint) from None
             except (TimeoutError, URLError) as exc:
                 timed_out = isinstance(exc, TimeoutError) or (
                     isinstance(exc, URLError) and isinstance(exc.reason, TimeoutError))

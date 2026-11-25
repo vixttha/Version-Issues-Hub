@@ -318,6 +318,40 @@ def reconcile(api, state, number, decision):
     row["state"] = "integrated"
     return ledger, handoff
 
+
+def confirm_handoff(api, prefix, old, new, tree):
+    """Confirm the exact proposed commit, even if a later transaction advanced the ref."""
+    for value, label in ((old, "previous"), (new, "candidate"), (tree, "tree")):
+        install.require(install.SHA, value, label + " revision")
+    for delay in (0, 0.25, 0.5, 1, 2, 4):
+        if delay:
+            install.time.sleep(delay)
+        observed = install.read_ref(api, prefix, install.BRANCH)
+        if observed == new:
+            return observed
+        if observed == old:
+            continue
+        if observed is None:
+            raise ValueError("Installed branch disappeared")
+        comparison = api.request("GET", prefix + "/compare/" + new + "..." + observed)
+        if (comparison.get("status") != "ahead" or comparison.get("behind_by") != 0
+                or type(comparison.get("ahead_by")) is not int or comparison["ahead_by"] <= 0
+                or comparison.get("base_commit", {}).get("sha") != new
+                or comparison.get("merge_base_commit", {}).get("sha") != new):
+            raise ValueError("Observed revision does not establish candidate ancestry")
+        commit = api.request("GET", prefix + "/git/commits/" + new)
+        if (commit.get("sha") != new or commit.get("tree", {}).get("sha") != tree
+                or [p.get("sha") for p in commit.get("parents", [])] != [old]):
+            raise ValueError("Candidate commit does not match the proposed transaction")
+        return observed
+    raise ValueError("Handoff commit not confirmed")
+
+class HandoffUnconfirmed(ValueError):
+    """An exact candidate is available for inspection, not blind resubmission."""
+    def __init__(self, candidate):
+        self.candidate_sha = candidate
+        super().__init__("Handoff outcome unconfirmed; inspect candidate " + candidate + " before retrying")
+
 def save(api, state, ledger, handoff, apply=False):
     validate_handoff(state["handoff"], state["ledger"])
     checkpoint.check_history(ledger, state["ledger"])
@@ -343,9 +377,24 @@ def save(api, state, ledger, handoff, apply=False):
         "tree": install.require(install.SHA, tree, "handoff tree"), "parents": [old]})["sha"]
     install.require(install.SHA, new, "handoff commit")
     # Fast-forward-only CAS: a divergent writer cannot overwrite a competing handoff.
-    api.request("PATCH", prefix + "/git/refs/heads/" + install.BRANCH, {"sha": new, "force": False})
-    install.wait_ref(api, prefix, install.BRANCH, new, old)
-    return {"status": "saved", "installed_sha": new}
+    ambiguous = False
+    try:
+        api.request("PATCH", prefix + "/git/refs/heads/" + install.BRANCH, {"sha": new, "force": False})
+    except install.ApiTransportError:
+        ambiguous = True
+    except install.ApiError as error:
+        # Rate limits and permanent errors must not trigger polling or resubmission.
+        if error.retry_after is not None or error.status not in (408, 500, 502, 503, 504):
+            raise
+        ambiguous = True
+    try:
+        observed = confirm_handoff(api, prefix, old, new, tree)
+    except (ValueError, KeyError, TypeError, OSError, install.ApiError):
+        raise HandoffUnconfirmed(new) from None
+    result = {"status": "saved", "installed_sha": new}
+    if observed != new or ambiguous:
+        result.update(observed_sha=observed, recovered_response=ambiguous)
+    return result
 
 def main():
     p = argparse.ArgumentParser(description=__doc__)

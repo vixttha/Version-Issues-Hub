@@ -1,0 +1,53 @@
+{
+  "title": "VIB #53 implementation candidate evidence",
+  "features": [
+    {
+      "id": "vib53-transaction-foundation",
+      "label": "Production session confirmation and throttle safety",
+      "documented_in": [
+        {
+          "path": "docs/vib53-implementation.md",
+          "anchor": "# #53 implementation candidate — transaction foundation"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "tools/session.py",
+          "anchor": "def confirm_handoff(api, prefix, old, new, tree):"
+        }
+      ],
+      "implemented_in": [
+        {
+          "path": "tools/install.py",
+          "anchor": "def retry_delay(status, headers, now):"
+        },
+        {
+          "path": "tools/session.py",
+          "anchor": "def save(api, state, ledger, handoff, apply=False):"
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tests/test_transaction_confirmation.py",
+          "anchor": "def test_descendant_and_lost_response_confirm_once(self):"
+        },
+        {
+          "path": "tests/test_transaction_confirmation.py",
+          "anchor": "def test_unconfirmed_commit_never_resubmitted(self):"
+        },
+        {
+          "path": "tests/test_transaction_confirmation.py",
+          "anchor": "def test_denial_and_throttle_stop(self):"
+        },
+        {
+          "path": "tests/test_transaction_confirmation.py",
+          "anchor": "def test_retry_delay(self):"
+        },
+        {
+          "path": "tests/test_transaction_confirmation.py",
+          "anchor": "def test_throttle_header_never_retries_or_leaks(self):"
+        }
+      ]
+    }
+  ]
+}

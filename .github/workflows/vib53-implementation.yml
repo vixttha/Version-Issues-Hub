@@ -1,0 +1,69 @@
+name: VIB 53 implementation candidate
+on:
+  push:
+    branches: ['impl/vib-53-independent-transactions']
+permissions:
+  contents: read
+jobs:
+  experiment:
+    if: github.event.repository.private == false
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
+        with:
+          python-version: '3.12'
+      - name: Exact revision and existing regression suite
+        run: |
+          git rev-parse HEAD
+          python -B -m unittest discover -s tests -v
+  graphify:
+    if: github.event.repository.private == false
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      GRAPHIFY_QUERY_LOG_DISABLE: '1'
+      PYTHONHASHSEED: '0'
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          path: vib
+          persist-credentials: false
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          repository: vixttha/README-HQ
+          ref: 788f2127d3cf004ac5615d21364f5b56e4f7dd31
+          path: graphify-kit
+          persist-credentials: false
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
+        with:
+          python-version: '3.12'
+      - name: Map research evidence at exact checkout
+        working-directory: vib
+        run: |
+          kit=../graphify-kit/graphify-hq/template/v0.0.8
+          python -m pip install --require-hashes --no-deps --only-binary=:all: -r "$kit/requirements.txt"
+          python -m pip check
+          output="$RUNNER_TEMP/vib53-implementation"
+          mkdir -p "$output"
+          python - "$output/manifest.json" <<'PY'
+          import json, os, sys
+          from pathlib import Path
+          manifest = json.loads(Path("docs/vib53-implementation-evidence.json").read_text())
+          manifest["repository"] = os.environ["GITHUB_REPOSITORY"]
+          manifest["source_commit"] = os.environ["GITHUB_SHA"]
+          Path(sys.argv[1]).write_text(json.dumps(manifest, indent=2) + "\n")
+          PY
+          python "$kit/evidence_map.py" "$output/manifest.json" "$output"
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: vib53-research-map
+          path: ${{ runner.temp }}/vib53-research
+          if-no-files-found: error
