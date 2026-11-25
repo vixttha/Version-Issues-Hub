@@ -1,3 +1,7 @@
 # VIB Lydite adoption
 
 Lydite standalone release v0.0.4 at [87d25d8](https://github.com/vixttha/Lydite-Test-Vault-Template/tree/87d25d80d3154d295052412b64b29a0f0f152c27); current main [eae4c9d9d56ed132b400d7c0f56a9babfe5cba07](https://github.com/vixttha/Lydite-Test-Vault-Template/tree/eae4c9d9d56ed132b400d7c0f56a9babfe5cba07). The embedded starter v0.0.3 is independently versioned. Source inventory and release runtime already matched VIB's installed package; imported latest guide and discovery metadata, retained host-specific branch triggers and history. Added seven VIB-specific cases, covering every existing test module on exact product candidate [4fc9ac47462101b941ea2f78fc939d42a9de0032](https://github.com/vixttha/Version-Issues-Hub/tree/4fc9ac47462101b941ea2f78fc939d42a9de0032); v2 verdicts bind both the product SHA and case plan, with separate vault checkout recorded. Not a live hard-enforcement or independent LLM trial. No owner acceptance, product write, protection or release.
+
+## 2026-11-25 — Agent 4 refresh
+
+See [operating scope](vib/AGENT-4.md) and [language role review](vib/language-roles.md). Current VIB candidate pin: `7ae6626e44d01d29b11968da28e6debd816f8c06`. All ten test modules bound; original seven IDs and old history retained. New runner matrix targets public Ubuntu and Windows; fresh results required. Stable Lydite v0.0.4 remains installed; upstream .75 draft is reference only. No language priority or product write authorized.

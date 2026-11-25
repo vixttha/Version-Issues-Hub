@@ -9,7 +9,11 @@ permissions:
 jobs:
   product:
     if: github.event.repository.private == false
-    runs-on: ubuntu-24.04
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [ubuntu-24.04, windows-latest]
     timeout-minutes: 8
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
@@ -18,7 +22,7 @@ jobs:
           persist-credentials: false
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
-          ref: '4fc9ac47462101b941ea2f78fc939d42a9de0032'
+          ref: '7ae6626e44d01d29b11968da28e6debd816f8c06'
           path: product
           fetch-depth: 0
           persist-credentials: false
@@ -34,6 +38,6 @@ jobs:
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: vib-test-vault-${{ github.run_id }}-${{ github.run_attempt }}
+          name: vib-test-vault-${{ matrix.runner }}-${{ github.run_id }}-${{ github.run_attempt }}
           path: ${{ runner.temp }}/vib-vault/
           if-no-files-found: error
