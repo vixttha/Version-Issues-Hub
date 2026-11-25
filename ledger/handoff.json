@@ -2,11 +2,11 @@
   "active": {
     "issue": 9,
     "version": "v0.0.0.3",
-    "phase": "Worker",
-    "next_action": "Review existing #9 standalone installer scope and public controls, no new code or install.",
-    "fix_sha": null,
-    "candidate_sha": null,
-    "pull_request": null,
+    "phase": "Validate",
+    "next_action": "Review existing standalone installation without changing live adopters; independent host and optional enforcement remain separate.",
+    "fix_sha": "fbb76a77f896fb39290a1b862e7dde1a74ae3a8a",
+    "candidate_sha": "95e05af7b2a675491a01f8450fb20db8871b1f41",
+    "pull_request": 2,
     "evidence": []
   },
   "history": [
