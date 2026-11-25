@@ -924,6 +924,34 @@
           "anchor": "def test_history_preserves_ordered_acceptance_criteria(self):"
         }
       ]
+    },
+    {
+      "id": "v0-0-0-35",
+      "label": "Issue #71 · archived verification integrity",
+      "documented_in": [
+        {
+          "path": "docs/v0.0.0.35.md",
+          "anchor": "## Complete archived success evidence"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "ledger/issue-versions.json",
+          "anchor": "\"issue\": 71,"
+        }
+      ],
+      "implemented_in": [
+        {
+          "path": "tools/session.py",
+          "anchor": "def validate_handoff(handoff, ledger):"
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tests/test_session.py",
+          "anchor": "def test_archived_success_requires_candidate_and_evidence(self):"
+        }
+      ]
     }
   ]
 }

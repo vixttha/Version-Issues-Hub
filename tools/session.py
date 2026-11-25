@@ -76,6 +76,10 @@ def validate_handoff(handoff, ledger):
         if record["disposition"] not in ("blocked", "deferred", "staged", "integrated", "rework") or (record["disposition"] != "rework" and record["handoff"]["phase"] != "Head"):
             raise ValueError("Invalid archived disposition")
         text(record["decision"], "owner decision")
+        if record["disposition"] in ("staged", "integrated"):
+            archived = record["handoff"]
+            if any(archived[key] is None for key in ("fix_sha", "candidate_sha", "pull_request")) or not archived["evidence"]:
+                raise ValueError("Archived staged/integrated handoff requires a fix, candidate, PR and evidence")
         if record["disposition"] == "integrated":
             install.require(install.SHA, record["merged_sha"], "merged revision")
         elif record["merged_sha"] is not None:
