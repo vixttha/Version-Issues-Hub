@@ -7,7 +7,7 @@
         "Publish a public CI receipt for issue #1 with the fix revision, tested checkout, and exact run attempt."
       ],
       "issue": 1,
-      "state": "assigned",
+      "state": "staged",
       "version": "v0.0.0.1"
     },
     {
@@ -17,7 +17,7 @@
         "A docs-only commit changes candidate and tested revisions while preserving both fix commits."
       ],
       "issue": 7,
-      "state": "assigned",
+      "state": "staged",
       "version": "v0.0.0.2"
     },
     {
@@ -27,7 +27,7 @@
         "Refuse occupied branches, conflicting identity, and empty repositories without silently modifying the target. Verify creation using public-runner tests."
       ],
       "issue": 9,
-      "state": "assigned",
+      "state": "staged",
       "version": "v0.0.0.3"
     },
     {
@@ -305,8 +305,18 @@
         "Reconcile engineering projection against authoritative installed state; public Ubuntu/Windows, Graphify and CodeRabbit evidence; keep release and feature development frozen until correction accepted."
       ],
       "issue": 65,
-      "state": "in_progress",
+      "state": "staged",
       "version": "v0.0.0.31"
+    },
+    {
+      "issue": 34,
+      "version": "v0.0.0.32",
+      "state": "in_progress",
+      "acceptance": [
+        "Re-evaluate bound run attempts and proof identities after success publication, revoke the exact check on changed or uncertain evidence, and do not retry success writes.",
+        "Public regression tests demonstrate rerun, replacement proof, uncertain response, revocation failure and state drift during publication.",
+        "Document residual non-atomic window and retain required live optional enforcement proof; Standard mode remains independent and disabled enforcement unchanged."
+      ]
     }
   ],
   "repository": "vixttha/Version-Issues-Hub",

@@ -277,3 +277,70 @@ class GateTests(unittest.TestCase):
             with patch.object(self.api, "request", return_value={"total_count": len(rows), "jobs": rows}):
                 self.assertEqual(gate.exact_collection(self.api, "/synthetic", "jobs"), rows)
         self.assertEqual(self.api.writes, [])
+
+    def test_post_success_rerun_revokes_exact_check(self):
+        original = self.api.request
+        def race(method, path, body=None):
+            result = original(method, path, body)
+            if method == "PATCH" and body.get("conclusion") == "success":
+                self.api.run["run_attempt"] = 2
+            return result
+        self.api.request = race
+        with self.assertRaisesRegex(ValueError, "revoked.*attempt"):
+            gate.publish(self.api, self.api, REPO, self.policy)
+        self.assertEqual([w.get("conclusion") for w in self.api.writes],
+                         [None, "success", "failure"])
+        self.assertEqual(self.api.gate_checks[0]["conclusion"], "failure")
+
+    def test_post_success_valid_replacement_check_is_not_same_evidence(self):
+        original = self.api.request
+        def race(method, path, body=None):
+            result = original(method, path, body)
+            if method == "PATCH" and body.get("conclusion") == "success":
+                self.api.checks[0]["id"] = 199
+            return result
+        self.api.request = race
+        with self.assertRaisesRegex(ValueError, "revoked.*Bound evidence changed"):
+            gate.publish(self.api, self.api, REPO, self.policy)
+        self.assertEqual(self.api.gate_checks[0]["conclusion"], "failure")
+
+    def test_uncertain_success_write_is_revoked_without_retry(self):
+        original = self.api.request
+        def race(method, path, body=None):
+            result = original(method, path, body)
+            if method == "PATCH" and body.get("conclusion") == "success":
+                raise OSError("Lost response")
+            return result
+        self.api.request = race
+        with self.assertRaisesRegex(ValueError, "revoked.*Lost response"):
+            gate.publish(self.api, self.api, REPO, self.policy)
+        self.assertEqual([w.get("conclusion") for w in self.api.writes],
+                         [None, "success", "failure"])
+
+    def test_revocation_failure_requires_merge_freeze(self):
+        original = self.api.request
+        def race(method, path, body=None):
+            if method == "PATCH" and body.get("conclusion") == "failure":
+                raise OSError("Revocation unavailable")
+            result = original(method, path, body)
+            if method == "PATCH" and body.get("conclusion") == "success":
+                self.api.run["run_attempt"] = 2
+            return result
+        self.api.request = race
+        with self.assertRaisesRegex(ValueError, "FREEZE MERGES.*check 100"):
+            gate.publish(self.api, self.api, REPO, self.policy)
+        self.assertEqual(self.api.gate_checks[0]["conclusion"], "success")
+        self.assertEqual([w.get("conclusion") for w in self.api.writes],
+                         [None, "success"])
+
+    def test_post_success_state_change_revokes(self):
+        original = self.api.request
+        def race(method, path, body=None):
+            result = original(method, path, body)
+            if method == "PATCH" and body.get("conclusion") == "success":
+                self.api.refs[install.BRANCH] = SOURCE
+            return result
+        self.api.request = race
+        with self.assertRaisesRegex(ValueError, "revoked.*state advanced"):
+            gate.publish(self.api, self.api, REPO, self.policy)
+        self.assertEqual(self.api.gate_checks[0]["conclusion"], "failure")

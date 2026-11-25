@@ -840,6 +840,34 @@
           "anchor": "def test_missing_mapping_and_changed_criteria_fail(self):"
         }
       ]
+    },
+    {
+      "id": "v0-0-0-32",
+      "label": "Issue #34 · Optional post-publication evidence confirmation",
+      "documented_in": [
+        {
+          "path": "install/branch/GATE.md",
+          "anchor": "### Post-publication evidence confirmation (#34)"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "ledger/issue-versions.json",
+          "anchor": "\"issue\": 34,"
+        }
+      ],
+      "implemented_in": [
+        {
+          "path": "tools/gate.py",
+          "anchor": "def publish(api, publisher, target, policy):"
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tests/test_gate.py",
+          "anchor": "def test_post_success_rerun_revokes_exact_check(self):"
+        }
+      ]
     }
   ]
 }
