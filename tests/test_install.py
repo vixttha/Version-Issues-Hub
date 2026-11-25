@@ -291,7 +291,7 @@ class InstallerTests(unittest.TestCase):
         invalid = (
             b'{"merged":true,"merged":false}',
             b'{"nested":{"private-key":1,"private-key":2}}',
-            b'{"merged":true,"m\u0065rged":false}',
+            b'{"merged":true,"m\\u0065rged":false}',
             b'{"private-key":',
             b'{"private-key":"\xff"}',
         )
