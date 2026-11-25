@@ -71,8 +71,17 @@ jobs:
           cd Version-Issues-Hub
           git checkout --detach 114a22196eab578b3053002f8eb7af935b26fe89
           test "$(git rev-parse HEAD)" = "114a22196eab578b3053002f8eb7af935b26fe89"
+          # The installed ledger is mutable, unlike the archived README source.
+          # Capture its exact state, replay the documented command, then compare.
+          state_sha="$(git ls-remote origin refs/heads/Version-Issues-Hub | cut -f1)"
+          test "${#state_sha}" = 40
+          git fetch --no-tags --depth=1 origin "$state_sha"
+          git show "$state_sha:ledger/handoff.json" > "$RUNNER_TEMP/vib-handoff.json"
           python -m tools.session --target vixttha/Version-Issues-Hub inspect > "$RUNNER_TEMP/vib-inspect.json"
-          python -c 'import json,os; from pathlib import Path; x=json.loads((Path(os.environ["RUNNER_TEMP"])/"vib-inspect.json").read_text()); assert x["status"]=="head_scope_required" and x["active"] is None and x["owner_merge_required"] is True and x["evidence_verified"] is False and x["repository"]=="vixttha/Version-Issues-Hub"; print(json.dumps(x,indent=2))'
+          test "$(git ls-remote origin refs/heads/Version-Issues-Hub | cut -f1)" = "$state_sha"
+          # Replay checks recovery reporting, not permission to advance a checkpoint.
+          python "$GITHUB_WORKSPACE/audit/verify_readme_recovery.py" --self-test
+          python "$GITHUB_WORKSPACE/audit/verify_readme_recovery.py" "$state_sha" "$RUNNER_TEMP/vib-handoff.json" "$RUNNER_TEMP/vib-inspect.json"
           python -B -m unittest discover -s tests -v
 
   live-readme-render:

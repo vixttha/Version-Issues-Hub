@@ -1,0 +1,47 @@
+name: Provenistem branch library
+
+on:
+  pull_request:
+    branches: ["readme-hq"]
+    paths:
+      - 'provenistem/**'
+      - 'audit/verify_provenistem_sync.py'
+      - '.github/workflows/provenistem-library.yml'
+  push:
+    branches: ["readme-hq"]
+    paths:
+      - 'provenistem/**'
+      - 'audit/verify_provenistem_sync.py'
+      - '.github/workflows/provenistem-library.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  records:
+    name: Validate Provenistem records (${{ matrix.os }})
+    if: github.event.repository.private == false
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 8
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+      PYTHONIOENCODING: 'utf-8'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
+        with:
+          python-version: '3.12'
+      - name: Validate host and test disposable portable copy
+        working-directory: provenistem
+        run: |
+          git rev-parse HEAD
+          python ../audit/verify_provenistem_sync.py
+      - name: Verify checkout stayed clean
+        shell: bash
+        run: test -z "$(git status --porcelain)"
