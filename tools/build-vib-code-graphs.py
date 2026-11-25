@@ -21,9 +21,9 @@ def run(*args, cwd=repo, **kwargs):
     return subprocess.check_output(args, cwd=cwd, **kwargs)
 def sha(path):
     return hashlib.sha256(path.read_bytes()).hexdigest()
-help_text = run("graphify", "extract", "--help", cwd=vault, stderr=subprocess.STDOUT, text=True)
-if "--code-only" not in help_text:
-    raise RuntimeError("Pinned Graphify has no explicit code-only extraction mode")
+help_result = subprocess.run(["graphify", "--help"], cwd=vault, text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+(output/"cli-help.txt").write_text(help_result.stdout)
+# The CLI help is not a reliable capability test; exercise explicit code-only extraction.
 results = []
 failures = []
 for row in inventory:
@@ -43,7 +43,7 @@ for row in inventory:
                     raise ValueError("No tracked code files")
                 # Explicit offline AST extraction. Do not run code from this checkout.
                 cmd = ["graphify","extract",".","--code-only"]
-                if "--no-cluster" in help_text: cmd.append("--no-cluster")
+                # Explicit flag remains mandatory; never fall back to semantic extraction.
                 proc = subprocess.run(cmd,cwd=work,text=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT,timeout=180)
                 print(version, source, proc.stdout[-4000:], flush=True)
                 proc.check_returncode()
