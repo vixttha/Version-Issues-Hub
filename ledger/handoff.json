@@ -1,20 +1,5 @@
 {
-  "active": {
-    "issue": 7,
-    "version": "v0.0.0.2",
-    "phase": "Head",
-    "next_action": "Auditor confirmed original two-receipt evidence, stable fix ancestry and current scope controls on both exact checkouts. Stage only pending aggregate merge.",
-    "fix_sha": "fee90e84d981740938989c1a53f70a9570ae2293",
-    "candidate_sha": "95e05af7b2a675491a01f8450fb20db8871b1f41",
-    "pull_request": 2,
-    "evidence": [
-      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45698345230/attempts/1",
-      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45698358367/attempts/1",
-      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45698345281/attempts/1",
-      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45698358329/attempts/1",
-      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45698358388/attempts/1"
-    ]
-  },
+  "active": null,
   "history": [
     {
       "decision": "PR49 CodeRabbit finding 4682051116: rework exact product SHA comparisons and add regression checks; preserve previous evidence.",
@@ -191,6 +176,27 @@
       },
       "disposition": "staged",
       "decision": "Owner-directed existing-work solo continuation; #1 existing technical fix accepted for staging on PR2, not main integration or issue closure.",
+      "merged_sha": null
+    },
+    {
+      "handoff": {
+        "issue": 7,
+        "version": "v0.0.0.2",
+        "phase": "Head",
+        "next_action": "Auditor confirmed original two-receipt evidence, stable fix ancestry and current scope controls on both exact checkouts. Stage only pending aggregate merge.",
+        "fix_sha": "fee90e84d981740938989c1a53f70a9570ae2293",
+        "candidate_sha": "95e05af7b2a675491a01f8450fb20db8871b1f41",
+        "pull_request": 2,
+        "evidence": [
+          "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45698345230/attempts/1",
+          "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45698358367/attempts/1",
+          "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45698345281/attempts/1",
+          "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45698358329/attempts/1",
+          "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45698358388/attempts/1"
+        ]
+      },
+      "disposition": "staged",
+      "decision": "Owner-directed solo continuation; existing #7 technical fix accepted for staging on PR2, not main integration or closure.",
       "merged_sha": null
     }
   ],
