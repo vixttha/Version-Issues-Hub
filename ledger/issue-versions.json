@@ -305,7 +305,7 @@
         "Reconcile engineering projection against authoritative installed state; public Ubuntu/Windows, Graphify and CodeRabbit evidence; keep release and feature development frozen until correction accepted."
       ],
       "issue": 65,
-      "state": "in_progress",
+      "state": "staged",
       "version": "v0.0.0.31"
     }
   ],
