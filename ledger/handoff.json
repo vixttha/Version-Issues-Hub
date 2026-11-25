@@ -2,11 +2,11 @@
   "active": {
     "issue": 71,
     "version": "v0.0.0.35",
-    "phase": "Worker",
-    "next_action": "Repair archived staged/integrated evidence validation only; synchronize exact canonical projection before product edits.",
-    "fix_sha": null,
-    "candidate_sha": null,
-    "pull_request": null,
+    "phase": "Validate",
+    "next_action": "PR75 merged engineering only; validate exact engineering merge and PR2 preview.",
+    "fix_sha": "68aa26cf0353a5126be2a3acc1dad10be90ad2b8",
+    "candidate_sha": "07a73f55a2b1f7ecbf873a3921f1e397034a88e6",
+    "pull_request": 2,
     "evidence": []
   },
   "history": [
