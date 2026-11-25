@@ -13,3 +13,7 @@ Test local Git compare-and-swap with synthetic integer checkpoint identifiers, i
 Compare REST single-parent non-force update versus GraphQL expectedHeadOid; model operation replay with matching intent and durable outcome, ownership fencing, issue-scoped evidence, and rollback without renumbering. Test bounded concurrent retries and actual remote semantics only on explicitly isolated state. No live branch upgrade or merge.
 
 Sources: https://git-scm.com/docs/git-update-ref ; https://docs.github.com/en/rest/git/refs ; https://docs.github.com/en/graphql/reference/commits ; https://aws.amazon.com/builders-library/making-retries-safe-with-idempotent-APIs/
+
+## Baseline Windows finding
+
+Run 45671072469: untouched 107-test baseline passed Ubuntu but failed Windows (3 failures, 6 errors) before research tests; Graphify missing required changed_in relation fixed at bd0a550. Windows fixture GitApi.git uses subprocess text=True, which converts LF to CRLF on Windows before hashing. Research-only fix uses explicit UTF-8 bytes in fixture Git input/output; no production verification relaxed. Compare untouched baseline and corrected fixture runs; report separately. This is not a production repair or release authorization.

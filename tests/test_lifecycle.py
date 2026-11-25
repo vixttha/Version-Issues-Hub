@@ -45,7 +45,7 @@ class GitApi:
         env={**os.environ,"GIT_AUTHOR_NAME":"VIB test","GIT_AUTHOR_EMAIL":"vib@example.invalid",
              "GIT_COMMITTER_NAME":"VIB test","GIT_COMMITTER_EMAIL":"vib@example.invalid",
              "GIT_INDEX_FILE":str(Path(self.path)/"fixture-index")}
-        return subprocess.check_output(["git","-C",self.path,*args],input=data,text=True,env=env).strip()
+        return subprocess.check_output(["git","-C",self.path,*args],input=data.encode("utf-8") if data is not None else None,env=env).decode("utf-8").strip()
     def tree(self,files,base=None):
         self.git("read-tree",base or "--empty")
         for p,s in files.items():
@@ -62,7 +62,7 @@ class GitApi:
         else:
             return self.git("rev-parse","--verify","refs/heads/"+name)
     def read(self,sha,path):
-        return subprocess.check_output(["git","-C",self.path,"show",sha+":"+path],text=True)
+        return subprocess.check_output(["git","-C",self.path,"show",sha+":"+path]).decode("utf-8")
     def request(self,method,path,body=None):
         if method!="GET": self.writes.append((method,path,body))
         if path==PREFIX: return self.meta
