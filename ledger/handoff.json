@@ -2,11 +2,11 @@
   "active": {
     "issue": 33,
     "version": "v0.0.0.17",
-    "phase": "Worker",
-    "next_action": "Owner-authorized historical closure recovery; no product edits or new version.",
-    "fix_sha": null,
-    "candidate_sha": null,
-    "pull_request": null,
+    "phase": "Validate",
+    "next_action": "Verify bounded GET timeout regression, diagnostic redaction and original live recovery evidence.",
+    "fix_sha": "15396556f7674f27b039520a7538fa76f7ac49c1",
+    "candidate_sha": "26e9fe8c019a33c5f84f77a37da70925505204e3",
+    "pull_request": 2,
     "evidence": []
   },
   "history": [
