@@ -43,18 +43,26 @@
     "B13.test_archive_digest",
     "B13.test_archive_inventory",
     "B13.test_duplicate_json",
+    "B13.test_invalid_acceptance",
+    "B13.test_invalid_issue",
+    "B13.test_invalid_record",
+    "B13.test_invalid_repository",
+    "B13.test_invalid_state",
     "B13.test_schema_version"
   ],
   "14": [
     "B14.test_current",
     "B14.test_grandparent",
+    "B14.test_migrate_grandparent",
+    "B14.test_migrate_parent",
     "B14.test_parent"
   ],
   "15": [
     "B15.test_growth_1000",
     "B15.test_growth_250",
     "B15.test_kill_after",
-    "B15.test_kill_before"
+    "B15.test_kill_before",
+    "B15.test_kill_staged_before_replace"
   ],
   "16": [
     "B16.test_frozen_vectors"
@@ -107,12 +115,18 @@
   ],
   "09": [
     "B09.test_duplicate_escaped_key",
+    "B09.test_grammar_fuzz",
     "B09.test_invalid_utf8",
     "B09.test_nonfinite_inf",
     "B09.test_nonfinite_nan",
     "B09.test_nonfinite_negative_inf",
     "B09.test_nonfinite_persistence",
     "B09.test_schema_boolean",
+    "B09.test_schema_invalid_acceptance",
+    "B09.test_schema_invalid_issue",
+    "B09.test_schema_invalid_record",
+    "B09.test_schema_invalid_repository",
+    "B09.test_schema_invalid_state",
     "B09.test_seed_1024",
     "B09.test_seed_2026",
     "B09.test_seed_20261125",

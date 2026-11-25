@@ -25,8 +25,12 @@ require(hashlib.sha256((root/"shell.log").read_bytes()).hexdigest()==shell["log_
 require(len(shell["passed"])==len(set(shell["passed"])) and set(shell["passed"]).issubset(shell["expected"]),"shell identities")
 require((shell["outcome"]=="pass")== (shell["passed"]==shell["expected"] and shell["exit_code"]==0),"shell verdict")
 results.append({"batch":"platform","passed":len(shell["passed"]),"expected":len(shell["expected"]),"outcome":shell["outcome"]})
+replay=json.loads((root/"coverage-prior.json").read_text())
+require(len(replay)==15 and len({r["suite"] for r in replay})==15,"coverage replay inventory")
+for row in replay:
+    require(hashlib.sha256((root/("coverage-prior-"+row["suite"]+".log")).read_bytes()).hexdigest()==row["log_sha256"],"coverage replay digest")
 cov=json.loads((root/"coverage.json").read_text())
 require(bool(cov["meta"]["branch_coverage"]) and bool(cov["files"]),"branch coverage missing")
-summary={"integrity":"verified","results":results,"coverage":cov["totals"],"scope":"baseline and advanced Python in-process coverage only; subprocesses not instrumented"}
+summary={"integrity":"verified","results":results,"coverage":cov["totals"],"coverage_replay":replay,"scope":"baseline, prior core Python and advanced in-process coverage; subprocesses not instrumented"}
 (root/"summary.json").write_text(json.dumps(summary,indent=2)+"\n")
 print("VIB_ADVANCED_AUDIT "+json.dumps(summary))

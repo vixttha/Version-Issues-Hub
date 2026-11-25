@@ -130,6 +130,23 @@ class B09(unittest.TestCase):
     def test_schema_boolean(self):
         x=ledger();x["schema_version"]=True
         with self.assertRaises(ValueError):checkpoint.bindings(x)
+    def invalid_record(self,key,value):
+        x=ledger();checkpoint.register(x,1,"v0.0.0",["verify"])
+        if key=="repository":x[key]=value
+        else:x["issues"][0][key]=value
+        with self.assertRaises(ValueError):checkpoint.bindings(x)
+    def test_schema_invalid_issue(self):self.invalid_record("issue",0)
+    def test_schema_invalid_state(self):self.invalid_record("state","unknown")
+    def test_schema_invalid_acceptance(self):self.invalid_record("acceptance",[])
+    def test_schema_invalid_record(self):self.invalid_record("extra",1)
+    def test_schema_invalid_repository(self):self.invalid_record("repository","invalid")
+    def test_grammar_fuzz(self):
+        rng=random.Random(20261125)
+        for _ in range(100):
+            value={"key":"".join(rng.choice("a b\n\r\t\u00e9\u6c34") for _ in range(rng.randrange(40))),"number":rng.randint(-10000,10000)}
+            raw=json.dumps(value,ensure_ascii=False)
+            self.assertEqual(checkpoint.parse_json(raw),value)
+            with self.assertRaises(ValueError):checkpoint.parse_json(raw[:-1])
     def test_nonfinite_nan(self):
         with self.assertRaises(ValueError): checkpoint.parse_json('{"n":NaN}')
     def test_nonfinite_inf(self):
@@ -263,6 +280,46 @@ class B14(unittest.TestCase):
     def test_parent(self):self.history("e28e8a2e7360baf840c40dacf12ab91d5d7abd63")
     def test_grandparent(self):self.history("44573ae95e143116caacd891c842065a6d32743f")
     def test_current(self):self.history(c.PIN)
+    def migrate(self,old):
+        fixture=c.LifecycleNegative()
+        fixture.setUp()
+        try:
+            a=fixture.api
+            a.git("update-ref","-d","refs/heads/"+install.BRANCH,a.old)
+            def package(sha):
+                mapping=install.pinned_package(c.git(P,"show",sha+":tools/install.py").decode())
+                return {dest:c.git(P,"show",sha+":"+src).decode() for src,dest in mapping.items()}
+            packages={old:package(old),c.PIN:package(c.PIN)}
+            original=a.request
+            def request(method,path,body=None):
+                if method=="GET" and "/compare/" in path:
+                    if path.rsplit("/",1)[-1]!=old+"..."+c.PIN:raise AssertionError("Unexpected ancestry pair")
+                    subprocess.run(["git","-C",str(P),"merge-base","--is-ancestor",old,c.PIN],check=True,timeout=20)
+                    return {"status":"ahead","merge_base_commit":{"sha":old}}
+                return original(method,path,body)
+            a.request=request
+            with patch.object(install,"source_files",side_effect=lambda api,sha:dict(packages[sha])):
+                installed=install.install(a,c.original.REPO,old,"v1.0.0",True)["installed_sha"]
+                state=session.load(a,c.original.REPO,installed)
+                updated=copy.deepcopy(state["ledger"])
+                checkpoint.register(updated,101,"v1.0.0",["preserve"])
+                saved=session.save(a,state,updated,state["handoff"],True)["installed_sha"]
+                tree=a.tree({"notes/adopter.md":"preserve\n"},a.git("rev-parse",saved+"^{tree}"))
+                before=a.commit(tree,[saved]);a.ref(install.BRANCH,before)
+                plan=lifecycle.upgrade(a,c.original.REPO,before,c.PIN)
+                self.assertEqual(plan["status"],"planned")
+                result=lifecycle.upgrade(a,c.original.REPO,before,c.PIN,apply=True,owner_approved=True)
+                after=result["installed_sha"]
+                self.assertEqual(a.git("rev-parse",after+"^"),before)
+                self.assertEqual(a.ref("main"),a.product)
+                for path in (session.LEDGER,session.HANDOFF,"notes/adopter.md"):
+                    self.assertEqual(a.git("rev-parse",before+":"+path),a.git("rev-parse",after+":"+path))
+                self.assertEqual(session.load(a,c.original.REPO,after)["ledger"],updated)
+                for path,value in packages[c.PIN].items():
+                    self.assertEqual(a.read(after,path),value)
+        finally:fixture.doCleanups()
+    def test_migrate_parent(self):self.migrate("e28e8a2e7360baf840c40dacf12ab91d5d7abd63")
+    def test_migrate_grandparent(self):self.migrate("44573ae95e143116caacd891c842065a6d32743f")
 
 class B15(unittest.TestCase):
     def growth(self,n):
@@ -301,6 +358,36 @@ time.sleep(60)
                 if proc.poll() is None:proc.kill();proc.wait(timeout=10)
     def test_kill_before(self):self.termination(False)
     def test_kill_after(self):self.termination(True)
+    def test_kill_staged_before_replace(self):
+        with tempfile.TemporaryDirectory() as d:
+            root=Path(d);p=root/"state.json";checkpoint.write_json(p,{"x":1})
+            code="""from pathlib import Path
+import sys,time
+from tools import checkpoint
+root=Path(sys.argv[1])
+def stop_before_replace(self,target):
+    (root/'ready').write_text(str(self),encoding='utf-8')
+    time.sleep(60)
+Path.replace=stop_before_replace
+checkpoint.write_json(root/'state.json',{'x':2})
+"""
+            proc=subprocess.Popen([sys.executable,"-B","-c",code,str(root)],env=dict(os.environ,PYTHONPATH=str(P),PYTHONDONTWRITEBYTECODE="1"))
+            try:
+                deadline=time.monotonic()+15
+                while not (root/"ready").exists():
+                    if proc.poll() is not None or time.monotonic()>deadline:self.fail("no staged-write barrier")
+                    time.sleep(.02)
+                proc.kill();proc.wait(timeout=10)
+                self.assertNotEqual(proc.returncode,0)
+                self.assertEqual(json.loads(p.read_bytes()),{"x":1})
+                staged=list(root.glob("tmp*/state.json"))
+                self.assertEqual(len(staged),1)
+                self.assertEqual(json.loads(staged[0].read_bytes()),{"x":2})
+                checkpoint.write_json(p,{"x":3})
+                self.assertEqual(json.loads(p.read_bytes()),{"x":3})
+                # Orphan is not automatically promoted; fixture cleanup removes it.
+            finally:
+                if proc.poll() is None:proc.kill();proc.wait(timeout=10)
 
 class B16(unittest.TestCase):
     def test_frozen_vectors(self):
@@ -321,6 +408,11 @@ for seed in (7,9,42,54,1024,2026,20261125,99991):bind(B09,"seed_"+str(seed),B09.
 for status in (401,403,404,422,429,500,502,503,504):
     for method in ("GET","POST"):bind(B11,method.lower()+"_"+str(status),B11.status,status,method)
 for name,module,fn,old,new,cls,test in [
+    ("invalid_issue",checkpoint,"bindings","if type(issue) is not int or issue <= 0:","if False:",B09,"test_schema_invalid_issue"),
+    ("invalid_state",checkpoint,"bindings","if not isinstance(record[\"state\"], str) or record[\"state\"] not in STATES:","if False:",B09,"test_schema_invalid_state"),
+    ("invalid_acceptance",checkpoint,"bindings","if not isinstance(criteria, list) or not criteria or any(","if False and any(",B09,"test_schema_invalid_acceptance"),
+    ("invalid_record",checkpoint,"bindings","if not isinstance(record, dict) or set(record) != {\"issue\", \"version\", \"state\", \"acceptance\"}:","if False:",B09,"test_schema_invalid_record"),
+    ("invalid_repository",checkpoint,"bindings","require(REPOSITORY, ledger[\"repository\"], \"repository\")","pass",B09,"test_schema_invalid_repository"),
     ("schema_version",checkpoint,"bindings",'or type(ledger["schema_version"]) is not int or ledger["schema_version"] != 1','or False',B09,"test_schema_boolean"),
     ("duplicate_json",checkpoint,"unique_keys",'if key in result:','if False:',B09,"test_duplicate_escaped_key"),
     ("archive_digest",sys.modules["archive"],"inspect_zip",'if hashlib.sha256(raw).hexdigest()!=digest:','if False:',B10,"test_wrong_archive_digest"),

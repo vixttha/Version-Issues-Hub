@@ -16,7 +16,7 @@ jobs:
       matrix:
         runner: [ubuntu-24.04, windows-latest]
     runs-on: ${{ matrix.runner }}
-    timeout-minutes: 20
+    timeout-minutes: 25
     env:
       VIB_CHECKOUT: ${{ github.workspace }}/product
       PYTHONDONTWRITEBYTECODE: '1'
@@ -107,6 +107,12 @@ jobs:
       - name: Independent platform and byte oracles with receipts
         if: always()
         run: python vault/vib/advanced/shell.py
+      - name: Measure prior core Python suites as coverage replay
+        if: always()
+        working-directory: product
+        env:
+          COVERAGE_FILE: ${{ runner.temp }}/.vib-coverage
+        run: python ../vault/vib/advanced/coverage_prior.py
       - name: Measure branches and missing lines
         if: always()
         working-directory: product
