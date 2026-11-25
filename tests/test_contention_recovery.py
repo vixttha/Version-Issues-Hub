@@ -24,6 +24,7 @@ class Remote(GitApi):
         if method == "GET" and "/git/commits/" in path:
             result["parents"] = [{"sha": p} for p in self.git(
                 "show", "-s", "--format=%P", result["sha"]).split()]
+            result["message"] = self.git("show", "-s", "--format=%B", result["sha"])
         return result
 
 class RecoveryTests(unittest.TestCase):
@@ -133,12 +134,12 @@ class RecoveryTests(unittest.TestCase):
             session.retry_scope(self.api,s,fresh,A,session.HandoffStale("advanced"))
 
     def test_exact_committed_candidate_not_replayed(self):
-        result=session.save(self.api,self.s,*self.claim(self.s,B),True,issue=B)
+        result=self.recover(lambda s:self.claim(s,B),B)
         published=result["installed_sha"]
         tree=self.api.git("rev-parse",published+"^{tree}")
         current=session.load(self.api,REPO)
         session.save(self.api,current,*self.claim(current,C),True,issue=C)
-        error=session.HandoffRejected(install.ApiError(422),published,tree)
+        error=session.HandoffRejected(install.ApiError(422),published,tree,result["operation_id"])
         with patch.object(session,"save",side_effect=error) as save:
             result=self.recover(lambda s:self.claim(s,B),B)
         self.assertEqual(result["installed_sha"],published)
@@ -302,10 +303,10 @@ class RecoveryTests(unittest.TestCase):
         self.assertIn("VIB-Operation: "+identity,self.api.git("show","-s","--format=%B",result["installed_sha"]))
 
     def test_final_rejection_confirms_existing_candidate(self):
-        result=session.save(self.api,self.s,*self.claim(self.s,B),True,issue=B)
+        result=self.recover(lambda s:self.claim(s,B),B)
         published=result["installed_sha"]
         tree=self.api.git("rev-parse",published+"^{tree}")
-        error=session.HandoffRejected(install.ApiError(422),published,tree)
+        error=session.HandoffRejected(install.ApiError(422),published,tree,result["operation_id"])
         with patch.object(session,"save",side_effect=error) as save:
             recovered=self.recover(lambda s:self.claim(s,B),B,attempts=1)
         self.assertEqual(recovered["installed_sha"],published)
@@ -363,3 +364,21 @@ class RecoveryTests(unittest.TestCase):
         with patch.object(install,"read_text",side_effect=lambda api,prefix,path,ref:raw if path==session.LEDGER else api.read(ref,path)):
             with self.assertRaisesRegex(ValueError,"State blob identity mismatch"):
                 session.retry_scope(self.api,self.s,fresh,B,session.HandoffStale("advanced"))
+
+    def test_final_candidate_with_mismatched_receipt_is_unconfirmed(self):
+        result=self.recover(lambda s:self.claim(s,B),B)
+        published=result["installed_sha"]
+        tree=self.api.git("rev-parse",published+"^{tree}")
+        error=session.HandoffRejected(install.ApiError(422),published,tree,"f"*64)
+        with patch.object(session,"save",side_effect=error) as save:
+            with self.assertRaises(session.HandoffUnconfirmed):
+                self.recover(lambda s:self.claim(s,B),B,attempts=1)
+        self.assertEqual(save.call_count,1)
+
+    def test_operation_receipt_survives_process_restart(self):
+        import subprocess
+        import sys
+        result=self.recover(lambda s:self.claim(s,B),B)
+        script="from tools import session; import json,sys,subprocess; path,sha,op=sys.argv[1:]; message=subprocess.check_output(['git','-C',path,'show','-s','--format=%B',sha],text=True); session.verify_operation_commit({'message':message},op); print(op)"
+        output=subprocess.check_output([sys.executable,"-B","-c",script,self.api.path,result["installed_sha"],result["operation_id"]],text=True)
+        self.assertEqual(output.strip(),result["operation_id"])

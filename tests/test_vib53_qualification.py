@@ -49,9 +49,9 @@ class MemoryGit:
         self.trees[sha]=copy.deepcopy(files)
         return sha
 
-    def commit(self, tree, parents):
-        sha=oid([tree,parents])
-        self.commits[sha]={"sha":sha,"tree":{"sha":tree},"parents":[{"sha":p} for p in parents]}
+    def commit(self, tree, parents, message="fixture"):
+        sha=oid([tree,parents,message])
+        self.commits[sha]={"sha":sha,"tree":{"sha":tree},"parents":[{"sha":p} for p in parents],"message":message}
         return sha
 
     def read(self, rev, path):
@@ -92,7 +92,7 @@ class MemoryGit:
                 files={**self.trees[body["base_tree"]],**{row["path"]:row["content"] for row in body["tree"]}}
                 return {"sha":self.tree(files)}
             if method=="POST" and path==PREFIX+"/git/commits":
-                return {"sha":self.commit(body["tree"],body["parents"])}
+                return {"sha":self.commit(body["tree"],body["parents"],body["message"])}
             if method=="PATCH" and path==PREFIX+"/git/refs/heads/"+install.BRANCH:
                 assert body["force"] is False
                 candidate=body["sha"]

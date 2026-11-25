@@ -13,7 +13,7 @@
       "changed_in": [
         {
           "path": "tools/session.py",
-          "anchor": "def confirm_handoff(api, prefix, old, new, tree):"
+          "anchor": "def confirm_handoff(api, prefix, old, new, tree, *, operation_id=None):"
         }
       ],
       "implemented_in": [
@@ -698,6 +698,14 @@
         {
           "path": "tests/test_contention_recovery.py",
           "anchor": "def test_changed_blob_bytes_must_match_tree(self):"
+        },
+        {
+          "path": "tests/test_contention_recovery.py",
+          "anchor": "def test_final_candidate_with_mismatched_receipt_is_unconfirmed(self):"
+        },
+        {
+          "path": "tests/test_contention_recovery.py",
+          "anchor": "def test_operation_receipt_survives_process_restart(self):"
         }
       ]
     },

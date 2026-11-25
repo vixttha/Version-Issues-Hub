@@ -537,7 +537,14 @@ def reconcile(api, state, number, decision, *, policy=None):
     return ledger, handoff
 
 
-def confirm_handoff(api, prefix, old, new, tree):
+def verify_operation_commit(commit, operation_id):
+    if (not isinstance(operation_id, str) or not re.fullmatch(r"[0-9a-f]{64}", operation_id)
+            or not isinstance(commit.get("message"), str)
+            or commit["message"].strip().splitlines()[-1:] != ["VIB-Operation: " + operation_id]):
+        raise ValueError("Candidate operation receipt does not match")
+
+
+def confirm_handoff(api, prefix, old, new, tree, *, operation_id=None):
     """Confirm the exact proposed commit, even if a later transaction advanced the ref."""
     for value, label in ((old, "previous"), (new, "candidate"), (tree, "tree")):
         install.require(install.SHA, value, label + " revision")
@@ -546,6 +553,12 @@ def confirm_handoff(api, prefix, old, new, tree):
             install.time.sleep(delay)
         observed = install.read_ref(api, prefix, install.BRANCH)
         if observed == new:
+            if operation_id is not None:
+                commit = api.request("GET", prefix + "/git/commits/" + new)
+                if (commit.get("sha") != new or commit.get("tree", {}).get("sha") != tree
+                        or [p.get("sha") for p in commit.get("parents", [])] != [old]):
+                    raise ValueError("Candidate commit does not match the proposed transaction")
+                verify_operation_commit(commit, operation_id)
             return observed
         if observed == old:
             continue
@@ -561,6 +574,8 @@ def confirm_handoff(api, prefix, old, new, tree):
         if (commit.get("sha") != new or commit.get("tree", {}).get("sha") != tree
                 or [p.get("sha") for p in commit.get("parents", [])] != [old]):
             raise ValueError("Candidate commit does not match the proposed transaction")
+        if operation_id is not None:
+            verify_operation_commit(commit, operation_id)
         return observed
     raise ValueError("Handoff commit not confirmed")
 
@@ -640,9 +655,10 @@ class HandoffStale(ValueError):
 
 class HandoffRejected(install.ApiError):
     """A definitive ref rejection, not an ambiguous transport outcome."""
-    def __init__(self, error, candidate, tree):
+    def __init__(self, error, candidate, tree, operation_id=None):
         super().__init__(error.status, "PATCH", "git/refs", error.retry_after)
         self.candidate_sha, self.tree_sha = candidate, tree
+        self.operation_id = operation_id
 
 
 def save(api, state, ledger, handoff, apply=False, *, issue=None, operation_id=None):
@@ -691,7 +707,7 @@ def save(api, state, ledger, handoff, apply=False, *, issue=None, operation_id=N
     except install.ApiError as error:
         # Rate limits and permanent errors must not trigger polling or resubmission.
         if error.retry_after is None and error.status in (409, 422):
-            raise HandoffRejected(error, new, tree) from None
+            raise HandoffRejected(error, new, tree, operation_id) from None
         # A 5xx/408 can be returned after publication. Preserve the candidate
         # even if a Retry-After prevents immediate readback. Never repeat PATCH.
         if error.status not in (408, 500, 502, 503, 504):
@@ -702,7 +718,7 @@ def save(api, state, ledger, handoff, apply=False, *, issue=None, operation_id=N
             install.time.sleep(error.retry_after)
         ambiguous = True
     try:
-        observed = confirm_handoff(api, prefix, old, new, tree)
+        observed = confirm_handoff(api, prefix, old, new, tree, operation_id=operation_id)
     except install.ApiError as error:
         raise HandoffUnconfirmed(new, error.retry_after) from None
     except (ValueError, KeyError, TypeError, OSError):
@@ -755,6 +771,11 @@ def retry_scope(api, previous, fresh, number, rejection):
             if sha == rejection.candidate_sha:
                 if parent != old or commit.get("tree", {}).get("sha") != rejection.tree_sha:
                     raise HandoffUnconfirmed(sha)
+                if rejection.operation_id is not None:
+                    try:
+                        verify_operation_commit(commit, rejection.operation_id)
+                    except ValueError:
+                        raise HandoffUnconfirmed(sha) from None
                 return sha
     expected = issue_view(previous["ledger"], previous["handoff"], number)
     history = previous["handoff"]["history"]
@@ -893,6 +914,8 @@ def recover_save(api, target, state, plan, issue, *, attempts=4, rounds=1, reque
                 raise
 
             if confirmed is not None:
+                if not isinstance(error, HandoffRejected) or error.operation_id != operation_id:
+                    raise HandoffUnconfirmed(confirmed)
                 return {"status":"saved", "installed_sha":confirmed,
                         "observed_sha":fresh["ref"], "recovered_response":True,
                         "contention_retries":attempt, "operation_id":operation_id}
