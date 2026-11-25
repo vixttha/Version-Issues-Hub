@@ -1,0 +1,220 @@
+[
+  {
+    "version": "v0.0.0.1",
+    "issue": 1,
+    "source": "f767cc133f8dba5ebb68b6530e8601dc66879e81",
+    "source_kind": "historical_engineering_fix"
+  },
+  {
+    "version": "v0.0.0.2",
+    "issue": 7,
+    "source": "fee90e84d981740938989c1a53f70a9570ae2293",
+    "source_kind": "historical_engineering_fix"
+  },
+  {
+    "version": "v0.0.0.3",
+    "issue": 9,
+    "source": "fbb76a77f896fb39290a1b862e7dde1a74ae3a8a",
+    "source_kind": "historical_engineering_fix"
+  },
+  {
+    "version": "v0.0.0.4",
+    "issue": 10,
+    "source": "1a53dc83cd578faa26b8253e0699646ea58e2dbb",
+    "source_kind": "historical_engineering_fix"
+  },
+  {
+    "version": "v0.0.0.5",
+    "issue": 11,
+    "source": "87930df3c14b277cb4ab092ca672df7b0623b763",
+    "source_kind": "historical_engineering_fix"
+  },
+  {
+    "version": "v0.0.0.6",
+    "issue": 12,
+    "source": "cc5de51d5ca2e03622ac18d2c3bf0933f33e252e",
+    "source_kind": "historical_engineering_fix"
+  },
+  {
+    "version": "v0.0.0.7",
+    "issue": 13,
+    "source": "d6df358c67c4fecaefaa725dd7b4687a2f3b89cd",
+    "source_kind": "historical_engineering_fix"
+  },
+  {
+    "version": "v0.0.0.8",
+    "issue": 14,
+    "source": "d5272dbfbe63f721820d01316d0e932503b53062",
+    "source_kind": "historical_engineering_fix"
+  },
+  {
+    "version": "v0.0.0.9",
+    "issue": 22,
+    "source": "0bb2cae91c1673231645e6301c95d333a4a35afd",
+    "source_kind": "historical_engineering_fix"
+  },
+  {
+    "version": "v0.0.0.10",
+    "issue": 23,
+    "source": "65dc35530f98d489b15b0b4fbf147818e1bdf5eb",
+    "source_kind": "historical_engineering_fix"
+  },
+  {
+    "version": "v0.0.0.11",
+    "issue": 24,
+    "source": "e3f5f917307f38372277b7aecae3652c85935f80",
+    "source_kind": "historical_engineering_fix"
+  },
+  {
+    "version": "v0.0.0.12",
+    "issue": 25,
+    "source": "78decbe8d6ff4eb9ab7e19394cec8790a12ecfae",
+    "source_kind": "historical_engineering_fix"
+  },
+  {
+    "version": "v0.0.0.13",
+    "issue": 26,
+    "source": "b6b9d281e55bfed85729533087838f202ae30530",
+    "source_kind": "historical_engineering_fix"
+  },
+  {
+    "version": "v0.0.0.14",
+    "issue": 29,
+    "source": "9fdbd365702c52850cc6448c71684c9b130a4efd",
+    "source_kind": "historical_engineering_fix"
+  },
+  {
+    "version": "v0.0.0.15",
+    "issue": 30,
+    "source": "cddcb935a2e71bcf167c2096674c4292ea72d232",
+    "source_kind": "historical_engineering_fix"
+  },
+  {
+    "version": "v0.0.0.16",
+    "issue": 31,
+    "source": "f2b2620b4f34744f8422a509994547b471cdfc6b",
+    "source_kind": "historical_engineering_fix"
+  },
+  {
+    "version": "v0.0.0.17",
+    "issue": 33,
+    "source": "15396556f7674f27b039520a7538fa76f7ac49c1",
+    "source_kind": "historical_engineering_fix"
+  },
+  {
+    "version": "v0.0.0.18",
+    "issue": 35,
+    "source": "8b447acda070c288c8c546c02b041bd726befea1",
+    "source_kind": "historical_engineering_fix"
+  },
+  {
+    "version": "v0.0.0.19",
+    "issue": 36,
+    "source": "733a4e51357df6acb8ffc2ddedaede664df22c35",
+    "source_kind": "historical_engineering_fix"
+  },
+  {
+    "version": "v0.0.0.20",
+    "issue": 41,
+    "source": "983e60e7328c9f524633d29e80ca03395fb1d14e",
+    "source_kind": "historical_engineering_fix"
+  },
+  {
+    "version": "v0.0.0.21",
+    "issue": 42,
+    "source": "bdceeb11eb4b33a36065d6db2a74eb48817804c6",
+    "source_kind": "historical_engineering_fix"
+  },
+  {
+    "version": "v0.0.0.22",
+    "issue": 43,
+    "source": "af4ddbd797899d6c68ee7d8d1e92f03bda65f450",
+    "source_kind": "historical_engineering_fix"
+  },
+  {
+    "version": "v0.0.0.23",
+    "issue": 40,
+    "source": "a472e04f4c2cc781c654000d6c0567e703f32791",
+    "source_kind": "operational_preflight_revision",
+    "release_status": "open",
+    "preflight_run": 45724188129
+  },
+  {
+    "version": "v0.0.0.24",
+    "issue": 39,
+    "source": "114a22196eab578b3053002f8eb7af935b26fe89",
+    "source_kind": "historical_engineering_fix"
+  },
+  {
+    "version": "v0.0.0.25",
+    "issue": 51,
+    "source": "d7a1efef88704be952f3ecefde1c018b1155fe9a",
+    "source_kind": "historical_engineering_fix"
+  },
+  {
+    "version": "v0.0.0.26",
+    "issue": 56,
+    "source": "82cfa7272ad83b044e7d4e9760133dc8a443f102",
+    "source_kind": "historical_engineering_fix"
+  },
+  {
+    "version": "v0.0.0.27",
+    "issue": 57,
+    "source": "82cfa7272ad83b044e7d4e9760133dc8a443f102",
+    "source_kind": "historical_engineering_fix"
+  },
+  {
+    "version": "v0.0.0.28",
+    "issue": 54,
+    "source": "82cfa7272ad83b044e7d4e9760133dc8a443f102",
+    "source_kind": "historical_engineering_fix"
+  },
+  {
+    "version": "v0.0.0.29",
+    "issue": 61,
+    "source": "6e428f222c7aa7a35a8d398bde2846ac0e3b9657",
+    "source_kind": "historical_engineering_fix"
+  },
+  {
+    "version": "v0.0.0.30",
+    "issue": 60,
+    "source": "a0039470d6742474232c050856a4be857f2360ac",
+    "source_kind": "historical_engineering_fix"
+  },
+  {
+    "version": "v0.0.0.31",
+    "issue": 65,
+    "source": "6e321de7cc488d548d56ed2bece08673a9a7f8b1",
+    "source_kind": "historical_engineering_fix"
+  },
+  {
+    "version": "v0.0.0.32",
+    "issue": 34,
+    "source": "d9994cfb699409d6d377e8edd72e8865c2cfa1e7",
+    "source_kind": "historical_engineering_fix"
+  },
+  {
+    "version": "v0.0.0.33",
+    "issue": 68,
+    "source": "a8569d491bd93549dcd2011ca89e3e56d3ada50e",
+    "source_kind": "historical_engineering_fix"
+  },
+  {
+    "version": "v0.0.0.34",
+    "issue": 70,
+    "source": "a8facf5b7e809ee72230d9e109263e31da264346",
+    "source_kind": "historical_engineering_fix"
+  },
+  {
+    "version": "v0.0.0.35",
+    "issue": 71,
+    "source": "68aa26cf0353a5126be2a3acc1dad10be90ad2b8",
+    "source_kind": "historical_engineering_fix"
+  },
+  {
+    "version": "v0.0.0.36",
+    "issue": 72,
+    "source": "11091c34e2436af21895aceb09e9ec7692345e3b",
+    "source_kind": "historical_engineering_fix"
+  }
+]
