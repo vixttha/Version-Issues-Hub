@@ -37,7 +37,7 @@
         "Serialize cooperative claims and handoff changes, reject competing claims and stale writes, retain owner merge authority; test on public runners."
       ],
       "issue": 10,
-      "state": "staged",
+      "state": "in_progress",
       "version": "v0.0.0.4"
     },
     {
