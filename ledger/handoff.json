@@ -1,18 +1,12 @@
 {
   "active": {
-    "candidate_sha": "5a6074d77ec37823f81c6d7ebb1f4593d969cd71",
-    "evidence": [
-      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45685739942/attempts/1",
-      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45685749785/attempts/1",
-      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45685749749/attempts/1",
-      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45685749831/attempts/1",
-      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45685739994/attempts/1"
-    ],
-    "fix_sha": "82cfa7272ad83b044e7d4e9760133dc8a443f102",
+    "candidate_sha": null,
+    "evidence": [],
+    "fix_sha": null,
     "issue": 40,
-    "next_action": "Batch 1 scoped defect audit complete; #40 release hold persists (full PR2 review, independent hosts and other release gates). Owner requests next three-issue batch; return for bounded JSON repair rework and isolated #53 qualification review.",
-    "phase": "Head",
-    "pull_request": 2,
+    "next_action": "Owner-directed batch 2 under #40 release stabilization: repair #61 strict HTTP JSON decoding, then #60 nonfinite parse/persistence; independent #53 qualification review only until separate migration/integration acceptance. Preserve batch 1, main and existing agent branches.",
+    "phase": "Worker",
+    "pull_request": null,
     "version": "v0.0.0.23"
   },
   "history": [
@@ -103,6 +97,27 @@
         "fix_sha": "7ae6626e44d01d29b11968da28e6debd816f8c06",
         "issue": 40,
         "next_action": "Mechanical acceptance verified: 112 tests per checkout, 9/9 public jobs, 10/10 live cases, 48 receipts, all eight evidence archives and both graph digests. Exact CodeRabbit in_progress/null; final review remains held. #37 independent host acceptance resumed read-only, 0/2 fresh host transcripts; #34 optional race remains separate. PR49 repin pending; no main merge or release.",
+        "phase": "Head",
+        "pull_request": 2,
+        "version": "v0.0.0.23"
+      },
+      "merged_sha": null
+    },
+    {
+      "decision": "Owner-directed batch 2 under #40 release stabilization: repair #61 strict HTTP JSON decoding, then #60 nonfinite parse/persistence; independent #53 qualification review only until separate migration/integration acceptance. Preserve batch 1, main and existing agent branches.",
+      "disposition": "rework",
+      "handoff": {
+        "candidate_sha": "5a6074d77ec37823f81c6d7ebb1f4593d969cd71",
+        "evidence": [
+          "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45685739942/attempts/1",
+          "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45685749785/attempts/1",
+          "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45685749749/attempts/1",
+          "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45685749831/attempts/1",
+          "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45685739994/attempts/1"
+        ],
+        "fix_sha": "82cfa7272ad83b044e7d4e9760133dc8a443f102",
+        "issue": 40,
+        "next_action": "Batch 1 scoped defect audit complete; #40 release hold persists (full PR2 review, independent hosts and other release gates). Owner requests next three-issue batch; return for bounded JSON repair rework and isolated #53 qualification review.",
         "phase": "Head",
         "pull_request": 2,
         "version": "v0.0.0.23"
