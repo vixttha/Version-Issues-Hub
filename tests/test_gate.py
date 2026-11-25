@@ -243,6 +243,40 @@ class GateTests(unittest.TestCase):
             gate.publish(self.api, self.api, REPO, self.policy)
         self.assertTrue(all(c["conclusion"] is None for c in self.api.gate_checks))
 
+    def test_gate_rejects_unverified_merge_flags_without_publication(self):
+        before = copy.deepcopy(self.state)
+        for flag in (None, "false", "true", 0, 1, True):
+            with self.subTest(flag=flag):
+                self.api.pr["merged"] = flag
+                with self.assertRaises(ValueError):
+                    self.evaluate()
+                with self.assertRaises(ValueError):
+                    gate.publish(self.api, self.api, REPO, self.policy)
+                self.assertEqual(self.state, before)
+                self.assertEqual(self.api.writes, [])
+        del self.api.pr["merged"]
+        with self.assertRaises(ValueError):
+            self.evaluate()
+        self.assertEqual(self.state, before)
+        self.assertEqual(self.api.writes, [])
+        self.api.pr["merged"] = False
+        self.assertEqual(self.evaluate()["status"], "pass")
+
+    def test_collection_count_requires_nonnegative_exact_integer(self):
+        for value in (True, False, 1.0, 0.0, -1, None, "1", 2):
+            with self.subTest(value=value):
+                with patch.object(self.api, "request", return_value={"total_count": value, "jobs": [{"id": 1}]}):
+                    with self.assertRaises(ValueError):
+                        gate.exact_collection(self.api, "/synthetic", "jobs")
+        for response in ({"jobs": []}, {"total_count": 0}, {"total_count": 0, "jobs": {}}, None):
+            with self.subTest(response=response):
+                with patch.object(self.api, "request", return_value=response):
+                    with self.assertRaises(ValueError):
+                        gate.exact_collection(self.api, "/synthetic", "jobs")
+        for rows in ([], [{"id": 1}]):
+            with patch.object(self.api, "request", return_value={"total_count": len(rows), "jobs": rows}):
+                self.assertEqual(gate.exact_collection(self.api, "/synthetic", "jobs"), rows)
+        self.assertEqual(self.api.writes, [])
 
     def test_post_success_rerun_revokes_exact_check(self):
         original = self.api.request

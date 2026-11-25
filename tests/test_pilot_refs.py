@@ -82,3 +82,19 @@ class PilotRefTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "changed"):
                 pilot_refs.verify_self_install(api, "example/product", source)
         api.request.assert_not_called()
+
+    def test_self_install_reload_requires_observed_ref_change(self):
+        from tools.acceptance_snapshot import SnapshotDrift, retry_snapshot
+        api = Mock()
+        main, old, new, source = "a"*40, "b"*40, "d"*40, "c"*40
+        state = {"manifest": {"source_sha": source, "enforcement": "disabled"}, "product_sha": main}
+        with patch.object(install, "read_ref", side_effect=[main, old, new, main, new, new, main]), patch.object(install, "source_files", return_value={"README.md": "candidate"}), patch.object(session, "load", side_effect=[ValueError("Installed branch has advanced; reload before acting"), state]) as load, patch.object(install, "install", side_effect=ValueError("Install branch already exists")):
+            result = retry_snapshot(lambda: pilot_refs.verify_self_install(api, "example/product", source))
+        self.assertEqual(result["installed_sha"], new)
+        self.assertEqual(load.call_count, 2)
+        api.request.assert_not_called()
+        with patch.object(install, "read_ref", side_effect=[main, old, old]), patch.object(install, "source_files", return_value={}), patch.object(session, "load", side_effect=ValueError("Installed branch has advanced; reload before acting")) as load:
+            with self.assertRaises(ValueError) as error:
+                retry_snapshot(lambda: pilot_refs.verify_self_install(api, "example/product", source))
+            self.assertNotIsInstance(error.exception, SnapshotDrift)
+            load.assert_called_once()

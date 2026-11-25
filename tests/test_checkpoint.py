@@ -1,5 +1,6 @@
 import copy
 from pathlib import Path
+from tempfile import TemporaryDirectory
 import unittest
 from unittest.mock import patch
 
@@ -54,6 +55,32 @@ class LedgerTests(unittest.TestCase):
         for after in (ledger_with(), ledger_with(row(1, "v0.0.0.2"))):
             with self.assertRaisesRegex(ValueError, "Historical assignment changed"):
                 checkpoint.check_history(after, before)
+
+
+class StrictJSONTests(unittest.TestCase):
+    def test_nonfinite_parse_rejects_tokens_and_float_overflow(self):
+        for token in ("NaN", "Infinity", "-Infinity", "1e999", "-1e999"):
+            for raw in (token, '{"nested":[' + token + ']}'):
+                with self.subTest(raw=raw), self.assertRaisesRegex(ValueError, "Nonfinite"):
+                    checkpoint.parse_json(raw)
+
+    def test_nonfinite_persistence_preserves_existing_bytes(self):
+        with TemporaryDirectory() as directory:
+            path = Path(directory) / "state.json"
+            original = b'{ "value": 17 }\r\n'
+            path.write_bytes(original)
+            for number in (float("nan"), float("inf"), -float("inf")):
+                with self.subTest(number=number), self.assertRaises(ValueError):
+                    checkpoint.write_json(path, {"nested": [number]})
+                self.assertEqual(path.read_bytes(), original)
+                self.assertEqual(list(Path(directory).iterdir()), [path])
+
+    def test_finite_json_round_trip(self):
+        data = {"values": [0, -9, 1.25, 1e-100, 1e100, True, None], "literal": "NaN"}
+        with TemporaryDirectory() as directory:
+            path = Path(directory) / "state.json"
+            checkpoint.write_json(path, data)
+            self.assertEqual(checkpoint.parse_json(path.read_bytes()), data)
 
 
 class ReceiptTests(unittest.TestCase):

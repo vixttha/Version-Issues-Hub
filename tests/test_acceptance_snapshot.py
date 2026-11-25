@@ -37,3 +37,21 @@ class SnapshotTests(unittest.TestCase):
              patch.object(a.install,"read_ref",return_value=NEW):
             with self.assertRaisesRegex(ValueError,"did not stabilize"):
                 a.recover_stable(object(),TARGET)
+
+    def test_whole_check_retries_only_observed_drift(self):
+        from unittest.mock import Mock
+        check = Mock(side_effect=[a.SnapshotDrift("changed"), {"ok": True}])
+        self.assertEqual(a.retry_snapshot(check), {"ok": True})
+        self.assertEqual(check.call_count, 2)
+        for exc in (ValueError("invalid package"), AssertionError("invalid proof")):
+            check = Mock(side_effect=exc)
+            with self.assertRaises(type(exc)):
+                a.retry_snapshot(check)
+            check.assert_called_once()
+
+    def test_whole_check_exhaustion_fails_closed(self):
+        from unittest.mock import Mock
+        check = Mock(side_effect=a.SnapshotDrift("changed"))
+        with self.assertRaises(a.SnapshotDrift):
+            a.retry_snapshot(check)
+        self.assertEqual(check.call_count, 3)

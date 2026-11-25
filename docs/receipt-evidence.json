@@ -616,6 +616,230 @@
           "anchor": "def test_explicit_prior_line_recovery_preserves_assignment(self):"
         }
       ]
+    },
+    {
+      "id": "v0-0-0-24",
+      "label": "Issue #39 · recovery ref and self-install review repair",
+      "documented_in": [
+        {
+          "path": "docs/v0.0.0.24-25.md",
+          "anchor": "## v0.0.0.24 — recovery reference and self-install reconciliation"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "ledger/issue-versions.json",
+          "anchor": "\"issue\": 39,"
+        }
+      ],
+      "implemented_in": [
+        {
+          "path": "tools/pilot_refs.py",
+          "anchor": "def ensure_recovery_ref(api, prefix, final):"
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tests/test_pilot_refs.py",
+          "anchor": "def test_exact_recovery_reused_without_writes(self):"
+        }
+      ]
+    },
+    {
+      "id": "v0-0-0-25",
+      "label": "Issue #51 · separate core and external live acceptance",
+      "documented_in": [
+        {
+          "path": "docs/v0.0.0.24-25.md",
+          "anchor": "## v0.0.0.25 — isolate mutable external acceptance evidence"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "ledger/issue-versions.json",
+          "anchor": "\"issue\": 51,"
+        }
+      ],
+      "implemented_in": [
+        {
+          "path": "tools/live_acceptance.py",
+          "anchor": "class ReadOnlyGitHub(install.GitHub):"
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tests/test_live_acceptance.py",
+          "anchor": "def test_failed_external_does_not_suppress_other_evidence(self):"
+        }
+      ]
+    },
+    {
+      "id": "v0-0-0-26",
+      "label": "Issue #56 · PR merge metadata (recovered assignment)",
+      "documented_in": [
+        {
+          "path": "docs/v0.0.0.31-self-use-recovery.md",
+          "anchor": "## v0.0.0.26 — #56"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "ledger/issue-versions.json",
+          "anchor": "\"issue\": 56,"
+        }
+      ],
+      "implemented_in": [
+        {
+          "path": "tools/gate.py",
+          "anchor": "def assert_current_pr(api, prefix, policy):"
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tests/test_session.py",
+          "anchor": "def test_finish_and_reconcile_require_coherent_closed_merged_pr(self):"
+        }
+      ]
+    },
+    {
+      "id": "v0-0-0-27",
+      "label": "Issue #57 · Boolean evidence count (recovered assignment)",
+      "documented_in": [
+        {
+          "path": "docs/v0.0.0.31-self-use-recovery.md",
+          "anchor": "## v0.0.0.27 — #57"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "ledger/issue-versions.json",
+          "anchor": "\"issue\": 57,"
+        }
+      ],
+      "implemented_in": [
+        {
+          "path": "tools/gate.py",
+          "anchor": "def exact_collection(api, path, key):"
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tests/test_gate.py",
+          "anchor": "def test_collection_count_requires_nonnegative_exact_integer(self):"
+        }
+      ]
+    },
+    {
+      "id": "v0-0-0-28",
+      "label": "Issue #54 · Windows exact fixture bytes (recovered assignment)",
+      "documented_in": [
+        {
+          "path": "docs/v0.0.0.31-self-use-recovery.md",
+          "anchor": "## v0.0.0.28 — #54"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "ledger/issue-versions.json",
+          "anchor": "\"issue\": 54,"
+        }
+      ],
+      "implemented_in": [
+        {
+          "path": "tests/test_lifecycle.py",
+          "anchor": "def git(self,*args,data=None):"
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tests/test_lifecycle.py",
+          "anchor": "def test_fixture_preserves_exact_utf8_and_line_endings(self):"
+        }
+      ]
+    },
+    {
+      "id": "v0-0-0-29",
+      "label": "Issue #61 · Strict wire JSON (recovered assignment)",
+      "documented_in": [
+        {
+          "path": "docs/v0.0.0.31-self-use-recovery.md",
+          "anchor": "## v0.0.0.29 — #61"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "ledger/issue-versions.json",
+          "anchor": "\"issue\": 61,"
+        }
+      ],
+      "implemented_in": [
+        {
+          "path": "tools/install.py",
+          "anchor": "def request(self, method, path, body=None):"
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tests/test_install.py",
+          "anchor": "def test_api_rejects_duplicate_and_malformed_wire_json(self):"
+        }
+      ]
+    },
+    {
+      "id": "v0-0-0-30",
+      "label": "Issue #60 · Finite JSON persistence (recovered assignment)",
+      "documented_in": [
+        {
+          "path": "docs/v0.0.0.31-self-use-recovery.md",
+          "anchor": "## v0.0.0.30 — #60"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "ledger/issue-versions.json",
+          "anchor": "\"issue\": 60,"
+        }
+      ],
+      "implemented_in": [
+        {
+          "path": "tools/checkpoint.py",
+          "anchor": "def parse_json(raw):"
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tests/test_checkpoint.py",
+          "anchor": "def test_nonfinite_persistence_preserves_existing_bytes(self):"
+        }
+      ]
+    },
+    {
+      "id": "v0-0-0-31",
+      "label": "Issue #65 · self-use workflow recovery",
+      "documented_in": [
+        {
+          "path": "docs/v0.0.0.31-self-use-recovery.md",
+          "anchor": "## Self-use preflight"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "ledger/issue-versions.json",
+          "anchor": "\"issue\": 65,"
+        }
+      ],
+      "implemented_in": [
+        {
+          "path": "tools/self_use_preflight.py",
+          "anchor": "def validate_projection(installed, projection, handoff, issue):"
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tests/test_self_use_preflight.py",
+          "anchor": "def test_missing_mapping_and_changed_criteria_fail(self):"
+        }
+      ]
     }
   ]
 }

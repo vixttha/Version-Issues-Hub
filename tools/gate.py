@@ -61,15 +61,18 @@ def validate_policy(policy):
 
 def exact_collection(api, path, key):
     value = api.request("GET", path)
-    rows = value[key]
-    if not isinstance(rows, list) or value.get("total_count") != len(rows):
+    if not isinstance(value, dict):
+        raise ValueError("Invalid GitHub collection; gate fails closed")
+    rows = value.get(key)
+    count = value.get("total_count")
+    if type(count) is not int or count < 0 or not isinstance(rows, list) or count != len(rows):
         raise ValueError("Incomplete GitHub collection; gate fails closed")
     return rows
 
 def assert_current_pr(api, prefix, policy):
     pr = api.request("GET", prefix + "/pulls/" + str(policy["pull_request"]))
     if (pr.get("number") != policy["pull_request"] or pr.get("state") != "open"
-            or pr.get("merged") is True or pr["base"]["ref"] != policy["product_branch"]
+            or pr.get("merged") is not False or pr["base"]["ref"] != policy["product_branch"]
             or pr["base"]["repo"]["id"] != policy["repository_id"]
             or pr["head"]["repo"]["id"] != policy["repository_id"]
             or pr["head"]["sha"] != policy["head_sha"] or pr["base"]["sha"] != policy["base_sha"]

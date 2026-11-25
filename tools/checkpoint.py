@@ -2,6 +2,7 @@
 
 import argparse
 import json
+import math
 import os
 from pathlib import Path
 import re
@@ -27,8 +28,20 @@ def unique_keys(pairs):
     return result
 
 
+def reject_constant(_value):
+    raise ValueError("Nonfinite JSON number")
+
+
+def finite_float(raw):
+    value = float(raw)
+    if not math.isfinite(value):
+        raise ValueError("Nonfinite JSON number")
+    return value
+
+
 def parse_json(raw):
-    return json.loads(raw, object_pairs_hook=unique_keys)
+    return json.loads(raw, object_pairs_hook=unique_keys,
+                      parse_constant=reject_constant, parse_float=finite_float)
 
 
 def require(pattern, value, label):
@@ -212,9 +225,10 @@ def receipt(ledger, version, checkout, env, event, parents=(), *, fix_sha):
 
 
 def write_json(path, data):
+    encoded = json.dumps(data, indent=2, allow_nan=False) + "\n"
     with TemporaryDirectory(dir=path.parent) as temporary:
         staged = Path(temporary) / path.name
-        staged.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8", newline="\n")
+        staged.write_text(encoded, encoding="utf-8", newline="\n")
         staged.replace(path)
 
 

@@ -3,6 +3,7 @@ import hashlib
 import json
 import io
 from urllib.error import HTTPError, URLError
+from pathlib import Path
 import unittest
 from unittest.mock import patch
 from tools import install, checkpoint
@@ -21,7 +22,8 @@ class FakeGitHub:
         self.entries = {}
         self.metadata = {"id": 42, "full_name": TARGET, "default_branch": "trunk"}
         self.bad_blob = False
-        self.package = dict(install.PACKAGE)
+        self.package = {k: v for k, v in install.PACKAGE.items()
+                        if v not in {"VIB-LICENSE.md", "VIB-NOTICE.md"}}
 
     def request(self, method, path, body=None):
         if method == "POST":
@@ -53,8 +55,14 @@ class FakeGitHub:
             return {"sha": PIN}
         if path.startswith(source + "/contents/"):
             name, ref = path.removeprefix(source + "/contents/").split("?ref=")
-            assert ref == PIN and name in install.PACKAGE
-            raw = (("PACKAGE = " + repr(self.package) + "\n") if name == "tools/install.py" else ("sample " + name + "\n")).encode()
+            assert ref == PIN and name in self.package
+            if name == "tools/install.py":
+                content = "PACKAGE = " + repr(self.package) + "\n"
+            elif name in {"LICENSE", "VIB-NOTICE.md"}:
+                content = (Path(__file__).resolve().parents[1] / name).read_text(encoding="utf-8")
+            else:
+                content = "sample " + name + "\n"
+            raw = content.encode()
             sha = hashlib.sha1(b"blob " + str(len(raw)).encode() + b"\0" + raw).hexdigest()
             return {"type": "file", "path": name, "encoding": "base64",
                     "content": base64.b64encode(raw).decode(), "sha": "0" * 40 if self.bad_blob else sha}
@@ -68,7 +76,7 @@ class InstallerTests(unittest.TestCase):
         result = install.install(self.api, TARGET, PIN, "v1.0.6", True)
         self.assertEqual(result["installed_sha"], INSTALLED)
         self.assertEqual(self.api.refs, {"trunk": PRODUCT, install.BRANCH: INSTALLED})
-        self.assertEqual(set(self.api.entries), set(install.PACKAGE.values()) |
+        self.assertEqual(set(self.api.entries), set(self.api.package.values()) |
                          {"vib-install.json", "ledger/issue-versions.json", "ledger/handoff.json"})
         ledger = json.loads(self.api.entries["ledger/issue-versions.json"])
         self.assertEqual(ledger["repository"], TARGET)
@@ -80,6 +88,43 @@ class InstallerTests(unittest.TestCase):
         for name, digest in manifest["package_files_sha256"].items():
             self.assertEqual(hashlib.sha256(self.api.entries[name].encode()).hexdigest(), digest)
 
+    def test_review_legal_paths_are_hashed_and_apply_is_refused(self):
+        self.api.package.update(install.HISTORICAL_LEGAL_PATHS)
+        plan = install.install(self.api, TARGET, PIN, "v0.0.0")
+        self.assertEqual(len(plan["manifest"]["package_files_sha256"]), 14)
+        for name in ("VIB-LICENSE.md", "VIB-NOTICE.md"):
+            self.assertIn(name, plan["manifest"]["package_files_sha256"])
+        self.assertNotIn("LICENSE", plan["paths"])
+        self.assertEqual(self.api.writes, [])
+        with self.assertRaisesRegex(ValueError, "not authorized"):
+            install.install(self.api, TARGET, PIN, "v0.0.0", True)
+        self.assertEqual(self.api.writes, [])
+        self.assertEqual(self.api.refs, {"trunk": PRODUCT})
+
+    def test_approved_license_package_installs_and_preserves_notice_bytes(self):
+        self.api.package = dict(install.PACKAGE)
+        result = install.install(self.api, TARGET, PIN, "v0.0.0", True)
+        root = Path(__file__).resolve().parents[1]
+        for name, source in (("VIB-LICENSE.md", "LICENSE"), ("VIB-NOTICE.md", "VIB-NOTICE.md")):
+            expected = (root / source).read_text(encoding="utf-8")
+            self.assertEqual(self.api.entries[name], expected)
+            self.assertEqual(result["manifest"]["package_files_sha256"][name],
+                             hashlib.sha256(expected.encode()).hexdigest())
+        self.assertNotIn("LICENSE", self.api.entries)
+        self.assertEqual(self.api.refs["trunk"], PRODUCT)
+    
+    def test_incomplete_or_tampered_legal_pair_refused(self):
+        root = Path(__file__).resolve().parents[1]
+        license_text = (root / "LICENSE").read_text(encoding="utf-8")
+        notice = (root / "VIB-NOTICE.md").read_text(encoding="utf-8")
+        for files in ({"VIB-LICENSE.md": license_text}, {"VIB-NOTICE.md": notice},
+                      {"VIB-LICENSE.md": license_text + "changed", "VIB-NOTICE.md": notice},
+                      {"VIB-LICENSE.md": license_text, "VIB-NOTICE.md": notice + "changed"},
+                      {"VIB-LICENSE.md": license_text, "VIB-NOTICE.md": "REVIEW_ONLY_NOT_A_GRANT"}):
+            with self.subTest(files=list(files)), self.assertRaisesRegex(ValueError, "not authorized"):
+                install.require_publishable_package(files)
+        self.assertEqual(self.api.writes, [])
+    
     def test_dry_run_has_no_writes(self):
         self.assertEqual(install.install(self.api, TARGET, PIN, "v0.0.0")["status"], "planned")
         self.assertEqual(self.api.writes, [])
@@ -240,6 +285,65 @@ class InstallerTests(unittest.TestCase):
             self.assertFalse(raised.exception.timed_out)
             self.assertEqual(str(raised.exception),"GitHub transport failed (GET contents)")
             delay.assert_not_called()
+
+    def test_api_rejects_duplicate_and_malformed_wire_json(self):
+        api = install.GitHub("fixture-secret")
+        invalid = (
+            b'{"merged":true,"merged":false}',
+            b'{"nested":{"private-key":1,"private-key":2}}',
+            b'{"merged":true,"m\\u0065rged":false}',
+            b'{"private-key":',
+            b'{"private-key":"\xff"}',
+            b'{"value":"\xed\xa0\x80"}',
+        )
+        for method in ("GET", "POST", "PATCH", "DELETE"):
+            for raw in invalid:
+                with self.subTest(method=method, raw=raw), \
+                     patch.object(api.opener, "open", return_value=io.BytesIO(raw)) as req, \
+                     patch.object(install.time, "sleep") as delay:
+                    with self.assertRaisesRegex(ValueError, "Invalid GitHub JSON response") as raised:
+                        api.request(method, PREFIX + "/git/refs/heads/private?ref=secret")
+                    self.assertEqual(req.call_count, 1)
+                    delay.assert_not_called()
+                    self.assertNotIn("private", str(raised.exception))
+                    self.assertNotIn("secret", str(raised.exception))
+                    self.assertNotIn("merged", str(raised.exception))
+                    if method != "GET":
+                        self.assertIn("inspect before retrying", str(raised.exception))
+
+    def test_api_valid_json_preserves_nested_values(self):
+        api = install.GitHub(None)
+        raw = b'{"merged":false,"nested":{"merged":true},"items":[{"id":1},{"id":2}],"label":"\xc3\xa9"}'
+        with patch.object(api.opener, "open", return_value=io.BytesIO(raw)) as req:
+            self.assertEqual(api.request("GET", PREFIX),
+                             {"merged": False, "nested": {"merged": True},
+                              "items": [{"id": 1}, {"id": 2}], "label": "é"})
+            req.assert_called_once()
+
+
+    def test_api_rejects_nonfinite_wire_values_without_retry(self):
+        api = install.GitHub(None)
+        for raw in (b'{"value":NaN}', b'{"value":Infinity}', b'{"value":-Infinity}',
+                    b'{"value":1e999}'):
+            with self.subTest(raw=raw), \
+                 patch.object(api.opener, "open", return_value=io.BytesIO(raw)) as req:
+                with self.assertRaisesRegex(ValueError, "Invalid GitHub JSON response"):
+                    api.request("PATCH", PREFIX + "/git/refs")
+                req.assert_called_once()
+
+    def test_nonfinite_outgoing_json_is_rejected_before_request(self):
+        api = install.GitHub(None)
+        for number in (float("nan"), float("inf"), -float("inf")):
+            body = {"nested": [number]}
+            with self.subTest(number=number), patch.object(api.opener, "open") as req:
+                with self.assertRaises(ValueError):
+                    api.request("POST", PREFIX + "/git/trees", body)
+                req.assert_not_called()
+                with self.assertRaises(ValueError):
+                    install.render(body)
+        data = {"value": 1.25, "string": "Infinity"}
+        self.assertEqual(checkpoint.parse_json(install.render(data)), data)
+
 
 if __name__ == "__main__":
     unittest.main()

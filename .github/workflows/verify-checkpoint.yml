@@ -4,7 +4,7 @@ on:
   push:
     branches: ['plan/**', main]
   pull_request:
-    branches: [main]
+    branches: [main, 'plan/v0.0.0.1']
 
 permissions:
   contents: read
@@ -27,6 +27,16 @@ jobs:
         run: |
           python tools/checkpoint.py check --previous-ref "$PREVIOUS_SHA"
           python -B -m unittest discover -s tests -v
+      - name: Verify recovered self-use projection at pinned canonical Worker state
+        if: github.head_ref == 'plan/self-use-recovery-65' || github.ref == 'refs/heads/plan/self-use-recovery-65'
+        run: |
+          git fetch --no-tags origin 50787c1ca54287dea130c04ff754ab2a1b4f9caf
+          python -m tools.self_use_preflight --installed-ref 50787c1ca54287dea130c04ff754ab2a1b4f9caf --issue 65
+      - name: Verify #34 pinned canonical Worker projection
+        if: github.head_ref == 'plan/optional-hard-gate-34' || github.ref == 'refs/heads/plan/optional-hard-gate-34'
+        run: |
+          git fetch --no-tags origin 6d1e904a4d24390c560eb0b55a82aff4ae3810cc
+          python -m tools.self_use_preflight --installed-ref 6d1e904a4d24390c560eb0b55a82aff4ae3810cc --issue 34
       - name: Write the selected issue verification receipts
         run: python tools/checkpoint.py receipts "$RUNNER_TEMP/issue-receipts"
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
@@ -34,6 +44,19 @@ jobs:
           name: issue-receipts-${{ github.event_name }}-${{ github.run_id }}-${{ github.run_attempt }}
           path: ${{ runner.temp }}/issue-receipts
           if-no-files-found: error
+
+  verify-windows:
+    runs-on: windows-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
+        with:
+          python-version: '3.12'
+      - name: Run full Windows regression suite
+        run: python -B -m unittest discover -s tests -v
 
   graphify:
     runs-on: ubuntu-latest

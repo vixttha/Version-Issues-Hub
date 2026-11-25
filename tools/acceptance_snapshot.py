@@ -4,6 +4,22 @@ import subprocess
 import sys
 from tools import install, session
 
+class SnapshotDrift(ValueError):
+    """An observed change of an installed or product reference during a read."""
+
+
+def retry_snapshot(check, attempts=3):
+    """Repeat the entire read-only check only on demonstrated ref movement."""
+    if type(attempts) is not int or not 1 <= attempts <= 3:
+        raise ValueError("Acceptance attempts must be between 1 and 3")
+    for _ in range(attempts):
+        try:
+            return check()
+        except SnapshotDrift:
+            if _ == attempts - 1:
+                raise
+
+
 def recover_stable(api, target, requested=None, attempts=3):
     if type(attempts) is not int or not 1 <= attempts <= 3:
         raise ValueError("Acceptance attempts must be between 1 and 3")

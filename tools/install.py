@@ -12,6 +12,11 @@ from urllib.error import HTTPError, URLError
 from urllib.parse import quote
 from urllib.request import Request, build_opener, HTTPRedirectHandler
 
+if __package__:
+    from . import checkpoint
+else:  # Preserve direct script invocation.
+    import checkpoint
+
 SOURCE = "vixttha/Version-Issues-Hub"
 BRANCH = "Version-Issues-Hub"
 SHA = re.compile(r"[0-9a-f]{40}")
@@ -30,6 +35,13 @@ PACKAGE = {
     "install/branch/STANDARD.md": "STANDARD.md",
     "install/branch/GATE.md": "GATE.md",
     "install/branch/AGENTS.md": "AGENTS.md",
+    "LICENSE": "VIB-LICENSE.md",
+    "VIB-NOTICE.md": "VIB-NOTICE.md",
+}
+
+HISTORICAL_LEGAL_PATHS = {
+    "docs/licensing/reference/PolyForm-Strict-1.0.0.md": "VIB-LICENSE.md",
+    "docs/licensing/VIB-NOTICE-REVIEW.md": "VIB-NOTICE.md",
 }
 
 class ApiError(RuntimeError):
@@ -72,7 +84,7 @@ class GitHub:
         headers = {"Accept": "application/vnd.github+json", "X-GitHub-Api-Version": "2022-11-28"}
         if self.token:
             headers["Authorization"] = "Bearer " + self.token
-        data = None if body is None else json.dumps(body).encode()
+        data = None if body is None else json.dumps(body, allow_nan=False).encode()
         if data is not None:
             headers["Content-Type"] = "application/json"
         req = Request("https://api.github.com" + path, data=data, headers=headers, method=method)
@@ -82,7 +94,12 @@ class GitHub:
                 time.sleep(delay)
             try:
                 with self.opener.open(req, timeout=30) as response:
-                    return json.load(response)
+                    try:
+                        return checkpoint.parse_json(response.read().decode("utf-8"))
+                    except ValueError:
+                        # A malformed write response is uncertain; never replay the write.
+                        caution = "; inspect before retrying any write" if method != "GET" else ""
+                        raise ValueError(f"Invalid GitHub JSON response ({method} {api_operation(path)}){caution}") from None
             except HTTPError as exc:
                 code = exc.code
                 exc.close()
@@ -162,7 +179,7 @@ def pinned_package(source_text):
         raise ValueError("Invalid pinned package declaration") from exc
     required = {"install/branch/README.md", "install/branch/WORKFLOW.md", "tools/checkpoint.py"}
     if (not required.issubset(package) or
-            any(not isinstance(k, str) or not isinstance(v, str) or PACKAGE.get(k) != v
+            any(not isinstance(k, str) or not isinstance(v, str) or {**PACKAGE, **HISTORICAL_LEGAL_PATHS}.get(k) != v
                 for k, v in package.items()) or len(set(package.values())) != len(package)):
         raise ValueError("Pinned package has unsupported or missing paths")
     return package
@@ -179,7 +196,26 @@ def source_files(api, source_sha):
     return files
 
 def render(data):
-    return json.dumps(data, indent=2, sort_keys=True) + "\n"
+    return json.dumps(data, indent=2, sort_keys=True, allow_nan=False) + "\n"
+
+def require_publishable_package(files):
+    """Reject incomplete or review-only legal packages; not a license enforcement service."""
+    names = {"VIB-LICENSE.md", "VIB-NOTICE.md"}
+    if not names.intersection(files):
+        return  # Historical pins remain readable and compatible.
+    if not names.issubset(files):
+        raise ValueError("Incomplete legal package is not authorized for installation or upgrade")
+    raw = files["VIB-LICENSE.md"].encode("utf-8")
+    blob = hashlib.sha1(b"blob " + str(len(raw)).encode() + b"\0" + raw).hexdigest()
+    notice = files["VIB-NOTICE.md"]
+    notice_raw = notice.encode("utf-8")
+    notice_blob = hashlib.sha1(b"blob " + str(len(notice_raw)).encode() + b"\0" + notice_raw).hexdigest()
+    if (blob != "90abd0e6c64a135f42451762337a397bf27f4862"
+            or notice_blob != "70dd8710828a38118965be3ca8be32457d106789"
+            or "VIB_LICENSE_TERMS_APPROVED" not in notice.splitlines()
+            or "REVIEW_ONLY_NOT_A_GRANT" in notice):
+        raise ValueError("Legal review package is not authorized for installation or upgrade")
+
 
 def install(api, target, source_sha, baseline, apply=False):
     require(SHA, source_sha, "full source commit")
@@ -220,6 +256,7 @@ def install(api, target, source_sha, baseline, apply=False):
     plan = {"status": "planned", "manifest": manifest, "paths": sorted(files)}
     if not apply:
         return plan
+    require_publishable_package(files)
     # Recheck identity and refs before creating unreachable objects. Never update a ref.
     latest = api.request("GET", prefix)
     if latest.get("id") != meta["id"] or latest.get("default_branch") != default:
