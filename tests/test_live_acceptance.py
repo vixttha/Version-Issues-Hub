@@ -73,5 +73,26 @@ class LiveIsolationTests(unittest.TestCase):
         state = {"ref": REF, "product_sha": PRODUCT, "manifest": {"source_sha": SOURCE, "enforcement": "disabled"}}
         report = {"repository": "vixttha/README-HQ", "owner_merge_required": True, "evidence_verified": False}
         with patch.object(live.install, "read_ref", side_effect=[PRODUCT, REF, "d"*40]), patch.object(live, "recover_stable", return_value=(state, report)), patch.object(live, "verify_occupied"):
-            with self.assertRaises(AssertionError):
+            with self.assertRaises(live.SnapshotDrift):
                 live.verify_live_cli_plan(api, SOURCE)
+
+    def test_readme_recovery_advance_retries_complete_check(self):
+        api = Mock()
+        api.request.return_value = {"private": False, "id": 1463992109, "default_branch": "main"}
+        new = "d"*40
+        state = {"ref": new, "product_sha": PRODUCT, "manifest": {"source_sha": SOURCE, "enforcement": "disabled"}}
+        report = {"repository": "vixttha/README-HQ", "owner_merge_required": True, "evidence_verified": False}
+        with patch.object(live.install, "read_ref", side_effect=[PRODUCT, REF, PRODUCT, new, new, PRODUCT]), patch.object(live, "recover_stable", return_value=(state, report)) as recovery, patch.object(live, "verify_occupied") as occupied:
+            result = live.retry_snapshot(lambda: live.verify_live_cli_plan(api, SOURCE))
+        self.assertEqual(result["installed_sha"], new)
+        self.assertEqual(recovery.call_count, 2)
+        occupied.assert_called_once()
+
+    def test_invalid_readme_proof_is_not_retried(self):
+        api = Mock()
+        api.request.return_value = {"private": False, "id": 1463992109, "default_branch": "main"}
+        state = {"ref": REF, "product_sha": PRODUCT, "manifest": {"source_sha": SOURCE, "enforcement": "required"}}
+        with patch.object(live.install, "read_ref", side_effect=[PRODUCT, REF]), patch.object(live, "recover_stable", return_value=(state, {})) as recovery:
+            with self.assertRaises(AssertionError):
+                live.retry_snapshot(lambda: live.verify_live_cli_plan(api, SOURCE))
+        recovery.assert_called_once()

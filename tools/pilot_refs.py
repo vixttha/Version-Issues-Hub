@@ -1,5 +1,6 @@
 """Narrow Phase 4 acceptance helpers; not part of the installed VIB package."""
 from tools import install, session
+from tools.acceptance_snapshot import SnapshotDrift
 
 
 def ensure_recovery_ref(api, prefix, final):
@@ -34,9 +35,17 @@ def verify_self_install(api, target, source):
         report = {"mode": "read_only_plan", "installed_sha": None,
                   "installed_source": None, "install_plan_paths": plan["paths"]}
     else:
-        state = session.load(api, target, installed)
-        if state["manifest"]["enforcement"] != "disabled" or state["product_sha"] != before:
-            raise ValueError("Unexpected self-install state")
+        try:
+            state = session.load(api, target, installed)
+        except ValueError as exc:
+            if (str(exc) == "Installed branch has advanced; reload before acting"
+                    and install.read_ref(api, prefix, install.BRANCH) != installed):
+                raise SnapshotDrift("Self-install reference changed during load") from exc
+            raise
+        if state["manifest"]["enforcement"] != "disabled":
+            raise ValueError("Unexpected self-install enforcement")
+        if state["product_sha"] != before:
+            raise SnapshotDrift("Self-install product reference changed during load")
         try:
             install.install(api, target, source, "v0.0.0")
         except ValueError as exc:
@@ -48,5 +57,5 @@ def verify_self_install(api, target, source):
                   "installed_source": state["manifest"]["source_sha"],
                   "install_plan_paths": None, "duplicate_install_refused": True}
     if install.read_ref(api, prefix, install.BRANCH) != installed or install.read_ref(api, prefix, "main") != before:
-        raise ValueError("Self-install or product main changed; inspect before resuming")
+        raise SnapshotDrift("Self-install or product main changed; inspect before resuming")
     return {**report, "candidate_package_paths": candidate_paths, "product_sha": before}

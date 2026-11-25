@@ -8,7 +8,7 @@ import os
 import subprocess
 import sys
 from tools import install, session
-from tools.acceptance_snapshot import recover_stable
+from tools.acceptance_snapshot import recover_stable, retry_snapshot, SnapshotDrift
 from tools.pilot_refs import verify_self_install
 
 class ReadOnlyGitHub(install.GitHub):
@@ -79,13 +79,15 @@ def verify_live_cli_plan(api, source):
     before = install.read_ref(api,prefix,install.BRANCH)
     if before is not None:
         state, observed = recover_stable(api, target)
-        assert state["ref"] == before and state["product_sha"] == product
+        if state["ref"] != before or state["product_sha"] != product:
+            raise SnapshotDrift("README HQ refs advanced during recovery")
         assert state["manifest"]["enforcement"] == "disabled"
         assert observed["repository"] == target and observed["owner_merge_required"]
         assert not observed["evidence_verified"]
         verify_occupied(api, target, source, "v0.0.6")
-        assert install.read_ref(api, prefix, install.BRANCH) == before
-        assert install.read_ref(api, prefix, meta["default_branch"]) == product
+        if (install.read_ref(api, prefix, install.BRANCH) != before
+                or install.read_ref(api, prefix, meta["default_branch"]) != product):
+            raise SnapshotDrift("README HQ refs advanced during occupied-install check")
         return {"repository": target, "mode": "existing_install_verified",
                 "product_sha": product, "installed_sha": before,
                 "installed_source": state["manifest"]["source_sha"],
@@ -178,9 +180,9 @@ def verify_templates(api, source):
 
 
 def run_cases(api, source, scope):
-    core = {"self_install": lambda: verify_self_install(api, install.SOURCE, source),
+    core = {"self_install": lambda: retry_snapshot(lambda: verify_self_install(api, install.SOURCE, source)),
             "templates": lambda: verify_templates(api, source)}
-    external = {"readme_hq": lambda: verify_live_cli_plan(api, source),
+    external = {"readme_hq": lambda: retry_snapshot(lambda: verify_live_cli_plan(api, source)),
                 "aldervale": lambda: verify_aldervale_install(api),
                 "bart": lambda: verify_bart(api, source)}
     cases = {"core": core, "external": external, "all": {**core, **external}}[scope]
