@@ -1,11 +1,17 @@
 {
   "active": {
     "candidate_sha": "26e9fe8c019a33c5f84f77a37da70925505204e3",
-    "evidence": [],
+    "evidence": [
+      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45713361976/attempts/1",
+      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45713361959/attempts/1",
+      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45713368275/attempts/1",
+      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45713368267/attempts/1",
+      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45713368324/attempts/1"
+    ],
     "fix_sha": "cc5de51d5ca2e03622ac18d2c3bf0933f33e252e",
     "issue": 12,
-    "next_action": "Review existing simulated engineering evidence and the owner-approved deferral",
-    "phase": "Validate",
+    "next_action": "Source-bound live GitHub merge enforcement remains unqualified. Existing public CI is engineering simulation evidence.",
+    "phase": "Internal Auditor",
     "pull_request": 2,
     "version": "v0.0.0.6"
   },
