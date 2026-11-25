@@ -1,0 +1,173 @@
+{
+  "title": "Optional Provenistem reconciliation — README HQ",
+  "features": [
+    {
+      "id": "adoption-copy-integrity",
+      "label": "Self-contained basic and optional adoption profiles",
+      "documented_in": [
+        {
+          "path": "provenistem/README.md",
+          "anchor": "## Quick use (GitHub website only)"
+        },
+        {
+          "path": "provenistem/docs/ADOPTION.md",
+          "anchor": "## Zero-install copy"
+        },
+        {
+          "path": "provenistem/docs/ADOPTION.md",
+          "anchor": "## Optional validation"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "provenistem/tools/adopter.py",
+          "anchor": "PACKAGE_TOPLEVEL = (\"README.md\", \"LICENSE\", \"LIBRARY-AGENT-GUIDE.md\")"
+        }
+      ],
+      "implemented_in": [
+        {
+          "path": "provenistem/tools/adopter.py",
+          "anchor": "def candidates(source):"
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "provenistem/tests/test_adopter_profiles.py",
+          "anchor": "def test_documented_basic_copy_has_all_relative_links(self):"
+        },
+        {
+          "path": "provenistem/tests/test_adopter_profiles.py",
+          "anchor": "def test_planned_copy_contains_complete_portable_package(self):"
+        },
+        {
+          "path": "audit/verify_provenistem_sync.py",
+          "anchor": "def verify_copied_installation(source):"
+        },
+        {
+          "path": "provenistem/tests/test_modularity_contract.py",
+          "anchor": "def test_no_host_authority_files_in_standalone_root(self):"
+        },
+        {
+          "path": "provenistem/tests/test_adopter_profiles.py",
+          "anchor": "def test_non_directory_parent_blocks_plan(self):"
+        },
+        {
+          "path": "provenistem/tests/test_modularity_contract.py",
+          "anchor": "def test_portable_scan_separates_host_records(self):"
+        }
+      ]
+    },
+    {
+      "id": "unicode-index-integrity",
+      "label": "Reject malformed Unicode before either index write",
+      "implemented_in": [
+        {
+          "path": "provenistem/tools/library.py",
+          "anchor": "def valid_unicode(value):"
+        },
+        {
+          "path": "provenistem/tools/library.py",
+          "anchor": "def read_records(root, section, schema):"
+        },
+        {
+          "path": "provenistem/tools/library.py",
+          "anchor": "def run(root, action):"
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "provenistem/tests/test_unicode_index_integrity.py",
+          "anchor": "def test_unpaired_title_surrogates_preserve_both_indexes(self):"
+        },
+        {
+          "path": "provenistem/tests/test_unicode_index_integrity.py",
+          "anchor": "def test_nested_values_and_keys_are_rejected_safely(self):"
+        },
+        {
+          "path": "provenistem/tests/test_unicode_index_integrity.py",
+          "anchor": "def test_valid_unicode_and_supplementary_pairs_round_trip(self):"
+        },
+        {
+          "path": "provenistem/tests/test_unicode_index_integrity.py",
+          "anchor": "def test_both_views_encoded_before_any_index_is_opened(self):"
+        },
+        {
+          "path": "provenistem/tests/test_unicode_index_integrity.py",
+          "anchor": "def test_combined_exact_decimal_and_unicode_record_loader(self):"
+        }
+      ],
+      "documented_in": [
+        {
+          "path": "provenistem/tests/test_unicode_index_integrity.py",
+          "anchor": "\"\"\"Issue #11: malformed Unicode must never damage either derived index.\"\"\""
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "provenistem/tools/library.py",
+          "anchor": "if not valid_unicode(row):"
+        },
+        {
+          "path": "provenistem/tools/library.py",
+          "anchor": "encoded[kind] = content.encode(\"utf-8\", errors=\"strict\")"
+        }
+      ]
+    },
+    {
+      "id": "decimal-identity",
+      "label": "Exact bounded JSON decimal identity",
+      "documented_in": [
+        {
+          "path": "provenistem/README.md",
+          "anchor": "### Exact numeric identity (forward repair)"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "provenistem/tools/library.py",
+          "anchor": "MAX_DECIMAL_EXPONENT = MAX_RECORD_BYTES"
+        }
+      ],
+      "implemented_in": [
+        {
+          "path": "provenistem/tools/library.py",
+          "anchor": "def parse_decimal(literal):"
+        },
+        {
+          "path": "provenistem/tools/library.py",
+          "anchor": "def parse_json(text):"
+        },
+        {
+          "path": "provenistem/tools/library.py",
+          "anchor": "def json_identity(value):"
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "provenistem/tests/test_v002_six_team_repairs.py",
+          "anchor": "def test_exact_decimal_distinct_literals_through_record_loader(self):"
+        },
+        {
+          "path": "provenistem/tests/test_v002_six_team_repairs.py",
+          "anchor": "def test_exact_decimal_equivalent_literals_through_record_loader(self):"
+        },
+        {
+          "path": "provenistem/tests/test_v002_six_team_repairs.py",
+          "anchor": "def test_exact_decimal_bad_or_extreme_literals_are_normal_failures(self):"
+        },
+        {
+          "path": "provenistem/tests/test_v002_six_team_repairs.py",
+          "anchor": "def test_exact_decimal_keeps_existing_integer_contract(self):"
+        },
+        {
+          "path": "provenistem/tests/test_v002_six_team_repairs.py",
+          "anchor": "def test_exact_decimal_identity_independent_of_arithmetic_context(self):"
+        },
+        {
+          "path": "provenistem/tests/test_v002_six_team_repairs.py",
+          "anchor": "def test_schema_loader_rejects_nonfinite_or_extreme_literals(self):"
+        }
+      ]
+    }
+  ]
+}

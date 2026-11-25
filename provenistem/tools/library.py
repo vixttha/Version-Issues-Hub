@@ -105,6 +105,24 @@ def parse_json(text):
     return json.loads(text, parse_float=parse_decimal, parse_constant=reject_constant)
 
 
+def valid_unicode(value):
+    """Reject lone UTF-16 surrogates in parsed JSON keys and string values."""
+    stack = [value]
+    while stack:
+        item = stack.pop()
+        if isinstance(item, str):
+            try:
+                item.encode("utf-8", errors="strict")
+            except UnicodeEncodeError:
+                return False
+        elif isinstance(item, dict):
+            stack.extend(item.keys())
+            stack.extend(item.values())
+        elif isinstance(item, list):
+            stack.extend(item)
+    return True
+
+
 def json_identity(value):
     """JSON value equality for uniqueItems; object key order is insignificant.
 
@@ -227,6 +245,9 @@ def read_records(root, section, schema):
             continue
         if not within_depth(row):
             problems.append(f"{path}: JSON nesting exceeds {MAX_JSON_DEPTH}")
+            continue
+        if not valid_unicode(row):
+            problems.append(f"{path}: invalid Unicode (unpaired surrogate)")
             continue
         if not isinstance(row, dict):
             problems.append(f"{path}: expected object")
@@ -373,12 +394,17 @@ def run(root, action):
         return 1
     views = {"ideas": index("ideas", ideas), "features": index("features", feats)}
     if action == "build":
+        # Encode every view before opening either index. A Unicode failure must
+        # leave both existing files intact; bytes also preserve LF on Windows.
+        encoded = {}
         for kind, content in views.items():
-            # Path.write_text uses platform-native newline translation on Windows.
-            # Force identical LF bytes on Linux/Windows for generated-index parity.
-            with (root / kind / "INDEX.md").open("w", encoding="utf-8",
-                                                  newline="\n") as handle:
-                handle.write(content)
+            try:
+                encoded[kind] = content.encode("utf-8", errors="strict")
+            except UnicodeEncodeError:
+                print(f"FAIL: {kind}/INDEX.md: invalid Unicode (unpaired surrogate)")
+                return 1
+        for kind, content in encoded.items():
+            (root / kind / "INDEX.md").write_bytes(content)
     else:
         for kind, expected in views.items():
             path = root / kind / "INDEX.md"

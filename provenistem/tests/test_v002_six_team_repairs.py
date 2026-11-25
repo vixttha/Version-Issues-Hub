@@ -3,6 +3,7 @@
 Synthetic inputs only. No network, production adopter writes or external reviewers.
 """
 import json
+from decimal import localcontext, ROUND_DOWN
 import sys
 import tempfile
 import unittest
@@ -72,8 +73,8 @@ class SixTeamRepairs(unittest.TestCase):
         b = {"b": {"nested": ["x", {"n": 2}]}, "a": 1}
         self.assertIn("duplicate entries", " ".join(library.shape([a, b], spec, "item")))
         self.assertIn("duplicate entries", " ".join(library.shape([1, 1.0], spec, "item")))
-        self.assertEqual(library.shape([True, 1], spec, "item"), [])
         self.assertEqual(library.shape([10**28, 10**28 + 1], spec, "item"), [])
+        self.assertEqual(library.shape([True, 1], spec, "item"), [])
         self.assertEqual(library.shape([{"k": 1}, {"k": 2}], spec, "item"), [])
 
     def numeric_record(self, literal):
@@ -120,6 +121,28 @@ class SixTeamRepairs(unittest.TestCase):
                 library.shape(library.parse_json(literal), spec, "value")))
         self.assertIn("unsupported schema type", " ".join(
             library.schema_issues({"type": "number"}, "schema")))
+
+    def test_exact_decimal_identity_independent_of_arithmetic_context(self):
+        with localcontext() as ctx:
+            ctx.prec = 2
+            ctx.rounding = ROUND_DOWN
+            ctx.Emax = 9
+            ctx.Emin = -9
+            for literal in ("[1.0000000000000001,1.0]", "[1e400,2e400]",
+                            "[123456789012345678901234567891,123456789012345678901234567892]"):
+                with self.subTest(literal=literal):
+                    self.assertEqual(self.numeric_record(literal)[0], [])
+            self.assertIn("duplicate entries", " ".join(self.numeric_record("[1.00,1]")[0]))
+
+    def test_schema_loader_rejects_nonfinite_or_extreme_literals(self):
+        path = self.host / "ideas/schema/v1/idea.schema.json"
+        original = path.read_text(encoding="utf-8")
+        for literal in ("NaN", "Infinity", "1e65537"):
+            with self.subTest(literal=literal):
+                path.write_text(original.rstrip()[:-1] + ', "const":' + literal + '}', encoding="utf-8")
+                issues, ideas, feats = library.validate(self.host)
+                self.assertIn("schema unavailable or invalid", " ".join(issues))
+                self.assertEqual((ideas, feats), ({}, {}))
 
     def test_purple_governance_yaml_namespace_collision(self):
         (self.host / "ideas/library.yaml").write_text("kind: governance-catalog\n", encoding="utf-8")
