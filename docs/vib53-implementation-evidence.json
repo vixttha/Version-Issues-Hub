@@ -550,7 +550,31 @@
         {
           "path": "tests/test_contention_recovery.py",
           "anchor": "def test_replan_changed_intent_refused(self):"
-        },
+        }
+      ]
+    },
+    {
+      "id": "vib53-contention-repeat",
+      "label": "Repeated conflicts and completion safety",
+      "documented_in": [
+        {
+          "path": "docs/vib53-implementation.md",
+          "anchor": "## Bounded automatic contention recovery (isolated candidate)"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "tools/session.py",
+          "anchor": "def recover_save(api, target, state, plan, issue, *, attempts=4):"
+        }
+      ],
+      "implemented_in": [
+        {
+          "path": "tools/session.py",
+          "anchor": "def retry_scope(api, previous, fresh, number, rejection):"
+        }
+      ],
+      "tested_by": [
         {
           "path": "tests/test_contention_recovery.py",
           "anchor": "def test_three_successive_real_git_conflicts_then_success(self):"
