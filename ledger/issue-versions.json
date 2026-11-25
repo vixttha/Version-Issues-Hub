@@ -187,7 +187,7 @@
         "Repair historical Graphify navigation without modifying fix pins; public-runner evidence."
       ],
       "issue": 36,
-      "state": "in_progress",
+      "state": "staged",
       "version": "v0.0.0.19"
     },
     {
