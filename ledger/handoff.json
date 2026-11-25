@@ -2,12 +2,18 @@
   "active": {
     "issue": 70,
     "version": "v0.0.0.34",
-    "phase": "Validate",
-    "next_action": "PR74 merged engineering only; exact merge and PR2 preview verification before closure.",
+    "phase": "Internal Auditor",
+    "next_action": "11/11 exact merged and PR2 jobs; four 142-test suites; 33/33 Graphify features in two shards per checkout; four ZIP SHA256/CRC and all 66 receipt revision bindings independently checked.",
     "fix_sha": "a8facf5b7e809ee72230d9e109263e31da264346",
     "candidate_sha": "635377fbe9165859ad486469aef295e3052d5af9",
     "pull_request": 2,
-    "evidence": []
+    "evidence": [
+      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45709398172/attempts/1",
+      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45709398125/attempts/1",
+      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45709407880/attempts/1",
+      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45709407912/attempts/1",
+      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45709407977/attempts/1"
+    ]
   },
   "history": [
     {
