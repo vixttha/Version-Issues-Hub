@@ -2,8 +2,8 @@
   "active": {
     "issue": 23,
     "version": "v0.0.0.10",
-    "phase": "Internal Auditor",
-    "next_action": "Historical #23 audit verifies literal package mapping, BART recovery and occupied-ref refusal; current exact Ubuntu/Windows historical pin/occupied-branch regressions and live external scope pass, issue receipts and graph hashes match.",
+    "phase": "Head",
+    "next_action": "Solo audit: all original criteria met within read-only scope, no adopter upgrade or independent host claim.",
     "fix_sha": "65dc35530f98d489b15b0b4fbf147818e1bdf5eb",
     "candidate_sha": "07a73f55a2b1f7ecbf873a3921f1e397034a88e6",
     "pull_request": 2,
