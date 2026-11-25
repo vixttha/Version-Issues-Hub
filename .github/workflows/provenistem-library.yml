@@ -5,11 +5,13 @@ on:
     branches: ["Veraphify"]
     paths:
       - 'provenistem/**'
+      - 'audit/verify_provenistem_sync.py'
       - '.github/workflows/provenistem-library.yml'
   push:
     branches: ["Veraphify"]
     paths:
       - 'provenistem/**'
+      - 'audit/verify_provenistem_sync.py'
       - '.github/workflows/provenistem-library.yml'
 
 permissions:
@@ -17,10 +19,17 @@ permissions:
 
 jobs:
   records:
-    name: Validate Provenistem records
+    name: Validate Provenistem records (${{ matrix.os }})
     if: github.event.repository.private == false
-    runs-on: ubuntu-24.04
-    timeout-minutes: 5
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 8
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+      PYTHONIOENCODING: 'utf-8'
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
@@ -28,8 +37,11 @@ jobs:
       - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
         with:
           python-version: '3.12'
-      - name: Check the branch library
+      - name: Validate host and test disposable portable copy
+        working-directory: provenistem
         run: |
           git rev-parse HEAD
-          python provenistem/tools/library.py check
-          python -m unittest discover -s provenistem/tests -p 'test_*.py' -v
+          python ../audit/verify_provenistem_sync.py
+      - name: Verify checkout stayed clean
+        shell: bash
+        run: test -z "$(git status --porcelain)"

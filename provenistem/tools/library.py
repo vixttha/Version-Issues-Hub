@@ -6,7 +6,7 @@ Not a JSON-Schema compliance engine; does not authenticate evidence or approve r
 import argparse
 import json
 import re
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
 from pathlib import Path, PurePosixPath, PureWindowsPath
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -14,6 +14,8 @@ DECISION_STATES = {"adopted", "parked", "rejected", "superseded", "duplicate", "
 MAX_RECORD_BYTES = 65536
 MAX_RECORD_FILES = 10000
 MAX_JSON_DEPTH = 96
+# Bound exponent magnitude without expanding scientific notation into strings.
+MAX_DECIMAL_EXPONENT = MAX_RECORD_BYTES
 
 
 SUPPORTED_SCHEMA_KEYS = {
@@ -78,6 +80,49 @@ def within_depth(value, limit=MAX_JSON_DEPTH):
     return True
 
 
+def parse_decimal(literal):
+    """Parse JSON fractional/exponent notation exactly, without context rounding."""
+    try:
+        value = Decimal(literal)
+    except InvalidOperation as exc:
+        raise ValueError("invalid decimal JSON number") from exc
+    if not value.is_finite():
+        raise ValueError("invalid nonfinite JSON number")
+    parts = value.as_tuple()
+    if (len(parts.digits) > MAX_RECORD_BYTES
+            or abs(parts.exponent) > MAX_DECIMAL_EXPONENT
+            or abs(value.adjusted()) > MAX_DECIMAL_EXPONENT):
+        raise ValueError("decimal JSON number exceeds bounds")
+    return value
+
+
+def reject_constant(literal):
+    raise ValueError("invalid nonfinite JSON constant: " + literal)
+
+
+def parse_json(text):
+    # Leave integer tokens as int, preserving strict existing v1 type checks.
+    return json.loads(text, parse_float=parse_decimal, parse_constant=reject_constant)
+
+
+def valid_unicode(value):
+    """Reject lone UTF-16 surrogates in parsed JSON keys and string values."""
+    stack = [value]
+    while stack:
+        item = stack.pop()
+        if isinstance(item, str):
+            try:
+                item.encode("utf-8", errors="strict")
+            except UnicodeEncodeError:
+                return False
+        elif isinstance(item, dict):
+            stack.extend(item.keys())
+            stack.extend(item.values())
+        elif isinstance(item, list):
+            stack.extend(item)
+    return True
+
+
 def json_identity(value):
     """JSON value equality for uniqueItems; object key order is insignificant.
 
@@ -88,7 +133,9 @@ def json_identity(value):
         return ("null",)
     if isinstance(value, bool):
         return ("bool", value)
-    if isinstance(value, (int, float, Decimal)):
+    if isinstance(value, Decimal):
+        return ("number", value)
+    if isinstance(value, (int, float)):
         return ("number", Decimal(str(value)))
     if isinstance(value, str):
         return ("string", value)
@@ -192,15 +239,15 @@ def read_records(root, section, schema):
             if path.stat().st_size > MAX_RECORD_BYTES:
                 problems.append(f"{path}: oversize record")
                 continue
-            row = json.loads(
-                path.read_text(encoding="utf-8"),
-                parse_constant=lambda c: (_ for _ in ()).throw(
-                    ValueError("invalid nonfinite JSON constant: " + c)))
+            row = parse_json(path.read_text(encoding="utf-8"))
         except (ValueError, OSError, RecursionError) as exc:
             problems.append(f"{path}: bad JSON: {exc}")
             continue
         if not within_depth(row):
             problems.append(f"{path}: JSON nesting exceeds {MAX_JSON_DEPTH}")
+            continue
+        if not valid_unicode(row):
+            problems.append(f"{path}: invalid Unicode (unpaired surrogate)")
             continue
         if not isinstance(row, dict):
             problems.append(f"{path}: expected object")
@@ -230,8 +277,8 @@ def validate(root=ROOT):
     if problems:
         return problems, {}, {}
     try:
-        idea_schema = json.loads((root / "ideas/schema/v1/idea.schema.json").read_text(encoding="utf-8"))
-        feat_schema = json.loads((root / "features/schema/v1/feature.schema.json").read_text(encoding="utf-8"))
+        idea_schema = parse_json((root / "ideas/schema/v1/idea.schema.json").read_text(encoding="utf-8"))
+        feat_schema = parse_json((root / "features/schema/v1/feature.schema.json").read_text(encoding="utf-8"))
     except (ValueError, OSError, RecursionError) as exc:
         return [f"schema unavailable or invalid: {exc}"], {}, {}
     for name, spec in (("ideas", idea_schema), ("features", feat_schema)):
@@ -347,12 +394,17 @@ def run(root, action):
         return 1
     views = {"ideas": index("ideas", ideas), "features": index("features", feats)}
     if action == "build":
+        # Encode every view before opening either index. A Unicode failure must
+        # leave both existing files intact; bytes also preserve LF on Windows.
+        encoded = {}
         for kind, content in views.items():
-            # Path.write_text uses platform-native newline translation on Windows.
-            # Force identical LF bytes on Linux/Windows for generated-index parity.
-            with (root / kind / "INDEX.md").open("w", encoding="utf-8",
-                                                  newline="\n") as handle:
-                handle.write(content)
+            try:
+                encoded[kind] = content.encode("utf-8", errors="strict")
+            except UnicodeEncodeError:
+                print(f"FAIL: {kind}/INDEX.md: invalid Unicode (unpaired surrogate)")
+                return 1
+        for kind, content in encoded.items():
+            (root / kind / "INDEX.md").write_bytes(content)
     else:
         for kind, expected in views.items():
             path = root / kind / "INDEX.md"
