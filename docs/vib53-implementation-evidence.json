@@ -310,7 +310,35 @@
         {
           "path": "tests/test_issue_isolation.py",
           "anchor": "def test_stale_writer_cannot_publish_after_unrelated_transaction(self):"
+        }
+      ]
+    },
+    {
+      "id": "vib53-isolated-evidence-reuse",
+      "label": "Distinct PR isolation and exact owner-policy renewal",
+      "documented_in": [
+        {
+          "path": "docs/vib53-implementation.md",
+          "anchor": "## Issue-scoped evidence isolation"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "tools/session.py",
+          "anchor": "def save(api, state, ledger, handoff, apply=False, *, issue=None):"
+        }
+      ],
+      "implemented_in": [
+        {
+          "path": "tools/session.py",
+          "anchor": "def check_issue_delta(state, ledger, handoff, number=None):"
         },
+        {
+          "path": "tools/standard.py",
+          "anchor": "def evaluate(api, target, policy):"
+        }
+      ],
+      "tested_by": [
         {
           "path": "tests/test_issue_isolation.py",
           "anchor": "def test_distinct_pr_refresh_does_not_read_or_change_other_pr(self):"
