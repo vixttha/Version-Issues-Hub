@@ -2,11 +2,11 @@
   "active": {
     "issue": 72,
     "version": "v0.0.0.36",
-    "phase": "Worker",
-    "next_action": "Repair explicit receipt selection validation; qualify exact canonical projection before product edits.",
-    "fix_sha": null,
-    "candidate_sha": null,
-    "pull_request": null,
+    "phase": "Validate",
+    "next_action": "PR76 merged engineering only; validate exact engineering merge and PR2 preview.",
+    "fix_sha": "11091c34e2436af21895aceb09e9ec7692345e3b",
+    "candidate_sha": "26e9fe8c019a33c5f84f77a37da70925505204e3",
+    "pull_request": 2,
     "evidence": []
   },
   "history": [
