@@ -8,7 +8,7 @@ import re
 PIN="7ae6626e44d01d29b11968da28e6debd816f8c06"
 PYTHON={"python":67,"diagnostic":13,"faults":38,"evidence":12,"schema":47,
         "mutation":14,"receipt":24,"completion":60,"ancestry":14,"partial":9,
-        "interruptions":41,"artifact":24}
+        "interruptions":41,"artifact":24,"traces":16}
 def inventory(os_name):
     if os_name=="Linux": prefix="bash"
     elif os_name=="Windows": prefix="powershell"

@@ -105,6 +105,9 @@ jobs:
       - name: Python evidence corruption controls
         if: always()
         run: python -B vault/vib/issue54/run.py artifact
+      - name: Python seeded allocation and workflow traces
+        if: always()
+        run: python -B vault/vib/issue54/run.py traces
       - name: Independently audit evidence before upload
         if: always()
         run: python -B vault/vib/issue54/audit_evidence.py
