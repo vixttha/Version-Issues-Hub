@@ -2,13 +2,13 @@
   "schema_version": 1,
   "id": "IDEA-000004",
   "title": "Let GitHub prove the required merge check",
-  "summary": "Test the version-policy check with valid and invalid changes on a disposable protected branch before adopting it on product branches.",
+  "summary": "Test the version-policy check with valid and invalid changes on a disposable protected branch before adopting it on product branches. Parked as a possible future VIB feature. Standard VIB and its v0.0.1 release do not require live hard enforcement, a GitHub App, or rulesets.",
   "kind": "architecture",
   "origin": {
     "created_by": "joint",
     "source": "Version-Issues-Hub planning, 2026-11-20, https://github.com/vixttha/Version-Issues-Hub/issues/1"
   },
-  "lifecycle_status": "captured",
+  "lifecycle_status": "parked",
   "implementation_status": "not_planned",
   "testing": {
     "status": "untested"
@@ -33,5 +33,10 @@
       "commit": "a7e4528740b6a72d16a58b53eefa53f521051950",
       "path": "docs/v0.0.0.1.md"
     }
-  ]
+  ],
+  "decision": {
+    "decided_by": "owner",
+    "decided_at": "2026-11-25T23:27:57Z",
+    "reason": "Keep optional trusted GitHub merge enforcement as a Provenistem idea for future consideration. Defer live App-backed qualification and the linked pilot. Preserve the existing work and evidence for VIB issues #12, #14, and #34. Resume only through a later owner decision."
+  }
 }

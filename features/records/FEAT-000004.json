@@ -2,10 +2,10 @@
   "schema_version": 1,
   "id": "FEAT-000004",
   "title": "GitHub required-check pilot",
-  "summary": "Demonstrate merge behavior using a disposable target and its actual ruleset. Optional hard enforcement only; not a Standard adoption or release gate.",
+  "summary": "Demonstrate merge behavior using a disposable target and its actual ruleset. Optional hard enforcement only; not a Standard adoption or release gate. Future proposal linked to parked IDEA-000004. Live qualification is deferred pending a later owner decision.",
   "kind": "integration",
-  "lifecycle_status": "planned",
-  "implementation_status": "planned",
+  "lifecycle_status": "proposed",
+  "implementation_status": "not_planned",
   "idea_ids": [
     "IDEA-000003",
     "IDEA-000004"
@@ -15,7 +15,7 @@
     "GitHub blocks missing, duplicate, stale, or skipped required evidence in the defined controls."
   ],
   "testing": {
-    "status": "planned"
+    "status": "untested"
   },
   "evidence": [
     {
