@@ -2,11 +2,11 @@
   "active": {
     "issue": 22,
     "version": "v0.0.0.9",
-    "phase": "Worker",
-    "next_action": "Owner approved historical engineering closure; recover existing fix only, no code or version changes.",
-    "fix_sha": null,
-    "candidate_sha": null,
-    "pull_request": null,
+    "phase": "Validate",
+    "next_action": "Validate original Standard advisory fix against current qualified engineering head and exact PR2 preview; no live enforcement claim.",
+    "fix_sha": "0bb2cae91c1673231645e6301c95d333a4a35afd",
+    "candidate_sha": "635377fbe9165859ad486469aef295e3052d5af9",
+    "pull_request": 2,
     "evidence": []
   },
   "history": [
