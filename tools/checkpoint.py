@@ -92,9 +92,13 @@ def check_history(ledger, previous):
     before = bindings(previous)
     if ledger["repository"].lower() != previous["repository"].lower():
         raise ValueError("Ledger repository changed")
+    current_criteria = {row["issue"]: row["acceptance"] for row in ledger["issues"]}
+    previous_criteria = {row["issue"]: row["acceptance"] for row in previous["issues"]}
     for issue, version in before.items():
         if current.get(issue) != version:
             raise ValueError(f"Historical assignment changed: issue #{issue} was {version}")
+        if current_criteria[issue] != previous_criteria[issue]:
+            raise ValueError(f"Historical acceptance criteria changed: issue #{issue}")
 
 
 def register(ledger, issue, line, criteria):

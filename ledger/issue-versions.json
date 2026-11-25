@@ -321,11 +321,21 @@
     {
       "issue": 68,
       "version": "v0.0.0.33",
-      "state": "in_progress",
+      "state": "staged",
       "acceptance": [
         "A generic checkpoint branch uses an exact, validated canonical Worker record; missing or mismatched record fails closed.",
         "Public push and PR preview validate the pinned Worker projection and preserve earlier checks.",
         "Correct stale recovery freeze guidance; preserve existing mappings and receipt pins; public Ubuntu, Windows, Graphify and CodeRabbit review."
+      ]
+    },
+    {
+      "issue": 70,
+      "version": "v0.0.0.34",
+      "state": "in_progress",
+      "acceptance": [
+        "Reject changes, deletion, additions or reordering of historical acceptance criteria with identical issue-version bindings.",
+        "Allow new issue assignments and legitimate state changes while preserving all historical mappings and criteria.",
+        "Document immutable criteria and validate exact revisions with public Ubuntu/Windows, Graphify and CodeRabbit."
       ]
     }
   ],
