@@ -34,6 +34,37 @@ def leaves(sha):
     check("tree complete " + sha[:7], not tree["truncated"])
     return {x["path"]: x["sha"] for x in tree["tree"] if x["type"] == "blob"}
 
+def check_pr_revision(group, spec, p):
+    check(group + " exact PR head", p["head"]["sha"] == spec["head"])
+    if spec.get("merged"):
+        check(group + " integrated PR", p["state"] == "closed" and p["merged"]
+              and p["merge_commit_sha"] == spec["integrated_sha"])
+    elif "historical_base" in spec:
+        check(group + " historical licensing PR remains open draft",
+              p["draft"] and p["state"] == "open" and not p["merged"])
+        if p["merge_commit_sha"] != spec["merge"] or p["base"]["sha"] != spec["historical_base"]:
+            report["blockers"].append(group + " requires fresh integration review")
+    else:
+        check(group + " frozen draft PR", p["merge_commit_sha"] == spec["merge"]
+              and p["draft"] and p["state"] == "open" and not p["merged"])
+
+
+def check_ledger_mappings(ledger, original):
+    keys = ("issue", "version", "acceptance")
+    check("22 historical mappings and criteria intact",
+          len(ledger["issues"]) == 23 and len(original["issues"]) == 24
+          and all({k: row[k] for k in keys} == {k: old[k] for k in keys}
+                  and row["state"] == "assigned"
+                  for row, old in zip(ledger["issues"][:22], original["issues"][:22])))
+    check("two new engineering checkpoint mappings",
+          [(r["issue"], r["version"]) for r in original["issues"][22:]] ==
+          [(39, "v0.0.0.24"), (51, "v0.0.0.25")])
+    by_issue = {r["issue"]: r["version"] for r in original["issues"]}
+    check("closed checkpoint versions intact",
+          all(by_issue.get(r["issue"]) == r["version"] for r in M["closed_checkpoints"]))
+    check("unique engineering versions", len(set(by_issue.values())) == len(original["issues"]))
+
+
 def receipt(group, spec):
     count = 0
     for run_id in spec["runs"]:
@@ -51,10 +82,15 @@ def receipt(group, spec):
     check(group + " exact job count", count == spec["jobs"])
     if "pr" in spec:
         p = api("/pulls/" + str(spec["pr"]))
-        check(group + " frozen draft PR", p["head"]["sha"] == spec["head"] and p["merge_commit_sha"] == spec["merge"] and p["draft"] and p["state"] == "open" and not p["merged"])
+        check_pr_revision(group, spec, p)
         c = api("/git/commits/" + spec["head"])
         merge = api("/git/commits/" + spec["merge"])
-        check(group + " merge tree and parents", c["tree"]["sha"] == merge["tree"]["sha"] and [x["sha"] for x in merge["parents"]] == [p["base"]["sha"], spec["head"]])
+        base = spec.get("base", spec.get("historical_base", p["base"]["sha"]))
+        check(group + " merge tree and parents", c["tree"]["sha"] == merge["tree"]["sha"] and [x["sha"] for x in merge["parents"]] == [base, spec["head"]])
+        if spec.get("merged"):
+            actual = api("/git/commits/" + spec["integrated_sha"])
+            check(group + " actual merge equals tested tree and parents",
+                  actual["tree"]["sha"] == merge["tree"]["sha"] and actual["parents"] == merge["parents"])
         checks = api("/commits/" + spec["head"] + "/check-runs?per_page=100")
         bot = [x for x in checks["check_runs"] if x["name"] == "CodeRabbit"]
         # Review is a separate release gate, not a deterministic job result.
@@ -148,6 +184,8 @@ def main():
         receipt(key, M[key])
     check_live_acceptance_matrix(M["acceptance_review"])
     check_acceptance_receipt_archives(M["acceptance_review"])
+    check_live_acceptance_matrix(M["engineering"])
+    check_acceptance_receipt_archives(M["engineering"])
     original = leaves(M["readme"])
     derivative = leaves(M["homepage"]["head"])
     frozen = {k:v for k,v in original.items() if k.startswith("workspace/v0.0.1/accepted/")}
@@ -157,6 +195,9 @@ def main():
     actual = {x["number"] for x in issue_list if "pull_request" not in x}
     check("all open issues classified", actual == {x["issue"] for x in M["queue"]})
     report["issue_queue"] = M["queue"]
+    for record in M["closed_checkpoints"]:
+        issue = api("/issues/" + str(record["issue"]))
+        check(f"issue {record['issue']} closed completed", issue["state"] == "closed" and issue["state_reason"] == "completed")
     # Use the frozen repaired VIB implementation against its own historical installation.
     def inspect(issue):
         return json.loads(subprocess.check_output(
@@ -176,7 +217,7 @@ def main():
     check("inspected handoff matches pinned ledger", active["active"] == handoff["active"])
     ledger = contents("ledger/issue-versions.json", M["installed_state"])
     original = contents("ledger/issue-versions.json", M["engineering"]["head"])
-    check("22 historical mappings and criteria intact", len(ledger["issues"]) == 23 and len(original["issues"]) == 22 and all({k: row[k] for k in ("issue","version","acceptance")} == {k: old[k] for k in ("issue","version","acceptance")} and row["state"] == "assigned" for row,old in zip(ledger["issues"], original["issues"])))
+    check_ledger_mappings(ledger, original)
     check("no second active ledger row", [x["issue"] for x in ledger["issues"] if x["state"] == "in_progress"] == [40])
     check_final_refs()
     report["mechanical"] = "passed"

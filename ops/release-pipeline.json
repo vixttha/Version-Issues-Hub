@@ -4,17 +4,31 @@
   "main": "1b11865f79464ae7db9a648467e8c2c1cb898a02",
   "installed_state": "5ac44c3d7f6ca129f55fce583de8659e5e950873",
   "engineering": {
-    "head": "265e0e4724bc409b16d2605fc4d59d2f3f658eaf",
+    "head": "75a16c185f404400b453d3a8a4b5a7becfdea024",
     "pr": 2,
-    "merge": "f5510d370d378bfbc2fe3a8ba52db685ae125f24",
+    "merge": "d0211545bf8b4bbbf2025cdef4fb7955877a4a31",
     "runs": [
-      45401133446,
-      45401146252,
-      45401133574,
-      45401146388,
-      45401146284
+      45657945812,
+      45657945863,
+      45657961685,
+      45657961739,
+      45657961587
     ],
-    "jobs": 7
+    "jobs": 9,
+    "live_runs": [
+      45657945863,
+      45657961739
+    ],
+    "receipt_runs": [
+      {
+        "run": 45657945812,
+        "event": "push"
+      },
+      {
+        "run": 45657961685,
+        "event": "pull_request"
+      }
+    ]
   },
   "licensing_review": {
     "head": "d1e8e1a922446d137a793d1fded105f427122ec5",
@@ -30,7 +44,8 @@
       "45421603459": 2,
       "45421619822": 1
     },
-    "jobs": 4
+    "jobs": 4,
+    "historical_base": "265e0e4724bc409b16d2605fc4d59d2f3f658eaf"
   },
   "homepage": {
     "head": "15868e46c97c0b93d132dc02492e6b7b046e244f",
@@ -188,29 +203,9 @@
       "classification": "optional_separate"
     },
     {
-      "issue": 39,
-      "title": "Phase 4 acceptance harness: preserve verified recovery refs and accommodate self-install",
-      "classification": "technical_ready"
-    },
-    {
       "issue": 40,
       "title": "Release hold: finalize VIB brand and README HQ presentation before v0.0.1",
       "classification": "release_blocker"
-    },
-    {
-      "issue": 41,
-      "title": "Recovery inspection does not distinguish merged or closed active PRs",
-      "classification": "technical_ready"
-    },
-    {
-      "issue": 42,
-      "title": "Ledger validation accepts orphan or multiple in-progress issues",
-      "classification": "technical_ready"
-    },
-    {
-      "issue": 43,
-      "title": "Release-line rollover leaves previously assigned unresolved checkpoints stranded",
-      "classification": "technical_ready"
     },
     {
       "issue": 44,
@@ -231,20 +226,14 @@
       "issue": 47,
       "title": "Release licensing: establish VIB reuse rights and carry notices into standalone installs",
       "classification": "release_blocker"
-    },
-    {
-      "issue": 51,
-      "title": "Live acceptance: isolate mutable external adopter checks from core evidence",
-      "classification": "supporting_repair_review"
     }
   ],
   "release_blockers": [
     "#37 two qualified independent host trials and final acceptance",
-    "#47 technical acceptance recorded for exact operative candidate; remaining rights/provenance and integration requirements",
+    "#47 historical technical acceptance; integrate licensing with new engineering head and verify rights/provenance",
     "#45 commercial brand clearance",
     "#46 final homepage destination and updated operative legal source pin validation",
     "#40 exact final candidate owner acceptance, integration and release approval",
-    "#51/PR52 CodeRabbit and Head integration disposition; nine scoped jobs and both receipt archives verified, not merged",
     "PR49 final exact-revision CodeRabbit review and Head integration decision"
   ],
   "archive": {
@@ -282,6 +271,31 @@
         "run": 45655283573,
         "event": "pull_request"
       }
-    ]
-  }
+    ],
+    "merged": true,
+    "integrated_sha": "75a16c185f404400b453d3a8a4b5a7becfdea024",
+    "base": "265e0e4724bc409b16d2605fc4d59d2f3f658eaf"
+  },
+  "closed_checkpoints": [
+    {
+      "issue": 39,
+      "version": "v0.0.0.24"
+    },
+    {
+      "issue": 41,
+      "version": "v0.0.0.20"
+    },
+    {
+      "issue": 42,
+      "version": "v0.0.0.21"
+    },
+    {
+      "issue": 43,
+      "version": "v0.0.0.22"
+    },
+    {
+      "issue": 51,
+      "version": "v0.0.0.25"
+    }
+  ]
 }

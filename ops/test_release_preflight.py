@@ -140,5 +140,31 @@ class RevisionGuardTests(unittest.TestCase):
                 self.p.check_active_checkpoint(active, {"status": "blocked_other_active_issue"})
         self.assertEqual(self.p.report["release"], "BLOCKED")
 
+    def test_integrated_acceptance_pr_rejects_wrong_merge(self):
+        spec = {"head": "head", "merged": True, "integrated_sha": "actual"}
+        p = {"head": {"sha": "head"}, "state": "closed", "merged": True,
+             "merge_commit_sha": "actual"}
+        self.p.check_pr_revision("acceptance", spec, p)
+        with self.assertRaisesRegex(ValueError, "integrated PR"):
+            self.p.check_pr_revision("acceptance", spec, dict(p, merge_commit_sha="other"))
+
+    def test_historical_license_is_not_current_integration(self):
+        spec = {"head": "head", "merge": "old-merge", "historical_base": "old"}
+        p = {"head": {"sha": "head"}, "base": {"sha": "new"}, "state": "open",
+             "draft": True, "merged": False, "merge_commit_sha": None}
+        self.p.check_pr_revision("license", spec, p)
+        self.assertIn("license requires fresh integration review", self.p.report["blockers"])
+
+    def test_merged_ledger_preserves_prior_mapping(self):
+        versions = {41: "v0.0.0.20", 42: "v0.0.0.21", 43: "v0.0.0.22"}
+        rows = [{"issue": n, "version": versions.get(n, f"test-{n}"),
+                 "state": "assigned", "acceptance": ["test"]} for n in [*range(100,119),41,42,43]]
+        source = {"issues": rows + [{"issue":39,"version":"v0.0.0.24"},
+                                     {"issue":51,"version":"v0.0.0.25"}]}
+        installed = {"issues": rows + [{"issue":40,"version":"v0.0.0.23"}]}
+        self.p.check_ledger_mappings(installed, source)
+        with self.assertRaisesRegex(ValueError, "two new engineering"):
+            self.p.check_ledger_mappings(installed, {"issues": rows + source["issues"][22:][::-1]})
+
 if __name__ == "__main__":
     unittest.main()
