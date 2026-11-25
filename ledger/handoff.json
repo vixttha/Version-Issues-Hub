@@ -2,8 +2,8 @@
   "active": {
     "issue": 40,
     "version": "v0.0.0.23",
-    "phase": "Internal Auditor",
-    "next_action": "216/216 mechanical checks passed; artifact 15048030825 digest and CRC verified. Licensing proposed merge receipts and Graphify plus both live scopes independently checked. Audit pending CodeRabbit on PR2/48/49, rights confirmation, and current installed handoff drift from historical preflight pin; no merge.",
+    "phase": "Head",
+    "next_action": "Mechanical evidence 216/216 accepted for historical installed snapshot. PR2/48 fresh CodeRabbit passed; #34 optional finding stays open. PR49 exact review still pending at latest read unless separately verified. Head holds integration until final PR49 review and rights/provenance disposition; confirm current installed-state readback and repin release report if needed. No main merge or release.",
     "fix_sha": "4445ecc4ca6d54d8f4268c380ebe1e093a6b1069",
     "candidate_sha": "4445ecc4ca6d54d8f4268c380ebe1e093a6b1069",
     "pull_request": 49,
