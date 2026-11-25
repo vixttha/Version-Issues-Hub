@@ -2,18 +2,12 @@
   "active": {
     "issue": 40,
     "version": "v0.0.0.23",
-    "phase": "Head",
-    "next_action": "Validate returns to Head blocked: documentation-only repair verified; 107 tests per checkout, Graphify 121/120 twice, legal blobs unchanged. Live push core self_install ValueError and both external README HQ AssertionError; PR core passed. Investigate adopter snapshot drift versus deterministic defect before rerun; no bypass. Historical notice CodeRabbit thread no longer unresolved, fresh review still running. PR49 repin pending.",
-    "fix_sha": "e28e8a2e7360baf840c40dacf12ab91d5d7abd63",
-    "candidate_sha": "e28e8a2e7360baf840c40dacf12ab91d5d7abd63",
-    "pull_request": 2,
-    "evidence": [
-      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45670758522/attempts/1",
-      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45670778354/attempts/1",
-      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45670758045/attempts/1",
-      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45670778290/attempts/1",
-      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45670778353/attempts/1"
-    ]
+    "phase": "Worker",
+    "next_action": "Owner-authorized #40 repair: observed concurrent VIB and README HQ ref advances during failed live jobs. Retry only explicitly verified snapshot movement, preserve fail-closed invalid proofs and read-only behavior. No product package change.",
+    "fix_sha": null,
+    "candidate_sha": null,
+    "pull_request": null,
+    "evidence": []
   },
   "history": [
     {
@@ -65,6 +59,27 @@
       },
       "disposition": "rework",
       "decision": "Owner-authorized #40 rework: repair historical license review wording only on PR2; preserve operative legal blobs, no new issue/version or release.",
+      "merged_sha": null
+    },
+    {
+      "handoff": {
+        "issue": 40,
+        "version": "v0.0.0.23",
+        "phase": "Head",
+        "next_action": "Validate returns to Head blocked: documentation-only repair verified; 107 tests per checkout, Graphify 121/120 twice, legal blobs unchanged. Live push core self_install ValueError and both external README HQ AssertionError; PR core passed. Investigate adopter snapshot drift versus deterministic defect before rerun; no bypass. Historical notice CodeRabbit thread no longer unresolved, fresh review still running. PR49 repin pending.",
+        "fix_sha": "e28e8a2e7360baf840c40dacf12ab91d5d7abd63",
+        "candidate_sha": "e28e8a2e7360baf840c40dacf12ab91d5d7abd63",
+        "pull_request": 2,
+        "evidence": [
+          "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45670758522/attempts/1",
+          "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45670778354/attempts/1",
+          "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45670758045/attempts/1",
+          "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45670778290/attempts/1",
+          "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45670778353/attempts/1"
+        ]
+      },
+      "disposition": "rework",
+      "decision": "Owner-authorized #40 repair: observed concurrent VIB and README HQ ref advances during failed live jobs. Retry only explicitly verified snapshot movement, preserve fail-closed invalid proofs and read-only behavior. No product package change.",
       "merged_sha": null
     }
   ],
