@@ -1,20 +1,5 @@
 {
-  "active": {
-    "candidate_sha": "26e9fe8c019a33c5f84f77a37da70925505204e3",
-    "evidence": [
-      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45713361976/attempts/1",
-      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45713361959/attempts/1",
-      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45713368275/attempts/1",
-      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45713368267/attempts/1",
-      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45713368324/attempts/1"
-    ],
-    "fix_sha": "d9994cfb699409d6d377e8edd72e8865c2cfa1e7",
-    "issue": 34,
-    "next_action": "Original fix and exact push and PR receipts verified. Live qualification is out of Standard VIB scope and parked in Provenistem.",
-    "phase": "Head",
-    "pull_request": 2,
-    "version": "v0.0.0.32"
-  },
+  "active": null,
   "history": [
     {
       "decision": "PR49 CodeRabbit finding 4682051116: rework exact product SHA comparisons and add regression checks; preserve previous evidence.",
@@ -831,6 +816,27 @@
         "phase": "Head",
         "pull_request": 2,
         "version": "v0.0.0.8"
+      },
+      "merged_sha": null
+    },
+    {
+      "decision": "Owner parked optional enforcement for future consideration in https://github.com/vixttha/Version-Issues-Hub/blob/d66b75aaeae2e7daca2aa5537e4f57191465612e/ideas/records/IDEA-000004.json. Close the current GitHub issue as not planned. Existing code, acceptance criteria and evidence retained. The staged engineering timing repair remains in the archive. Live timing and revocation proof is deferred.",
+      "disposition": "deferred",
+      "handoff": {
+        "candidate_sha": "26e9fe8c019a33c5f84f77a37da70925505204e3",
+        "evidence": [
+          "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45713361976/attempts/1",
+          "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45713361959/attempts/1",
+          "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45713368275/attempts/1",
+          "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45713368267/attempts/1",
+          "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45713368324/attempts/1"
+        ],
+        "fix_sha": "d9994cfb699409d6d377e8edd72e8865c2cfa1e7",
+        "issue": 34,
+        "next_action": "Original fix and exact push and PR receipts verified. Live qualification is out of Standard VIB scope and parked in Provenistem.",
+        "phase": "Head",
+        "pull_request": 2,
+        "version": "v0.0.0.32"
       },
       "merged_sha": null
     }
