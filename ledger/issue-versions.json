@@ -17,7 +17,7 @@
         "A docs-only commit changes candidate and tested revisions while preserving both fix commits."
       ],
       "issue": 7,
-      "state": "staged",
+      "state": "in_progress",
       "version": "v0.0.0.2"
     },
     {
