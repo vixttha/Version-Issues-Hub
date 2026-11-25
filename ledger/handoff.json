@@ -1,11 +1,17 @@
 {
   "active": {
     "candidate_sha": "449e4b493daa1f9906396dae49877a32333c418d",
-    "evidence": [],
+    "evidence": [
+      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45688979982/attempts/1",
+      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45688990364/attempts/1",
+      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45688990414/attempts/1",
+      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45688990352/attempts/1",
+      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45688980048/attempts/1"
+    ],
     "fix_sha": "6e428f222c7aa7a35a8d398bde2846ac0e3b9657",
     "issue": 40,
-    "next_action": "Batch 2 #61/#60 PR62 merged into engineering at exact reviewed tree. Run public validation of new PR2 head and proposed merge, retain separate #53 experimental qualification and release hold.",
-    "phase": "Validate",
+    "next_action": "Batch 2 #61/#60 exact integrated engineering head and PR2 proposed merge: 125/125 Ubuntu and Windows each; 11 public jobs green, Graphify 121/120 both. Audit release gates and fresh PR2 review; #53 remains separately qualified, not integrated.",
+    "phase": "Internal Auditor",
     "pull_request": 2,
     "version": "v0.0.0.23"
   },
