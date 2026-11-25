@@ -95,7 +95,7 @@ class GitHub:
             try:
                 with self.opener.open(req, timeout=30) as response:
                     try:
-                        return checkpoint.parse_json(response.read())
+                        return checkpoint.parse_json(response.read().decode("utf-8"))
                     except ValueError:
                         # A malformed write response is uncertain; never replay the write.
                         caution = "; inspect before retrying any write" if method != "GET" else ""

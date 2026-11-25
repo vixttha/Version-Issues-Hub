@@ -294,6 +294,7 @@ class InstallerTests(unittest.TestCase):
             b'{"merged":true,"m\\u0065rged":false}',
             b'{"private-key":',
             b'{"private-key":"\xff"}',
+            b'{"value":"\xed\xa0\x80"}',
         )
         for method in ("GET", "POST", "PATCH", "DELETE"):
             for raw in invalid:
@@ -312,11 +313,11 @@ class InstallerTests(unittest.TestCase):
 
     def test_api_valid_json_preserves_nested_values(self):
         api = install.GitHub(None)
-        raw = b'{"merged":false,"nested":{"merged":true},"items":[{"id":1},{"id":2}]}'
+        raw = b'{"merged":false,"nested":{"merged":true},"items":[{"id":1},{"id":2}],"label":"\xc3\xa9"}'
         with patch.object(api.opener, "open", return_value=io.BytesIO(raw)) as req:
             self.assertEqual(api.request("GET", PREFIX),
                              {"merged": False, "nested": {"merged": True},
-                              "items": [{"id": 1}, {"id": 2}]})
+                              "items": [{"id": 1}, {"id": 2}], "label": "é"})
             req.assert_called_once()
 
 
