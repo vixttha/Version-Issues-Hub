@@ -22,6 +22,11 @@ export LC_ALL=C
 case "$1" in
 worker)
   # Both native runtimes attempt the SAME expected-old revision.
+  if [[ -f synchronize ]]; then
+    : > bash.ready
+    for ((i=0;i<200;i++)); do [[ -f go ]] && break; sleep .05; done
+    [[ -f go ]] || exit 4
+  fi
   if git -C repo update-ref refs/heads/vib "$2" "$3" 2>bash-write.err; then
     echo WIN
   else
@@ -41,7 +46,7 @@ verify)
   fi
   git -C repo cat-file blob "$final:ledger.json" > observed.bin
   cmp -s observed.bin ledger.json || { echo REJECT-bytes; exit 21; }
-  blob=$(git -C repo hash-object --no-filters observed.bin)
+  blob=$(git -C repo hash-object --no-filters ../observed.bin)
   [[ $blob == "$(git -C repo rev-parse "$final:ledger.json")" ]] || { echo REJECT-blob; exit 21; }
   digest=$(sha256sum observed.bin | cut -d' ' -f1)
   echo "VERIFIED $blob $digest"
@@ -54,6 +59,11 @@ param([string]$Mode,[string]$New,[string]$Old)
 $ErrorActionPreference='Stop'
 $PSNativeCommandUseErrorActionPreference=$false
 if($Mode -eq 'worker'){
+    if(Test-Path -LiteralPath 'synchronize'){
+        [IO.File]::WriteAllBytes((Join-Path (Get-Location) 'ps.ready'),[byte[]]@())
+        $deadline=[DateTime]::UtcNow.AddSeconds(10)
+        while(!(Test-Path -LiteralPath 'go')){if([DateTime]::UtcNow -gt $deadline){exit 4};Start-Sleep -Milliseconds 25}
+    }
     $out=& git -C repo update-ref refs/heads/vib $New $Old 2>&1
     $rc=$LASTEXITCODE
     if($rc -eq 0){Write-Output WIN;exit 0}
@@ -172,9 +182,15 @@ def main():
             if mode=="A":ar=process(acmd,root);br=process(bcmd,root)
             elif mode=="B":br=process(bcmd,root);ar=process(acmd,root)
             else:
+                (root/"synchronize").touch()
                 pa=subprocess.Popen(acmd,cwd=root,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
                 pb=subprocess.Popen(bcmd,cwd=root,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
                 try:
+                    deadline=time.monotonic()+8
+                    while not ((root/"bash.ready").exists() and (root/"ps.ready").exists()):
+                        need(pa.poll() is None and pb.poll() is None and time.monotonic()<deadline,"Both workers must reach barrier")
+                        time.sleep(.02)
+                    (root/"go").touch()
                     ao,ae=pa.communicate(timeout=30);bo,be=pb.communicate(timeout=30)
                     ar=subprocess.CompletedProcess(acmd,pa.returncode,ao,ae)
                     br=subprocess.CompletedProcess(bcmd,pb.returncode,bo,be)
@@ -216,6 +232,8 @@ def main():
             (root/"ledger.json").write_bytes(raw)
             need(oid(root,"rev-parse","refs/heads/main")==base,"Product branch changed")
             row={"scenario":name,"winner":["Bash","PowerShell"][winner],"base":base,"first":first,"final":final,"binding_count":len(final_state["issues"]),"reconciled_version":version,"idempotent":duplicate,"publish":[receipt(ar),receipt(br)],"bash_oracle":receipt(bv),"powershell_oracle":receipt(pv),"byte_tamper":receipt(corrupt),"semantic_tamper":receipt(semantic),"python_history_tamper":"rejected","verdict":"pass"}
+            row["synchronized_barrier"]=mode=="race"
+            checkpoint.write_json(out/(name+".json"),row)
             rows.append(row);print("TRI_RUNTIME "+json.dumps(row,ensure_ascii=True),flush=True)
     need(clean(PRODUCT) and clean(VAULT) and head(PRODUCT)==PIN and head(VAULT)==os.environ["GITHUB_SHA"],"Checkout drift")
     report={"vault_sha":head(VAULT),"product_sha":PIN,"run":os.environ["GITHUB_RUN_ID"],"attempt":os.environ["GITHUB_RUN_ATTEMPT"],"os":os.environ["RUNNER_OS"],"scenarios":rows,"expected":4,"passed":len(rows)}
