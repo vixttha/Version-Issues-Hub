@@ -1,20 +1,5 @@
 {
-  "active": {
-    "candidate_sha": "26e9fe8c019a33c5f84f77a37da70925505204e3",
-    "evidence": [
-      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45713361976/attempts/1",
-      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45713361959/attempts/1",
-      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45713368275/attempts/1",
-      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45713368267/attempts/1",
-      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45713368324/attempts/1"
-    ],
-    "fix_sha": "6e321de7cc488d548d56ed2bece08673a9a7f8b1",
-    "issue": 65,
-    "next_action": "Original fix ancestry, retained criteria, 11 public jobs, exact issue receipts and Graphify mappings verified. Engineering disposition only.",
-    "phase": "Head",
-    "pull_request": 2,
-    "version": "v0.0.0.31"
-  },
+  "active": null,
   "history": [
     {
       "decision": "PR49 CodeRabbit finding 4682051116: rework exact product SHA comparisons and add regression checks; preserve previous evidence.",
@@ -747,6 +732,27 @@
         "phase": "Head",
         "pull_request": 2,
         "version": "v0.0.0.4"
+      },
+      "merged_sha": null
+    },
+    {
+      "decision": "Owner directed continuation of historical closure batch. Accept v0.0.0.31 engineering scope on PR #2 at 26e9fe8c019a33c5f84f77a37da70925505204e3. Recovery inventory of 42 refs, 25 original union mappings and criteria preserved, and separate recovered versions for five historical fixes. Historical recovery CodeRabbit passed on PR #66. Main integration and release remain pending.",
+      "disposition": "staged",
+      "handoff": {
+        "candidate_sha": "26e9fe8c019a33c5f84f77a37da70925505204e3",
+        "evidence": [
+          "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45713361976/attempts/1",
+          "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45713361959/attempts/1",
+          "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45713368275/attempts/1",
+          "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45713368267/attempts/1",
+          "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45713368324/attempts/1"
+        ],
+        "fix_sha": "6e321de7cc488d548d56ed2bece08673a9a7f8b1",
+        "issue": 65,
+        "next_action": "Original fix ancestry, retained criteria, 11 public jobs, exact issue receipts and Graphify mappings verified. Engineering disposition only.",
+        "phase": "Head",
+        "pull_request": 2,
+        "version": "v0.0.0.31"
       },
       "merged_sha": null
     }
