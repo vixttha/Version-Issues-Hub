@@ -35,6 +35,19 @@ jobs:
           path: ${{ runner.temp }}/issue-receipts
           if-no-files-found: error
 
+  verify-windows:
+    runs-on: windows-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
+        with:
+          python-version: '3.12'
+      - name: Run full Windows regression suite
+        run: python -B -m unittest discover -s tests -v
+
   graphify:
     runs-on: ubuntu-latest
     timeout-minutes: 12

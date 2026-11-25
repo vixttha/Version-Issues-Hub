@@ -284,11 +284,11 @@ def finish(api, state, disposition, decision):
             raise ValueError("Integration requires recorded verification evidence")
         pr = get_pr(api, state, active)
         if disposition == "staged":
-            if pr.get("state") != "open" or pr.get("merged") is True:
+            if pr.get("state") != "open" or pr.get("merged") is not False:
                 raise ValueError("Staging requires an open unmerged PR")
         else:
-            if pr.get("merged") is not True:
-                raise ValueError("GitHub does not report the PR merged")
+            if pr.get("state") != "closed" or pr.get("merged") is not True:
+                raise ValueError("GitHub does not report a closed, merged PR")
             merged = install.require(install.SHA, pr["merge_commit_sha"], "merged revision")
     handoff["history"].append({"handoff": active, "disposition": disposition,
                                "decision": text(decision, "owner decision"), "merged_sha": merged})
@@ -310,8 +310,8 @@ def reconcile(api, state, number, decision):
         raise ValueError("Missing latest staged handoff")
     active = copy.deepcopy(prior["handoff"])
     pr = get_pr(api, state, active)
-    if pr.get("merged") is not True:
-        raise ValueError("GitHub does not report the PR merged")
+    if pr.get("state") != "closed" or pr.get("merged") is not True:
+        raise ValueError("GitHub does not report a closed, merged PR")
     handoff["history"].append({"handoff": active, "disposition": "integrated",
         "decision": text(decision, "owner decision"), "merged_sha": install.require(
             install.SHA, pr["merge_commit_sha"], "merged revision")})
