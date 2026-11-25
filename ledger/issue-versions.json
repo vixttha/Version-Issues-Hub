@@ -67,7 +67,7 @@
         "Run the regression on public GitHub-hosted runners."
       ],
       "issue": 13,
-      "state": "in_progress",
+      "state": "staged",
       "version": "v0.0.0.7"
     },
     {
