@@ -69,6 +69,9 @@ jobs:
       - name: PowerShell Git attributes
         if: always() && runner.os == 'Windows'
         run: python -B vault/vib/issue54/run.py powershell3
+      - name: Python receipt metadata and atomic replacement
+        if: always()
+        run: python -B vault/vib/issue54/run.py receipt
       - name: Retain probe evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
