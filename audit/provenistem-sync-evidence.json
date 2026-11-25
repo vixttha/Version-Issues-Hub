@@ -193,6 +193,12 @@
           "path": "provenistem/INSTALLATION.md",
           "anchor": "## Host-local review repairs"
         }
+      ],
+      "changed_in": [
+        {
+          "path": "provenistem/tools/adopter.py",
+          "anchor": "for parent in reversed(destination.parents):"
+        }
       ]
     },
     {
@@ -218,6 +224,12 @@
         {
           "path": "provenistem/INSTALLATION.md",
           "anchor": "## Host-local review repairs"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "provenistem/tools/library.py",
+          "anchor": "if \"const\" in schema and json_identity(value) != json_identity(schema[\"const\"]):"
         }
       ]
     }
