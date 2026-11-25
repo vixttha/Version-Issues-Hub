@@ -157,7 +157,7 @@
         "Repeat exact isolated pilot recovery once and capture live upgrade/archive outcome, retaining original failures."
       ],
       "issue": 31,
-      "state": "in_progress",
+      "state": "staged",
       "version": "v0.0.0.16"
     },
     {

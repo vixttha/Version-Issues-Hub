@@ -1,21 +1,5 @@
 {
-  "active": {
-    "issue": 31,
-    "version": "v0.0.0.16",
-    "phase": "Head",
-    "next_action": "Solo audit: original diagnostic/retry and recorded scoped failure criteria met, no claim upstream PATCH fixed; #29 direct CLI criterion unchanged.",
-    "fix_sha": "f2b2620b4f34744f8422a509994547b471cdfc6b",
-    "candidate_sha": "26e9fe8c019a33c5f84f77a37da70925505204e3",
-    "pull_request": 2,
-    "evidence": [
-      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45713361976/attempts/1",
-      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45713361959/attempts/1",
-      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45713368275/attempts/1",
-      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45713368267/attempts/1",
-      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45713368324/attempts/1",
-      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45357923198/attempts/1"
-    ]
-  },
+  "active": null,
   "history": [
     {
       "decision": "PR49 CodeRabbit finding 4682051116: rework exact product SHA comparisons and add regression checks; preserve previous evidence.",
@@ -577,6 +561,28 @@
       },
       "disposition": "staged",
       "decision": "Owner-authorized historical engineering closure; original fix and exact current evidence preserved; actual connector-assisted pilot upgrade/archive at https://github.com/vixttha/clouds/actions/runs/45357811869/attempts/1; no direct CLI upgrade claim; main integration pending.",
+      "merged_sha": null
+    },
+    {
+      "handoff": {
+        "issue": 31,
+        "version": "v0.0.0.16",
+        "phase": "Head",
+        "next_action": "Solo audit: original diagnostic/retry and recorded scoped failure criteria met, no claim upstream PATCH fixed; #29 direct CLI criterion unchanged.",
+        "fix_sha": "f2b2620b4f34744f8422a509994547b471cdfc6b",
+        "candidate_sha": "26e9fe8c019a33c5f84f77a37da70925505204e3",
+        "pull_request": 2,
+        "evidence": [
+          "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45713361976/attempts/1",
+          "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45713361959/attempts/1",
+          "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45713368275/attempts/1",
+          "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45713368267/attempts/1",
+          "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45713368324/attempts/1",
+          "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45357923198/attempts/1"
+        ]
+      },
+      "disposition": "staged",
+      "decision": "Owner-authorized historical engineering closure; original fix and exact current evidence preserved. Original failure https://github.com/vixttha/clouds/actions/runs/45339505842/attempts/1 and later confirmation https://github.com/vixttha/clouds/actions/runs/45357811869/attempts/1 retained; direct CLI upgrade not proven. Main integration pending.",
       "merged_sha": null
     }
   ],
