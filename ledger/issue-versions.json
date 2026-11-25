@@ -197,7 +197,7 @@
         "Public runner regression and revision-bound Graphify evidence."
       ],
       "issue": 41,
-      "state": "assigned",
+      "state": "staged",
       "version": "v0.0.0.20"
     },
     {
@@ -207,7 +207,7 @@
         "Public runner regression and revision-bound Graphify evidence."
       ],
       "issue": 42,
-      "state": "assigned",
+      "state": "staged",
       "version": "v0.0.0.21"
     },
     {
@@ -217,7 +217,7 @@
         "Public runner regression and revision-bound Graphify evidence."
       ],
       "issue": 43,
-      "state": "assigned",
+      "state": "staged",
       "version": "v0.0.0.22"
     },
     {
@@ -237,7 +237,7 @@
         "Preserve historical fix and recovery evidence; pass bounded public-runner regression and Graphify mapping without claiming release or live adopter writes."
       ],
       "issue": 39,
-      "state": "assigned",
+      "state": "staged",
       "version": "v0.0.0.24"
     },
     {
@@ -247,7 +247,7 @@
         "Reconcile changed live job names, matrix counts, and artifact contracts in release preflight before release; pass exact-revision public GitHub runner and Graphify checks."
       ],
       "issue": 51,
-      "state": "assigned",
+      "state": "staged",
       "version": "v0.0.0.25"
     },
     {
@@ -257,7 +257,7 @@
         "All eight negative probes reject without writes; positive controls and existing suites pass on public Ubuntu and Windows; exact SHA evidence and owner review."
       ],
       "issue": 56,
-      "state": "assigned",
+      "state": "staged",
       "version": "v0.0.0.26"
     },
     {
@@ -267,7 +267,7 @@
         "No release or live check publication until separately accepted."
       ],
       "issue": 57,
-      "state": "assigned",
+      "state": "staged",
       "version": "v0.0.0.27"
     },
     {
@@ -277,7 +277,7 @@
         "Record exact candidate and run/attempt receipts; no live writes."
       ],
       "issue": 54,
-      "state": "assigned",
+      "state": "staged",
       "version": "v0.0.0.28"
     },
     {
@@ -286,7 +286,7 @@
         "Do not retry ambiguous writes; redact errors; exact SHA Ubuntu/Windows receipts."
       ],
       "issue": 61,
-      "state": "assigned",
+      "state": "staged",
       "version": "v0.0.0.29"
     },
     {
@@ -295,7 +295,7 @@
         "Test strict parse/persistence and valid numeric round trips on Ubuntu and Windows; no unrelated changes."
       ],
       "issue": 60,
-      "state": "assigned",
+      "state": "staged",
       "version": "v0.0.0.30"
     },
     {
