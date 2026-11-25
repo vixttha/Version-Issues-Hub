@@ -2,11 +2,11 @@
   "active": {
     "issue": 40,
     "version": "v0.0.0.23",
-    "phase": "Worker",
-    "next_action": "Refresh existing PR49 read-only release preflight at current engineering and canonical state; retain all release holds, no integration or publication.",
-    "fix_sha": null,
-    "candidate_sha": null,
-    "pull_request": null,
+    "phase": "Validate",
+    "next_action": "Review exact PR49 refreshed preflight: 21 tests and 268 mechanical assertions; release remains blocked.",
+    "fix_sha": "f82633832749574920a73ddd25ec51ab0b57e023",
+    "candidate_sha": "f82633832749574920a73ddd25ec51ab0b57e023",
+    "pull_request": 49,
     "evidence": []
   },
   "history": [
