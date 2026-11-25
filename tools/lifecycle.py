@@ -4,8 +4,9 @@ import hashlib
 import os
 from tools import checkpoint, install, session
 
-def tree_entries(api, prefix, sha):
-    commit = api.request("GET", prefix + "/git/commits/" + sha)
+def tree_entries(api, prefix, sha, *, commit=None):
+    if commit is None:
+        commit = api.request("GET", prefix + "/git/commits/" + sha)
     if commit.get("sha") != sha:
         raise ValueError("Commit identity mismatch")
     tree = install.require(install.SHA, commit["tree"]["sha"], "tree SHA")

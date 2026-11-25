@@ -645,7 +645,7 @@ class HandoffRejected(install.ApiError):
         self.candidate_sha, self.tree_sha = candidate, tree
 
 
-def save(api, state, ledger, handoff, apply=False, *, issue=None):
+def save(api, state, ledger, handoff, apply=False, *, issue=None, operation_id=None):
     check_issue_delta(state, ledger, handoff, issue)
     if ledger == state["ledger"] and handoff == state["handoff"]:
         return {"status": "unchanged", "installed_sha": state["ref"]}
@@ -668,7 +668,12 @@ def save(api, state, ledger, handoff, apply=False, *, issue=None):
         "tree": [{"path": p, "type": "blob", "mode": "100644", "content": install.render(v)}
                  for p, v in ((LEDGER, ledger), (HANDOFF, handoff))],
     })["sha"]
-    new = api.request("POST", prefix + "/git/commits", {"message": "VIB cooperative handoff",
+    message = "VIB cooperative handoff"
+    if operation_id is not None:
+        if not isinstance(operation_id, str) or not re.fullmatch(r"[0-9a-f]{64}", operation_id):
+            raise ValueError("Invalid operation identity")
+        message += "\n\nVIB-Operation: " + operation_id
+    new = api.request("POST", prefix + "/git/commits", {"message": message,
         "tree": install.require(install.SHA, tree, "handoff tree"), "parents": [old]})["sha"]
     install.require(install.SHA, new, "handoff commit")
     if new == old:
@@ -702,6 +707,8 @@ def save(api, state, ledger, handoff, apply=False, *, issue=None):
     except (ValueError, KeyError, TypeError, OSError):
         raise HandoffUnconfirmed(new) from None
     result = {"status": "saved", "installed_sha": new}
+    if operation_id is not None:
+        result["operation_id"] = operation_id
     if observed != new or ambiguous:
         result.update(observed_sha=observed, recovered_response=ambiguous)
     return result
@@ -759,15 +766,25 @@ def retry_scope(api, previous, fresh, number, rejection):
     protected = {p: old_entries.get(p) for p in package_paths}
     if any(entry is None or entry[:2] != ("blob", "100644") for entry in protected.values()):
         raise ValueError("Original package tree invalid during contention")
-    for sha, _, _ in reversed(path):
-        _, entries = lifecycle.tree_entries(api, prefix, sha)
+    prior_entries = old_entries
+    for sha, commit, _ in reversed(path):
+        _, entries = lifecycle.tree_entries(api, prefix, sha, commit=commit)
         if any(entries.get(p) != entry for p, entry in protected.items()):
             raise ValueError("Installed package changed during contention")
-        def read(file):
-            return checkpoint.parse_json(install.read_text(api, prefix, file, sha))
-        if read("vib-install.json") != previous["manifest"]:
+        def read(file, prior_value):
+            entry = entries.get(file)
+            if (entry is None or entry[:2] != ("blob", "100644")
+                    or not isinstance(entry[2], str) or not install.SHA.fullmatch(entry[2])):
+                raise ValueError("Invalid state blob during contention")
+            if entry == prior_entries.get(file):
+                return prior_value
+            raw = install.read_text(api, prefix, file, sha)
+            if lifecycle.blob_id(raw) != entry[2]:
+                raise ValueError("State blob identity mismatch during contention")
+            return checkpoint.parse_json(raw)
+        if read("vib-install.json", previous["manifest"]) != previous["manifest"]:
             raise ValueError("Installed manifest changed during contention")
-        ledger, handoff = read(LEDGER), read(HANDOFF)
+        ledger, handoff = read(LEDGER, prior_ledger), read(HANDOFF, prior_handoff)
         validate_handoff(handoff, ledger)
         checkpoint.check_history(ledger, prior_ledger)
         current_rows = {row["issue"]: row for row in ledger["issues"]}
@@ -798,6 +815,7 @@ def retry_scope(api, previous, fresh, number, rejection):
         history = handoff["history"]
         prior_ledger = ledger
         prior_handoff = handoff
+        prior_entries = entries
         prior_schema = handoff["schema_version"]
     return None
 
@@ -812,10 +830,36 @@ def planned_issue_view(ledger, handoff, number, new_issue):
     return view
 
 
-def recover_save(api, target, state, plan, issue, *, attempts=4):
+def operation_identity(state, issue, intended, request=None):
+    """A receipt fingerprint, not a durable pending-operation journal.
+
+    Bind the initial immutable ref, installation/product and normalized
+    transition; CLI request parameters distinguish otherwise equivalent plans.
+    No raw command parameters are written into Git metadata.
+    """
+    value = {"domain": "vib-operation-v1", "repository": state["prefix"],
+             "initial_sha": state["ref"], "manifest": state["manifest"],
+             "product_sha": state["product_sha"], "issue": issue,
+             "intent": intended, "request": request}
+    return hashlib.sha256(install.render(value).encode("utf-8")).hexdigest()
+
+
+class HandoffDeferred(ValueError):
+    """Definitive, scoped conflict after bounded execution; no success claim."""
+    def __init__(self, operation_id, initial_sha, observed_sha):
+        self.operation_id = operation_id
+        self.initial_sha = initial_sha
+        self.observed_sha = observed_sha
+        super().__init__("Contention retry budget exhausted; no unconfirmed write replayed"
+                         f"; operation {operation_id}; initial {initial_sha}; observed {observed_sha}")
+
+
+def recover_save(api, target, state, plan, issue, *, attempts=4, rounds=1, request=None):
     """Replan only a proved unrelated, definitive conflict; never replay a PATCH."""
     if type(attempts) is not int or not 1 <= attempts <= 4:
         raise ValueError("Contention attempts must be between 1 and 4")
+    if type(rounds) is not int or not 1 <= rounds <= 2:
+        raise ValueError("Contention rounds must be between 1 and 2")
     issue = issue_number(issue)
     ledger, handoff = plan(state)
     check_issue_delta(state, ledger, handoff, issue)
@@ -823,24 +867,36 @@ def recover_save(api, target, state, plan, issue, *, attempts=4):
         return save(api, state, ledger, handoff, True, issue=issue)
     new_issue = issue_view(state["ledger"], state["handoff"], issue)[0] is None
     intended = planned_issue_view(ledger, handoff, issue, new_issue)
-    for attempt in range(attempts):
+    initial_sha = state["ref"]
+    operation_id = operation_identity(state, issue, intended, request)
+    budget = attempts * rounds
+    for attempt in range(budget):
         try:
-            result = save(api, state, ledger, handoff, True, issue=issue)
+            result = save(api, state, ledger, handoff, True, issue=issue, operation_id=operation_id)
             if attempt:
                 result["contention_retries"] = attempt
             return result
         except (HandoffStale, HandoffRejected) as error:
             # GitHub 422 may also mean validation failure or spam. Require
             # observed ref movement, a linear chain and unchanged issue scope.
-            if attempt + 1 == attempts:
-                raise ValueError("Contention retry budget exhausted; no unconfirmed write replayed") from error
+            # Even the final rejection must be classified against exact history.
+            # Never call an unclassified 422 "contention"; an identical candidate
+            # might have been published by a competing invocation.
             install.time.sleep(random.uniform(1, min(8, 2 ** (attempt + 1))))
-            fresh = load(api, target)
-            confirmed = retry_scope(api, state, fresh, issue, error)
+            try:
+                fresh = load(api, target)
+                confirmed = retry_scope(api, state, fresh, issue, error)
+            except install.ApiError as read_error:
+                if isinstance(error, HandoffRejected) and read_error is not error:
+                    raise HandoffUnconfirmed(error.candidate_sha, read_error.retry_after) from None
+                raise
+
             if confirmed is not None:
                 return {"status":"saved", "installed_sha":confirmed,
                         "observed_sha":fresh["ref"], "recovered_response":True,
-                        "contention_retries":attempt}
+                        "contention_retries":attempt, "operation_id":operation_id}
+            if attempt + 1 == budget:
+                raise HandoffDeferred(operation_id, initial_sha, fresh["ref"]) from error
             ledger, handoff = plan(fresh)
             check_issue_delta(fresh, ledger, handoff, issue)
             if (handoff["schema_version"] != 2 or
@@ -919,7 +975,11 @@ def main():
             # Exact owner post-merge policy pins must not be silently rewritten.
             if args.apply and policy is None and args.command != "reconcile" and not (
                     args.command == "finish" and args.disposition == "integrated"):
-                result = recover_save(api, args.target, state, plan, scope)
+                # Preserve the CLI interface. A second bounded round continues
+                # only the same verified intent in this execution.
+                request = {k: v for k, v in vars(args).items()
+                           if k not in ("target", "expected_sha", "apply")}
+                result = recover_save(api, args.target, state, plan, scope, rounds=2, request=request)
             else:
                 ledger, handoff = plan(state)
                 result = save(api, state, ledger, handoff, args.apply, issue=scope)

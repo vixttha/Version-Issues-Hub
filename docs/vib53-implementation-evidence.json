@@ -497,7 +497,7 @@
       "changed_in": [
         {
           "path": "tools/session.py",
-          "anchor": "def recover_save(api, target, state, plan, issue, *, attempts=4):"
+          "anchor": "def recover_save(api, target, state, plan, issue, *, attempts=4, rounds=1, request=None):"
         }
       ],
       "implemented_in": [
@@ -565,7 +565,7 @@
       "changed_in": [
         {
           "path": "tools/session.py",
-          "anchor": "def recover_save(api, target, state, plan, issue, *, attempts=4):"
+          "anchor": "def recover_save(api, target, state, plan, issue, *, attempts=4, rounds=1, request=None):"
         }
       ],
       "implemented_in": [
@@ -642,6 +642,62 @@
         {
           "path": "tests/test_acceptance_snapshot.py",
           "anchor": "def test_inspection_child_delay_propagates_without_ref_probe(self):"
+        }
+      ]
+    },
+    {
+      "id": "vib53-bounded-continuation",
+      "label": "Stable publication identity and bounded continuation",
+      "documented_in": [
+        {
+          "path": "docs/vib53-implementation.md",
+          "anchor": "## Bounded continuation qualification"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "tools/session.py",
+          "anchor": "def recover_save(api, target, state, plan, issue, *, attempts=4, rounds=1, request=None):"
+        }
+      ],
+      "implemented_in": [
+        {
+          "path": "tools/session.py",
+          "anchor": "def operation_identity(state, issue, intended, request=None):"
+        },
+        {
+          "path": "tools/session.py",
+          "anchor": "class HandoffDeferred(ValueError):"
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tests/test_contention_recovery.py",
+          "anchor": "def test_operation_identity_stable_across_replan_and_distinct_intent(self):"
+        },
+        {
+          "path": "tests/test_contention_recovery.py",
+          "anchor": "def test_final_rejection_confirms_existing_candidate(self):"
+        },
+        {
+          "path": "tests/test_contention_recovery.py",
+          "anchor": "def test_final_unclassified_rejection_is_not_contention(self):"
+        },
+        {
+          "path": "tests/test_contention_recovery.py",
+          "anchor": "def test_second_bounded_round_continues_after_four_wins(self):"
+        },
+        {
+          "path": "tests/test_contention_recovery.py",
+          "anchor": "def test_verified_exhaustion_preserves_identity_and_bound(self):"
+        },
+        {
+          "path": "tests/test_contention_recovery.py",
+          "anchor": "def test_intervening_unchanged_manifest_is_not_refetched(self):"
+        },
+        {
+          "path": "tests/test_contention_recovery.py",
+          "anchor": "def test_changed_blob_bytes_must_match_tree(self):"
         }
       ]
     }

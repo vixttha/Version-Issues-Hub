@@ -12,6 +12,12 @@ A, B, C = 247, 248, 249
 
 class Remote(GitApi):
     def request(self, method, path, body=None):
+        if method == "POST" and path.endswith("/git/commits"):
+            self.writes.append((method, path, body))
+            args = ["commit-tree", body["tree"]]
+            for parent in body["parents"]:
+                args.extend(["-p", parent])
+            return {"sha": self.git(*args, data=body["message"] + "\n")}
         if method == "GET" and "/issues/" in path:
             return {"number": int(path.rsplit("/", 1)[1]), "state": "open"}
         result = super().request(method, path, body)
@@ -278,3 +284,82 @@ class RecoveryTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "Multiple issue scopes changed"):
             session.retry_scope(api, previous, fresh, B, session.HandoffStale("advanced"))
         self.assertEqual(api.writes, before)
+
+    def test_operation_identity_stable_across_replan_and_distinct_intent(self):
+        self.inject(lambda: session.save(self.api,self.s,*self.claim(self.s,C),True,issue=C))
+        plan=lambda s:self.claim(s,B)
+        ledger,handoff=plan(self.s)
+        intent=session.planned_issue_view(ledger,handoff,B,True)
+        identity=session.operation_identity(self.s,B,intent,{"note":"original"})
+        self.assertNotEqual(identity,session.operation_identity(self.s,B,intent,{"note":"different"}))
+        result=self.recover(plan,B,request={"note":"original"})
+        self.assertEqual(result["operation_id"],identity)
+        self.assertEqual(result["contention_retries"],1)
+        messages=[body["message"] for method,path,body in self.api.writes
+                  if method=="POST" and path.endswith("/git/commits") and "VIB-Operation:" in body["message"]]
+        self.assertEqual(len(messages),2)
+        self.assertEqual(messages[0],messages[1])
+        self.assertIn("VIB-Operation: "+identity,self.api.git("show","-s","--format=%B",result["installed_sha"]))
+
+    def test_final_rejection_confirms_existing_candidate(self):
+        result=session.save(self.api,self.s,*self.claim(self.s,B),True,issue=B)
+        published=result["installed_sha"]
+        tree=self.api.git("rev-parse",published+"^{tree}")
+        error=session.HandoffRejected(install.ApiError(422),published,tree)
+        with patch.object(session,"save",side_effect=error) as save:
+            recovered=self.recover(lambda s:self.claim(s,B),B,attempts=1)
+        self.assertEqual(recovered["installed_sha"],published)
+        self.assertTrue(recovered["recovered_response"])
+        self.assertEqual(save.call_count,1)
+
+    def test_final_unclassified_rejection_is_not_contention(self):
+        error=session.HandoffRejected(install.ApiError(422),"a"*40,"b"*40)
+        with patch.object(session,"save",side_effect=error) as save:
+            with self.assertRaises(session.HandoffRejected):
+                self.recover(lambda s:self.claim(s,B),B,attempts=1)
+        self.assertEqual(save.call_count,1)
+
+    def test_second_bounded_round_continues_after_four_wins(self):
+        api=self.api
+        original=api.request
+        competing=iter((250,251,252,253))
+        def race(method,path,body=None):
+            if method=="PATCH":
+                number=next(competing,None)
+                if number is not None:
+                    api.request=original
+                    current=session.load(api,REPO)
+                    session.save(api,current,*self.claim(current,number),True,issue=number)
+                    api.request=race
+            return original(method,path,body)
+        api.request=race
+        result=self.recover(lambda s:self.claim(s,B),B,rounds=2)
+        self.assertEqual(result["contention_retries"],4)
+        latest=session.load(api,REPO)
+        self.assertEqual([r["issue"] for r in latest["handoff"]["active"]],[A,B,250,251,252,253])
+        self.assertEqual(len(set(r["version"] for r in latest["ledger"]["issues"])),7)
+
+    def test_verified_exhaustion_preserves_identity_and_bound(self):
+        with patch.object(session,"save",side_effect=session.HandoffStale("advanced")) as save, \
+             patch.object(session,"load",return_value=self.s), \
+             patch.object(session,"retry_scope",return_value=None):
+            with self.assertRaises(session.HandoffDeferred) as error:
+                self.recover(lambda s:self.claim(s,B),B,rounds=2)
+        self.assertEqual(save.call_count,8)
+        self.assertEqual(error.exception.initial_sha,self.s["ref"])
+        self.assertRegex(error.exception.operation_id,r"^[0-9a-f]{64}$")
+
+    def test_intervening_unchanged_manifest_is_not_refetched(self):
+        result=session.save(self.api,self.s,*self.claim(self.s,C),True,issue=C)
+        fresh=session.load(self.api,REPO,result["installed_sha"])
+        with patch.object(install,"read_text",wraps=install.read_text) as read:
+            self.assertIsNone(session.retry_scope(self.api,self.s,fresh,B,session.HandoffStale("advanced")))
+        self.assertEqual([call.args[2] for call in read.call_args_list],[session.LEDGER,session.HANDOFF])
+
+    def test_changed_blob_bytes_must_match_tree(self):
+        result=session.save(self.api,self.s,*self.claim(self.s,C),True,issue=C)
+        fresh=session.load(self.api,REPO,result["installed_sha"])
+        raw=self.api.read(fresh["ref"],session.LEDGER)+" "
+        with patch.object(install,"read_text",side_effect=lambda api,prefix,path,ref:raw if path==session.LEDGER else api.read(ref,path)):
+            with self.assertRaisesRegex(ValueError,"State blob identity mismatch"):
+                session.retry_scope(self.api,self.s,fresh,B,session.HandoffStale("advanced"))
