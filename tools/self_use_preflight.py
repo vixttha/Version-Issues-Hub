@@ -14,6 +14,11 @@ def validate_projection(installed, projection, handoff, issue):
     criteria = lambda ledger: {r["issue"]: r["acceptance"] for r in ledger["issues"]}
     if criteria(installed) != criteria(projection):
         raise ValueError("Canonical and engineering acceptance criteria differ")
+    states = lambda ledger: {r["issue"]: r["state"] for r in ledger["issues"]}
+    if states(installed) != states(projection):
+        raise ValueError("Canonical and engineering checkpoint states differ")
+    if installed["repository"] != "vixttha/Version-Issues-Hub":
+        raise ValueError("Self-use preflight requires the VIB product repository")
     session.validate_handoff(handoff, installed)
     active = handoff["active"]
     if type(issue) is not int or active is None or active["issue"] != issue:

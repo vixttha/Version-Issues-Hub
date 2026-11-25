@@ -52,3 +52,17 @@ class SelfUsePreflightTests(unittest.TestCase):
         ledger["issues"][1]["state"] = "in_progress"
         with self.assertRaises(ValueError):
             self_use_preflight.validate_projection(ledger, ledger, self.handoff, 65)
+
+    def test_projection_state_drift_fails(self):
+        for state in ("in_progress", "integrated", "retired"):
+            with self.subTest(state=state):
+                projection = copy.deepcopy(self.ledger)
+                projection["issues"][1]["state"] = state
+                with self.assertRaisesRegex(ValueError, "checkpoint states differ"):
+                    self_use_preflight.validate_projection(self.ledger, projection, self.handoff, 65)
+
+    def test_matching_foreign_repository_fails(self):
+        ledger = copy.deepcopy(self.ledger)
+        ledger["repository"] = "other/project"
+        with self.assertRaisesRegex(ValueError, "VIB product repository"):
+            self_use_preflight.validate_projection(ledger, ledger, self.handoff, 65)
