@@ -180,6 +180,9 @@ class IssueIsolationTests(unittest.TestCase):
             reads.append(path)
             if method=="GET" and path.endswith("/pulls/8"):
                 return pr_a
+            if method=="GET" and path.endswith("/git/commits/"+pr_a["merge_commit_sha"]):
+                return {"sha":pr_a["merge_commit_sha"],"parents":[{"sha":pr_a["base"]["sha"]},
+                            {"sha":pr_a["head"]["sha"]}]}
             if method=="GET" and "/actions/runs/123" in path:
                 return run_a
             return original_request(method,path,body)
