@@ -2,18 +2,12 @@
   "active": {
     "issue": 40,
     "version": "v0.0.0.23",
-    "phase": "Head",
-    "next_action": "Mechanical acceptance verified: 112 tests per checkout, 9/9 public jobs, 10/10 live cases, 48 receipts, all eight evidence archives and both graph digests. Exact CodeRabbit in_progress/null; final review remains held. #37 independent host acceptance resumed read-only, 0/2 fresh host transcripts; #34 optional race remains separate. PR49 repin pending; no main merge or release.",
-    "fix_sha": "7ae6626e44d01d29b11968da28e6debd816f8c06",
-    "candidate_sha": "7ae6626e44d01d29b11968da28e6debd816f8c06",
-    "pull_request": 2,
-    "evidence": [
-      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45671873055/attempts/1",
-      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45671894372/attempts/1",
-      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45671894285/attempts/1",
-      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45671873088/attempts/1",
-      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45671894120/attempts/1"
-    ]
+    "phase": "Worker",
+    "next_action": "Repair strict PR-state and collection validation, then byte-exact Windows fixture; validate isolated engineering PR on public Ubuntu/Windows.",
+    "fix_sha": null,
+    "candidate_sha": null,
+    "pull_request": null,
+    "evidence": []
   },
   "history": [
     {
@@ -86,6 +80,27 @@
       },
       "disposition": "rework",
       "decision": "Owner-authorized #40 repair: observed concurrent VIB and README HQ ref advances during failed live jobs. Retry only explicitly verified snapshot movement, preserve fail-closed invalid proofs and read-only behavior. No product package change.",
+      "merged_sha": null
+    },
+    {
+      "handoff": {
+        "issue": 40,
+        "version": "v0.0.0.23",
+        "phase": "Head",
+        "next_action": "Mechanical acceptance verified: 112 tests per checkout, 9/9 public jobs, 10/10 live cases, 48 receipts, all eight evidence archives and both graph digests. Exact CodeRabbit in_progress/null; final review remains held. #37 independent host acceptance resumed read-only, 0/2 fresh host transcripts; #34 optional race remains separate. PR49 repin pending; no main merge or release.",
+        "fix_sha": "7ae6626e44d01d29b11968da28e6debd816f8c06",
+        "candidate_sha": "7ae6626e44d01d29b11968da28e6debd816f8c06",
+        "pull_request": 2,
+        "evidence": [
+          "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45671873055/attempts/1",
+          "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45671894372/attempts/1",
+          "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45671894285/attempts/1",
+          "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45671873088/attempts/1",
+          "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45671894120/attempts/1"
+        ]
+      },
+      "disposition": "rework",
+      "decision": "Owner-approved repair #56/#57 then #54, under #40 release checkpoint; preserve prior evidence.",
       "merged_sha": null
     }
   ],
