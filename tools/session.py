@@ -426,8 +426,8 @@ def reconcile(api, state, number, decision, *, policy=None):
     validate_handoff(state["handoff"], state["ledger"])
     ledger = copy.deepcopy(state["ledger"])
     handoff = copy.deepcopy(state["handoff"])
-    if handoff["active"] is not None:
-        raise ValueError("Finish the active handoff before integration reconciliation")
+    # Reconciliation operates on one staged issue, not the active slot.
+    # Its exact post-merge policy and final save scope protect other records.
     row = next((x for x in ledger["issues"] if x["issue"] == issue_number(number)), None)
     if row is None or row["state"] != "staged":
         raise ValueError("Integration reconciliation requires a staged issue")
@@ -484,12 +484,63 @@ class HandoffUnconfirmed(ValueError):
         delay = f"; wait at least {retry_after} seconds before inspecting" if retry_after is not None else ""
         super().__init__("Handoff outcome unconfirmed; inspect candidate " + candidate + " before retrying" + delay)
 
-def save(api, state, ledger, handoff, apply=False):
-    validate_handoff(state["handoff"], state["ledger"])
-    checkpoint.check_history(ledger, state["ledger"])
+def check_issue_delta(state, ledger, handoff, number=None):
+    """Only one explicitly scoped issue may change in a session transaction.
+
+    Preserve unrelated rows and active work, immutable existing criteria, and
+    the exact historical archive prefix. Legacy callers may omit the issue
+    only when the current/new active slot or a single append identifies it.
+    This is a cooperative data-integrity guard, not an authorization boundary.
+    """
+    before_ledger, before_handoff = state["ledger"], state["handoff"]
+    validate_handoff(before_handoff, before_ledger)
+    checkpoint.check_history(ledger, before_ledger)
     validate_handoff(handoff, ledger)
-    if handoff["history"][:len(state["handoff"]["history"])] != state["handoff"]["history"]:
+    if ledger["repository"] != before_ledger["repository"]:
+        raise ValueError("Ledger repository changed")
+    history = before_handoff["history"]
+    if handoff["history"][:len(history)] != history:
         raise ValueError("Historical handoff changed")
+    appended = handoff["history"][len(history):]
+    previous, proposed = before_handoff["active"], handoff["active"]
+    if number is None:
+        if previous is not None:
+            number = previous["issue"]
+        elif proposed is not None:
+            number = proposed["issue"]
+        elif appended:
+            number = appended[0]["handoff"]["issue"]
+        elif ledger == before_ledger and handoff == before_handoff:
+            return
+        else:
+            raise ValueError("Issue scope required for state mutation")
+    number = issue_number(number)
+    old_rows = {r["issue"]: r for r in before_ledger["issues"]}
+    new_rows = {r["issue"]: r for r in ledger["issues"]}
+    if {n:r for n,r in old_rows.items() if n != number} != {
+            n:r for n,r in new_rows.items() if n != number}:
+        raise ValueError("Issue scope violation: unrelated ledger row changed")
+    if [r for r in before_ledger["issues"] if r["issue"] != number] != [
+            r for r in ledger["issues"] if r["issue"] != number]:
+        raise ValueError("Issue scope violation: unrelated ledger order changed")
+    if number in old_rows:
+        if new_rows[number]["acceptance"] != old_rows[number]["acceptance"]:
+            raise ValueError("Issue scope violation: existing acceptance criteria changed")
+        if old_rows[number]["state"] in ("integrated", "retired") and new_rows[number] != old_rows[number]:
+            raise ValueError("Issue scope violation: terminal issue changed")
+    if previous != proposed and any(a is not None and a["issue"] != number
+                                    for a in (previous, proposed)):
+        raise ValueError("Issue scope violation: unrelated active handoff changed")
+    if any(r["handoff"]["issue"] != number for r in appended):
+        raise ValueError("Issue scope violation: unrelated history appended")
+    if number not in new_rows:
+        raise ValueError("Issue scope does not identify a ledger record")
+    if number in old_rows and old_rows[number]["state"] in ("integrated", "retired") and appended:
+        raise ValueError("Issue scope violation: terminal issue history appended")
+
+
+def save(api, state, ledger, handoff, apply=False, *, issue=None):
+    check_issue_delta(state, ledger, handoff, issue)
     if ledger == state["ledger"] and handoff == state["handoff"]:
         return {"status": "unchanged", "installed_sha": state["ref"]}
     if not apply:
@@ -556,6 +607,7 @@ def main():
     c.add_argument("--resume-prior-line", action="store_true", help="Resume an eligible unresolved historical checkpoint without renumbering")
     a = sub.add_parser("advance")
     a.add_argument("--note", required=True)
+    a.add_argument("--issue", type=int, help="Assert the intended active issue before advancing")
     a.add_argument("--fix")
     a.add_argument("--candidate")
     a.add_argument("--pr", type=int)
@@ -566,6 +618,7 @@ def main():
     f = sub.add_parser("finish")
     f.add_argument("disposition", choices=["blocked", "deferred", "staged", "integrated"])
     f.add_argument("--decision", required=True)
+    f.add_argument("--issue", type=int, help="Assert the intended active issue before finishing")
     f.add_argument("--owner-approved", action="store_true")
     i = sub.add_parser("reconcile")
     i.add_argument("issue", type=int)
@@ -587,6 +640,15 @@ def main():
                 raise ValueError("Apply requires a credential and exact expected installed SHA")
             if args.command in ("claim", "finish", "reconcile") and not args.owner_approved:
                 raise ValueError("Explicit owner approval is required")
+            if args.command in ("advance", "finish"):
+                active = state["handoff"]["active"]
+                if active is None:
+                    raise ValueError("No active handoff")
+                if args.issue is not None and args.issue != active["issue"]:
+                    raise ValueError("Requested issue does not own the active handoff")
+                scope = active["issue"]
+            else:
+                scope = args.issue
             if args.command == "claim":
                 ledger, handoff = claim(api, state, args.issue, args.acceptance, args.note,
                     resume_prior_line=args.resume_prior_line)
@@ -600,7 +662,7 @@ def main():
                     ledger, handoff = finish(api, state, args.disposition, args.decision, policy=policy)
                 else:
                     ledger, handoff = reconcile(api, state, args.issue, args.decision, policy=policy)
-            result = save(api, state, ledger, handoff, args.apply)
+            result = save(api, state, ledger, handoff, args.apply, issue=scope)
         print(install.render(result), end="")
     except (ValueError, KeyError, TypeError, OSError, install.ApiError) as exc:
         p.exit(1, f"VIB session stopped: {exc}\n")
