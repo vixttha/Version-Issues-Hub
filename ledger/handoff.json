@@ -2,11 +2,11 @@
   "active": {
     "issue": 40,
     "version": "v0.0.0.23",
-    "phase": "Worker",
-    "next_action": "Owner-authorized #40 repair: observed concurrent VIB and README HQ ref advances during failed live jobs. Retry only explicitly verified snapshot movement, preserve fail-closed invalid proofs and read-only behavior. No product package change.",
-    "fix_sha": null,
-    "candidate_sha": null,
-    "pull_request": null,
+    "phase": "Validate",
+    "next_action": "Verify bounded snapshot-drift recovery, fail-closed invalid proof and exhaustion controls. No installed package or legal change; exact public push/PR and CodeRabbit required.",
+    "fix_sha": "7ae6626e44d01d29b11968da28e6debd816f8c06",
+    "candidate_sha": "7ae6626e44d01d29b11968da28e6debd816f8c06",
+    "pull_request": 2,
     "evidence": []
   },
   "history": [
