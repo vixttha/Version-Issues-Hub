@@ -47,4 +47,4 @@ def mutation_case(module,name,old,new,cls,test):
 for ident,module,name,old,new,cls,test in MUTANTS:
     setattr(Mutation,"test_kill_"+ident,mutation_case(module,name,old,new,cls,test))
 if __name__=="__main__":
-    run_suite(unittest.defaultTestLoader.loadTestsFromModule(sys.modules[__name__]),14,"mutation")
+    run_suite(unittest.defaultTestLoader.loadTestsFromTestCase(Mutation),14,"mutation")
