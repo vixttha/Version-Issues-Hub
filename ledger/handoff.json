@@ -2,12 +2,19 @@
   "active": {
     "issue": 31,
     "version": "v0.0.0.16",
-    "phase": "Validate",
-    "next_action": "Review diagnostic and bounded GET retry tests, original scoped pilot failure and exact current receipts.",
+    "phase": "Internal Auditor",
+    "next_action": "Four 146-test suites pass redacted operation diagnostics, bounded transient GET recovery/exhaustion and no mutation retry. Original scoped clouds resume log job 138259483200 verified HTTP 500 (PATCH git/refs), exit 1; failure preserved, no direct write retry. Later split transport archive/recovery artifact 14902384542 SHA256/CRC verified. Exact receipt and Graphify links verified.",
     "fix_sha": "f2b2620b4f34744f8422a509994547b471cdfc6b",
     "candidate_sha": "26e9fe8c019a33c5f84f77a37da70925505204e3",
     "pull_request": 2,
-    "evidence": []
+    "evidence": [
+      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45713361976/attempts/1",
+      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45713361959/attempts/1",
+      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45713368275/attempts/1",
+      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45713368267/attempts/1",
+      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45713368324/attempts/1",
+      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45357923198/attempts/1"
+    ]
   },
   "history": [
     {
