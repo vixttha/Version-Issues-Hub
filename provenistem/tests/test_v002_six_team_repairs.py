@@ -3,6 +3,7 @@
 Synthetic inputs only. No network, production adopter writes or external reviewers.
 """
 import json
+from decimal import localcontext, ROUND_DOWN
 import sys
 import tempfile
 import unittest
@@ -72,9 +73,76 @@ class SixTeamRepairs(unittest.TestCase):
         b = {"b": {"nested": ["x", {"n": 2}]}, "a": 1}
         self.assertIn("duplicate entries", " ".join(library.shape([a, b], spec, "item")))
         self.assertIn("duplicate entries", " ".join(library.shape([1, 1.0], spec, "item")))
-        self.assertEqual(library.shape([True, 1], spec, "item"), [])
         self.assertEqual(library.shape([10**28, 10**28 + 1], spec, "item"), [])
+        self.assertEqual(library.shape([True, 1], spec, "item"), [])
         self.assertEqual(library.shape([{"k": 1}, {"k": 2}], spec, "item"), [])
+
+    def numeric_record(self, literal):
+        path = self.host / "ideas/records/IDEA-000001.json"
+        path.write_text('{"id":"IDEA-000001","values":' + literal + '}', encoding="utf-8")
+        # Synthetic limited-interpreter fixture, not an expansion of bundled v1 schemas.
+        spec = {"type": "object", "properties": {
+            "id": {"type": "string"}, "values": {"type": "array", "uniqueItems": True}}}
+        return library.read_records(self.host, "ideas", spec)
+
+    def test_exact_decimal_distinct_literals_through_record_loader(self):
+        for literal in ("[1.0000000000000001,1.0]",
+                        "[10000000000000000000000000000.1,10000000000000000000000000000.2]",
+                        "[1e-400,0.0]", "[1e400,2e400]",
+                        '[{"x":1.0000000000000001},{"x":1.0}]'):
+            with self.subTest(literal=literal):
+                issues, records = self.numeric_record(literal)
+                self.assertEqual(issues, [])
+                self.assertIn("IDEA-000001", records)
+
+    def test_exact_decimal_equivalent_literals_through_record_loader(self):
+        for literal in ("[1,1.0]", "[1e0,1.00]", "[-0.0,0]",
+                        "[1.25,125e-2]", '[{"a":1.0,"b":2},{"b":2.0,"a":1}]'):
+            with self.subTest(literal=literal):
+                issues, records = self.numeric_record(literal)
+                self.assertIn("duplicate entries", " ".join(issues))
+                self.assertEqual(records, {})
+        self.assertEqual(self.numeric_record("[true,1.0]")[0], [])
+
+    def test_exact_decimal_bad_or_extreme_literals_are_normal_failures(self):
+        for literal in ("[NaN]", "[Infinity]", "[-Infinity]", "[1.]", "[01]",
+                        "[1e999999999999999999999999999]", "[1e-999999999999999999999]",
+                        "[1e65537]", "[1e-65537]"):
+            with self.subTest(literal=literal):
+                issues, records = self.numeric_record(literal)
+                self.assertIn("bad JSON", " ".join(issues))
+                self.assertEqual(records, {})
+
+    def test_exact_decimal_keeps_existing_integer_contract(self):
+        spec = {"type": "integer"}
+        self.assertEqual(library.shape(library.parse_json("1"), spec, "value"), [])
+        for literal in ("1.0", "1e0", "1.1", "true"):
+            self.assertIn("expected integer", " ".join(
+                library.shape(library.parse_json(literal), spec, "value")))
+        self.assertIn("unsupported schema type", " ".join(
+            library.schema_issues({"type": "number"}, "schema")))
+
+    def test_exact_decimal_identity_independent_of_arithmetic_context(self):
+        with localcontext() as ctx:
+            ctx.prec = 2
+            ctx.rounding = ROUND_DOWN
+            ctx.Emax = 9
+            ctx.Emin = -9
+            for literal in ("[1.0000000000000001,1.0]", "[1e400,2e400]",
+                            "[123456789012345678901234567891,123456789012345678901234567892]"):
+                with self.subTest(literal=literal):
+                    self.assertEqual(self.numeric_record(literal)[0], [])
+            self.assertIn("duplicate entries", " ".join(self.numeric_record("[1.00,1]")[0]))
+
+    def test_schema_loader_rejects_nonfinite_or_extreme_literals(self):
+        path = self.host / "ideas/schema/v1/idea.schema.json"
+        original = path.read_text(encoding="utf-8")
+        for literal in ("NaN", "Infinity", "1e65537"):
+            with self.subTest(literal=literal):
+                path.write_text(original.rstrip()[:-1] + ', "const":' + literal + '}', encoding="utf-8")
+                issues, ideas, feats = library.validate(self.host)
+                self.assertIn("schema unavailable or invalid", " ".join(issues))
+                self.assertEqual((ideas, feats), ({}, {}))
 
     def test_purple_governance_yaml_namespace_collision(self):
         (self.host / "ideas/library.yaml").write_text("kind: governance-catalog\n", encoding="utf-8")

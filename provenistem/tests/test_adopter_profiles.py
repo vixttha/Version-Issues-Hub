@@ -1,5 +1,7 @@
 """Synthetic cross-adopter compatibility fixtures; no private records copied."""
 import json
+import re
+import shutil
 import tempfile
 import unittest
 from pathlib import Path
@@ -107,6 +109,7 @@ class AdopterProfiles(unittest.TestCase):
             "test_hardening.py",
             "test_adopter_profiles.py",
             "test_v002_six_team_repairs.py",
+            "test_modularity_contract.py", "test_unicode_index_integrity.py",
         }
         listed = {
             p.name for p in adopter.candidates(ROOT)
@@ -122,6 +125,67 @@ class AdopterProfiles(unittest.TestCase):
             plan["entries"],
         )
         self.assertFalse(clean.exists())
+
+    def test_documented_basic_copy_has_all_relative_links(self):
+        for document in ("README.md", "docs/ADOPTION.md"):
+            with self.subTest(document=document):
+                text = (ROOT / document).read_text(encoding="utf-8")
+                line = next(line for line in text.splitlines()
+                            if "Copy " in line and "\x60ideas/\x60" in line)
+                # The first sentence defines the basic copy inventory.
+                inventory = re.findall(r"\x60([A-Za-z0-9_./-]+)\x60",
+                                       line.split("Copy ", 1)[1].split(". ", 1)[0])
+                dest = self.root / ("manual-" + Path(document).stem)
+                dest.mkdir()
+                for item in inventory:
+                    src = ROOT / item
+                    if src.is_dir():
+                        shutil.copytree(src, dest / item)
+                    else:
+                        shutil.copy2(src, dest / item)
+                for required in ("README.md", "LICENSE", "docs/LIFECYCLE.md",
+                                 "docs/ISOLATION.md", "templates/idea.example.json",
+                                 "templates/feature.example.json"):
+                    self.assertTrue((dest / required).is_file(), required)
+                self.assertEqual((dest / "LICENSE").read_bytes(),
+                                 (ROOT / "LICENSE").read_bytes())
+                for md in dest.rglob("*.md"):
+                    for link in re.findall(r"\[[^\]]+\]\(([^)]+)\)",
+                                           md.read_text(encoding="utf-8")):
+                        if "://" in link or link.startswith("#"):
+                            continue
+                        target = (md.parent / link.split("#", 1)[0]).resolve()
+                        self.assertTrue(target.is_relative_to(dest.resolve()))
+                        self.assertTrue(target.is_file(), f"{md.name}: {link}")
+                self.assertFalse((dest / "tools").exists())
+                self.assertFalse((dest / "tests").exists())
+
+    def test_planned_copy_contains_complete_portable_package(self):
+        dest = self.root / "planned-copy"
+        plan = adopter.plan(ROOT, dest)
+        self.assertEqual(plan["status"], "NEW_DESTINATION")
+        self.assertFalse(plan["writes"])
+        self.assertFalse(dest.exists())
+        expected = {"README.md", "LICENSE", "LIBRARY-AGENT-GUIDE.md"}
+        for folder in ("ideas", "features", "templates", "docs", "tools", "tests"):
+            expected.update(p.relative_to(ROOT).as_posix() for p in (ROOT / folder).rglob("*")
+                            if p.is_file() and "__pycache__" not in p.parts
+                            and p.suffix != ".pyc")
+        actual = {entry["path"] for entry in plan["entries"]}
+        self.assertEqual(actual, expected)
+        for entry in plan["entries"]:
+            self.assertEqual(entry["action"], "ADD")
+            target = dest / entry["path"]
+            target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(ROOT / entry["path"], target)
+        self.assertEqual((dest / "LICENSE").read_bytes(), (ROOT / "LICENSE").read_bytes())
+        self.assertEqual(library.run(dest, "check"), 0)
+        for md in dest.rglob("*.md"):
+            for link in re.findall(r"\[[^\]]+\]\(([^)]+)\)",
+                                   md.read_text(encoding="utf-8")):
+                if "://" not in link and not link.startswith("#"):
+                    self.assertTrue((md.parent / link.split("#", 1)[0]).is_file(),
+                                    f"{md.name}: {link}")
 
     def test_non_directory_parent_blocks_plan(self):
         dest = self.root / "blocked"
