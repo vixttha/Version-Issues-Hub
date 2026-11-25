@@ -671,9 +671,14 @@ def save(api, state, ledger, handoff, apply=False, *, issue=None):
     except (install.ApiTransportError, json.JSONDecodeError):
         ambiguous = True
     except install.ApiError as error:
-        # Rate limits and permanent errors must not trigger polling or resubmission.
-        if error.retry_after is not None or error.status not in (408, 500, 502, 503, 504):
+        # A 5xx/408 can be returned after publication. Preserve the candidate
+        # even if a Retry-After prevents immediate readback. Never repeat PATCH.
+        if error.status not in (408, 500, 502, 503, 504):
             raise
+        if error.retry_after is not None:
+            if error.retry_after > 8:
+                raise HandoffUnconfirmed(new, error.retry_after) from None
+            install.time.sleep(error.retry_after)
         ambiguous = True
     try:
         observed = confirm_handoff(api, prefix, old, new, tree)
@@ -755,7 +760,7 @@ def main():
             result = save(api, state, ledger, handoff, args.apply, issue=scope)
         print(install.render(result), end="")
     except (ValueError, KeyError, TypeError, OSError, install.ApiError) as exc:
-        p.exit(1, f"VIB session stopped: {exc}\n")
+        install.cli_error(p, "VIB session stopped", exc)
 
 if __name__ == "__main__":
     main()
