@@ -60,6 +60,50 @@
           "anchor": "class TransactionResearch(unittest.TestCase):"
         }
       ]
+    },
+    {
+      "id": "research-53-retry",
+      "label": "Autonomous bounded retries and operation replay",
+      "documented_in": [
+        {
+          "path": "research/vib53/README.md",
+          "anchor": "## Repeated contention and autonomous recovery"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "research/vib53/test_retry.py",
+          "anchor": "class RetryStore(Store):"
+        }
+      ],
+      "implemented_in": [
+        {
+          "path": "research/vib53/test_retry.py",
+          "anchor": "def conditional_write(self, parent, candidate):"
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "research/vib53/test_retry.py",
+          "anchor": "def test_repeated_contention(self):"
+        },
+        {
+          "path": "research/vib53/test_retry.py",
+          "anchor": "def test_duplicate_operation_race_and_mismatched_intent(self):"
+        },
+        {
+          "path": "research/vib53/test_retry.py",
+          "anchor": "def test_exhaustion_and_independent_resume(self):"
+        },
+        {
+          "path": "research/vib53/test_retry.py",
+          "anchor": "def test_last_attempt_lost_response(self):"
+        },
+        {
+          "path": "research/vib53/test_retry.py",
+          "anchor": "def test_permanent_error_is_not_retried(self):"
+        }
+      ]
     }
   ]
 }
