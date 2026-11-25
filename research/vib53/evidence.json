@@ -53,6 +53,12 @@
           "path": "research/vib53/test_transactions.py",
           "anchor": "def test_current_readback_limitation(self):"
         }
+      ],
+      "changed_in": [
+        {
+          "path": "research/vib53/test_transactions.py",
+          "anchor": "class TransactionResearch(unittest.TestCase):"
+        }
       ]
     }
   ]

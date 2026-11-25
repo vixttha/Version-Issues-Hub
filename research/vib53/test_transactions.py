@@ -1,7 +1,6 @@
 """Research-only synthetic Git transaction experiment; never contacts GitHub."""
 import concurrent.futures
 import json
-import os
 import subprocess
 import tempfile
 import unittest
@@ -24,10 +23,10 @@ class Store:
 
     def git(self, *args, data=None, check=True):
         result = subprocess.run(
-            ["git", "-C", str(self.directory), *args], input=data,
-            text=True, capture_output=True, check=check, timeout=30,
+            ["git", "-C", str(self.directory), *args], input=data.encode('utf-8') if data is not None else None,
+            capture_output=True, check=check, timeout=30,
         )
-        return result.stdout.strip() if check else result
+        return result.stdout.decode('utf-8').strip() if check else result
 
     def head(self):
         return self.git("rev-parse", REF)
