@@ -13,7 +13,7 @@ jobs:
       matrix:
         runner: [ubuntu-24.04, windows-latest]
     runs-on: ${{ matrix.runner }}
-    timeout-minutes: 10
+    timeout-minutes: 20
     env:
       VIB_CHECKOUT: ${{ github.workspace }}/product
       PYTHONDONTWRITEBYTECODE: '1'
@@ -27,7 +27,7 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           path: product
-          ref: '5a6074d77ec37823f81c6d7ebb1f4593d969cd71'
+          ref: '449e4b493daa1f9906396dae49877a32333c418d'
           persist-credentials: false
       - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
         with:
@@ -52,7 +52,7 @@ jobs:
   audit:
     needs: execute
     runs-on: ubuntu-24.04
-    timeout-minutes: 10
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:

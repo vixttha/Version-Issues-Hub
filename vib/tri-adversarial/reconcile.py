@@ -52,5 +52,5 @@ def main():
             verify_case(folder/case,case,osname)
             print("TR_AUDIT "+label+" "+case+" PASS",flush=True)
     controls(evidence/"tr-ubuntu-24.04"/"normal",evidence/"tr-ubuntu-24.04"/"competing-claim")
-    print("TR_AUDIT_SUMMARY 8 positive 11 negative",flush=True)
+    print(f"TR_AUDIT_SUMMARY {len(expected)*2} positive 11 negative",flush=True)
 if __name__=="__main__":main()

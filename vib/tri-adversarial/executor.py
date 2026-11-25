@@ -39,8 +39,11 @@ def tree(repo,base,files):
 def commit(repo,t,parent=None):
     return oid(repo,"commit-tree",t,*(["-p",parent] if parent else []),"-m","synthetic VIB")
 class Adapter:
-    def __init__(self,repo,fault="none",events=None):
+    def __init__(self,repo,fault="none",events=None,criteria=None,observations=None):
         self.repo=repo;self.fault=fault;self.events=[] if events is None else events
+        self.criteria=["preserve state"] if criteria is None else criteria
+        self.observations=[] if observations is None else observations
+        self.readbacks=[]
     def snapshot(self):
         ref=oid(self.repo,"rev-parse","refs/heads/"+install.BRANCH)
         def read(p):return json.loads(git(self.repo,"show",ref+":"+p))
@@ -52,26 +55,41 @@ class Adapter:
         if method=="GET" and route.startswith("/issues/"):
             return {"number":int(route.rsplit("/",1)[1]),"state":"open"}
         if method=="GET" and route=="/git/ref/heads/"+install.BRANCH:
-            return {"ref":"refs/heads/"+install.BRANCH,"object":{"type":"commit","sha":oid(self.repo,"rev-parse","refs/heads/"+install.BRANCH)}}
+            ref=self.readbacks.pop(0) if self.readbacks else oid(self.repo,"rev-parse","refs/heads/"+install.BRANCH)
+            self.observations.append({"kind":"read-ref","sha":ref})
+            return {"ref":"refs/heads/"+install.BRANCH,"object":{"type":"commit","sha":ref}}
         if method=="GET" and route.startswith("/git/commits/"):
             ref=route.rsplit("/",1)[1];return {"sha":ref,"tree":{"sha":oid(self.repo,"rev-parse",ref+"^{tree}")}}
+        stage="tree" if method=="POST" and route=="/git/trees" else "commit" if method=="POST" and route=="/git/commits" else None
+        if stage and self.fault=="compete-"+stage:
+            self.fault="none";self.observations.append({"kind":"compete-"+stage})
+            apply(Adapter(self.repo,events=self.events,criteria=self.criteria,observations=self.observations),102)
+        if stage and self.fault==stage+"-before":
+            self.fault="none";self.observations.append({"kind":stage+"-before"});raise TimeoutError("synthetic pre-object interruption")
         if method=="POST" and route=="/git/trees":
             require({x["path"] for x in body["tree"]}=={session.LEDGER,session.HANDOFF},"unexpected tree paths")
             require(all(x["mode"]=="100644" and x["type"]=="blob" for x in body["tree"]),"unexpected mode")
-            return {"sha":tree(self.repo,body["base_tree"],{x["path"]:x["content"] for x in body["tree"]})}
+            result={"sha":tree(self.repo,body["base_tree"],{x["path"]:x["content"] for x in body["tree"]})}
+            if self.fault=="tree-after":
+                self.fault="none";self.observations.append({"kind":"tree-after","sha":result["sha"]});raise TimeoutError("synthetic lost tree response")
+            return result
         if method=="POST" and route=="/git/commits":
             require(len(body["parents"])==1,"single parent")
-            return {"sha":commit(self.repo,body["tree"],body["parents"][0])}
+            result={"sha":commit(self.repo,body["tree"],body["parents"][0])}
+            if self.fault=="commit-after":
+                self.fault="none";self.observations.append({"kind":"commit-after","sha":result["sha"]});raise TimeoutError("synthetic lost commit response")
+            return result
         if method=="PATCH" and route=="/git/refs/heads/"+install.BRANCH:
             require(body["force"] is False,"force forbidden")
             fault,self.fault=self.fault,"none"
             if fault=="compete":
-                other=Adapter(self.repo,events=self.events)
+                other=Adapter(self.repo,events=self.events,criteria=self.criteria,observations=self.observations)
                 apply(other,102)
             event={"method":"PATCH","sha":body["sha"],"force":body["force"]}
             if fault=="before":
                 event["result"]="lost-before";self.events.append(event)
                 raise TimeoutError("synthetic response absent before publication")
+            old=oid(self.repo,"rev-parse","refs/heads/"+install.BRANCH)
             r=runbash("publish",self.repo,install.BRANCH,body["sha"])
             if r.returncode==23:
                 event["result"]="conflict";self.events.append(event)
@@ -79,11 +97,13 @@ class Adapter:
             require(r.returncode==0,"Bash publication error: "+repr(r.stderr))
             event["result"]="lost-after" if fault=="after" else "published";self.events.append(event)
             if fault=="after":raise TimeoutError("synthetic response lost after publication")
+            if fault=="stale":self.readbacks=[old,old];self.observations.append({"kind":"stale","sha":old})
+            if fault=="unexpected":self.readbacks=["f"*40];self.observations.append({"kind":"unexpected","sha":"f"*40})
             return {}
         raise RuntimeError("Unexpected API method/path: "+method+" "+route)
 def apply(api,issue):
     state=api.snapshot()
-    ledger,handoff=session.claim(api,state,issue,["preserve state"],"repair")
+    ledger,handoff=session.claim(api,state,issue,api.criteria,"repair")
     return session.save(api,state,ledger,handoff,apply=True)
 def main():
     c=json.loads((HERE/"contract.json").read_bytes())
@@ -100,19 +120,22 @@ def main():
             initial={session.LEDGER:install.render({"schema_version":1,"repository":"example/adopter","issues":[]}),session.HANDOFF:install.render({"schema_version":1,"active":None,"history":[]})}
             base=commit(repo,tree(repo,None,initial))
             for branch in ("main",install.BRANCH):git(repo,"update-ref","refs/heads/"+branch,base)
-            api=Adapter(repo,spec["fault"])
+            api=Adapter(repo,spec["fault"],criteria=spec["criteria"])
             try:
                 first=apply(api,101)
-                require(spec["fault"]=="none" and first["status"]=="saved","unexpected initial success")
+                require(spec["fault"] in ("none","stale") and first["status"]=="saved","unexpected initial success")
             except TimeoutError:
-                require(spec["fault"] in ("before","after"),"unexpected timeout")
+                require(spec["fault"] in ("before","after","tree-before","tree-after","commit-before","commit-after"),"unexpected timeout")
             except install.ApiError as exc:
-                require(spec["fault"]=="compete" and exc.status==422,"unexpected rejection")
+                require(spec["fault"] in ("compete","compete-tree","compete-commit") and exc.status==422,"unexpected rejection")
+            except ValueError as exc:
+                require(spec["fault"]=="unexpected" and "Unexpected ref revision" in str(exc),"unexpected readback rejection")
             # A new adapter observes the authoritative ref and reconstructs state.
-            fresh=Adapter(repo,events=api.events)
+            fresh=Adapter(repo,events=api.events,criteria=api.criteria,observations=api.observations)
+            fresh.snapshot();api.observations.append({"kind":"recovery-read","sha":fresh.snapshot()["ref"]})
             try:recovery=apply(fresh,101)["status"]
             except ValueError as exc:
-                require(spec["fault"]=="compete" and "Another issue" in str(exc),"unexpected recovery rejection")
+                require(spec["fault"] in ("compete","compete-tree","compete-commit") and "Another issue" in str(exc),"unexpected recovery rejection")
                 recovery="blocked"
             require(recovery==spec["recovery"],"recovery mismatch")
             final=fresh.snapshot()["ref"]
@@ -122,7 +145,7 @@ def main():
             for path,name in [(session.LEDGER,"ledger.json"),(session.HANDOFF,"handoff.json")]:
                 (folder/name).write_bytes(git(repo,"show",final+":"+path))
             git(repo,"bundle","create",str(folder/"repo.bundle"),"--all")
-            receipt={"id":spec["id"],"product":c["product"],"vault":os.environ["GITHUB_SHA"],"run":os.environ["GITHUB_RUN_ID"],"attempt":os.environ["GITHUB_RUN_ATTEMPT"],"os":os.environ["RUNNER_OS"],"final":final,"recovery":recovery,"events":api.events,"hashes":{f.name:sha(f) for f in folder.iterdir()}}
+            receipt={"id":spec["id"],"product":c["product"],"vault":os.environ["GITHUB_SHA"],"run":os.environ["GITHUB_RUN_ID"],"attempt":os.environ["GITHUB_RUN_ATTEMPT"],"os":os.environ["RUNNER_OS"],"final":final,"recovery":recovery,"events":api.events,"observations":api.observations,"hashes":{f.name:sha(f) for f in folder.iterdir()}}
             dump(folder/"receipt.json",receipt)
             print("TR_CASE "+json.dumps({"id":spec["id"],"recovery":recovery,"events":api.events}),flush=True)
     config.unlink()

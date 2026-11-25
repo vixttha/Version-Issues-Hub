@@ -1,3 +1,6 @@
 # Tri-runtime adversarial pilot
 
 Owner approved: VIB #63; upstream Lydite #126. Initial implementation TR-01/02/03/05/09 subset, four frozen scenarios, separate fresh audit. Real session.claim/save; local adapter approximates API, no network; recovery reconstructs state from Git, not full session.load. Fast-forward emulator uses merge-base and local CAS; not live API proof. Existing singleton must block competing issue. No product writes. TR-04/06/07/08/10 and actual process kill remain pending. Exact candidate 5a6074d77ec37823f81c6d7ebb1f4593d969cd71. Reproducible source distribution built on both OS, raw Git bundles independently checked. Read-only workflow permissions. Prior Batch 17 remains unqualified.
+
+
+Expanded candidate: 449e4b493daa1f9906396dae49877a32333c418d. 12 deterministic schedules × three criteria sets (plain, Unicode/metacharacters, embedded line endings) = 36 actual singleton claim scenarios per OS. Object creation before/after interruption, early competing claims, stale and unexpected readbacks. Preserve original four cases. Exact receipts and independent reconstruction, not live network or process termination. Lydite #127: https://github.com/vixttha/Lydite-Test-Vault-Template/issues/127 .
