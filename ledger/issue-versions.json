@@ -221,6 +221,26 @@
         "Refuse terminal, staged, future-line and new rows under prior-line flag; preserve original acceptance and current lease.",
         "Public runner regression and revision-bound Graphify evidence."
       ]
+    },
+    {
+      "issue": 39,
+      "version": "v0.0.0.24",
+      "state": "assigned",
+      "acceptance": [
+        "An interrupted readback after successful recovery-ref creation is safely resumed only when the existing ref matches the exact final revision; divergent or moving refs fail closed.",
+        "An occupied self-install branch is verified against its own pinned package and rejects duplicate installation without changing product or installed refs.",
+        "Preserve historical fix and recovery evidence; pass bounded public-runner regression and Graphify mapping without claiming release or live adopter writes."
+      ]
+    },
+    {
+      "issue": 51,
+      "version": "v0.0.0.25",
+      "state": "assigned",
+      "acceptance": [
+        "Separate live core and external adopter checks while requiring both successful scopes for full acceptance; retain independent evidence for every case.",
+        "Verify occupied README HQ read-only without false absence claims, and verify BART historical package independently of current package; bounded GET-only RemoteDisconnected recovery.",
+        "Reconcile changed live job names, matrix counts, and artifact contracts in release preflight before release; pass exact-revision public GitHub runner and Graphify checks."
+      ]
     }
   ]
 }

@@ -616,6 +616,62 @@
           "anchor": "def test_explicit_prior_line_recovery_preserves_assignment(self):"
         }
       ]
+    },
+    {
+      "id": "v0-0-0-24",
+      "label": "Issue #39 · recovery ref and self-install review repair",
+      "documented_in": [
+        {
+          "path": "docs/v0.0.0.24-25.md",
+          "anchor": "## v0.0.0.24 — recovery reference and self-install reconciliation"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "ledger/issue-versions.json",
+          "anchor": "\"issue\": 39,"
+        }
+      ],
+      "implemented_in": [
+        {
+          "path": "tools/pilot_refs.py",
+          "anchor": "def ensure_recovery_ref(api, prefix, final):"
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tests/test_pilot_refs.py",
+          "anchor": "def test_exact_recovery_reused_without_writes(self):"
+        }
+      ]
+    },
+    {
+      "id": "v0-0-0-25",
+      "label": "Issue #51 · separate core and external live acceptance",
+      "documented_in": [
+        {
+          "path": "docs/v0.0.0.24-25.md",
+          "anchor": "## v0.0.0.25 — isolate mutable external acceptance evidence"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "ledger/issue-versions.json",
+          "anchor": "\"issue\": 51,"
+        }
+      ],
+      "implemented_in": [
+        {
+          "path": "tools/live_acceptance.py",
+          "anchor": "class ReadOnlyGitHub(install.GitHub):"
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tests/test_live_acceptance.py",
+          "anchor": "def test_failed_external_does_not_suppress_other_evidence(self):"
+        }
+      ]
     }
   ]
 }
