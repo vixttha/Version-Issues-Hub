@@ -15,8 +15,9 @@ function Same([string]$actual,[string]$expected){if($actual -cne $expected){thro
 try {
     & git init --bare --object-format=sha1 -q $repo
     if($LASTEXITCODE -ne 0){throw 'init failed'}
-    $tree='' | git -C $repo mktree
-    if($LASTEXITCODE -ne 0){throw 'mktree failed'}
+    $empty=Join-Path $root 'empty-tree.bin'
+    [IO.File]::WriteAllBytes($empty,[byte[]]@())
+    $tree=G @('hash-object','-t','tree','-w','--no-filters',$empty)
     $a=G @('commit-tree',$tree,'-m','a')
     $b=G @('commit-tree',$tree,'-p',$a,'-m','b')
     $c=G @('commit-tree',$tree,'-p',$a,'-m','c')
