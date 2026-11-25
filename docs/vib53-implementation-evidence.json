@@ -642,6 +642,50 @@
         {
           "path": "tests/test_acceptance_snapshot.py",
           "anchor": "def test_inspection_child_delay_propagates_without_ref_probe(self):"
+        },
+        {
+          "path": "tests/test_contention_recovery.py",
+          "anchor": "def test_retired_row_cannot_be_reopened_during_unrelated_contention(self):"
+        }
+      ]
+    },
+    {
+      "id": "vib53-qualification-matrix",
+      "label": "Bounded scale, restart and migration qualification",
+      "documented_in": [
+        {
+          "path": "docs/vib53-implementation.md",
+          "anchor": "## Frozen qualification matrix"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "tests/test_vib53_qualification.py",
+          "anchor": "class QualificationTests(unittest.TestCase):"
+        }
+      ],
+      "implemented_in": [
+        {
+          "path": "tools/session.py",
+          "anchor": "def recover_save(api, target, state, plan, issue, *, attempts=4):"
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tests/test_vib53_qualification.py",
+          "anchor": "def test_bounded_concurrent_workloads(self):"
+        },
+        {
+          "path": "tests/test_vib53_qualification.py",
+          "anchor": "def test_starvation_counterexample_with_real_production_retry(self):"
+        },
+        {
+          "path": "tests/test_vib53_qualification.py",
+          "anchor": "def test_fresh_process_claim_replay_has_no_durable_intent_identity(self):"
+        },
+        {
+          "path": "tests/test_vib53_qualification.py",
+          "anchor": "def test_real_git_legacy_upgrade_and_parallel_opt_in(self):"
         }
       ]
     }
