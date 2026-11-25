@@ -315,7 +315,7 @@
         "Document residual non-atomic window and retain required live optional enforcement proof; Standard mode remains independent and disabled enforcement unchanged."
       ],
       "issue": 34,
-      "state": "staged",
+      "state": "in_progress",
       "version": "v0.0.0.32"
     },
     {
