@@ -311,7 +311,7 @@
     {
       "issue": 34,
       "version": "v0.0.0.32",
-      "state": "in_progress",
+      "state": "staged",
       "acceptance": [
         "Re-evaluate bound run attempts and proof identities after success publication, revoke the exact check on changed or uncertain evidence, and do not retry success writes.",
         "Public regression tests demonstrate rerun, replacement proof, uncertain response, revocation failure and state drift during publication.",
