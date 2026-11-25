@@ -2,12 +2,19 @@
   "active": {
     "issue": 35,
     "version": "v0.0.0.18",
-    "phase": "Validate",
-    "next_action": "Verify prepare-only upgrade and owner controls, exact existing live pilot tree, state, main, archive/recovery and repaired Windows baseline.",
+    "phase": "Internal Auditor",
+    "next_action": "Four 146-test suites pass owner/prepare-only controls; #54 Windows hold resolved. Clouds preparation and confirmation ZIPs 14903017476/14902384542 rehashed, CRC clean, ref_moved=false at preparation; exact child parent/tree, all 12 source blob/modes, unchanged other blobs, install/archive/recovery and main independently read. Exact receipt/Graphify links verified.",
     "fix_sha": "8b447acda070c288c8c546c02b041bd726befea1",
     "candidate_sha": "26e9fe8c019a33c5f84f77a37da70925505204e3",
     "pull_request": 2,
-    "evidence": []
+    "evidence": [
+      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45713361976/attempts/1",
+      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45713361959/attempts/1",
+      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45713368275/attempts/1",
+      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45713368267/attempts/1",
+      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45713368324/attempts/1",
+      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45357923198/attempts/1"
+    ]
   },
   "history": [
     {
