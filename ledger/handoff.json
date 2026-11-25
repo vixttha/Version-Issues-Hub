@@ -2,8 +2,8 @@
   "active": {
     "issue": 7,
     "version": "v0.0.0.2",
-    "phase": "Internal Auditor",
-    "next_action": "Both exact checkouts pass stable fix-pair and receipt-scope regressions. Historical docs-only evidence retained; audit before staging.",
+    "phase": "Head",
+    "next_action": "Auditor confirmed original two-receipt evidence, stable fix ancestry and current scope controls on both exact checkouts. Stage only pending aggregate merge.",
     "fix_sha": "fee90e84d981740938989c1a53f70a9570ae2293",
     "candidate_sha": "95e05af7b2a675491a01f8450fb20db8871b1f41",
     "pull_request": 2,
