@@ -484,6 +484,166 @@
           "anchor": "def test_real_git_parallel_conflict_preserves_winner_and_reloaded_loser(self):"
         }
       ]
+    },
+    {
+      "id": "vib53-contention-recovery",
+      "label": "Bounded issue-local contention recovery",
+      "documented_in": [
+        {
+          "path": "docs/vib53-implementation.md",
+          "anchor": "## Bounded automatic contention recovery (isolated candidate)"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "tools/session.py",
+          "anchor": "def recover_save(api, target, state, plan, issue, *, attempts=4):"
+        }
+      ],
+      "implemented_in": [
+        {
+          "path": "tools/session.py",
+          "anchor": "def retry_scope(api, previous, fresh, number, rejection):"
+        },
+        {
+          "path": "tools/session.py",
+          "anchor": "def issue_view(ledger, handoff, number):"
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tests/test_contention_recovery.py",
+          "anchor": "def test_automatic_real_git_conflict_preserves_both_claims(self):"
+        },
+        {
+          "path": "tests/test_contention_recovery.py",
+          "anchor": "def test_same_issue_change_stops_without_replaying(self):"
+        },
+        {
+          "path": "tests/test_contention_recovery.py",
+          "anchor": "def test_advance_replans_only_unchanged_issue(self):"
+        },
+        {
+          "path": "tests/test_contention_recovery.py",
+          "anchor": "def test_prepublication_conflict_recovers_without_repeating_old_patch(self):"
+        },
+        {
+          "path": "tests/test_contention_recovery.py",
+          "anchor": "def test_ambiguous_and_rate_limited_writes_never_replay(self):"
+        },
+        {
+          "path": "tests/test_contention_recovery.py",
+          "anchor": "def test_bounded_exhaustion_no_infinite_retry(self):"
+        },
+        {
+          "path": "tests/test_contention_recovery.py",
+          "anchor": "def test_unchanged_ref_rejects_422_not_contention(self):"
+        },
+        {
+          "path": "tests/test_contention_recovery.py",
+          "anchor": "def test_intermediate_change_then_revert_is_not_safe(self):"
+        },
+        {
+          "path": "tests/test_contention_recovery.py",
+          "anchor": "def test_exact_committed_candidate_not_replayed(self):"
+        },
+        {
+          "path": "tests/test_contention_recovery.py",
+          "anchor": "def test_replan_changed_intent_refused(self):"
+        }
+      ]
+    },
+    {
+      "id": "vib53-contention-repeat",
+      "label": "Repeated conflicts and completion safety",
+      "documented_in": [
+        {
+          "path": "docs/vib53-implementation.md",
+          "anchor": "## Bounded automatic contention recovery (isolated candidate)"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "tools/session.py",
+          "anchor": "def recover_save(api, target, state, plan, issue, *, attempts=4):"
+        }
+      ],
+      "implemented_in": [
+        {
+          "path": "tools/session.py",
+          "anchor": "def retry_scope(api, previous, fresh, number, rejection):"
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tests/test_contention_recovery.py",
+          "anchor": "def test_three_successive_real_git_conflicts_then_success(self):"
+        },
+        {
+          "path": "tests/test_contention_recovery.py",
+          "anchor": "def test_finish_archive_is_appended_once_after_conflict(self):"
+        },
+        {
+          "path": "tests/test_contention_recovery.py",
+          "anchor": "def test_product_change_refuses_replan(self):"
+        }
+      ]
+    },
+    {
+      "id": "vib53-qualification-repairs",
+      "label": "Review closure and throttle-safe recovery",
+      "documented_in": [
+        {
+          "path": "docs/vib53-implementation.md",
+          "anchor": "## Qualification review repairs"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "tools/session.py",
+          "anchor": "def retry_scope(api, previous, fresh, number, rejection):"
+        }
+      ],
+      "implemented_in": [
+        {
+          "path": "tools/install.py",
+          "anchor": "def cli_error(parser, label, exc):"
+        },
+        {
+          "path": "tools/install.py",
+          "anchor": "def raise_cli_delay(stderr):"
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tests/test_contention_recovery.py",
+          "anchor": "def test_unrelated_acceptance_change_refused(self):"
+        },
+        {
+          "path": "tests/test_contention_recovery.py",
+          "anchor": "def test_package_change_then_restore_refused(self):"
+        },
+        {
+          "path": "tests/test_transaction_confirmation.py",
+          "anchor": "def test_ambiguous_503_short_delay_confirm_after_wait(self):"
+        },
+        {
+          "path": "tests/test_transaction_confirmation.py",
+          "anchor": "def test_ambiguous_503_long_delay_preserves_candidate_without_polling(self):"
+        },
+        {
+          "path": "tests/test_live_acceptance.py",
+          "anchor": "def test_child_plan_throttle_stops_later_cases(self):"
+        },
+        {
+          "path": "tests/test_live_acceptance.py",
+          "anchor": "def test_cli_delay_receipt_round_trip_and_strict_types(self):"
+        },
+        {
+          "path": "tests/test_acceptance_snapshot.py",
+          "anchor": "def test_inspection_child_delay_propagates_without_ref_probe(self):"
+        }
+      ]
     }
   ]
 }
