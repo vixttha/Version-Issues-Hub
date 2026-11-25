@@ -2,8 +2,8 @@
   "active": {
     "issue": 9,
     "version": "v0.0.0.3",
-    "phase": "Internal Auditor",
-    "next_action": "Both exact checkouts pass isolated install, wrong/empty target and occupied branch refusal; audit original package and adopter-specific state criteria.",
+    "phase": "Head",
+    "next_action": "Auditor verified original installer fix and current isolated install, empty/wrong target and occupied refusal. Stage assigned installer criteria only; #37 independent harness and optional enforcement remain open.",
     "fix_sha": "fbb76a77f896fb39290a1b862e7dde1a74ae3a8a",
     "candidate_sha": "95e05af7b2a675491a01f8450fb20db8871b1f41",
     "pull_request": 2,
