@@ -1,15 +1,19 @@
 """Bootstrap VIB from an installed branch; serialize cooperative handoffs on GitHub."""
 import argparse
+import ast
 import copy
 import hashlib
 import json
 import os
 import re
+import random
 from tools import checkpoint, install
 
 PHASES = ("Worker", "Validate", "Internal Auditor", "Head")
 ACTIVE_KEYS = {"issue", "version", "phase", "next_action", "fix_sha",
                "candidate_sha", "pull_request", "evidence"}
+PIN_KEYS = {"integration_base_sha", "integration_merge_sha"}
+PARALLEL_HANDOFF_SCHEMA = 2
 HANDOFF = "ledger/handoff.json"
 LEDGER = "ledger/issue-versions.json"
 
@@ -33,7 +37,7 @@ def evidence_links(repo, links):
     return links
 
 def validate_active(active, ledger):
-    if not isinstance(active, dict) or set(active) != ACTIVE_KEYS:
+    if not isinstance(active, dict) or set(active) not in (ACTIVE_KEYS, ACTIVE_KEYS | PIN_KEYS):
         raise ValueError("Invalid active handoff schema")
     issue_number(active["issue"])
     if checkpoint.bindings(ledger).get(active["issue"]) != active["version"]:
@@ -48,6 +52,11 @@ def validate_active(active, ledger):
         issue_number(fields[2])
     if active["phase"] in ("Validate", "Internal Auditor") and any(v is None for v in fields):
         raise ValueError("Verification handoff requires a fix, candidate and PR")
+    if PIN_KEYS <= set(active):
+        if active["phase"] == "Worker" or any(v is None for v in fields):
+            raise ValueError("Integration pins require a candidate")
+        for key in PIN_KEYS:
+            install.require(install.SHA, active[key], key)
     evidence_links(ledger["repository"], active["evidence"])
     if active["phase"] == "Internal Auditor" and not active["evidence"]:
         raise ValueError("Auditor handoff requires evidence references")
@@ -56,19 +65,85 @@ def validate_active(active, ledger):
     if active["evidence"] and any(v is None for v in fields):
         raise ValueError("Evidence requires a candidate")
 
+def supports_parallel_package(files):
+    """Capability declaration in the already verified, owner-pinned reader."""
+    try:
+        tree = ast.parse(files.get("tools/session.py", ""))
+    except (SyntaxError, TypeError, ValueError):
+        return False
+    declarations = [node for node in tree.body if isinstance(node, ast.Assign)
+                    and any(isinstance(target, ast.Name) and target.id == "PARALLEL_HANDOFF_SCHEMA"
+                            for target in node.targets)]
+    return (len(declarations) == 1 and isinstance(declarations[0].value, ast.Constant)
+            and type(declarations[0].value.value) is int
+            and declarations[0].value.value == PARALLEL_HANDOFF_SCHEMA)
+
+
+def require_parallel_package(state):
+    if state.get("parallel_supported") is not True:
+        raise ValueError("Installed package lacks parallel handoff support; upgrade the pinned reader first")
+    if state["manifest"].get("enforcement") != "disabled":
+        raise ValueError("Parallel mode requires disabled optional enforcement")
+
+
+def active_rows(handoff):
+    """Read the legacy singleton or the explicitly enabled parallel collection."""
+    if type(handoff.get("schema_version")) is not int:
+        raise ValueError("Invalid handoff version")
+    if handoff["schema_version"] == 1:
+        active = handoff["active"]
+        if active is not None and not isinstance(active, dict):
+            raise ValueError("Invalid legacy active handoff")
+        return [] if active is None else [active]
+    if handoff["schema_version"] == 2 and isinstance(handoff["active"], list):
+        return handoff["active"]
+    raise ValueError("Invalid handoff version or active collection")
+
+
+def select_active(handoff, number=None):
+    rows = active_rows(handoff)
+    if number is None:
+        if handoff["schema_version"] == 2:
+            raise ValueError("Parallel handoff requires explicit --issue")
+        if not rows:
+            raise ValueError("No active handoff")
+        return rows[0]
+    number = issue_number(number)
+    selected = next((a for a in rows if a["issue"] == number), None)
+    if selected is None:
+        raise ValueError("Requested issue does not own an active handoff")
+    return selected
+
+
+def put_active(handoff, number, active):
+    if handoff["schema_version"] == 1:
+        handoff["active"] = active
+    else:
+        rows = [a for a in active_rows(handoff) if a["issue"] != number]
+        if active is not None:
+            rows.append(active)
+        handoff["active"] = sorted(rows, key=lambda a: a["issue"])
+
+
 def validate_handoff(handoff, ledger):
     if not isinstance(handoff, dict) or set(handoff) != {"schema_version", "active", "history"}:
         raise ValueError("Invalid handoff schema")
-    if type(handoff["schema_version"]) is not int or handoff["schema_version"] != 1 or not isinstance(handoff["history"], list):
-        raise ValueError("Invalid handoff version or history")
+    if not isinstance(handoff["history"], list):
+        raise ValueError("Invalid handoff history")
     checkpoint.bindings(ledger)
     in_progress = {row["issue"] for row in ledger["issues"] if row["state"] == "in_progress"}
-    if handoff["active"] is not None:
-        validate_active(handoff["active"], ledger)
-        if in_progress != {handoff["active"]["issue"]}:
+    rows = active_rows(handoff)
+    for active in rows:
+        validate_active(active, ledger)
+    numbers = [active["issue"] for active in rows]
+    if len(set(numbers)) != len(numbers):
+        raise ValueError("Duplicate active issue")
+    if handoff["schema_version"] == 2 and numbers != sorted(numbers):
+        raise ValueError("Parallel active collection must be sorted by issue")
+    if in_progress != set(numbers):
+        if handoff["schema_version"] == 1 and numbers:
             raise ValueError("Active issue must be the sole in-progress row; owner reconciliation required")
-    elif in_progress:
-        raise ValueError("Orphan in-progress issue without active handoff; owner reconciliation required")
+        raise ValueError("Orphan or unmatched in-progress issue without active handoff; owner reconciliation required")
     for record in handoff["history"]:
         if not isinstance(record, dict) or set(record) != {"handoff", "disposition", "decision", "merged_sha"}:
             raise ValueError("Invalid archived handoff")
@@ -118,11 +193,15 @@ def load(api, target, expected_sha=None):
         raise ValueError("Ledger belongs to another repository")
     handoff = checkpoint.parse_json(read(HANDOFF))
     validate_handoff(handoff, ledger)
+    parallel_supported = supports_parallel_package(expected_files)
+    if handoff["schema_version"] == 2 and not parallel_supported:
+        raise ValueError("Installed package lacks parallel handoff support")
     product = install.read_ref(api, prefix, meta["default_branch"])
     if product is None:
         raise ValueError("Product branch is missing")
     return {"prefix": prefix, "ref": ref, "manifest": manifest,
-            "ledger": ledger, "handoff": handoff, "product_sha": product}
+            "ledger": ledger, "handoff": handoff, "product_sha": product,
+            "parallel_supported": parallel_supported}
 
 def get_issue(api, state, number):
     value = api.request("GET", state["prefix"] + "/issues/" + str(issue_number(number)))
@@ -147,21 +226,106 @@ def require_open_pr(api, state, active):
         raise ValueError("PR is not open and unmerged; return to Head or rework")
     return pr
 
+
+def integration_snapshot(api, state, active):
+    """Read the current ordinary PR test merge, including its actual parents."""
+    pr = require_open_pr(api, state, active)
+    prefix = state["prefix"]
+    if (pr.get("head", {}).get("repo") or {}).get("id") != state["manifest"]["target_repository_id"]:
+        raise ValueError("PR head repository changed or unsupported")
+    base = install.require(install.SHA, pr["base"].get("sha"), "PR base")
+    merged = install.require(install.SHA, pr.get("merge_commit_sha"), "proposed merge")
+    if install.read_ref(api, prefix, state["manifest"]["product_branch"]) != base:
+        raise ValueError("Product base changed; refresh integration evidence")
+    commit = api.request("GET", prefix + "/git/commits/" + merged)
+    if (commit.get("sha") != merged or [p["sha"] for p in commit["parents"]] !=
+            [base, active["candidate_sha"]] or base == active["candidate_sha"]):
+        raise ValueError("Proposed merge parents changed or unsupported")
+    observed = require_open_pr(api, state, active)
+    if (observed["base"].get("sha") != base or observed.get("merge_commit_sha") != merged
+            or (observed.get("head", {}).get("repo") or {}).get("id") != state["manifest"]["target_repository_id"]
+            or install.read_ref(api, prefix, state["manifest"]["product_branch"]) != base):
+        raise ValueError("Product base or proposed merge changed during inspection")
+    return {"integration_base_sha": base, "integration_merge_sha": merged}
+
+def require_fresh_snapshot(api, state, active):
+    current = integration_snapshot(api, state, active)
+    if any(active.get(key) != value for key, value in current.items()):
+        raise ValueError("Stale or unpinned integration evidence; refresh and revalidate")
+    return current
+
+def refresh_candidate(api, state, active, note):
+    """Keep the original fix only when the current PR still contains it."""
+    from tools import gate
+    if get_issue(api, state, active["issue"]).get("state") != "open":
+        raise ValueError("Issue is not open; owner reconciliation required")
+    pr = api.request("GET", state["prefix"] + "/pulls/" + str(issue_number(active["pull_request"])))
+    candidate = install.require(install.SHA, pr["head"]["sha"], "current PR head")
+    refreshed = {**active, "candidate_sha": candidate, "phase": "Validate",
+                 "next_action": text(note, "next action"), "evidence": []}
+    refreshed.update(integration_snapshot(api, state, refreshed))
+    gate.check_ancestry(api, state["prefix"], active["fix_sha"], candidate)
+    require_fresh_snapshot(api, state, refreshed)
+    return refreshed
+
+def verify_candidate_runs(api, state, active, links):
+    from tools import standard
+    require_fresh_snapshot(api, state, active)
+    policy = {"repository_id": state["manifest"]["target_repository_id"],
+              "pull_request": active["pull_request"], "head_sha": active["candidate_sha"],
+              "base_sha": active["integration_base_sha"], "merge_sha": active["integration_merge_sha"]}
+    # An old run must not be re-labelled as fresh by a rerun or mutable PR
+    # association. Keep its original record; require a new run for changed pins.
+    invalidated = set()
+    for record in state["handoff"]["history"]:
+        old = record["handoff"]
+        if (old["issue"] == active["issue"] and
+                any(old.get(k) != active.get(k) for k in PIN_KEYS | {"candidate_sha", "pull_request"})):
+            invalidated.update(int(re.search(r"/runs/([0-9]+)/", link).group(1))
+                               for link in old["evidence"])
+    for link in links:
+        run, attempt = map(int, re.search(r"/runs/([0-9]+)/attempts/([0-9]+)$", link).groups())
+        if run in invalidated:
+            raise ValueError("Archived run belongs to stale integration evidence; use a new run")
+        root = state["prefix"] + "/actions/runs/" + str(run)
+        for item in (api.request("GET", root), api.request("GET", root + "/attempts/" + str(attempt))):
+            standard.check_pr_run(item, policy, run, attempt)
+    # Re-read every earlier run after all links were inspected.
+    for link in links:
+        run, attempt = map(int, re.search(r"/runs/([0-9]+)/attempts/([0-9]+)$", link).groups())
+        standard.check_pr_run(api.request("GET", state["prefix"] + "/actions/runs/" + str(run)),
+                              policy, run, attempt)
+    require_fresh_snapshot(api, state, active)
+
 def inspect(api, state, requested=None):
-    active = state["handoff"]["active"]
-    issue = requested if requested is not None else (active["issue"] if active else None)
+    handoff = state["handoff"]
+    validate_handoff(handoff, state["ledger"])
+    rows = active_rows(handoff)
+    issue = requested if requested is not None else (rows[0]["issue"] if len(rows) == 1 else None)
+    active = next((a for a in rows if a["issue"] == issue), None)
+    if handoff["schema_version"] == 1 and rows:
+        active = rows[0]
     info = None
     if issue is not None:
         item = get_issue(api, state, issue)
         info = {"number": issue, "title": item.get("title"), "state": item.get("state"),
                 "version": checkpoint.bindings(state["ledger"]).get(issue)}
-    status = "head_scope_required" if active is None else "resume"
-    if active and issue != active["issue"]:
+    staged = None
+    if issue is not None and any(r["issue"] == issue and r["state"] == "staged" for r in state["ledger"]["issues"]):
+        prior = next((r for r in reversed(state["handoff"]["history"]) if r["handoff"]["issue"] == issue), None)
+        if prior is None or prior["disposition"] != "staged":
+            raise ValueError("Missing latest staged handoff")
+        staged = prior["handoff"]
+    inspected = staged if staged is not None else active
+    status = "staged" if staged is not None else ("head_scope_required" if active is None else "resume")
+    if active and issue != active["issue"] and staged is None:
         status = "blocked_other_active_issue"
-    if active and status == "resume":
-        if active["pull_request"] is not None:
+    if issue is None and len(rows) > 1:
+        status = "issue_selection_required"
+    if inspected and status in ("resume", "staged"):
+        if inspected["pull_request"] is not None:
             try:
-                pr = get_pr(api, state, active)
+                pr = get_pr(api, state, inspected)
             except ValueError:
                 status = "stale_candidate"
             else:
@@ -171,32 +335,58 @@ def inspect(api, state, requested=None):
                     status = "closed_pr_rework_required"
                 elif pr.get("state") != "open" or pr.get("merged") is not False:
                     status = "pr_state_unverified"
-        if status == "resume" and info["state"] != "open":
+                else:
+                    try:
+                        require_fresh_snapshot(api, state, inspected)
+                    except (ValueError, KeyError, TypeError):
+                        status = "stale_integration_evidence"
+        if status in ("resume", "staged") and info["state"] != "open":
             status = "issue_reconciliation_required"
     return {"status": status, "installed_sha": state["ref"], "product_sha": state["product_sha"],
             "repository": state["ledger"]["repository"], "baseline": state["manifest"]["baseline_version"],
             "target": state["manifest"]["target_version"], "issue": info, "active": active,
-            "owner_merge_required": True, "evidence_verified": False}
+            "owner_merge_required": True, "evidence_verified": False,
+            "staged": staged, **({"active_issues": [a["issue"] for a in rows]}
+                                  if handoff["schema_version"] == 2 else {})}
 
-def claim(api, state, number, criteria, note, *, resume_prior_line=False):
+def claim(api, state, number, criteria, note, *, resume_prior_line=False, parallel=False):
     validate_handoff(state["handoff"], state["ledger"])
     item = get_issue(api, state, number)
     if item.get("state") != "open":
         raise ValueError("Only an open GitHub issue can be claimed")
     ledger = copy.deepcopy(state["ledger"])
     handoff = copy.deepcopy(state["handoff"])
-    active = handoff["active"]
+    rows = active_rows(handoff)
+    active = next((a for a in rows if a["issue"] == number), None)
     if active is not None:
-        if active["issue"] != number:
-            raise ValueError("Another issue owns the active handoff")
         record = next(x for x in ledger["issues"] if x["issue"] == number)
         if criteria and criteria != record["acceptance"]:
             raise ValueError("Existing acceptance criteria differ")
         return ledger, handoff
+    if parallel and handoff["schema_version"] == 1:
+        require_parallel_package(state)
+        handoff["schema_version"] = 2
+        handoff["active"] = rows
+    if handoff["schema_version"] == 1 and rows:
+        raise ValueError("Another issue owns the active handoff")
+    if handoff["schema_version"] == 2:
+        require_parallel_package(state)
     baseline = state["manifest"]["baseline_version"]
     row = next((x for x in ledger["issues"] if x["issue"] == number), None)
     if row is not None and row["state"] in ("integrated", "retired"):
         raise ValueError("Historical issue cannot be reclaimed")
+    if row is not None and row["state"] == "staged":
+        if resume_prior_line or row["version"].rsplit(".", 1)[0] != baseline:
+            raise ValueError("Staged prior-line issue requires owner reconciliation")
+        if criteria and criteria != row["acceptance"]:
+            raise ValueError("Existing acceptance criteria differ")
+        prior = next((r for r in reversed(handoff["history"]) if r["handoff"]["issue"] == number), None)
+        if prior is None or prior["disposition"] != "staged":
+            raise ValueError("Missing latest staged handoff")
+        put_active(handoff, number, refresh_candidate(api, state, prior["handoff"], note))
+        row["state"] = "in_progress"
+        validate_handoff(handoff, ledger)
+        return ledger, handoff
     if row is not None and row["version"].rsplit(".", 1)[0] != baseline:
         prior_line = row["version"].rsplit(".", 1)[0]
         if (checkpoint.version_number(prior_line) >= checkpoint.version_number(baseline)
@@ -213,24 +403,32 @@ def claim(api, state, number, criteria, note, *, resume_prior_line=False):
     if criteria and criteria != row["acceptance"]:
         raise ValueError("Existing acceptance criteria differ")
     row["state"] = "in_progress"
-    handoff["active"] = {"issue": number, "version": version, "phase": "Worker",
+    put_active(handoff, number, {"issue": number, "version": version, "phase": "Worker",
                          "next_action": text(note, "next action"), "fix_sha": None,
-                         "candidate_sha": None, "pull_request": None, "evidence": []}
+                         "candidate_sha": None, "pull_request": None, "evidence": []})
+    validate_handoff(handoff, ledger)
     return ledger, handoff
 
 def advance(api, state, note, *, fix=None, candidate=None, pr=None, evidence=None,
-            rework=False, return_to_head=False):
+            rework=False, return_to_head=False, refresh=False, issue=None):
     validate_handoff(state["handoff"], state["ledger"])
     ledger = copy.deepcopy(state["ledger"])
     handoff = copy.deepcopy(state["handoff"])
-    active = handoff["active"]
-    if not active:
-        raise ValueError("No active handoff")
+    active = select_active(handoff, issue)
     active["next_action"] = text(note, "next action")
     phase = active["phase"]
-    if rework and return_to_head:
+    if sum((rework, return_to_head, refresh)) > 1:
         raise ValueError("Choose one transition")
-    if rework:
+    if refresh:
+        if phase == "Worker" or active["pull_request"] is None:
+            raise ValueError("Refresh requires an existing PR candidate")
+        if any(v is not None for v in (fix, candidate, pr)) or evidence:
+            raise ValueError("Refresh preserves the original fix; do not supply replacement evidence")
+        previous = copy.deepcopy(select_active(state["handoff"], active["issue"]))
+        put_active(handoff, active["issue"], refresh_candidate(api, state, previous, note))
+        handoff["history"].append({"handoff": previous, "disposition": "rework",
+                                   "decision": "Refresh integration evidence: " + note, "merged_sha": None})
+    elif rework:
         if phase == "Worker":
             raise ValueError("Already in Worker phase")
         if get_issue(api, state, active["issue"]).get("state") != "open":
@@ -244,10 +442,12 @@ def advance(api, state, note, *, fix=None, candidate=None, pr=None, evidence=Non
                     or existing.get("merged") is not False
                     or existing.get("state") not in ("open", "closed")):
                 raise ValueError("PR is merged or state is unverified; return to Head for owner reconciliation")
-        previous = copy.deepcopy(state["handoff"]["active"])
+        previous = copy.deepcopy(select_active(state["handoff"], active["issue"]))
         handoff["history"].append({"handoff": previous, "disposition": "rework",
                                    "decision": note, "merged_sha": None})
         active.update(phase="Worker", fix_sha=None, candidate_sha=None, pull_request=None, evidence=[])
+        for key in PIN_KEYS:
+            active.pop(key, None)
     elif return_to_head:
         if phase == "Head":
             raise ValueError("Already at Head")
@@ -257,28 +457,31 @@ def advance(api, state, note, *, fix=None, candidate=None, pr=None, evidence=Non
     elif phase == "Worker":
         active.update(phase="Validate", fix_sha=fix, candidate_sha=candidate, pull_request=pr, evidence=[])
         validate_active(active, ledger)
-        require_open_pr(api, state, active)
+        active.update(integration_snapshot(api, state, active))
     elif phase == "Validate":
-        require_open_pr(api, state, active)
-        active.update(phase="Internal Auditor", evidence=evidence_links(ledger["repository"], evidence or []))
+        links = evidence_links(ledger["repository"], evidence or [])
+        verify_candidate_runs(api, state, active, links)
+        active.update(phase="Internal Auditor", evidence=links)
     elif phase == "Internal Auditor":
-        require_open_pr(api, state, active)
+        verify_candidate_runs(api, state, active, active["evidence"])
         active["phase"] = "Head"
     else:
         raise ValueError("Head must decide or return to Worker")
     validate_handoff(handoff, ledger)
     return ledger, handoff
 
-def finish(api, state, disposition, decision):
+def finish(api, state, disposition, decision, *, policy=None, issue=None):
     validate_handoff(state["handoff"], state["ledger"])
     ledger = copy.deepcopy(state["ledger"])
     handoff = copy.deepcopy(state["handoff"])
-    active = handoff["active"]
-    if active is None or active["phase"] != "Head":
+    active = select_active(handoff, issue)
+    if active["phase"] != "Head":
         raise ValueError("Return to Head before deciding")
     if disposition not in ("blocked", "deferred", "staged", "integrated"):
         raise ValueError("Invalid disposition")
     merged = None
+    if policy is not None and disposition != "integrated":
+        raise ValueError("Post-merge policy applies only to integration")
     if disposition in ("staged", "integrated"):
         if not active["evidence"]:
             raise ValueError("Integration requires recorded verification evidence")
@@ -286,22 +489,33 @@ def finish(api, state, disposition, decision):
         if disposition == "staged":
             if pr.get("state") != "open" or pr.get("merged") is not False:
                 raise ValueError("Staging requires an open unmerged PR")
+            verify_candidate_runs(api, state, active, active["evidence"])
         else:
             if pr.get("state") != "closed" or pr.get("merged") is not True:
                 raise ValueError("GitHub does not report a closed, merged PR")
-            merged = install.require(install.SHA, pr["merge_commit_sha"], "merged revision")
+            from tools import standard
+            merged, links = standard.verify_integration(api, state, active, pr, policy)
+            active["evidence"] = list(dict.fromkeys(active["evidence"] + links))
+            decision = integration_decision(decision, policy)
     handoff["history"].append({"handoff": active, "disposition": disposition,
                                "decision": text(decision, "owner decision"), "merged_sha": merged})
     next(x for x in ledger["issues"] if x["issue"] == active["issue"])["state"] = disposition
-    handoff["active"] = None
+    put_active(handoff, active["issue"], None)
+    validate_handoff(handoff, ledger)
     return ledger, handoff
 
-def reconcile(api, state, number, decision):
+def integration_decision(decision, policy):
+    # Preserve the exact reviewed mapping in the existing decision field, without
+    # changing the v1 archive schema or rewriting earlier receipts.
+    return text(decision, "owner decision") + "\nPost-merge policy: " + json.dumps(
+        policy, sort_keys=True, separators=(",", ":"), ensure_ascii=True, allow_nan=False)
+
+def reconcile(api, state, number, decision, *, policy=None):
     validate_handoff(state["handoff"], state["ledger"])
     ledger = copy.deepcopy(state["ledger"])
     handoff = copy.deepcopy(state["handoff"])
-    if handoff["active"] is not None:
-        raise ValueError("Finish the active handoff before integration reconciliation")
+    # Reconciliation operates on one staged issue, not the active slot.
+    # Its exact post-merge policy and final save scope protect other records.
     row = next((x for x in ledger["issues"] if x["issue"] == issue_number(number)), None)
     if row is None or row["state"] != "staged":
         raise ValueError("Integration reconciliation requires a staged issue")
@@ -312,25 +526,140 @@ def reconcile(api, state, number, decision):
     pr = get_pr(api, state, active)
     if pr.get("state") != "closed" or pr.get("merged") is not True:
         raise ValueError("GitHub does not report a closed, merged PR")
+    if not active["evidence"]:
+        raise ValueError("Integration requires recorded verification evidence")
+    from tools import standard
+    merged, links = standard.verify_integration(api, state, active, pr, policy)
+    active["evidence"] = list(dict.fromkeys(active["evidence"] + links))
     handoff["history"].append({"handoff": active, "disposition": "integrated",
-        "decision": text(decision, "owner decision"), "merged_sha": install.require(
-            install.SHA, pr["merge_commit_sha"], "merged revision")})
+        "decision": integration_decision(decision, policy), "merged_sha": merged})
     row["state"] = "integrated"
     return ledger, handoff
 
-def save(api, state, ledger, handoff, apply=False):
-    validate_handoff(state["handoff"], state["ledger"])
-    checkpoint.check_history(ledger, state["ledger"])
+
+def confirm_handoff(api, prefix, old, new, tree):
+    """Confirm the exact proposed commit, even if a later transaction advanced the ref."""
+    for value, label in ((old, "previous"), (new, "candidate"), (tree, "tree")):
+        install.require(install.SHA, value, label + " revision")
+    for delay in (0, 0.25, 0.5, 1, 2, 4):
+        if delay:
+            install.time.sleep(delay)
+        observed = install.read_ref(api, prefix, install.BRANCH)
+        if observed == new:
+            return observed
+        if observed == old:
+            continue
+        if observed is None:
+            raise ValueError("Installed branch disappeared")
+        comparison = api.request("GET", prefix + "/compare/" + new + "..." + observed)
+        if (comparison.get("status") != "ahead" or comparison.get("behind_by") != 0
+                or type(comparison.get("ahead_by")) is not int or comparison["ahead_by"] <= 0
+                or comparison.get("base_commit", {}).get("sha") != new
+                or comparison.get("merge_base_commit", {}).get("sha") != new):
+            raise ValueError("Observed revision does not establish candidate ancestry")
+        commit = api.request("GET", prefix + "/git/commits/" + new)
+        if (commit.get("sha") != new or commit.get("tree", {}).get("sha") != tree
+                or [p.get("sha") for p in commit.get("parents", [])] != [old]):
+            raise ValueError("Candidate commit does not match the proposed transaction")
+        return observed
+    raise ValueError("Handoff commit not confirmed")
+
+class HandoffUnconfirmed(ValueError):
+    """An exact candidate is available for inspection, not blind resubmission."""
+    def __init__(self, candidate, retry_after=None):
+        self.candidate_sha = candidate
+        self.retry_after = retry_after
+        delay = f"; wait at least {retry_after} seconds before inspecting" if retry_after is not None else ""
+        super().__init__("Handoff outcome unconfirmed; inspect candidate " + candidate + " before retrying" + delay)
+
+def check_issue_delta(state, ledger, handoff, number=None):
+    """Only one explicitly scoped issue may change in a session transaction.
+
+    Preserve unrelated rows and active work, immutable existing criteria, and
+    the exact historical archive prefix. Legacy callers may omit the issue
+    only when the current/new active slot or a single append identifies it.
+    This is a cooperative data-integrity guard, not an authorization boundary.
+    """
+    before_ledger, before_handoff = state["ledger"], state["handoff"]
+    validate_handoff(before_handoff, before_ledger)
+    checkpoint.check_history(ledger, before_ledger)
     validate_handoff(handoff, ledger)
-    if handoff["history"][:len(state["handoff"]["history"])] != state["handoff"]["history"]:
+    if ledger["repository"] != before_ledger["repository"]:
+        raise ValueError("Ledger repository changed")
+    history = before_handoff["history"]
+    if handoff["history"][:len(history)] != history:
         raise ValueError("Historical handoff changed")
+    appended = handoff["history"][len(history):]
+    previous = {a["issue"]: a for a in active_rows(before_handoff)}
+    proposed = {a["issue"]: a for a in active_rows(handoff)}
+    changed = {n for n in previous.keys() | proposed.keys() if previous.get(n) != proposed.get(n)}
+    migration = before_handoff["schema_version"] != handoff["schema_version"]
+    if migration and (before_handoff["schema_version"], handoff["schema_version"]) != (1, 2):
+        raise ValueError("Handoff schema downgrade is not supported")
+    if number is None:
+        if len(changed) == 1:
+            number = next(iter(changed))
+        elif not changed and appended:
+            number = appended[0]["handoff"]["issue"]
+        elif ledger == before_ledger and handoff == before_handoff:
+            return
+        else:
+            raise ValueError("Issue scope required for state mutation")
+    number = issue_number(number)
+    old_rows = {r["issue"]: r for r in before_ledger["issues"]}
+    new_rows = {r["issue"]: r for r in ledger["issues"]}
+    if {n:r for n,r in old_rows.items() if n != number} != {
+            n:r for n,r in new_rows.items() if n != number}:
+        raise ValueError("Issue scope violation: unrelated ledger row changed")
+    if [r for r in before_ledger["issues"] if r["issue"] != number] != [
+            r for r in ledger["issues"] if r["issue"] != number]:
+        raise ValueError("Issue scope violation: unrelated ledger order changed")
+    if number in old_rows:
+        if new_rows[number]["acceptance"] != old_rows[number]["acceptance"]:
+            raise ValueError("Issue scope violation: existing acceptance criteria changed")
+        if old_rows[number]["state"] in ("integrated", "retired") and new_rows[number] != old_rows[number]:
+            raise ValueError("Issue scope violation: terminal issue changed")
+    if changed - {number}:
+        raise ValueError("Issue scope violation: unrelated active handoff changed")
+    if migration and (number in previous or number not in proposed or appended
+                      or state["manifest"].get("enforcement", "disabled") != "disabled"):
+        raise ValueError("Parallel migration requires a new owner-approved active claim")
+    if handoff["schema_version"] == 2:
+        require_parallel_package(state)
+    if any(r["handoff"]["issue"] != number for r in appended):
+        raise ValueError("Issue scope violation: unrelated history appended")
+    if number not in new_rows:
+        raise ValueError("Issue scope does not identify a ledger record")
+    if number in old_rows and old_rows[number]["state"] in ("integrated", "retired") and appended:
+        raise ValueError("Issue scope violation: terminal issue history appended")
+
+
+class HandoffStale(ValueError):
+    """A known pre-publication conflict: no ref PATCH was sent."""
+
+
+class HandoffRejected(install.ApiError):
+    """A definitive ref rejection, not an ambiguous transport outcome."""
+    def __init__(self, error, candidate, tree):
+        super().__init__(error.status, "PATCH", "git/refs", error.retry_after)
+        self.candidate_sha, self.tree_sha = candidate, tree
+
+
+def save(api, state, ledger, handoff, apply=False, *, issue=None):
+    check_issue_delta(state, ledger, handoff, issue)
     if ledger == state["ledger"] and handoff == state["handoff"]:
         return {"status": "unchanged", "installed_sha": state["ref"]}
     if not apply:
         return {"status": "planned", "ledger": ledger, "handoff": handoff}
+    # Recheck proof for newly staged rows before persisting. A stale stage
+    # must not be published merely because its earlier plan was successful.
+    staged = [record["handoff"] for record in handoff["history"][len(state["handoff"]["history"]):]
+              if record["disposition"] == "staged"]
+    for active in staged:
+        verify_candidate_runs(api, state, active, active["evidence"])
     prefix, old = state["prefix"], state["ref"]
     if install.read_ref(api, prefix, install.BRANCH) != old:
-        raise ValueError("Installed branch advanced; reload")
+        raise HandoffStale("Installed branch advanced; reload")
     commit = api.request("GET", prefix + "/git/commits/" + old)
     if commit.get("sha") != old:
         raise ValueError("Wrong installed commit")
@@ -342,10 +671,167 @@ def save(api, state, ledger, handoff, apply=False):
     new = api.request("POST", prefix + "/git/commits", {"message": "VIB cooperative handoff",
         "tree": install.require(install.SHA, tree, "handoff tree"), "parents": [old]})["sha"]
     install.require(install.SHA, new, "handoff commit")
+    if new == old:
+        raise ValueError("Proposed handoff commit equals its parent")
+    # Recheck after creating the objects, immediately before publishing the ref.
+    for active in staged:
+        verify_candidate_runs(api, state, active, active["evidence"])
     # Fast-forward-only CAS: a divergent writer cannot overwrite a competing handoff.
-    api.request("PATCH", prefix + "/git/refs/heads/" + install.BRANCH, {"sha": new, "force": False})
-    install.wait_ref(api, prefix, install.BRANCH, new, old)
-    return {"status": "saved", "installed_sha": new}
+    ambiguous = False
+    try:
+        api.request("PATCH", prefix + "/git/refs/heads/" + install.BRANCH, {"sha": new, "force": False})
+    except (install.ApiTransportError, json.JSONDecodeError):
+        ambiguous = True
+    except install.ApiError as error:
+        # Rate limits and permanent errors must not trigger polling or resubmission.
+        if error.retry_after is None and error.status in (409, 422):
+            raise HandoffRejected(error, new, tree) from None
+        # A 5xx/408 can be returned after publication. Preserve the candidate
+        # even if a Retry-After prevents immediate readback. Never repeat PATCH.
+        if error.status not in (408, 500, 502, 503, 504):
+            raise
+        if error.retry_after is not None:
+            if error.retry_after > 8:
+                raise HandoffUnconfirmed(new, error.retry_after) from None
+            install.time.sleep(error.retry_after)
+        ambiguous = True
+    try:
+        observed = confirm_handoff(api, prefix, old, new, tree)
+    except install.ApiError as error:
+        raise HandoffUnconfirmed(new, error.retry_after) from None
+    except (ValueError, KeyError, TypeError, OSError):
+        raise HandoffUnconfirmed(new) from None
+    result = {"status": "saved", "installed_sha": new}
+    if observed != new or ambiguous:
+        result.update(observed_sha=observed, recovered_response=ambiguous)
+    return result
+
+def issue_view(ledger, handoff, number):
+    """Snapshot every issue-local record, including all archived transitions."""
+    return (next((r for r in ledger["issues"] if r["issue"] == number), None),
+            next((a for a in active_rows(handoff) if a["issue"] == number), None),
+            [r for r in handoff["history"] if r["handoff"]["issue"] == number])
+
+
+def retry_scope(api, previous, fresh, number, rejection):
+    """Prove intervening single-parent commits did not touch this issue.
+
+    Reading only the two endpoint snapshots would miss a change-and-revert.
+    Bound ancestry work, reject rewrites/merges, and never trust an API error
+    alone as evidence of contention.
+    """
+    if (fresh["prefix"] != previous["prefix"] or fresh["manifest"] != previous["manifest"]
+            or fresh["product_sha"] != previous["product_sha"]):
+        raise ValueError("Package, repository or product changed; review before retrying")
+    old, cursor = previous["ref"], fresh["ref"]
+    if cursor == old:
+        raise rejection
+    prefix = fresh["prefix"]
+    path = []
+    for _ in range(32):
+        if cursor == old:
+            break
+        commit = api.request("GET", prefix + "/git/commits/" + cursor)
+        parents = commit.get("parents", [])
+        if commit.get("sha") != cursor or len(parents) != 1:
+            raise ValueError("Intervening history is not a verified linear handoff chain")
+        parent = install.require(install.SHA, parents[0].get("sha"), "intervening parent")
+        if parent == cursor:
+            raise ValueError("Invalid intervening parent")
+        path.append((cursor, commit, parent))
+        cursor = parent
+    if cursor != old:
+        raise ValueError("Contention ancestry bound exceeded; inspect before retrying")
+    if isinstance(rejection, HandoffRejected):
+        for sha, commit, parent in path:
+            if sha == rejection.candidate_sha:
+                if parent != old or commit.get("tree", {}).get("sha") != rejection.tree_sha:
+                    raise HandoffUnconfirmed(sha)
+                return sha
+    expected = issue_view(previous["ledger"], previous["handoff"], number)
+    history = previous["handoff"]["history"]
+    prior_ledger = previous["ledger"]
+    prior_schema = previous["handoff"]["schema_version"]
+    from tools import lifecycle
+    _, old_entries = lifecycle.tree_entries(api, prefix, old)
+    package_paths = previous["manifest"]["package_files_sha256"]
+    protected = {p: old_entries.get(p) for p in package_paths}
+    if any(entry is None or entry[:2] != ("blob", "100644") for entry in protected.values()):
+        raise ValueError("Original package tree invalid during contention")
+    for sha, _, _ in reversed(path):
+        _, entries = lifecycle.tree_entries(api, prefix, sha)
+        if any(entries.get(p) != entry for p, entry in protected.items()):
+            raise ValueError("Installed package changed during contention")
+        def read(file):
+            return checkpoint.parse_json(install.read_text(api, prefix, file, sha))
+        if read("vib-install.json") != previous["manifest"]:
+            raise ValueError("Installed manifest changed during contention")
+        ledger, handoff = read(LEDGER), read(HANDOFF)
+        validate_handoff(handoff, ledger)
+        checkpoint.check_history(ledger, prior_ledger)
+        current_rows = {row["issue"]: row for row in ledger["issues"]}
+        for row in prior_ledger["issues"]:
+            if current_rows[row["issue"]]["acceptance"] != row["acceptance"]:
+                raise ValueError("Historical acceptance changed during contention")
+            if row["state"] in ("integrated", "retired") and current_rows[row["issue"]] != row:
+                raise ValueError("Terminal record changed during contention")
+        if handoff["schema_version"] < prior_schema:
+            raise ValueError("Handoff schema regressed during contention")
+        if (handoff["history"][:len(history)] != history
+                or issue_view(ledger, handoff, number) != expected):
+            raise ValueError("Issue or archive changed during contention; inspect before retrying")
+        history = handoff["history"]
+        prior_ledger = ledger
+        prior_schema = handoff["schema_version"]
+    return None
+
+
+def planned_issue_view(ledger, handoff, number, new_issue):
+    view = copy.deepcopy(issue_view(ledger, handoff, number))
+    if new_issue:
+        # An uncommitted allocation may change to the next available checkpoint.
+        for row in view[:2]:
+            if row is not None:
+                row["version"] = None
+    return view
+
+
+def recover_save(api, target, state, plan, issue, *, attempts=4):
+    """Replan only a proved unrelated, definitive conflict; never replay a PATCH."""
+    if type(attempts) is not int or not 1 <= attempts <= 4:
+        raise ValueError("Contention attempts must be between 1 and 4")
+    issue = issue_number(issue)
+    ledger, handoff = plan(state)
+    check_issue_delta(state, ledger, handoff, issue)
+    if handoff["schema_version"] != 2:
+        return save(api, state, ledger, handoff, True, issue=issue)
+    new_issue = issue_view(state["ledger"], state["handoff"], issue)[0] is None
+    intended = planned_issue_view(ledger, handoff, issue, new_issue)
+    for attempt in range(attempts):
+        try:
+            result = save(api, state, ledger, handoff, True, issue=issue)
+            if attempt:
+                result["contention_retries"] = attempt
+            return result
+        except (HandoffStale, HandoffRejected) as error:
+            # GitHub 422 may also mean validation failure or spam. Require
+            # observed ref movement, a linear chain and unchanged issue scope.
+            if attempt + 1 == attempts:
+                raise ValueError("Contention retry budget exhausted; no unconfirmed write replayed") from error
+            install.time.sleep(random.uniform(1, min(8, 2 ** (attempt + 1))))
+            fresh = load(api, target)
+            confirmed = retry_scope(api, state, fresh, issue, error)
+            if confirmed is not None:
+                return {"status":"saved", "installed_sha":confirmed,
+                        "observed_sha":fresh["ref"], "recovered_response":True,
+                        "contention_retries":attempt}
+            ledger, handoff = plan(fresh)
+            check_issue_delta(fresh, ledger, handoff, issue)
+            if (handoff["schema_version"] != 2 or
+                    planned_issue_view(ledger, handoff, issue, new_issue) != intended):
+                raise ValueError("Replanned issue intent changed; inspect before retrying")
+            state = fresh
+
 
 def main():
     p = argparse.ArgumentParser(description=__doc__)
@@ -359,23 +845,29 @@ def main():
     c.add_argument("--acceptance", action="append", default=[])
     c.add_argument("--note", required=True)
     c.add_argument("--owner-approved", action="store_true")
+    c.add_argument("--parallel", action="store_true", help="Owner-approved opt-in to parallel handoffs when claiming a new active issue")
     c.add_argument("--resume-prior-line", action="store_true", help="Resume an eligible unresolved historical checkpoint without renumbering")
     a = sub.add_parser("advance")
     a.add_argument("--note", required=True)
+    a.add_argument("--issue", type=int, help="Assert the intended active issue before advancing")
     a.add_argument("--fix")
     a.add_argument("--candidate")
     a.add_argument("--pr", type=int)
     a.add_argument("--evidence", action="append", default=[])
     a.add_argument("--rework", action="store_true")
+    a.add_argument("--refresh", action="store_true", help="Keep original fix and checkpoint; archive stale evidence and revalidate current PR")
     a.add_argument("--return-to-head", action="store_true")
     f = sub.add_parser("finish")
     f.add_argument("disposition", choices=["blocked", "deferred", "staged", "integrated"])
     f.add_argument("--decision", required=True)
+    f.add_argument("--issue", type=int, help="Assert the intended active issue before finishing")
     f.add_argument("--owner-approved", action="store_true")
     i = sub.add_parser("reconcile")
     i.add_argument("issue", type=int)
     i.add_argument("--decision", required=True)
     i.add_argument("--owner-approved", action="store_true")
+    for command in (f, i):
+        command.add_argument("--policy", help="Owner-reviewed Standard post-merge policy JSON (required for integration)")
     for command in (c, a, f, i):
         command.add_argument("--apply", action="store_true")
     args = p.parse_args()
@@ -390,20 +882,34 @@ def main():
                 raise ValueError("Apply requires a credential and exact expected installed SHA")
             if args.command in ("claim", "finish", "reconcile") and not args.owner_approved:
                 raise ValueError("Explicit owner approval is required")
-            if args.command == "claim":
-                ledger, handoff = claim(api, state, args.issue, args.acceptance, args.note,
-                    resume_prior_line=args.resume_prior_line)
-            elif args.command == "advance":
-                ledger, handoff = advance(api, state, args.note, fix=args.fix, candidate=args.candidate,
-                    pr=args.pr, evidence=args.evidence, rework=args.rework, return_to_head=args.return_to_head)
-            elif args.command == "finish":
-                ledger, handoff = finish(api, state, args.disposition, args.decision)
+            if args.command in ("advance", "finish"):
+                scope = select_active(state["handoff"], args.issue)["issue"]
             else:
-                ledger, handoff = reconcile(api, state, args.issue, args.decision)
-            result = save(api, state, ledger, handoff, args.apply)
+                scope = args.issue
+            from pathlib import Path
+            policy = (checkpoint.parse_json(Path(args.policy).read_text(encoding="utf-8"))
+                      if args.command in ("finish", "reconcile") and args.policy else None)
+            def plan(current):
+                if args.command == "claim":
+                    return claim(api, current, args.issue, args.acceptance, args.note,
+                        resume_prior_line=args.resume_prior_line, parallel=args.parallel)
+                if args.command == "advance":
+                    return advance(api, current, args.note, fix=args.fix, candidate=args.candidate,
+                        pr=args.pr, evidence=args.evidence, rework=args.rework,
+                        return_to_head=args.return_to_head, refresh=args.refresh, issue=scope)
+                if args.command == "finish":
+                    return finish(api, current, args.disposition, args.decision, policy=policy, issue=scope)
+                return reconcile(api, current, args.issue, args.decision, policy=policy)
+            # Exact owner post-merge policy pins must not be silently rewritten.
+            if args.apply and policy is None and args.command != "reconcile" and not (
+                    args.command == "finish" and args.disposition == "integrated"):
+                result = recover_save(api, args.target, state, plan, scope)
+            else:
+                ledger, handoff = plan(state)
+                result = save(api, state, ledger, handoff, args.apply, issue=scope)
         print(install.render(result), end="")
-    except (ValueError, KeyError, OSError, install.ApiError) as exc:
-        p.exit(1, f"VIB session stopped: {exc}\n")
+    except (ValueError, KeyError, TypeError, OSError, install.ApiError) as exc:
+        install.cli_error(p, "VIB session stopped", exc)
 
 if __name__ == "__main__":
     main()

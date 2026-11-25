@@ -93,8 +93,13 @@ def verify_live_cli_plan(api, source):
                 "installed_source": state["manifest"]["source_sha"],
                 "source": source, "planned_files": None, "branch_created": False,
                 "issue_assignments_changed": False, "duplicate_install_refused": True}
-    report = json.loads(subprocess.check_output([sys.executable, "-m", "tools.install",
-        "--target", target, "--source-sha", source, "--baseline", "v0.0.6"], text=True))
+    try:
+        report = json.loads(subprocess.check_output([sys.executable, "-m", "tools.install",
+            "--target", target, "--source-sha", source, "--baseline", "v0.0.6"],
+            text=True, stderr=subprocess.PIPE))
+    except subprocess.CalledProcessError as exc:
+        install.raise_cli_delay(exc.stderr)
+        raise
     assert report["status"] == "planned"
     assert report["manifest"]["source_sha"] == source
     assert report["manifest"]["target_repository_id"] == meta["id"]
@@ -187,7 +192,12 @@ def run_cases(api, source, scope):
                 "bart": lambda: verify_bart(api, source)}
     cases = {"core": core, "external": external, "all": {**core, **external}}[scope]
     results = {}
+    throttle = None
     for name, check in cases.items():
+        if throttle is not None:
+            results[name] = {"status": "not_run", "reason": "prior_rate_limit",
+                             "retry_after_seconds": throttle}
+            continue
         try:
             results[name] = {"status": "passed", "evidence": check()}
         except Exception as exc:
@@ -197,6 +207,11 @@ def run_cases(api, source, scope):
             failure = {"status": "failed", "error_type": type(exc).__name__}
             if isinstance(exc, install.ApiError):
                 failure["http_status"] = exc.status
+                if exc.method == "GET" and exc.operation in ("repository", "git/trees", "git/commits", "git/refs", "git/ref", "git/blobs", "compare", "contents", "issues", "pulls", "actions", "check-runs", "commits", "other"):
+                    failure["operation"] = exc.operation
+                if exc.retry_after is not None:
+                    failure["retry_after_seconds"] = exc.retry_after
+                    throttle = exc.retry_after
             if isinstance(exc, subprocess.CalledProcessError):
                 failure["exit_code"] = exc.returncode
             results[name] = failure
