@@ -96,3 +96,20 @@ class LiveIsolationTests(unittest.TestCase):
             with self.assertRaises(AssertionError):
                 live.retry_snapshot(lambda: live.verify_live_cli_plan(api, SOURCE))
         recovery.assert_called_once()
+
+    def test_rate_limit_retains_safe_diagnostics_and_stops_remaining_reads(self):
+        error = live.install.ApiError(403, "GET", "repository", 120)
+        with patch.object(live, "verify_self_install", side_effect=error), patch.object(live, "verify_templates") as other:
+            result = live.run_cases(Mock(), SOURCE, "core")
+        self.assertEqual(result["status"], "failed")
+        self.assertEqual(result["cases"]["self_install"], {"status":"failed","error_type":"ApiError",
+            "http_status":403,"operation":"repository","retry_after_seconds":120})
+        self.assertEqual(result["cases"]["templates"], {"status":"not_run","reason":"prior_rate_limit","retry_after_seconds":120})
+        other.assert_not_called()
+
+    def test_unclassified_denial_does_not_claim_rate_limit(self):
+        with patch.object(live, "verify_self_install", side_effect=live.install.ApiError(403, "GET", "repository")), patch.object(live, "verify_templates", return_value={}) as other:
+            result = live.run_cases(Mock(), SOURCE, "core")
+        self.assertEqual(result["status"], "failed")
+        self.assertNotIn("retry_after_seconds", result["cases"]["self_install"])
+        other.assert_called_once()

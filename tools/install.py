@@ -48,6 +48,8 @@ class ApiError(RuntimeError):
         super().__init__(f"GitHub API returned HTTP {status}{context}{delay}")
         self.status = status
         self.retry_after = retry_after
+        self.method = method
+        self.operation = operation
 
 
 def retry_delay(status, headers, now):

@@ -187,7 +187,12 @@ def run_cases(api, source, scope):
                 "bart": lambda: verify_bart(api, source)}
     cases = {"core": core, "external": external, "all": {**core, **external}}[scope]
     results = {}
+    throttle = None
     for name, check in cases.items():
+        if throttle is not None:
+            results[name] = {"status": "not_run", "reason": "prior_rate_limit",
+                             "retry_after_seconds": throttle}
+            continue
         try:
             results[name] = {"status": "passed", "evidence": check()}
         except Exception as exc:
@@ -197,6 +202,11 @@ def run_cases(api, source, scope):
             failure = {"status": "failed", "error_type": type(exc).__name__}
             if isinstance(exc, install.ApiError):
                 failure["http_status"] = exc.status
+                if exc.method == "GET" and exc.operation in ("repository", "git/trees", "git/commits", "git/refs", "git/ref", "git/blobs", "compare", "contents", "issues", "pulls", "actions", "check-runs", "commits", "other"):
+                    failure["operation"] = exc.operation
+                if exc.retry_after is not None:
+                    failure["retry_after_seconds"] = exc.retry_after
+                    throttle = exc.retry_after
             if isinstance(exc, subprocess.CalledProcessError):
                 failure["exit_code"] = exc.returncode
             results[name] = failure
