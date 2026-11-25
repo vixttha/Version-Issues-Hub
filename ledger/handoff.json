@@ -1,11 +1,17 @@
 {
   "active": {
     "candidate_sha": "5a6074d77ec37823f81c6d7ebb1f4593d969cd71",
-    "evidence": [],
+    "evidence": [
+      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45685739942/attempts/1",
+      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45685749785/attempts/1",
+      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45685749749/attempts/1",
+      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45685749831/attempts/1",
+      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45685739994/attempts/1"
+    ],
     "fix_sha": "82cfa7272ad83b044e7d4e9760133dc8a443f102",
     "issue": 40,
-    "next_action": "Batch #56/#57/#54 engineering PR58 merged with exact tested tree. Validate PR2 current head on public Ubuntu/Windows, Graphify, live acceptance and CodeRabbit; preserve release hold.",
-    "phase": "Validate",
+    "next_action": "Batch #56/#57/#54 exact engineering head and PR2 proposed merge both passed 118 tests on Ubuntu/Windows, Graphify 121/120 each, live core/external and law contract. Audit fresh PR2 CodeRabbit, separate #34 optional finding, and release gates; no main merge.",
+    "phase": "Internal Auditor",
     "pull_request": 2,
     "version": "v0.0.0.23"
   },
