@@ -331,7 +331,7 @@
     {
       "issue": 70,
       "version": "v0.0.0.34",
-      "state": "in_progress",
+      "state": "staged",
       "acceptance": [
         "Reject changes, deletion, additions or reordering of historical acceptance criteria with identical issue-version bindings.",
         "Allow new issue assignments and legitimate state changes while preserving all historical mappings and criteria.",
