@@ -868,6 +868,34 @@
           "anchor": "def test_post_success_rerun_revokes_exact_check(self):"
         }
       ]
+    },
+    {
+      "id": "v0-0-0-33",
+      "label": "Issue #68 · generic canonical Worker preflight",
+      "documented_in": [
+        {
+          "path": "docs/v0.0.0.33.md",
+          "anchor": "## Forward checkpoint protocol"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "ledger/issue-versions.json",
+          "anchor": "\"issue\": 68,"
+        }
+      ],
+      "implemented_in": [
+        {
+          "path": "tools/self_use_preflight.py",
+          "anchor": "def verify_checkpoint_branch(branch):"
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tests/test_self_use_preflight.py",
+          "anchor": "def test_generic_worker_record_is_exact(self):"
+        }
+      ]
     }
   ]
 }
