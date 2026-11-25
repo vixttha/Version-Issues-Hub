@@ -1,20 +1,5 @@
 {
-  "active": {
-    "issue": 10,
-    "version": "v0.0.0.4",
-    "phase": "Head",
-    "fix_sha": "1a53dc83cd578faa26b8253e0699646ea58e2dbb",
-    "candidate_sha": "1e85153765c0ca908f2ee44f2973ba59b0669c23",
-    "pull_request": 2,
-    "evidence": [
-      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45702627362/attempts/1",
-      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45702637970/attempts/1",
-      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45702627289/attempts/1",
-      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45702637962/attempts/1",
-      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45702638002/attempts/1"
-    ],
-    "next_action": "Technical bootstrap and durable handoff acceptance passes: exact fix ancestry, 12 package pins, seven named controls on four public suites, historical live process and current read-only acceptance, CodeRabbit green. Owner-directed solo mode defers qualified independent host trial #37; main integration remains held #40. Stage technical work only, no closure."
-  },
+  "active": null,
   "history": [
     {
       "decision": "PR49 CodeRabbit finding 4682051116: rework exact product SHA comparisons and add regression checks; preserve previous evidence.",
@@ -254,6 +239,27 @@
       },
       "disposition": "staged",
       "decision": "Owner directs next issue #10 after individual review. Stage verified #34 on open PR2, not main integration; keep GitHub issue open pending main and optional live acceptance as applicable. No release or ruleset activation.",
+      "merged_sha": null
+    },
+    {
+      "handoff": {
+        "issue": 10,
+        "version": "v0.0.0.4",
+        "phase": "Head",
+        "fix_sha": "1a53dc83cd578faa26b8253e0699646ea58e2dbb",
+        "candidate_sha": "1e85153765c0ca908f2ee44f2973ba59b0669c23",
+        "pull_request": 2,
+        "evidence": [
+          "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45702627362/attempts/1",
+          "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45702637970/attempts/1",
+          "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45702627289/attempts/1",
+          "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45702637962/attempts/1",
+          "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45702638002/attempts/1"
+        ],
+        "next_action": "Technical bootstrap and durable handoff acceptance passes: exact fix ancestry, 12 package pins, seven named controls on four public suites, historical live process and current read-only acceptance, CodeRabbit green. Owner-directed solo mode defers qualified independent host trial #37; main integration remains held #40. Stage technical work only, no closure."
+      },
+      "disposition": "staged",
+      "decision": "Owner-directed individual solo continuation, technical #10 criteria verified on current PR2. Stage existing implementation without claiming integration, closure or independent host qualification. #37 and #40 remain open.",
       "merged_sha": null
     }
   ],
