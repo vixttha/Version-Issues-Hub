@@ -51,18 +51,37 @@ def check_pr_revision(group, spec, p):
 
 def check_ledger_mappings(ledger, original):
     keys = ("issue", "version", "acceptance")
-    check("22 historical mappings and criteria intact",
-          len(ledger["issues"]) == 23 and len(original["issues"]) == 24
-          and all({k: row[k] for k in keys} == {k: old[k] for k in keys}
-                  and row["state"] == "assigned"
-                  for row, old in zip(ledger["issues"][:22], original["issues"][:22])))
-    check("two new engineering checkpoint mappings",
-          [(r["issue"], r["version"]) for r in original["issues"][22:]] ==
-          [(39, "v0.0.0.24"), (51, "v0.0.0.25")])
-    by_issue = {r["issue"]: r["version"] for r in original["issues"]}
+    installed = ledger["issues"]
+    source = original["issues"]
+    check("all canonical mappings and criteria match exact engineering source",
+          len(installed) == len(source)
+          and [{k: row[k] for k in keys} for row in installed] ==
+              [{k: row[k] for k in keys} for row in source])
+    by_issue = {r["issue"]: r["version"] for r in source}
+    check("unique issue and version bindings",
+          len(by_issue) == len(source) == len(set(by_issue.values())))
+    check("release checkpoint binding intact", by_issue.get(40) == "v0.0.0.23")
     check("closed checkpoint versions intact",
           all(by_issue.get(r["issue"]) == r["version"] for r in M["closed_checkpoints"]))
-    check("unique engineering versions", len(set(by_issue.values())) == len(original["issues"]))
+    check("deferred optional checkpoints retained",
+          all(next(r for r in installed if r["issue"] == n)["state"] == "deferred"
+              for n in (12, 14, 34)))
+
+def check_current_engineering_matrix(spec):
+    expected = {"push": {"verify", "verify-windows", "graphify"},
+                "pull_request": {"verify", "verify-windows", "graphify"}}
+    check("both engineering receipt events covered",
+          {r["event"] for r in spec["receipt_runs"]} == set(expected)
+          and len(spec["receipt_runs"]) == 2)
+    for record in spec["receipt_runs"]:
+        run_id, event = record["run"], record["event"]
+        run = api(f"/actions/runs/{run_id}")
+        attempt = spec.get("attempt", 1)
+        jobs = api(f"/actions/runs/{run_id}/attempts/{attempt}/jobs?per_page=100")
+        check(f"engineering {event} event and three exact jobs",
+              run["event"] == event
+              and jobs["total_count"] == len(jobs["jobs"]) == 3
+              and {j["name"] for j in jobs["jobs"]} == expected[event])
 
 
 def receipt(group, spec):
@@ -184,6 +203,7 @@ def main():
         receipt(key, M[key])
     check_live_acceptance_matrix(M["acceptance_review"])
     check_acceptance_receipt_archives(M["acceptance_review"])
+    check_current_engineering_matrix(M["engineering"])
     check_live_acceptance_matrix(M["engineering"])
     check_acceptance_receipt_archives(M["engineering"])
     check_live_acceptance_matrix(M["licensing_review"])
@@ -197,9 +217,18 @@ def main():
     actual = {x["number"] for x in issue_list if "pull_request" not in x}
     check("all open issues classified", actual == {x["issue"] for x in M["queue"]})
     report["issue_queue"] = M["queue"]
-    for record in M["closed_checkpoints"]:
+    for record in M["closed_issues"]:
         issue = api("/issues/" + str(record["issue"]))
-        check(f"issue {record['issue']} closed completed", issue["state"] == "closed" and issue["state_reason"] == "completed")
+        check(f"issue {record['issue']} exact closure reason",
+              issue["state"] == "closed" and issue["state_reason"] == record["reason"])
+    closed = api("/issues?state=closed&per_page=100")
+    check("closed issue listing within page", len(closed) < 100)
+    check("all closed issues reconciled",
+          {i["number"] for i in closed if "pull_request" not in i} ==
+          {r["issue"] for r in M["closed_issues"]})
+    legal = leaves(M["engineering"]["head"])
+    check("accepted license and notice unchanged",
+          all(legal.get(path) == sha for path, sha in M["legal_blobs"].items()))
     # Use the frozen repaired VIB implementation against its own historical installation.
     def inspect(issue):
         return json.loads(subprocess.check_output(
@@ -207,7 +236,7 @@ def main():
              "--expected-sha", M["installed_state"], "inspect", "--issue", str(issue)],
             cwd="frozen-engineering", text=True))
     active = inspect(40)
-    other = inspect(47)
+    other = inspect(37)
     check_active_checkpoint(active, other)
     check_inspected_revisions(active, other)
     report["vib_inspect"] = active

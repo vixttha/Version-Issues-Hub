@@ -22,7 +22,7 @@ jobs:
           persist-credentials: false
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
-          ref: 75a16c185f404400b453d3a8a4b5a7becfdea024
+          ref: 26e9fe8c019a33c5f84f77a37da70925505204e3
           path: frozen-engineering
           persist-credentials: false
       - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405

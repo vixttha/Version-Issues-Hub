@@ -69,7 +69,7 @@ class RevisionGuardTests(unittest.TestCase):
 
     def test_active_checkpoint_rejects_stale_phase(self):
         active = {"status": "resume", "active": {"issue": 40, "version": "v0.0.0.23",
-                                                 "phase": "Worker"}}
+                                                 "phase": "Internal Auditor"}}
         with self.assertRaisesRegex(ValueError, "sole active release checkpoint"):
             self.p.check_active_checkpoint(active, {"status": "blocked_other_active_issue"})
 
@@ -130,6 +130,7 @@ class RevisionGuardTests(unittest.TestCase):
                 self.p.check_acceptance_receipt_archives(spec)
 
     def test_head_self_reference_reports_stale_candidate(self):
+        self.p.M["installed_phase"] = "Head"
         active = {"status": "stale_candidate", "active": {"issue": 40, "version": "v0.0.0.23",
                    "phase": "Head", "pull_request": 49, "candidate_sha": "historical"}}
         pr = {"head": {"sha": "test"}, "state": "open", "draft": True, "merged": False}
@@ -156,15 +157,33 @@ class RevisionGuardTests(unittest.TestCase):
         self.assertIn("license requires fresh integration review", self.p.report["blockers"])
 
     def test_merged_ledger_preserves_prior_mapping(self):
-        versions = {41: "v0.0.0.20", 42: "v0.0.0.21", 43: "v0.0.0.22"}
-        rows = [{"issue": n, "version": versions.get(n, f"test-{n}"),
-                 "state": "assigned", "acceptance": ["test"]} for n in [*range(100,119),41,42,43]]
-        source = {"issues": rows + [{"issue":39,"version":"v0.0.0.24"},
-                                     {"issue":51,"version":"v0.0.0.25"}]}
-        installed = {"issues": rows + [{"issue":40,"version":"v0.0.0.23"}]}
+        rows = [{"issue": n, "version": f"v0.0.0.{v}", "state": "assigned",
+                 "acceptance": ["test"]} for n, v in [(12, 6), (14, 8), (34, 32), (40, 23)]]
+        for row in rows[:3]:
+            row["state"] = "deferred"
+        self.p.M["closed_checkpoints"] = [{"issue": r["issue"], "version": r["version"]} for r in rows[:3]]
+        installed = {"issues": rows}
+        source = {"issues": [dict(r, state="staged") for r in rows]}
         self.p.check_ledger_mappings(installed, source)
-        with self.assertRaisesRegex(ValueError, "two new engineering"):
-            self.p.check_ledger_mappings(installed, {"issues": rows + source["issues"][22:][::-1]})
+        with self.assertRaisesRegex(ValueError, "canonical mappings"):
+            self.p.check_ledger_mappings(installed, {"issues": list(reversed(source["issues"]))})
+
+    def test_ledger_rejects_changed_criteria(self):
+        row = {"issue": 40, "version": "v0.0.0.23", "state": "in_progress", "acceptance": ["keep"]}
+        with self.assertRaisesRegex(ValueError, "canonical mappings"):
+            self.p.check_ledger_mappings({"issues": [row]},
+                {"issues": [dict(row, acceptance=["changed"])]})
+
+    def test_current_matrix_rejects_missing_windows(self):
+        spec = {"receipt_runs": [{"run": 1, "event": "push"}, {"run": 2, "event": "pull_request"}]}
+        def fake(path):
+            if "/jobs?" in path:
+                return {"total_count": 2, "jobs": [{"name": "verify"}, {"name": "graphify"}]}
+            return {"event": "push"}
+        with patch.object(self.p, "api", side_effect=fake):
+            with self.assertRaisesRegex(ValueError, "three exact jobs"):
+                self.p.check_current_engineering_matrix(spec)
+
 
 if __name__ == "__main__":
     unittest.main()

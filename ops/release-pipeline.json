@@ -2,33 +2,35 @@
   "schema": 1,
   "repository": "vixttha/Version-Issues-Hub",
   "main": "1b11865f79464ae7db9a648467e8c2c1cb898a02",
-  "installed_state": "5ac44c3d7f6ca129f55fce583de8659e5e950873",
+  "installed_state": "1006e476782f06a33f4eb405eb18afb9cba434f0",
   "engineering": {
-    "head": "75a16c185f404400b453d3a8a4b5a7becfdea024",
+    "head": "26e9fe8c019a33c5f84f77a37da70925505204e3",
     "pr": 2,
-    "merge": "d0211545bf8b4bbbf2025cdef4fb7955877a4a31",
+    "base": "1b11865f79464ae7db9a648467e8c2c1cb898a02",
+    "merge": "c1031e86afe1702d0f0f092a5203a9d1e83da0f4",
     "runs": [
-      45657945812,
-      45657945863,
-      45657961685,
-      45657961739,
-      45657961587
+      45713361976,
+      45713361959,
+      45713368275,
+      45713368267,
+      45713368324
     ],
-    "jobs": 9,
+    "jobs": 11,
     "live_runs": [
-      45657945863,
-      45657961739
+      45713361959,
+      45713368267
     ],
     "receipt_runs": [
       {
-        "run": 45657945812,
+        "run": 45713361976,
         "event": "push"
       },
       {
-        "run": 45657961685,
+        "run": 45713368275,
         "event": "pull_request"
       }
-    ]
+    ],
+    "attempt": 1
   },
   "licensing_review": {
     "head": "70242433f07d49e9d78f900eccc7745aa7063838",
@@ -55,7 +57,10 @@
         "run": 45665560799,
         "event": "pull_request"
       }
-    ]
+    ],
+    "merged": true,
+    "integrated_sha": "44573ae95e143116caacd891c842065a6d32743f",
+    "base": "75a16c185f404400b453d3a8a4b5a7becfdea024"
   },
   "homepage": {
     "head": "15868e46c97c0b93d132dc02492e6b7b046e244f",
@@ -67,141 +72,6 @@
   "brand": "388c6ef968aa15edf3caa34e9de6819dcda24e7f",
   "readme": "a9cdd97c4ad111ed4bb3eb1efa4c9bafc306a9b4",
   "queue": [
-    {
-      "issue": 1,
-      "title": "v0.0.0.1 — Define the issue-version record and pilot acceptance",
-      "classification": "historical_integration"
-    },
-    {
-      "issue": 7,
-      "title": "v0.0.0.2 — Produce per-issue receipts with stable fix revisions",
-      "classification": "historical_integration"
-    },
-    {
-      "issue": 9,
-      "title": "Feature: Install VIB as a standalone branch in any GitHub project",
-      "classification": "historical_integration"
-    },
-    {
-      "issue": 10,
-      "title": "v0.0.0.4 — Agent-ready VIB bootstrap and durable handoff",
-      "classification": "historical_integration"
-    },
-    {
-      "issue": 11,
-      "title": "v0.0.0.5 — Preserve single-worker handoffs for batched PRs",
-      "classification": "historical_integration"
-    },
-    {
-      "issue": 12,
-      "title": "v0.0.0.6 — Optional owner-enabled trusted GitHub merge gate",
-      "classification": "optional_separate"
-    },
-    {
-      "issue": 13,
-      "title": "v0.0.0.7 — Keep historical receipt criteria accurate for growing batches",
-      "classification": "historical_integration"
-    },
-    {
-      "issue": 14,
-      "title": "v0.0.0.8 — Harden trusted gate publication and verdict revocation",
-      "classification": "optional_separate"
-    },
-    {
-      "issue": 16,
-      "title": "AUD-002: Retain verified Veraphify archive bytes in Git",
-      "classification": "governance_audit"
-    },
-    {
-      "issue": 17,
-      "title": "AUD-003: Reconcile Veraphify evidence with all VIB checkpoints",
-      "classification": "governance_audit"
-    },
-    {
-      "issue": 18,
-      "title": "AUD-004: Correct Provenistem current candidate navigation",
-      "classification": "governance_audit"
-    },
-    {
-      "issue": 19,
-      "title": "AUD-005: Validate README HQ project workspace navigation",
-      "classification": "governance_audit"
-    },
-    {
-      "issue": 20,
-      "title": "AUD-006: Refresh adoption PRs #3 and #5 against current bases",
-      "classification": "optional_separate"
-    },
-    {
-      "issue": 21,
-      "title": "AUD-007: Propagate owner-locked VIB and Provenistem independence",
-      "classification": "governance_audit"
-    },
-    {
-      "issue": 22,
-      "title": "v0.0.0.9 — Standard validation default; optional hard enforcement",
-      "classification": "historical_integration"
-    },
-    {
-      "issue": 23,
-      "title": "v0.0.0.10 — Preserve historical package pins during adopter recovery",
-      "classification": "historical_integration"
-    },
-    {
-      "issue": 24,
-      "title": "v0.0.0.11 — Phase 4 live standalone install and cross-project recovery proof",
-      "classification": "historical_integration"
-    },
-    {
-      "issue": 25,
-      "title": "v0.0.0.12 — Safe Standard VIB upgrade and retirement lifecycle",
-      "classification": "historical_integration"
-    },
-    {
-      "issue": 26,
-      "title": "v0.0.0.13 — Fresh CLI lifecycle and archive recovery acceptance",
-      "classification": "historical_integration"
-    },
-    {
-      "issue": 27,
-      "title": "Owner decision: ENGINEERING-ECOSYSTEM-LAWS-001 — six architectural laws",
-      "classification": "governance_audit"
-    },
-    {
-      "issue": 29,
-      "title": "v0.0.0.14 — Live GitHub CLI lifecycle pilot",
-      "classification": "historical_integration"
-    },
-    {
-      "issue": 30,
-      "title": "v0.0.0.15 — Bounded post-write GitHub ref readback and pilot recovery",
-      "classification": "historical_integration"
-    },
-    {
-      "issue": 31,
-      "title": "v0.0.0.16 — Diagnose live upgrade API failures without repeating writes",
-      "classification": "historical_integration"
-    },
-    {
-      "issue": 33,
-      "title": "v0.0.0.17 — Bounded GET transport timeout recovery",
-      "classification": "historical_integration"
-    },
-    {
-      "issue": 34,
-      "title": "Optional hard gate: close run-attempt change window during verdict publication",
-      "classification": "optional_separate"
-    },
-    {
-      "issue": 35,
-      "title": "v0.0.0.18 — Recover remote upgrade via verified connector transport",
-      "classification": "historical_integration"
-    },
-    {
-      "issue": 36,
-      "title": "v0.0.0.19 — Stable read-only acceptance under concurrent adopter development",
-      "classification": "historical_integration"
-    },
     {
       "issue": 37,
       "title": "Phase 4 closure — independent host acceptance and fresh remote CLI confirmation",
@@ -233,18 +103,23 @@
       "classification": "release_blocker"
     },
     {
-      "issue": 47,
-      "title": "Release licensing: establish VIB reuse rights and carry notices into standalone installs",
-      "classification": "release_blocker"
+      "issue": 53,
+      "title": "Architecture: agent-count-independent VIB workflow scalability",
+      "classification": "optional_separate"
+    },
+    {
+      "issue": 63,
+      "title": "Pilot Tri-Runtime Adversarial Verification Engine in isolated Lydite vault",
+      "classification": "optional_separate"
     }
   ],
   "release_blockers": [
     "#37 two qualified independent host trials and final acceptance",
-    "#47 integrated licensing candidate technical checks passed; rights/provenance, exact CodeRabbit and Head integration remain",
+    "#44 actual final homepage visual evidence",
     "#45 commercial brand clearance",
-    "#46 final homepage destination and updated operative legal source pin validation",
-    "#40 exact final candidate owner acceptance, integration and release approval",
-    "PR49 final exact-revision CodeRabbit review and Head integration decision"
+    "#46 final homepage derivative, source pin and publication approval",
+    "#40 final exact candidate owner acceptance, integration and release approval",
+    "PR49 exact current review and Head disposition"
   ],
   "archive": {
     "head": "a9cdd97c4ad111ed4bb3eb1efa4c9bafc306a9b4",
@@ -254,7 +129,7 @@
     "jobs": 4,
     "attempt": 2
   },
-  "installed_phase": "Head",
+  "installed_phase": "Worker",
   "acceptance_review": {
     "head": "8e24a3a4145ba3e291d207477bfe95a7924cabc5",
     "pr": 52,
@@ -288,24 +163,179 @@
   },
   "closed_checkpoints": [
     {
-      "issue": 39,
-      "version": "v0.0.0.24"
+      "issue": 1,
+      "version": "v0.0.0.1",
+      "reason": "completed"
+    },
+    {
+      "issue": 7,
+      "version": "v0.0.0.2",
+      "reason": "completed"
+    },
+    {
+      "issue": 9,
+      "version": "v0.0.0.3",
+      "reason": "completed"
+    },
+    {
+      "issue": 10,
+      "version": "v0.0.0.4",
+      "reason": "completed"
+    },
+    {
+      "issue": 11,
+      "version": "v0.0.0.5",
+      "reason": "completed"
+    },
+    {
+      "issue": 12,
+      "version": "v0.0.0.6",
+      "reason": "not_planned"
+    },
+    {
+      "issue": 13,
+      "version": "v0.0.0.7",
+      "reason": "completed"
+    },
+    {
+      "issue": 14,
+      "version": "v0.0.0.8",
+      "reason": "not_planned"
+    },
+    {
+      "issue": 22,
+      "version": "v0.0.0.9",
+      "reason": "completed"
+    },
+    {
+      "issue": 23,
+      "version": "v0.0.0.10",
+      "reason": "completed"
+    },
+    {
+      "issue": 24,
+      "version": "v0.0.0.11",
+      "reason": "completed"
+    },
+    {
+      "issue": 25,
+      "version": "v0.0.0.12",
+      "reason": "completed"
+    },
+    {
+      "issue": 26,
+      "version": "v0.0.0.13",
+      "reason": "completed"
+    },
+    {
+      "issue": 29,
+      "version": "v0.0.0.14",
+      "reason": "completed"
+    },
+    {
+      "issue": 30,
+      "version": "v0.0.0.15",
+      "reason": "completed"
+    },
+    {
+      "issue": 31,
+      "version": "v0.0.0.16",
+      "reason": "completed"
+    },
+    {
+      "issue": 33,
+      "version": "v0.0.0.17",
+      "reason": "completed"
+    },
+    {
+      "issue": 35,
+      "version": "v0.0.0.18",
+      "reason": "completed"
+    },
+    {
+      "issue": 36,
+      "version": "v0.0.0.19",
+      "reason": "completed"
     },
     {
       "issue": 41,
-      "version": "v0.0.0.20"
+      "version": "v0.0.0.20",
+      "reason": "completed"
     },
     {
       "issue": 42,
-      "version": "v0.0.0.21"
+      "version": "v0.0.0.21",
+      "reason": "completed"
     },
     {
       "issue": 43,
-      "version": "v0.0.0.22"
+      "version": "v0.0.0.22",
+      "reason": "completed"
+    },
+    {
+      "issue": 39,
+      "version": "v0.0.0.24",
+      "reason": "completed"
     },
     {
       "issue": 51,
-      "version": "v0.0.0.25"
+      "version": "v0.0.0.25",
+      "reason": "completed"
+    },
+    {
+      "issue": 56,
+      "version": "v0.0.0.26",
+      "reason": "completed"
+    },
+    {
+      "issue": 57,
+      "version": "v0.0.0.27",
+      "reason": "completed"
+    },
+    {
+      "issue": 54,
+      "version": "v0.0.0.28",
+      "reason": "completed"
+    },
+    {
+      "issue": 61,
+      "version": "v0.0.0.29",
+      "reason": "completed"
+    },
+    {
+      "issue": 60,
+      "version": "v0.0.0.30",
+      "reason": "completed"
+    },
+    {
+      "issue": 65,
+      "version": "v0.0.0.31",
+      "reason": "completed"
+    },
+    {
+      "issue": 34,
+      "version": "v0.0.0.32",
+      "reason": "not_planned"
+    },
+    {
+      "issue": 68,
+      "version": "v0.0.0.33",
+      "reason": "completed"
+    },
+    {
+      "issue": 70,
+      "version": "v0.0.0.34",
+      "reason": "completed"
+    },
+    {
+      "issue": 71,
+      "version": "v0.0.0.35",
+      "reason": "completed"
+    },
+    {
+      "issue": 72,
+      "version": "v0.0.0.36",
+      "reason": "completed"
     }
   ],
   "licensing_history": {
@@ -321,5 +351,191 @@
       "45421619822": 1
     },
     "jobs": 4
+  },
+  "closed_issues": [
+    {
+      "issue": 1,
+      "reason": "completed"
+    },
+    {
+      "issue": 7,
+      "reason": "completed"
+    },
+    {
+      "issue": 9,
+      "reason": "completed"
+    },
+    {
+      "issue": 10,
+      "reason": "completed"
+    },
+    {
+      "issue": 11,
+      "reason": "completed"
+    },
+    {
+      "issue": 12,
+      "reason": "not_planned"
+    },
+    {
+      "issue": 13,
+      "reason": "completed"
+    },
+    {
+      "issue": 14,
+      "reason": "not_planned"
+    },
+    {
+      "issue": 15,
+      "reason": "not_planned"
+    },
+    {
+      "issue": 16,
+      "reason": "completed"
+    },
+    {
+      "issue": 17,
+      "reason": "completed"
+    },
+    {
+      "issue": 18,
+      "reason": "completed"
+    },
+    {
+      "issue": 19,
+      "reason": "completed"
+    },
+    {
+      "issue": 20,
+      "reason": "completed"
+    },
+    {
+      "issue": 21,
+      "reason": "completed"
+    },
+    {
+      "issue": 22,
+      "reason": "completed"
+    },
+    {
+      "issue": 23,
+      "reason": "completed"
+    },
+    {
+      "issue": 24,
+      "reason": "completed"
+    },
+    {
+      "issue": 25,
+      "reason": "completed"
+    },
+    {
+      "issue": 26,
+      "reason": "completed"
+    },
+    {
+      "issue": 27,
+      "reason": "completed"
+    },
+    {
+      "issue": 29,
+      "reason": "completed"
+    },
+    {
+      "issue": 30,
+      "reason": "completed"
+    },
+    {
+      "issue": 31,
+      "reason": "completed"
+    },
+    {
+      "issue": 33,
+      "reason": "completed"
+    },
+    {
+      "issue": 34,
+      "reason": "not_planned"
+    },
+    {
+      "issue": 35,
+      "reason": "completed"
+    },
+    {
+      "issue": 36,
+      "reason": "completed"
+    },
+    {
+      "issue": 39,
+      "reason": "completed"
+    },
+    {
+      "issue": 41,
+      "reason": "completed"
+    },
+    {
+      "issue": 42,
+      "reason": "completed"
+    },
+    {
+      "issue": 43,
+      "reason": "completed"
+    },
+    {
+      "issue": 47,
+      "reason": "completed"
+    },
+    {
+      "issue": 51,
+      "reason": "completed"
+    },
+    {
+      "issue": 54,
+      "reason": "completed"
+    },
+    {
+      "issue": 56,
+      "reason": "completed"
+    },
+    {
+      "issue": 57,
+      "reason": "completed"
+    },
+    {
+      "issue": 60,
+      "reason": "completed"
+    },
+    {
+      "issue": 61,
+      "reason": "completed"
+    },
+    {
+      "issue": 65,
+      "reason": "completed"
+    },
+    {
+      "issue": 68,
+      "reason": "completed"
+    },
+    {
+      "issue": 70,
+      "reason": "completed"
+    },
+    {
+      "issue": 71,
+      "reason": "completed"
+    },
+    {
+      "issue": 72,
+      "reason": "completed"
+    },
+    {
+      "issue": 73,
+      "reason": "completed"
+    }
+  ],
+  "legal_blobs": {
+    "LICENSE": "90abd0e6c64a135f42451762337a397bf27f4862",
+    "VIB-NOTICE.md": "70dd8710828a38118965be3ca8be32457d106789"
   }
 }
