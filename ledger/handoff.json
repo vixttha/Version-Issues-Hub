@@ -10,8 +10,8 @@
     ],
     "fix_sha": "6e428f222c7aa7a35a8d398bde2846ac0e3b9657",
     "issue": 40,
-    "next_action": "Batch 2 #61/#60 exact integrated engineering head and PR2 proposed merge: 125/125 Ubuntu and Windows each; 11 public jobs green, Graphify 121/120 both. Audit release gates and fresh PR2 review; #53 remains separately qualified, not integrated.",
-    "phase": "Internal Auditor",
+    "next_action": "Owner-directed workflow correction: release hold remains; return to Head before deferring #40. Preserve actual evidence and acknowledge umbrella-checkpoint error. Recovery issue #65.",
+    "phase": "Head",
     "pull_request": 2,
     "version": "v0.0.0.23"
   },
