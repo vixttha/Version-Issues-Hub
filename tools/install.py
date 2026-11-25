@@ -52,6 +52,30 @@ class ApiError(RuntimeError):
         self.operation = operation
 
 
+def cli_error(parser, label, exc):
+    # Preserve the human-readable diagnostic and a strictly typed machine receipt.
+    message = f"{label}: {exc}\n"
+    if isinstance(exc, ApiError) and exc.retry_after is not None:
+        message += json.dumps({"kind": "vib_api_delay", "status": exc.status,
+                               "retry_after": exc.retry_after}, sort_keys=True) + "\n"
+    parser.exit(1, message)
+
+
+def raise_cli_delay(stderr):
+    """Propagate only the numeric receipt from a failed read-only child CLI."""
+    if not isinstance(stderr, str) or not stderr.strip():
+        return
+    try:
+        record = json.loads(stderr.strip().splitlines()[-1])
+    except ValueError:
+        return
+    if (isinstance(record, dict) and set(record) == {"kind", "status", "retry_after"}
+            and record["kind"] == "vib_api_delay"
+            and type(record["status"]) is int and 400 <= record["status"] <= 599
+            and type(record["retry_after"]) is int and 0 <= record["retry_after"] <= 10**12):
+        raise ApiError(record["status"], "GET", retry_after=record["retry_after"])
+
+
 def retry_delay(status, headers, now):
     """Retain numeric throttle timing only; never retain arbitrary header values."""
     import math
@@ -326,7 +350,7 @@ def main():
     try:
         print(render(install(GitHub(token), args.target, args.source_sha, args.baseline, args.apply)), end="")
     except (ValueError, ApiError, KeyError, OSError) as exc:
-        p.exit(1, f"Install stopped: {exc}\n")
+        cli_error(p, "Install stopped", exc)
 
 if __name__ == "__main__":
     main()

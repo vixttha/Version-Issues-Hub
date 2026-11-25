@@ -113,3 +113,40 @@ class LiveIsolationTests(unittest.TestCase):
         self.assertEqual(result["status"], "failed")
         self.assertNotIn("retry_after_seconds", result["cases"]["self_install"])
         other.assert_called_once()
+
+    def test_child_plan_throttle_stops_later_cases(self):
+        import subprocess
+        import json
+        api=Mock()
+        api.request.return_value={"private":False,"id":1463992109,"default_branch":"main"}
+        err=subprocess.CalledProcessError(1,["install"],stderr=json.dumps(
+            {"kind":"vib_api_delay","status":403,"retry_after":120}))
+        with patch.object(live.install,"read_ref",side_effect=[PRODUCT,None]), \
+             patch.object(live.subprocess,"check_output",side_effect=err), \
+             patch.object(live,"verify_aldervale_install") as alder, \
+             patch.object(live,"verify_bart") as bart:
+            report=live.run_cases(api,SOURCE,"external")
+        self.assertEqual(report["status"],"failed")
+        self.assertEqual(report["cases"]["readme_hq"]["retry_after_seconds"],120)
+        self.assertEqual(report["cases"]["aldervale"]["status"],"not_run")
+        self.assertEqual(report["cases"]["bart"]["status"],"not_run")
+        alder.assert_not_called()
+        bart.assert_not_called()
+
+    def test_cli_delay_receipt_round_trip_and_strict_types(self):
+        import argparse
+        import contextlib
+        import io
+        err=io.StringIO()
+        with contextlib.redirect_stderr(err), self.assertRaises(SystemExit):
+            live.install.cli_error(argparse.ArgumentParser(),"Install stopped",
+                                   live.install.ApiError(429,"GET","repository",75))
+        with self.assertRaises(live.install.ApiError) as caught:
+            live.install.raise_cli_delay(err.getvalue())
+        self.assertEqual(caught.exception.status,429)
+        self.assertEqual(caught.exception.retry_after,75)
+        for bad in ('{"kind":"vib_api_delay","status":403,"retry_after":true}',
+                    '{"kind":"vib_api_delay","status":403,"retry_after":-1}',
+                    '{"kind":"vib_api_delay","status":403,"retry_after":20,"extra":"secret"}',
+                    "retry after 120 seconds"):
+            live.install.raise_cli_delay(bad)

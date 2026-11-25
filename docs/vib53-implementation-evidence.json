@@ -588,6 +588,62 @@
           "anchor": "def test_product_change_refuses_replan(self):"
         }
       ]
+    },
+    {
+      "id": "vib53-qualification-repairs",
+      "label": "Review closure and throttle-safe recovery",
+      "documented_in": [
+        {
+          "path": "docs/vib53-implementation.md",
+          "anchor": "## Qualification review repairs"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "tools/session.py",
+          "anchor": "def retry_scope(api, previous, fresh, number, rejection):"
+        }
+      ],
+      "implemented_in": [
+        {
+          "path": "tools/install.py",
+          "anchor": "def cli_error(parser, label, exc):"
+        },
+        {
+          "path": "tools/install.py",
+          "anchor": "def raise_cli_delay(stderr):"
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tests/test_contention_recovery.py",
+          "anchor": "def test_unrelated_acceptance_change_refused(self):"
+        },
+        {
+          "path": "tests/test_contention_recovery.py",
+          "anchor": "def test_package_change_then_restore_refused(self):"
+        },
+        {
+          "path": "tests/test_transaction_confirmation.py",
+          "anchor": "def test_ambiguous_503_short_delay_confirm_after_wait(self):"
+        },
+        {
+          "path": "tests/test_transaction_confirmation.py",
+          "anchor": "def test_ambiguous_503_long_delay_preserves_candidate_without_polling(self):"
+        },
+        {
+          "path": "tests/test_live_acceptance.py",
+          "anchor": "def test_child_plan_throttle_stops_later_cases(self):"
+        },
+        {
+          "path": "tests/test_live_acceptance.py",
+          "anchor": "def test_cli_delay_receipt_round_trip_and_strict_types(self):"
+        },
+        {
+          "path": "tests/test_acceptance_snapshot.py",
+          "anchor": "def test_inspection_child_delay_propagates_without_ref_probe(self):"
+        }
+      ]
     }
   ]
 }

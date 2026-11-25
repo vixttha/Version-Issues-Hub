@@ -686,8 +686,14 @@ def save(api, state, ledger, handoff, apply=False, *, issue=None):
         # Rate limits and permanent errors must not trigger polling or resubmission.
         if error.retry_after is None and error.status in (409, 422):
             raise HandoffRejected(error, new, tree) from None
-        if error.retry_after is not None or error.status not in (408, 500, 502, 503, 504):
+        # A 5xx/408 can be returned after publication. Preserve the candidate
+        # even if a Retry-After prevents immediate readback. Never repeat PATCH.
+        if error.status not in (408, 500, 502, 503, 504):
             raise
+        if error.retry_after is not None:
+            if error.retry_after > 8:
+                raise HandoffUnconfirmed(new, error.retry_after) from None
+            install.time.sleep(error.retry_after)
         ambiguous = True
     try:
         observed = confirm_handoff(api, prefix, old, new, tree)
@@ -746,7 +752,16 @@ def retry_scope(api, previous, fresh, number, rejection):
     history = previous["handoff"]["history"]
     prior_ledger = previous["ledger"]
     prior_schema = previous["handoff"]["schema_version"]
+    from tools import lifecycle
+    _, old_entries = lifecycle.tree_entries(api, prefix, old)
+    package_paths = previous["manifest"]["package_files_sha256"]
+    protected = {p: old_entries.get(p) for p in package_paths}
+    if any(entry is None or entry[:2] != ("blob", "100644") for entry in protected.values()):
+        raise ValueError("Original package tree invalid during contention")
     for sha, _, _ in reversed(path):
+        _, entries = lifecycle.tree_entries(api, prefix, sha)
+        if any(entries.get(p) != entry for p, entry in protected.items()):
+            raise ValueError("Installed package changed during contention")
         def read(file):
             return checkpoint.parse_json(install.read_text(api, prefix, file, sha))
         if read("vib-install.json") != previous["manifest"]:
@@ -754,6 +769,12 @@ def retry_scope(api, previous, fresh, number, rejection):
         ledger, handoff = read(LEDGER), read(HANDOFF)
         validate_handoff(handoff, ledger)
         checkpoint.check_history(ledger, prior_ledger)
+        current_rows = {row["issue"]: row for row in ledger["issues"]}
+        for row in prior_ledger["issues"]:
+            if current_rows[row["issue"]]["acceptance"] != row["acceptance"]:
+                raise ValueError("Historical acceptance changed during contention")
+            if row["state"] == "integrated" and current_rows[row["issue"]] != row:
+                raise ValueError("Integrated record changed during contention")
         if handoff["schema_version"] < prior_schema:
             raise ValueError("Handoff schema regressed during contention")
         if (handoff["history"][:len(history)] != history
@@ -888,7 +909,7 @@ def main():
                 result = save(api, state, ledger, handoff, args.apply, issue=scope)
         print(install.render(result), end="")
     except (ValueError, KeyError, TypeError, OSError, install.ApiError) as exc:
-        p.exit(1, f"VIB session stopped: {exc}\n")
+        install.cli_error(p, "VIB session stopped", exc)
 
 if __name__ == "__main__":
     main()

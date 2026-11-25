@@ -187,3 +187,23 @@ class RecoveryTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError,"product changed"):
             self.recover(lambda s:self.claim(s,B),B)
         self.assertEqual(sum(m=="PATCH" for m,_,_ in self.api.writes),2)
+
+    def test_unrelated_acceptance_change_refused(self):
+        s=self.s
+        ledger=copy.deepcopy(s["ledger"])
+        ledger["issues"][0]["acceptance"]=["tampered"]
+        tree=self.api.tree({session.LEDGER:install.render(ledger)},self.api.git("rev-parse",s["ref"]+"^{tree}"))
+        self.api.ref(install.BRANCH,self.api.commit(tree,[s["ref"]]))
+        fresh=session.load(self.api,REPO)
+        with self.assertRaisesRegex(ValueError,"Historical acceptance changed"):
+            session.retry_scope(self.api,s,fresh,B,session.HandoffStale("advanced"))
+
+    def test_package_change_then_restore_refused(self):
+        s=self.s
+        tree=self.api.tree({"tools/session.py":"changed\n"},self.api.git("rev-parse",s["ref"]+"^{tree}"))
+        middle=self.api.commit(tree,[s["ref"]])
+        restored=self.api.commit(self.api.git("rev-parse",s["ref"]+"^{tree}"),[middle])
+        self.api.ref(install.BRANCH,restored)
+        fresh=session.load(self.api,REPO)
+        with self.assertRaisesRegex(ValueError,"Installed package changed"):
+            session.retry_scope(self.api,s,fresh,B,session.HandoffStale("advanced"))

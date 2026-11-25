@@ -23,6 +23,10 @@ class Remote(Fake):
                 raise install.ApiTransportError("PATCH","git/refs",True)
             if self.outcome == "lost_http":
                 raise install.ApiError(503)
+            if self.outcome == "lost_http_short":
+                raise install.ApiError(503, retry_after=3)
+            if self.outcome == "lost_http_long":
+                raise install.ApiError(503, retry_after=120)
             if self.outcome == "bad_json":
                 raise json.JSONDecodeError("response","",0)
             if self.outcome == "lost_before":
@@ -200,3 +204,23 @@ class TransactionTests(unittest.TestCase):
                 self.assertEqual(result["installed_sha"],NEXT)
                 self.assertTrue(result["recovered_response"])
             self.assertEqual(sum(m=="PATCH" for m,_,_ in api.writes),1)
+
+    def test_ambiguous_503_short_delay_confirm_after_wait(self):
+        api=Remote("lost_http_short")
+        with patch.object(install.time,"sleep") as sleep:
+            result=self.save(api)
+        sleep.assert_called_once_with(3)
+        self.assertEqual(result["installed_sha"],NEXT)
+        self.assertTrue(result["recovered_response"])
+        self.assertEqual(sum(m=="PATCH" for m,_,_ in api.writes),1)
+
+    def test_ambiguous_503_long_delay_preserves_candidate_without_polling(self):
+        api=Remote("lost_http_long")
+        with patch.object(session,"confirm_handoff") as confirm, patch.object(install.time,"sleep") as sleep:
+            with self.assertRaises(session.HandoffUnconfirmed) as error:
+                self.save(api)
+        self.assertEqual(error.exception.candidate_sha,NEXT)
+        self.assertEqual(error.exception.retry_after,120)
+        confirm.assert_not_called()
+        sleep.assert_not_called()
+        self.assertEqual(sum(m=="PATCH" for m,_,_ in api.writes),1)

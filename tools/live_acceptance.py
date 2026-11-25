@@ -93,8 +93,13 @@ def verify_live_cli_plan(api, source):
                 "installed_source": state["manifest"]["source_sha"],
                 "source": source, "planned_files": None, "branch_created": False,
                 "issue_assignments_changed": False, "duplicate_install_refused": True}
-    report = json.loads(subprocess.check_output([sys.executable, "-m", "tools.install",
-        "--target", target, "--source-sha", source, "--baseline", "v0.0.6"], text=True))
+    try:
+        report = json.loads(subprocess.check_output([sys.executable, "-m", "tools.install",
+            "--target", target, "--source-sha", source, "--baseline", "v0.0.6"],
+            text=True, stderr=subprocess.PIPE))
+    except subprocess.CalledProcessError as exc:
+        install.raise_cli_delay(exc.stderr)
+        raise
     assert report["status"] == "planned"
     assert report["manifest"]["source_sha"] == source
     assert report["manifest"]["target_repository_id"] == meta["id"]
