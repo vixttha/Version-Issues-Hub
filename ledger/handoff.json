@@ -10,8 +10,8 @@
     ],
     "fix_sha": "f767cc133f8dba5ebb68b6530e8601dc66879e81",
     "issue": 1,
-    "next_action": "Stable issue-version mapping and retry, rejection of duplicate, deleted or changed mappings, and exact public receipt. Verified exact push and PR receipt and Graphify bindings.",
-    "phase": "Internal Auditor",
+    "next_action": "Original fix ancestry, retained criteria, 11 public jobs, exact issue receipts and Graphify mappings verified. Engineering disposition only.",
+    "phase": "Head",
     "pull_request": 2,
     "version": "v0.0.0.1"
   },
