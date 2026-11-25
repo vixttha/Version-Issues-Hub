@@ -2,7 +2,7 @@
   "active": {
     "issue": 34,
     "version": "v0.0.0.32",
-    "phase": "Internal Auditor",
+    "phase": "Head",
     "fix_sha": "d9994cfb699409d6d377e8edd72e8865c2cfa1e7",
     "candidate_sha": "1e85153765c0ca908f2ee44f2973ba59b0669c23",
     "pull_request": 2,
@@ -13,7 +13,7 @@
       "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45702637962/attempts/1",
       "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45702638002/attempts/1"
     ],
-    "next_action": "Post-merge engineering and PR2 preview all 11 public jobs passed; 136 tests each OS and checkout, five #34 regression cases and Graphify 156/155 verified from logs. Audit current CodeRabbit and main hold; no live hard enforcement claim."
+    "next_action": "Auditor confirms PR50 merged tree, 11/11 post-merge public jobs, 136 tests per checkout, five regression controls, Graphify and aggregate CodeRabbit green, no unresolved threads. Main hold #40 and live opt-in enforcement remain."
   },
   "history": [
     {
