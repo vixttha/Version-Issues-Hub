@@ -90,19 +90,7 @@ jobs:
           python -m pip install --require-hashes --no-deps --only-binary=:all: -r "$kit/requirements.txt"
           python -m pip check
           output="$RUNNER_TEMP/vib-evidence"
-          mkdir -p "$output"
-          python - "$output/manifest.json" <<'PY'
-          import json
-          import os
-          from pathlib import Path
-          import sys
-
-          manifest = json.loads(Path('docs/receipt-evidence.json').read_text())
-          manifest['repository'] = os.environ['GITHUB_REPOSITORY']
-          manifest['source_commit'] = os.environ['GITHUB_SHA']
-          Path(sys.argv[1]).write_text(json.dumps(manifest, indent=2) + '\n')
-          PY
-          python "$kit/evidence_map.py" "$output/manifest.json" "$output"
+          python -m tools.graphify_evidence "$kit/evidence_map.py" "$output"
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         with:
           name: vib-evidence-${{ github.event_name }}-${{ github.run_id }}-${{ github.run_attempt }}
