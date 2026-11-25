@@ -87,6 +87,24 @@ def check_live_acceptance_matrix(spec):
               and all(not a["expired"] and a["size_in_bytes"] > 0 for a in matching))
 
 
+def check_acceptance_receipt_archives(spec):
+    """Require both push and proposed-merge issue receipts and graph artifacts."""
+    for record in spec["receipt_runs"]:
+        run_id = record["run"]
+        attempt = spec.get("attempts", {}).get(str(run_id), spec.get("attempt", 1))
+        if record["event"] not in ("push", "pull_request"):
+            raise ValueError("Unsupported acceptance receipt event")
+        artifacts = api(f"/actions/runs/{run_id}/artifacts?per_page=100")
+        check(f"acceptance receipt {run_id} complete artifact list",
+              artifacts["total_count"] == len(artifacts["artifacts"]))
+        expected = {f"{kind}-{record['event']}-{run_id}-{attempt}" for kind in
+                    ("issue-receipts", "vib-evidence")}
+        matching = [a for a in artifacts["artifacts"] if a["name"] in expected]
+        check(f"acceptance receipt {run_id} exact two archives",
+              len(matching) == 2 and {a["name"] for a in matching} == expected
+              and all(not a["expired"] and a["size_in_bytes"] > 0 for a in matching))
+
+
 def check_inspected_revisions(active, other):
     check("product revision frozen after inspection",
           active["product_sha"] == M["main"] and other["product_sha"] == M["main"])
@@ -129,6 +147,7 @@ def main():
     for key in ("engineering", "licensing_review", "homepage", "archive", "acceptance_review"):
         receipt(key, M[key])
     check_live_acceptance_matrix(M["acceptance_review"])
+    check_acceptance_receipt_archives(M["acceptance_review"])
     original = leaves(M["readme"])
     derivative = leaves(M["homepage"]["head"])
     frozen = {k:v for k,v in original.items() if k.startswith("workspace/v0.0.1/accepted/")}

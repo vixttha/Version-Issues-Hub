@@ -244,7 +244,7 @@
     "#45 commercial brand clearance",
     "#46 final homepage destination and updated operative legal source pin validation",
     "#40 exact final candidate owner acceptance, integration and release approval",
-    "#51/PR52 disposition and any necessary live-job contract reconciliation before final integration; no automatic scope expansion",
+    "#51/PR52 CodeRabbit and Head integration disposition; nine scoped jobs and both receipt archives verified, not merged",
     "PR49 final exact-revision CodeRabbit review and Head integration decision"
   ],
   "archive": {
@@ -257,20 +257,31 @@
   },
   "installed_phase": "Head",
   "acceptance_review": {
-    "head": "abbf636f8bf9b1f6771e176cd872f19b378a82c0",
+    "head": "8e24a3a4145ba3e291d207477bfe95a7924cabc5",
     "pr": 52,
-    "merge": "d979a7c4488e66b8e3941ab3960c06125a8888be",
+    "merge": "c96147423a081f768dc19823dbf54ea1ff5b3bb4",
     "runs": [
-      45654072130,
-      45654072366,
-      45654086207,
-      45654086408
+      45655265078,
+      45655265001,
+      45655283573,
+      45655284120,
+      45655283632
     ],
     "live_runs": [
-      45654072366,
-      45654086207
+      45655265001,
+      45655284120
     ],
-    "jobs": 7,
-    "attempt": 1
+    "jobs": 9,
+    "attempt": 1,
+    "receipt_runs": [
+      {
+        "run": 45655265078,
+        "event": "push"
+      },
+      {
+        "run": 45655283573,
+        "event": "pull_request"
+      }
+    ]
   }
 }

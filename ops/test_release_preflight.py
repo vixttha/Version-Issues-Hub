@@ -110,6 +110,25 @@ class RevisionGuardTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "exact scoped artifacts"):
                 self.p.check_live_acceptance_matrix({"live_runs": [run_id], "attempt": 1})
 
+    def test_receipt_archives_require_push_and_proposed_merge(self):
+        spec = {"receipt_runs": [{"run": 1, "event": "push"}, {"run": 2, "event": "pull_request"}], "attempt": 1}
+        def fake(path):
+            run_id = 1 if "/1/" in path else 2
+            event = "push" if run_id == 1 else "pull_request"
+            return {"total_count": 2, "artifacts": [
+                {"name": f"{kind}-{event}-{run_id}-1", "expired": False, "size_in_bytes": 10}
+                for kind in ("issue-receipts", "vib-evidence")]}
+        with patch.object(self.p, "api", side_effect=fake):
+            self.p.check_acceptance_receipt_archives(spec)
+
+    def test_receipt_archives_reject_missing_graphify(self):
+        spec = {"receipt_runs": [{"run": 1, "event": "pull_request"}], "attempt": 1}
+        with patch.object(self.p, "api", return_value={"total_count": 1,
+                "artifacts": [{"name": "issue-receipts-pull_request-1-1",
+                               "expired": False, "size_in_bytes": 10}]}):
+            with self.assertRaisesRegex(ValueError, "exact two archives"):
+                self.p.check_acceptance_receipt_archives(spec)
+
     def test_head_self_reference_reports_stale_candidate(self):
         active = {"status": "stale_candidate", "active": {"issue": 40, "version": "v0.0.0.23",
                    "phase": "Head", "pull_request": 49, "candidate_sha": "historical"}}
