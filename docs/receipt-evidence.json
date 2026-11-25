@@ -1,0 +1,33 @@
+{
+  "title": "Version-Issues-Hub checkpoint evidence",
+  "features": [
+    {
+      "id": "v0-0-0-1",
+      "label": "Issue #1 · issue-version ledger",
+      "documented_in": [
+        {
+          "path": "docs/v0.0.0.1.md",
+          "anchor": "## Version and evidence record"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "ledger/issue-versions.json",
+          "anchor": "\"issue\": 1,"
+        }
+      ],
+      "implemented_in": [
+        {
+          "path": "tools/checkpoint.py",
+          "anchor": "def register(ledger, issue, line, criteria):"
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tests/test_checkpoint.py",
+          "anchor": "def test_first_live_issue_is_stable_on_registration_retry(self):"
+        }
+      ]
+    }
+  ]
+}
