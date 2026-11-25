@@ -81,7 +81,7 @@ class SessionTests(unittest.TestCase):
         self.assertEqual(self.state["handoff"]["active"]["phase"], "Head")
         with self.assertRaisesRegex(ValueError, "merged"):
             session.finish(self.api, self.state, "integrated", "Owner accepted")
-        self.api.pr["merged"] = True
+        self.api.pr.update(state="closed", merged=True)
         ledger, handoff = session.finish(self.api, self.state, "integrated", "Owner accepted")
         self.assertIsNone(handoff["active"])
         self.assertEqual(handoff["history"][0]["merged_sha"], NEXT)
@@ -192,7 +192,7 @@ class SessionTests(unittest.TestCase):
         self.state["ledger"], self.state["handoff"] = session.finish(
             self.api, self.state, "staged", "Owner stages")
         self.api.pr["head"]["sha"] = NEXT
-        self.api.pr["merged"] = True
+        self.api.pr.update(state="closed", merged=True)
         with self.assertRaisesRegex(ValueError, "changed"):
             session.reconcile(self.api, self.state, 247, "Owner integrates")
         self.api.pr.update(state="open", merged=False)
@@ -321,3 +321,52 @@ class SessionTests(unittest.TestCase):
         self.assertEqual(self.state["handoff"]["active"]["phase"], "Worker")
         self.assertEqual(self.state["handoff"]["history"][-1]["disposition"], "rework")
         self.assertEqual(self.api.writes, [])
+
+    def test_stage_rejects_unverified_pr_flags_without_writes(self):
+        self.claim()
+        self.advance(fix=FIX, candidate=CANDIDATE, pr=8)
+        self.advance(evidence=[RUN])
+        self.advance()
+        before = copy.deepcopy(self.state)
+        for flag in (None, "false", "true", 0, 1, True):
+            with self.subTest(flag=flag):
+                self.api.pr["merged"] = flag
+                with self.assertRaises(ValueError):
+                    session.finish(self.api, self.state, "staged", "Owner")
+                self.assertEqual(self.state, before)
+                self.assertEqual(self.api.writes, [])
+        del self.api.pr["merged"]
+        with self.assertRaises(ValueError):
+            session.finish(self.api, self.state, "staged", "Owner")
+        self.assertEqual(self.state, before)
+        self.assertEqual(self.api.writes, [])
+        self.api.pr["merged"] = False
+        ledger, _ = session.finish(self.api, self.state, "staged", "Owner")
+        self.assertEqual(ledger["issues"][0]["state"], "staged")
+
+    def test_finish_and_reconcile_require_coherent_closed_merged_pr(self):
+        self.claim()
+        self.advance(fix=FIX, candidate=CANDIDATE, pr=8)
+        self.advance(evidence=[RUN])
+        self.advance()
+        before = copy.deepcopy(self.state)
+        self.api.pr.update(state="open", merged=True)
+        with self.assertRaisesRegex(ValueError, "merged"):
+            session.finish(self.api, self.state, "integrated", "Owner")
+        self.assertEqual(self.state, before)
+        self.assertEqual(self.api.writes, [])
+        self.api.pr.update(state="open", merged=False)
+        self.state["ledger"], self.state["handoff"] = session.finish(
+            self.api, self.state, "staged", "Owner")
+        before = copy.deepcopy(self.state)
+        for status, flag in (("open", True), (None, True), ("closed", None),
+                             ("closed", "true"), ("closed", 1), ("closed", False)):
+            with self.subTest(status=status, flag=flag):
+                self.api.pr.update(state=status, merged=flag)
+                with self.assertRaises(ValueError):
+                    session.reconcile(self.api, self.state, 247, "Owner")
+                self.assertEqual(self.state, before)
+                self.assertEqual(self.api.writes, [])
+        self.api.pr.update(state="closed", merged=True)
+        ledger, _ = session.reconcile(self.api, self.state, 247, "Owner")
+        self.assertEqual(ledger["issues"][0]["state"], "integrated")

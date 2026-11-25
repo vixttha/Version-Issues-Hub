@@ -45,7 +45,8 @@ class GitApi:
         env={**os.environ,"GIT_AUTHOR_NAME":"VIB test","GIT_AUTHOR_EMAIL":"vib@example.invalid",
              "GIT_COMMITTER_NAME":"VIB test","GIT_COMMITTER_EMAIL":"vib@example.invalid",
              "GIT_INDEX_FILE":str(Path(self.path)/"fixture-index")}
-        return subprocess.check_output(["git","-C",self.path,*args],input=data,text=True,env=env).strip()
+        return subprocess.check_output(["git","-C",self.path,*args],
+            input=None if data is None else data.encode("utf-8"),env=env).decode("utf-8").strip()
     def tree(self,files,base=None):
         self.git("read-tree",base or "--empty")
         for p,s in files.items():
@@ -62,7 +63,7 @@ class GitApi:
         else:
             return self.git("rev-parse","--verify","refs/heads/"+name)
     def read(self,sha,path):
-        return subprocess.check_output(["git","-C",self.path,"show",sha+":"+path],text=True)
+        return subprocess.check_output(["git","-C",self.path,"show",sha+":"+path]).decode("utf-8")
     def request(self,method,path,body=None):
         if method!="GET": self.writes.append((method,path,body))
         if path==PREFIX: return self.meta
@@ -336,3 +337,33 @@ class LifecycleTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError,"owner approval"):
             lifecycle.upgrade(self.api,REPO,self.api.old,NEW,apply=True,prepare_only=True)
         self.assertEqual(self.api.writes,[])
+
+    def test_fixture_preserves_exact_utf8_and_line_endings(self):
+        value = "é\nsecond\r\nlast\n"
+        tree = self.api.tree({"byte-probe.txt": value})
+        commit = self.api.commit(tree, [])
+        self.assertEqual(self.api.read(commit, "byte-probe.txt"), value)
+        self.assertEqual(self.api.git("rev-parse", commit + ":byte-probe.txt"),
+                         lifecycle.blob_id(value))
+
+    def test_upgrade_rejects_actual_package_byte_or_mode_tampering(self):
+        api = self.api
+        path = "README.md"
+        for kind in ("bytes", "mode"):
+            with self.subTest(kind=kind):
+                api.ref(install.BRANCH, api.old)
+                tree = api.git("rev-parse", api.old + "^{tree}")
+                if kind == "bytes":
+                    tree = api.tree({path: OLD_FILES[path].replace("\n", "\r\n")}, tree)
+                else:
+                    api.git("read-tree", tree)
+                    blob = api.git("rev-parse", api.old + ":" + path)
+                    api.git("update-index", "--cacheinfo", "100755", blob, path)
+                    tree = api.git("write-tree")
+                pin = api.commit(tree, [api.old])
+                api.ref(install.BRANCH, pin)
+                with self.assertRaises(ValueError):
+                    lifecycle.upgrade(api, REPO, pin, NEW, apply=True, owner_approved=True)
+                self.assertEqual(api.writes, [])
+                self.assertEqual(api.ref(install.BRANCH), pin)
+                self.assertEqual(api.ref("main"), api.product)
