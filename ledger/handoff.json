@@ -2,12 +2,18 @@
   "active": {
     "issue": 13,
     "version": "v0.0.0.7",
-    "phase": "Validate",
-    "next_action": "Validate original fix against current qualified engineering head and exact PR2 preview; verify original pilot scope and receipt count.",
+    "phase": "Internal Auditor",
+    "next_action": "Exact merged and PR preview public runs pass; historical two-receipt pilot scope preserved, 33 unique receipts per current archive with original fix pins retained; selected-scope and batch regression pass all four suites.",
     "fix_sha": "d6df358c67c4fecaefaa725dd7b4687a2f3b89cd",
     "candidate_sha": "635377fbe9165859ad486469aef295e3052d5af9",
     "pull_request": 2,
-    "evidence": []
+    "evidence": [
+      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45709398172/attempts/1",
+      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45709398125/attempts/1",
+      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45709407880/attempts/1",
+      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45709407912/attempts/1",
+      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45709407977/attempts/1"
+    ]
   },
   "history": [
     {
