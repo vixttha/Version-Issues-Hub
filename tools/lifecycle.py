@@ -65,6 +65,8 @@ def upgrade(api, target, expected_sha, source_sha, *, apply=False, owner_approve
     new_files = install.source_files(api, source_sha)
     if not set(old_files).issubset(new_files):
         raise ValueError("Package path removal requires a separate migration")
+    if apply:
+        install.require_publishable_package(new_files)
     if not {"tools/session.py", "tools/install.py", "tools/lifecycle.py"}.issubset(new_files):
         raise ValueError("Target pin lacks lifecycle-compatible package")
     base_tree, entries = tree_entries(api, prefix, expected_sha)

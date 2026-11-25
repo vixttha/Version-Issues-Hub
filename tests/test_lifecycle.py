@@ -128,6 +128,86 @@ class LifecycleTests(unittest.TestCase):
             self.assertEqual(api.git("rev-parse",api.old+":"+p),api.git("rev-parse",new+":"+p))
         self.assertEqual(session.load(api,REPO,new)["manifest"]["source_sha"],NEW)
 
+    def test_legal_review_upgrade_is_plan_only_and_preserves_adopter_license(self):
+        api = self.api
+        pin = self.change("LICENSE", "adopter-owned license\n")
+        candidate = {**NEW_FILES, "VIB-LICENSE.md": "reference only\n",
+                     "VIB-NOTICE.md": "REVIEW_ONLY_NOT_A_GRANT\n"}
+        with patch.object(install, "source_files", side_effect=lambda api, sha:
+                          dict({OLD: OLD_FILES, NEW: candidate}[sha])):
+            plan = lifecycle.upgrade(api, REPO, pin, NEW)
+            self.assertIn("VIB-LICENSE.md", plan["changed_paths"])
+            self.assertIn("VIB-NOTICE.md", plan["changed_paths"])
+            self.assertNotIn("LICENSE", plan["changed_paths"])
+            for prepare in (False, True):
+                with self.assertRaisesRegex(ValueError, "not authorized"):
+                    lifecycle.upgrade(api, REPO, pin, NEW, apply=True,
+                                      owner_approved=True, prepare_only=prepare)
+            self.assertEqual(api.writes, [])
+            self.assertEqual(api.ref(install.BRANCH), pin)
+            self.assertEqual(api.ref("main"), api.product)
+            self.assertEqual(api.read(pin, "LICENSE"), "adopter-owned license\n")
+            for p in (session.LEDGER, session.HANDOFF, "notes/custom.md"):
+                self.assertEqual(api.read(pin, p), api.read(api.old, p))
+            collided = self.change("VIB-NOTICE.md", "adopter-owned\n")
+            with self.assertRaisesRegex(ValueError, "collides"):
+                lifecycle.upgrade(api, REPO, collided, NEW)
+            self.assertEqual(api.writes, [])
+
+    def test_approved_notice_preserves_shared_law_exclusions_and_mit_text(self):
+        root = Path(__file__).resolve().parents[1]
+        notice = (root / "VIB-NOTICE.md").read_text(encoding="utf-8")
+        self.assertIn("VIB_LICENSE_TERMS_APPROVED", notice)
+        self.assertIn("excluded from the restrictive grant", notice)
+        self.assertIn("Prior licensed revisions", notice)
+        self.assertIn("Ownership and separate lawful permission", notice)
+        # Verify embedded, verbatim MIT texts against immutable upstream Git blob IDs.
+        import re
+        notices = re.findall(r"```text\n(.*?)\n```", notice, re.DOTALL)
+        self.assertEqual(len(notices), 3)
+        self.assertEqual([lifecycle.blob_id(value + "\n") for value in notices],
+                         ["1466aeaa07d9f7fd502ca697353b5feace5f4e5a","2fca5f35039b9b1eb3c3d193219411a9cf0765f1","30e65839065c0ea88ca00a2de47d65de4313e154"])
+        laws = (root / "ENGINEERING-LAWS.md").read_text(encoding="utf-8")
+        start, end = "<!-- engineering-laws:start -->", "<!-- engineering-laws:end -->"
+        shared = laws[laws.index(start):laws.index(end) + len(end)]
+        for name in ("README.md", "AGENTS.md"):
+            self.assertIn(shared, (root / "install/branch" / name).read_text(encoding="utf-8"))
+
+    def test_approved_legal_package_fresh_install_and_upgrade(self):
+        # Real installer and lifecycle with disposable Git objects; no live GitHub writes.
+        api = self.api
+        root = Path(__file__).resolve().parents[1]
+        package = {dest: (root / src).read_text(encoding="utf-8")
+                   for src, dest in install.PACKAGE.items()}
+        self.assertEqual(len(package), 14)
+        self.assertIn("VIB_LICENSE_TERMS_APPROVED", package["VIB-NOTICE.md"])
+        self.assertNotIn("LICENSE", package)
+        with patch.object(install, "source_files", side_effect=lambda api, sha:
+                          dict({OLD: OLD_FILES, NEW: package}[sha])):
+            pin = self.change("LICENSE", "adopter-owned license\n")
+            before = {p: api.read(pin, p) for p in
+                      ("LICENSE", session.LEDGER, session.HANDOFF, "notes/custom.md")}
+            upgraded = lifecycle.upgrade(api, REPO, pin, NEW, apply=True,
+                                         owner_approved=True)["installed_sha"]
+            self.assertEqual(api.ref("main"), api.product)
+            self.assertEqual({p: api.read(upgraded, p) for p in before}, before)
+            self.assertEqual(session.load(api, REPO, upgraded)["manifest"]
+                             ["package_files_sha256"], lifecycle.digest_files(package))
+            for path, content in package.items():
+                self.assertEqual(api.read(upgraded, path), content)
+            # Fresh-install path in the disposable fixture only.
+            api.git("update-ref", "-d", "refs/heads/" + install.BRANCH, upgraded)
+            fresh = install.install(api, REPO, NEW, "v1.0.6", True)["installed_sha"]
+            self.assertEqual(api.ref("main"), api.product)
+            self.assertEqual(api.git("rev-parse", fresh + "^"), api.product)
+            observed = session.load(api, REPO, fresh)
+            self.assertEqual(observed["manifest"]["package_files_sha256"],
+                             lifecycle.digest_files(package))
+            self.assertEqual(observed["ledger"]["issues"], [])
+            for path, content in package.items():
+                self.assertEqual(api.read(fresh, path), content)
+        install.require_publishable_package(package)
+
     def test_upgrade_requires_owner_and_current_revision(self):
         api=self.api
         with self.assertRaisesRegex(ValueError,"owner approval"):
