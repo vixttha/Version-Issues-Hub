@@ -2,8 +2,8 @@
   "active": {
     "issue": 30,
     "version": "v0.0.0.15",
-    "phase": "Internal Auditor",
-    "next_action": "All four 146-test suites pass bounded ref readback, divergent/exhaustion rejection and no write retries. Corrected fresh same-repo CLI create artifact 14913742861 and clouds lifecycle artifact 14902384542 independently rehashed; preserved existing install upgraded through connector-assisted transport, archive/recovery and unchanged main verified. Clouds evidence https://github.com/vixttha/clouds/actions/runs/45357811869/attempts/1. Direct CLI upgrade not claimed; #29 remains open.",
+    "phase": "Head",
+    "next_action": "Solo audit: bounded readback and actual preserved-install upgrade/archive criteria met via documented split transport; #29 direct CLI upgrade is distinct and unchanged. Evidence clouds run 45357811869 artifact 14902384542, original failed create retained.",
     "fix_sha": "cddcb935a2e71bcf167c2096674c4292ea72d232",
     "candidate_sha": "26e9fe8c019a33c5f84f77a37da70925505204e3",
     "pull_request": 2,
