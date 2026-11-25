@@ -19,6 +19,8 @@ class ParallelTests(unittest.TestCase):
     def setup_two(self):
         self.api=Fake()
         s=state()
+        s["parallel_supported"]=True
+        s["manifest"]["enforcement"]="disabled"
         self.apply(s,session.claim(self.api,s,A,["A"],"first"),A)
         original=copy.deepcopy(s["handoff"]["active"])
         self.apply(s,session.claim(self.api,s,B,["B"],"second",parallel=True),B)
@@ -131,6 +133,7 @@ class ParallelTests(unittest.TestCase):
         self.api=Fake()
         s=state()
         s["manifest"]["enforcement"]="enabled"
+        s["parallel_supported"]=True
         with self.assertRaisesRegex(ValueError,"disabled"):
             session.claim(self.api,s,A,["A"],"A",parallel=True)
         s=self.setup_two()
@@ -164,3 +167,91 @@ class ParallelTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError,"not qualified"):
                 gate.evaluate_scope(api,REPO,p,lambda _:None,lambda *args:None)
         self.assertEqual(api.writes,[])
+
+
+    def test_legacy_package_cannot_be_promoted_by_newer_cli(self):
+        self.api=Fake()
+        s=state()
+        s["manifest"]["enforcement"]="disabled"
+        for files in ({}, {"tools/session.py":"# PARALLEL_HANDOFF_SCHEMA = 2\n"},
+                      {"tools/session.py":"PARALLEL_HANDOFF_SCHEMA = True\n"}):
+            self.assertFalse(session.supports_parallel_package(files))
+        self.assertTrue(session.supports_parallel_package({"tools/session.py":"PARALLEL_HANDOFF_SCHEMA = 2\n"}))
+        self.assertFalse(session.supports_parallel_package({"tools/session.py":
+                          "PARALLEL_HANDOFF_SCHEMA = 2\nPARALLEL_HANDOFF_SCHEMA = 1\n"}))
+        before=copy.deepcopy(s)
+        with self.assertRaisesRegex(ValueError,"upgrade"):
+            session.claim(self.api,s,A,["A"],"A",parallel=True)
+        self.assertEqual(s,before)
+        self.assertEqual(self.api.writes,[])
+
+    def test_parallel_idle_upgrade_refuses_incompatible_reader(self):
+        from test_lifecycle import OLD, NEW, OLD_FILES, NEW_FILES
+        s=state()
+        s["handoff"].update(schema_version=2,active=[])
+        s["manifest"].update(enforcement="disabled",source_sha=OLD)
+        api=Fake()
+        with patch.object(lifecycle,"idle_state",return_value=s), \
+             patch.object(api,"request",return_value={"status":"ahead","merge_base_commit":{"sha":OLD}}), \
+             patch.object(session.install,"source_files",side_effect=lambda api,sha:{OLD:OLD_FILES,NEW:NEW_FILES}[sha]):
+            with self.assertRaisesRegex(ValueError,"lacks parallel"):
+                lifecycle.upgrade(api,"example/existing",s["ref"],NEW)
+        self.assertEqual(api.writes,[])
+
+    def test_real_git_parallel_conflict_preserves_winner_and_reloaded_loser(self):
+        import tempfile
+        import json
+        from pathlib import Path
+        from test_lifecycle import GitApi, OLD_FILES, REPO as TARGET
+        from tools import install
+
+        class Remote(GitApi):
+            def request(self,method,path,body=None):
+                if method=="GET" and "/issues/" in path:
+                    return {"number":int(path.rsplit("/",1)[1]),"state":"open"}
+                return super().request(method,path,body)
+
+        with tempfile.TemporaryDirectory() as tmp:
+            api=Remote(tmp)
+            package={**OLD_FILES,"tools/session.py":Path(session.__file__).read_text(encoding="utf-8")}
+            manifest={**api.manifest,"package_files_sha256":lifecycle.digest_files(package)}
+            tree=api.tree({"tools/session.py":package["tools/session.py"],
+                           "vib-install.json":install.render(manifest)},api.git("rev-parse",api.old+"^{tree}"))
+            pin=api.commit(tree,[api.old])
+            api.ref(install.BRANCH,pin)
+            with patch.object(install,"source_files",return_value=package), \
+                 patch.object(install,"read_text",side_effect=lambda api,prefix,path,ref:api.read(ref,path)):
+                s=session.load(api,TARGET,pin)
+                self.assertTrue(s["parallel_supported"])
+                initial_history=copy.deepcopy(s["handoff"]["history"])
+                first=session.claim(api,s,A,["A"],"first")
+                one=session.save(api,s,*first,True,issue=A)["installed_sha"]
+                s=session.load(api,TARGET,one)
+                a=copy.deepcopy(s["handoff"]["active"])
+                left=session.claim(api,s,B,["B"],"left",parallel=True)
+                right=session.claim(api,s,249,["C"],"right",parallel=True)
+                original=api.request
+                winner=[]
+                def race(method,path,body=None):
+                    if method=="PATCH" and not winner:
+                        api.request=original
+                        winner.append(session.save(api,s,*right,True,issue=249)["installed_sha"])
+                    return original(method,path,body)
+                api.request=race
+                with self.assertRaises(install.ApiError) as exc:
+                    session.save(api,s,*left,True,issue=B)
+                self.assertEqual(exc.exception.status,422)
+                fresh=session.load(api,TARGET,winner[0])
+                self.assertEqual(session.select_active(fresh["handoff"],A),a)
+                self.assertEqual([x["issue"] for x in fresh["handoff"]["active"]],[A,249])
+                left=session.claim(api,fresh,B,["B"],"reload left")
+                final=session.save(api,fresh,*left,True,issue=B)["installed_sha"]
+                latest=session.load(api,TARGET,final)
+                self.assertEqual([x["issue"] for x in latest["handoff"]["active"]],[A,B,249])
+                self.assertEqual(len(set(x["version"] for x in latest["ledger"]["issues"])),4)
+                self.assertEqual(latest["handoff"]["history"],initial_history)
+                self.assertEqual(session.select_active(latest["handoff"],249),
+                                 session.select_active(fresh["handoff"],249))
+                self.assertEqual(api.ref("main"),api.product)
+                self.assertEqual(api.read(final,"notes/custom.md"),"keep me\n")
+                self.assertEqual(sum(m=="PATCH" for m,_,_ in api.writes),4)

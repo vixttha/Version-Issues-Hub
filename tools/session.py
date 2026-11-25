@@ -1,5 +1,6 @@
 """Bootstrap VIB from an installed branch; serialize cooperative handoffs on GitHub."""
 import argparse
+import ast
 import copy
 import hashlib
 import json
@@ -11,6 +12,7 @@ PHASES = ("Worker", "Validate", "Internal Auditor", "Head")
 ACTIVE_KEYS = {"issue", "version", "phase", "next_action", "fix_sha",
                "candidate_sha", "pull_request", "evidence"}
 PIN_KEYS = {"integration_base_sha", "integration_merge_sha"}
+PARALLEL_HANDOFF_SCHEMA = 2
 HANDOFF = "ledger/handoff.json"
 LEDGER = "ledger/issue-versions.json"
 
@@ -61,6 +63,27 @@ def validate_active(active, ledger):
         raise ValueError("Worker handoff must not carry stale verification")
     if active["evidence"] and any(v is None for v in fields):
         raise ValueError("Evidence requires a candidate")
+
+def supports_parallel_package(files):
+    """Capability declaration in the already verified, owner-pinned reader."""
+    try:
+        tree = ast.parse(files.get("tools/session.py", ""))
+    except (SyntaxError, TypeError, ValueError):
+        return False
+    declarations = [node for node in tree.body if isinstance(node, ast.Assign)
+                    and any(isinstance(target, ast.Name) and target.id == "PARALLEL_HANDOFF_SCHEMA"
+                            for target in node.targets)]
+    return (len(declarations) == 1 and isinstance(declarations[0].value, ast.Constant)
+            and type(declarations[0].value.value) is int
+            and declarations[0].value.value == PARALLEL_HANDOFF_SCHEMA)
+
+
+def require_parallel_package(state):
+    if state.get("parallel_supported") is not True:
+        raise ValueError("Installed package lacks parallel handoff support; upgrade the pinned reader first")
+    if state["manifest"].get("enforcement") != "disabled":
+        raise ValueError("Parallel mode requires disabled optional enforcement")
+
 
 def active_rows(handoff):
     """Read the legacy singleton or the explicitly enabled parallel collection."""
@@ -169,11 +192,15 @@ def load(api, target, expected_sha=None):
         raise ValueError("Ledger belongs to another repository")
     handoff = checkpoint.parse_json(read(HANDOFF))
     validate_handoff(handoff, ledger)
+    parallel_supported = supports_parallel_package(expected_files)
+    if handoff["schema_version"] == 2 and not parallel_supported:
+        raise ValueError("Installed package lacks parallel handoff support")
     product = install.read_ref(api, prefix, meta["default_branch"])
     if product is None:
         raise ValueError("Product branch is missing")
     return {"prefix": prefix, "ref": ref, "manifest": manifest,
-            "ledger": ledger, "handoff": handoff, "product_sha": product}
+            "ledger": ledger, "handoff": handoff, "product_sha": product,
+            "parallel_supported": parallel_supported}
 
 def get_issue(api, state, number):
     value = api.request("GET", state["prefix"] + "/issues/" + str(issue_number(number)))
@@ -336,14 +363,13 @@ def claim(api, state, number, criteria, note, *, resume_prior_line=False, parall
             raise ValueError("Existing acceptance criteria differ")
         return ledger, handoff
     if parallel and handoff["schema_version"] == 1:
-        if state["manifest"].get("enforcement", "disabled") != "disabled":
-            raise ValueError("Parallel mode requires disabled optional enforcement")
+        require_parallel_package(state)
         handoff["schema_version"] = 2
         handoff["active"] = rows
     if handoff["schema_version"] == 1 and rows:
         raise ValueError("Another issue owns the active handoff")
-    if handoff["schema_version"] == 2 and state["manifest"].get("enforcement", "disabled") != "disabled":
-        raise ValueError("Parallel mode requires disabled optional enforcement")
+    if handoff["schema_version"] == 2:
+        require_parallel_package(state)
     baseline = state["manifest"]["baseline_version"]
     row = next((x for x in ledger["issues"] if x["issue"] == number), None)
     if row is not None and row["state"] in ("integrated", "retired"):
@@ -597,8 +623,8 @@ def check_issue_delta(state, ledger, handoff, number=None):
     if migration and (number in previous or number not in proposed or appended
                       or state["manifest"].get("enforcement", "disabled") != "disabled"):
         raise ValueError("Parallel migration requires a new owner-approved active claim")
-    if handoff["schema_version"] == 2 and state["manifest"].get("enforcement", "disabled") != "disabled":
-        raise ValueError("Parallel mode requires disabled optional enforcement")
+    if handoff["schema_version"] == 2:
+        require_parallel_package(state)
     if any(r["handoff"]["issue"] != number for r in appended):
         raise ValueError("Issue scope violation: unrelated history appended")
     if number not in new_rows:

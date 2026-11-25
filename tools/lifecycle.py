@@ -63,6 +63,8 @@ def upgrade(api, target, expected_sha, source_sha, *, apply=False, owner_approve
         raise ValueError("Upgrade must advance the pinned source history")
     old_files = install.source_files(api, old_source)
     new_files = install.source_files(api, source_sha)
+    if state["handoff"]["schema_version"] == 2 and not session.supports_parallel_package(new_files):
+        raise ValueError("Upgrade target lacks parallel handoff support")
     if not set(old_files).issubset(new_files):
         raise ValueError("Package path removal requires a separate migration")
     if apply:

@@ -424,6 +424,14 @@
         {
           "path": "tools/session.py",
           "anchor": "def check_issue_delta(state, ledger, handoff, number=None):"
+        },
+        {
+          "path": "tools/session.py",
+          "anchor": "def supports_parallel_package(files):"
+        },
+        {
+          "path": "tools/lifecycle.py",
+          "anchor": "def upgrade(api, target, expected_sha, source_sha, *, apply=False, owner_approved=False, prepare_only=False):"
         }
       ],
       "tested_by": [
@@ -462,6 +470,18 @@
         {
           "path": "tests/test_parallel_handoff.py",
           "anchor": "def test_standard_unrelated_parallel_active_does_not_block_same_pr_does(self):"
+        },
+        {
+          "path": "tests/test_parallel_handoff.py",
+          "anchor": "def test_legacy_package_cannot_be_promoted_by_newer_cli(self):"
+        },
+        {
+          "path": "tests/test_parallel_handoff.py",
+          "anchor": "def test_parallel_idle_upgrade_refuses_incompatible_reader(self):"
+        },
+        {
+          "path": "tests/test_parallel_handoff.py",
+          "anchor": "def test_real_git_parallel_conflict_preserves_winner_and_reloaded_loser(self):"
         }
       ]
     }
