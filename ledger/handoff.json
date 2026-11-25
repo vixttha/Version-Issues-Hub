@@ -2,12 +2,19 @@
   "active": {
     "issue": 33,
     "version": "v0.0.0.17",
-    "phase": "Validate",
-    "next_action": "Verify bounded GET timeout regression, diagnostic redaction and original live recovery evidence.",
+    "phase": "Internal Auditor",
+    "next_action": "Four 146-test suites pass direct/wrapped GET timeout, response-read retry, transport exhaustion and no mutation retry. Historical recovery run success, 11/11 current jobs, exact receipt pins and Graphify shard hashes verified. Original remote PATCH failure retained.",
     "fix_sha": "15396556f7674f27b039520a7538fa76f7ac49c1",
     "candidate_sha": "26e9fe8c019a33c5f84f77a37da70925505204e3",
     "pull_request": 2,
-    "evidence": []
+    "evidence": [
+      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45713361976/attempts/1",
+      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45713361959/attempts/1",
+      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45713368275/attempts/1",
+      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45713368267/attempts/1",
+      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45713368324/attempts/1",
+      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45340848541/attempts/1"
+    ]
   },
   "history": [
     {
