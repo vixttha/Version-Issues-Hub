@@ -2,12 +2,12 @@
   "active": {
     "issue": 10,
     "version": "v0.0.0.4",
-    "phase": "Worker",
-    "fix_sha": null,
-    "candidate_sha": null,
-    "pull_request": null,
+    "phase": "Validate",
+    "fix_sha": "1a53dc83cd578faa26b8253e0699646ea58e2dbb",
+    "candidate_sha": "1e85153765c0ca908f2ee44f2973ba59b0669c23",
+    "pull_request": 2,
     "evidence": [],
-    "next_action": "Owner-directed individual review of existing bootstrap/durable handoff. Preserve original fix, verify pinned state and public regression evidence. No independent host qualification claim or new feature."
+    "next_action": "Original fix ancestor, host-neutral package docs and exact installed source blob/mode pins confirmed; validate existing bootstrap and handoff regression evidence. No product edits."
   },
   "history": [
     {
