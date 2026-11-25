@@ -2,8 +2,8 @@
   "active": {
     "issue": 25,
     "version": "v0.0.0.12",
-    "phase": "Internal Auditor",
-    "next_action": "Historical real disposable Git lifecycle tests; current Ubuntu and Windows full suites pass owner approval, preserved state/product, competing writers, archive and upgrade controls. #54 Windows fixture repair closed, current tests supersede prior failure.",
+    "phase": "Head",
+    "next_action": "Solo audit confirms original fixture and non-destructive upgrade/retirement engineering scope; no live adopter mutation or deletion claim.",
     "fix_sha": "78decbe8d6ff4eb9ab7e19394cec8790a12ecfae",
     "candidate_sha": "07a73f55a2b1f7ecbf873a3921f1e397034a88e6",
     "pull_request": 2,
