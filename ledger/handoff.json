@@ -2,11 +2,11 @@
   "active": {
     "issue": 24,
     "version": "v0.0.0.11",
-    "phase": "Worker",
-    "next_action": "Owner-authorized historical recovery; no product edits or version change.",
-    "fix_sha": null,
-    "candidate_sha": null,
-    "pull_request": null,
+    "phase": "Validate",
+    "next_action": "Verify original AlderVale installation provenance, cross-project fresh read-only recovery, and no adopter writes.",
+    "fix_sha": "e3f5f917307f38372277b7aecae3652c85935f80",
+    "candidate_sha": "07a73f55a2b1f7ecbf873a3921f1e397034a88e6",
+    "pull_request": 2,
     "evidence": []
   },
   "history": [
