@@ -337,6 +337,16 @@
         "Allow new issue assignments and legitimate state changes while preserving all historical mappings and criteria.",
         "Document immutable criteria and validate exact revisions with public Ubuntu/Windows, Graphify and CodeRabbit."
       ]
+    },
+    {
+      "issue": 71,
+      "version": "v0.0.0.35",
+      "state": "in_progress",
+      "acceptance": [
+        "Reject archived staged or integrated handoffs missing complete fix/candidate/PR fields or nonempty run-attempt evidence.",
+        "Preserve legitimate blocked, deferred and rework archives and existing historical records.",
+        "Test incomplete verification and valid dispositions; verify public Ubuntu/Windows, Graphify, CodeRabbit and exact engineering merge."
+      ]
     }
   ],
   "repository": "vixttha/Version-Issues-Hub",

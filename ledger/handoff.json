@@ -1,5 +1,14 @@
 {
-  "active": null,
+  "active": {
+    "issue": 71,
+    "version": "v0.0.0.35",
+    "phase": "Worker",
+    "next_action": "Repair archived staged/integrated evidence validation only; synchronize exact canonical projection before product edits.",
+    "fix_sha": null,
+    "candidate_sha": null,
+    "pull_request": null,
+    "evidence": []
+  },
   "history": [
     {
       "decision": "PR49 CodeRabbit finding 4682051116: rework exact product SHA comparisons and add regression checks; preserve previous evidence.",
