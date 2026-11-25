@@ -10,11 +10,12 @@ import sys
 import unittest
 from unittest.mock import patch, Mock
 from urllib.error import HTTPError, URLError
-from test_core import original, install, lifecycle, session, LifecycleNegative
+import test_core
+from test_core import original, install, lifecycle, session
 
 class Faults(unittest.TestCase):
     def setUp(self):
-        LifecycleNegative.setUp(self)
+        test_core.LifecycleNegative.setUp(self)
         self.a = self.api
         self.initial = self.a.ref(install.BRANCH)
         self.product = self.a.ref("main")
