@@ -286,5 +286,64 @@ class InstallerTests(unittest.TestCase):
             self.assertEqual(str(raised.exception),"GitHub transport failed (GET contents)")
             delay.assert_not_called()
 
+    def test_api_rejects_duplicate_and_malformed_wire_json(self):
+        api = install.GitHub("fixture-secret")
+        invalid = (
+            b'{"merged":true,"merged":false}',
+            b'{"nested":{"private-key":1,"private-key":2}}',
+            b'{"merged":true,"m\\u0065rged":false}',
+            b'{"private-key":',
+            b'{"private-key":"\xff"}',
+            b'{"value":"\xed\xa0\x80"}',
+        )
+        for method in ("GET", "POST", "PATCH", "DELETE"):
+            for raw in invalid:
+                with self.subTest(method=method, raw=raw), \
+                     patch.object(api.opener, "open", return_value=io.BytesIO(raw)) as req, \
+                     patch.object(install.time, "sleep") as delay:
+                    with self.assertRaisesRegex(ValueError, "Invalid GitHub JSON response") as raised:
+                        api.request(method, PREFIX + "/git/refs/heads/private?ref=secret")
+                    self.assertEqual(req.call_count, 1)
+                    delay.assert_not_called()
+                    self.assertNotIn("private", str(raised.exception))
+                    self.assertNotIn("secret", str(raised.exception))
+                    self.assertNotIn("merged", str(raised.exception))
+                    if method != "GET":
+                        self.assertIn("inspect before retrying", str(raised.exception))
+
+    def test_api_valid_json_preserves_nested_values(self):
+        api = install.GitHub(None)
+        raw = b'{"merged":false,"nested":{"merged":true},"items":[{"id":1},{"id":2}],"label":"\xc3\xa9"}'
+        with patch.object(api.opener, "open", return_value=io.BytesIO(raw)) as req:
+            self.assertEqual(api.request("GET", PREFIX),
+                             {"merged": False, "nested": {"merged": True},
+                              "items": [{"id": 1}, {"id": 2}], "label": "é"})
+            req.assert_called_once()
+
+
+    def test_api_rejects_nonfinite_wire_values_without_retry(self):
+        api = install.GitHub(None)
+        for raw in (b'{"value":NaN}', b'{"value":Infinity}', b'{"value":-Infinity}',
+                    b'{"value":1e999}'):
+            with self.subTest(raw=raw), \
+                 patch.object(api.opener, "open", return_value=io.BytesIO(raw)) as req:
+                with self.assertRaisesRegex(ValueError, "Invalid GitHub JSON response"):
+                    api.request("PATCH", PREFIX + "/git/refs")
+                req.assert_called_once()
+
+    def test_nonfinite_outgoing_json_is_rejected_before_request(self):
+        api = install.GitHub(None)
+        for number in (float("nan"), float("inf"), -float("inf")):
+            body = {"nested": [number]}
+            with self.subTest(number=number), patch.object(api.opener, "open") as req:
+                with self.assertRaises(ValueError):
+                    api.request("POST", PREFIX + "/git/trees", body)
+                req.assert_not_called()
+                with self.assertRaises(ValueError):
+                    install.render(body)
+        data = {"value": 1.25, "string": "Infinity"}
+        self.assertEqual(checkpoint.parse_json(install.render(data)), data)
+
+
 if __name__ == "__main__":
     unittest.main()

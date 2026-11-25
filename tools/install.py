@@ -12,6 +12,11 @@ from urllib.error import HTTPError, URLError
 from urllib.parse import quote
 from urllib.request import Request, build_opener, HTTPRedirectHandler
 
+if __package__:
+    from . import checkpoint
+else:  # Preserve direct script invocation.
+    import checkpoint
+
 SOURCE = "vixttha/Version-Issues-Hub"
 BRANCH = "Version-Issues-Hub"
 SHA = re.compile(r"[0-9a-f]{40}")
@@ -79,7 +84,7 @@ class GitHub:
         headers = {"Accept": "application/vnd.github+json", "X-GitHub-Api-Version": "2022-11-28"}
         if self.token:
             headers["Authorization"] = "Bearer " + self.token
-        data = None if body is None else json.dumps(body).encode()
+        data = None if body is None else json.dumps(body, allow_nan=False).encode()
         if data is not None:
             headers["Content-Type"] = "application/json"
         req = Request("https://api.github.com" + path, data=data, headers=headers, method=method)
@@ -89,7 +94,12 @@ class GitHub:
                 time.sleep(delay)
             try:
                 with self.opener.open(req, timeout=30) as response:
-                    return json.load(response)
+                    try:
+                        return checkpoint.parse_json(response.read().decode("utf-8"))
+                    except ValueError:
+                        # A malformed write response is uncertain; never replay the write.
+                        caution = "; inspect before retrying any write" if method != "GET" else ""
+                        raise ValueError(f"Invalid GitHub JSON response ({method} {api_operation(path)}){caution}") from None
             except HTTPError as exc:
                 code = exc.code
                 exc.close()
@@ -186,7 +196,7 @@ def source_files(api, source_sha):
     return files
 
 def render(data):
-    return json.dumps(data, indent=2, sort_keys=True) + "\n"
+    return json.dumps(data, indent=2, sort_keys=True, allow_nan=False) + "\n"
 
 def require_publishable_package(files):
     """Reject incomplete or review-only legal packages; not a license enforcement service."""
