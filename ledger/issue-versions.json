@@ -351,7 +351,7 @@
     {
       "issue": 72,
       "version": "v0.0.0.36",
-      "state": "in_progress",
+      "state": "staged",
       "acceptance": [
         "Reject malformed, empty and duplicate explicit receipt selections before generating any receipt.",
         "Preserve valid default selection and historical singleton retrieval with original fix pins and ancestry checks.",
