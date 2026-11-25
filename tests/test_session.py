@@ -370,3 +370,40 @@ class SessionTests(unittest.TestCase):
         self.api.pr.update(state="closed", merged=True)
         ledger, _ = session.reconcile(self.api, self.state, 247, "Owner")
         self.assertEqual(ledger["issues"][0]["state"], "integrated")
+
+    def test_archived_success_requires_candidate_and_evidence(self):
+        self.claim()
+        self.advance(fix=FIX, candidate=CANDIDATE, pr=8)
+        self.advance(evidence=[RUN])
+        self.advance()
+        for disposition in ("staged", "integrated"):
+            self.api.pr.update(state="closed" if disposition == "integrated" else "open",
+                               merged=disposition == "integrated")
+            ledger, handoff = session.finish(self.api, self.state, disposition, "Owner")
+            session.validate_handoff(handoff, ledger)
+            for changes in (
+                {"fix_sha": None, "candidate_sha": None, "pull_request": None, "evidence": []},
+                {"evidence": []},
+                {"fix_sha": None}, {"candidate_sha": None}, {"pull_request": None},
+                {"evidence": [RUN.replace("/attempts/1", "")]},
+                {"evidence": [RUN, RUN]},
+            ):
+                with self.subTest(disposition=disposition, changes=changes):
+                    broken = copy.deepcopy(handoff)
+                    broken["history"][0]["handoff"].update(changes)
+                    with self.assertRaises(ValueError):
+                        session.validate_handoff(broken, ledger)
+            self.assertEqual(handoff["history"][0]["handoff"]["evidence"], [RUN])
+
+    def test_archived_nonsuccess_dispositions_preserve_unverified_history(self):
+        self.claim()
+        self.advance(return_to_head=True)
+        for disposition in ("blocked", "deferred"):
+            ledger, handoff = session.finish(self.api, self.state, disposition, "Owner")
+            session.validate_handoff(handoff, ledger)
+            self.assertEqual(handoff["history"][0]["handoff"]["evidence"], [])
+        self.state["handoff"]["active"]["phase"] = "Worker"
+        self.advance(fix=FIX, candidate=CANDIDATE, pr=8)
+        self.advance(rework=True)
+        session.validate_handoff(self.state["handoff"], self.state["ledger"])
+        self.assertEqual(self.state["handoff"]["history"][0]["disposition"], "rework")
