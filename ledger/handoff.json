@@ -2,12 +2,18 @@
   "active": {
     "issue": 7,
     "version": "v0.0.0.2",
-    "phase": "Validate",
-    "next_action": "Review preserved two-checkpoint pilot and current scoped receipts without modifying product.",
+    "phase": "Internal Auditor",
+    "next_action": "Both exact checkouts pass stable fix-pair and receipt-scope regressions. Historical docs-only evidence retained; audit before staging.",
     "fix_sha": "fee90e84d981740938989c1a53f70a9570ae2293",
     "candidate_sha": "95e05af7b2a675491a01f8450fb20db8871b1f41",
     "pull_request": 2,
-    "evidence": []
+    "evidence": [
+      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45698345230/attempts/1",
+      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45698358367/attempts/1",
+      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45698345281/attempts/1",
+      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45698358329/attempts/1",
+      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45698358388/attempts/1"
+    ]
   },
   "history": [
     {
