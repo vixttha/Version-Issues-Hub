@@ -2,8 +2,8 @@
   "active": {
     "issue": 24,
     "version": "v0.0.0.11",
-    "phase": "Internal Auditor",
-    "next_action": "Original verified AlderVale isolated tree and empty adopter ledger, historical fresh processes and actual issue lookup; current read-only adoption and public regression, exact receipts and Graphify pass.",
+    "phase": "Head",
+    "next_action": "Solo audit confirms original connector-install/read-only scope, not a fresh independent LLM or CLI apply claim.",
     "fix_sha": "e3f5f917307f38372277b7aecae3652c85935f80",
     "candidate_sha": "07a73f55a2b1f7ecbf873a3921f1e397034a88e6",
     "pull_request": 2,
