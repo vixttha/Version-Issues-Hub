@@ -1,0 +1,49 @@
+name: VIB Batch 17 independent candidate requalification
+on:
+  push:
+    branches: [Lydite-Test-Vault]
+    paths:
+      - 'vib/batch17/**'
+      - '.github/workflows/vib-batch17.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  requalify:
+    if: github.event.repository.private == false
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [ubuntu-24.04, windows-latest]
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 35
+    env:
+      VIB_CHECKOUT: ${{ github.workspace }}/product
+      PYTHONDONTWRITEBYTECODE: '1'
+      PYTHONUTF8: '1'
+      GH_TOKEN: ''
+      GITHUB_TOKEN: ''
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          path: vault
+          persist-credentials: false
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          path: product
+          ref: '5a6074d77ec37823f81c6d7ebb1f4593d969cd71'
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
+        with:
+          python-version: '3.12'
+      - name: Install test-only coverage tool
+        run: python -m pip install coverage==7.10.7
+      - name: Run independent replay and subprocess coverage
+        run: python vault/vib/batch17/requalify.py
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: batch17-${{ matrix.runner }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/batch17/evidence
+          if-no-files-found: error
