@@ -127,7 +127,7 @@
         "Run real public GitHub read-only CLI planning in README HQ, without installation or repair-plan changes; public-runner tests and Graphify."
       ],
       "issue": 26,
-      "state": "in_progress",
+      "state": "staged",
       "version": "v0.0.0.13"
     },
     {
