@@ -2,12 +2,18 @@
   "active": {
     "issue": 22,
     "version": "v0.0.0.9",
-    "phase": "Validate",
-    "next_action": "Validate original Standard advisory fix against current qualified engineering head and exact PR2 preview; no live enforcement claim.",
+    "phase": "Internal Auditor",
+    "next_action": "Exact merged and PR preview public runs pass; Standard default/no App, read-only invalid evidence rejection, mandatory checkout/owner review and separate optional gate supported by implementation and regression tests; Graphify and exact receipts checked.",
     "fix_sha": "0bb2cae91c1673231645e6301c95d333a4a35afd",
     "candidate_sha": "635377fbe9165859ad486469aef295e3052d5af9",
     "pull_request": 2,
-    "evidence": []
+    "evidence": [
+      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45709398172/attempts/1",
+      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45709398125/attempts/1",
+      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45709407880/attempts/1",
+      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45709407912/attempts/1",
+      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45709407977/attempts/1"
+    ]
   },
   "history": [
     {
