@@ -1,20 +1,5 @@
 {
-  "active": {
-    "candidate_sha": "26e9fe8c019a33c5f84f77a37da70925505204e3",
-    "evidence": [
-      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45713361976/attempts/1",
-      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45713361959/attempts/1",
-      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45713368275/attempts/1",
-      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45713368267/attempts/1",
-      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45713368324/attempts/1"
-    ],
-    "fix_sha": "fbb76a77f896fb39290a1b862e7dde1a74ae3a8a",
-    "issue": 9,
-    "next_action": "Original fix ancestry, retained criteria, 11 public jobs, exact issue receipts and Graphify mappings verified. Engineering disposition only.",
-    "phase": "Head",
-    "pull_request": 2,
-    "version": "v0.0.0.3"
-  },
+  "active": null,
   "history": [
     {
       "decision": "PR49 CodeRabbit finding 4682051116: rework exact product SHA comparisons and add regression checks; preserve previous evidence.",
@@ -705,6 +690,27 @@
         "phase": "Head",
         "pull_request": 2,
         "version": "v0.0.0.2"
+      },
+      "merged_sha": null
+    },
+    {
+      "decision": "Owner directed continuation of historical closure batch. Accept v0.0.0.3 engineering scope on PR #2 at 26e9fe8c019a33c5f84f77a37da70925505204e3. Pinned standalone installation, adopter-specific empty ledger and manifest, and refusal of wrong, empty or occupied targets. Independent host acceptance remains in #37 and optional enforcement remains separate. Main integration and release remain pending.",
+      "disposition": "staged",
+      "handoff": {
+        "candidate_sha": "26e9fe8c019a33c5f84f77a37da70925505204e3",
+        "evidence": [
+          "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45713361976/attempts/1",
+          "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45713361959/attempts/1",
+          "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45713368275/attempts/1",
+          "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45713368267/attempts/1",
+          "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45713368324/attempts/1"
+        ],
+        "fix_sha": "fbb76a77f896fb39290a1b862e7dde1a74ae3a8a",
+        "issue": 9,
+        "next_action": "Original fix ancestry, retained criteria, 11 public jobs, exact issue receipts and Graphify mappings verified. Engineering disposition only.",
+        "phase": "Head",
+        "pull_request": 2,
+        "version": "v0.0.0.3"
       },
       "merged_sha": null
     }
