@@ -1,5 +1,7 @@
 import copy
 import unittest
+from unittest.mock import patch
+from subprocess import CompletedProcess
 
 from tools import self_use_preflight
 
@@ -66,3 +68,41 @@ class SelfUsePreflightTests(unittest.TestCase):
         ledger["repository"] = "other/project"
         with self.assertRaisesRegex(ValueError, "VIB product repository"):
             self_use_preflight.validate_projection(ledger, ledger, self.handoff, 65)
+
+    def test_generic_worker_record_is_exact(self):
+        record = {"schema_version": 1, "issue": 65, "version": "v0.0.0.31",
+                  "installed_sha": "a" * 40}
+        branch = "plan/checkpoint-v0.0.0.31"
+        self.assertEqual(self_use_preflight.worker_record(record, branch),
+                         ("a" * 40, 65, "v0.0.0.31"))
+        for key, value in (("schema_version", True), ("issue", True),
+                           ("version", "v0.0.0.32"), ("installed_sha", "--upload-pack=x")):
+            with self.subTest(key=key):
+                with self.assertRaises(ValueError):
+                    self_use_preflight.worker_record({**record, key: value}, branch)
+        for invalid in ({}, {**record, "extra": 1}):
+            with self.assertRaises(ValueError):
+                self_use_preflight.worker_record(invalid, branch)
+        with self.assertRaisesRegex(ValueError, "does not match"):
+            self_use_preflight.worker_record(record, "plan/checkpoint-wrong")
+
+    @patch("tools.self_use_preflight.WORKER_RECORD")
+    @patch("tools.self_use_preflight.subprocess.run")
+    @patch("tools.self_use_preflight.read_projection")
+    def test_generic_branch_checks_canonical_ancestry_and_version(self, read, run, record):
+        record.read_text.return_value = '{"schema_version":1,"issue":65,"version":"v0.0.0.31","installed_sha":"' + "a" * 40 + '"}'
+        run.return_value = CompletedProcess([], 0)
+        read.return_value = "v0.0.0.31"
+        branch = "plan/checkpoint-v0.0.0.31"
+        self.assertEqual(self_use_preflight.verify_checkpoint_branch(branch),
+                         ("a" * 40, 65, "v0.0.0.31"))
+        read.assert_called_once_with("a" * 40, 65)
+        read.return_value = "v0.0.0.32"
+        with self.assertRaisesRegex(ValueError, "differs"):
+            self_use_preflight.verify_checkpoint_branch(branch)
+        run.return_value = CompletedProcess([], 1)
+        with self.assertRaisesRegex(ValueError, "not in canonical"):
+            self_use_preflight.verify_checkpoint_branch(branch)
+        record.read_text.side_effect = FileNotFoundError
+        with self.assertRaises(FileNotFoundError):
+            self_use_preflight.verify_checkpoint_branch(branch)

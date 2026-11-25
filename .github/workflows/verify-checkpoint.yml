@@ -37,6 +37,11 @@ jobs:
         run: |
           git fetch --no-tags origin 6d1e904a4d24390c560eb0b55a82aff4ae3810cc
           python -m tools.self_use_preflight --installed-ref 6d1e904a4d24390c560eb0b55a82aff4ae3810cc --issue 34
+      - name: Verify generic checkpoint pinned canonical Worker projection
+        if: startsWith(github.head_ref, 'plan/checkpoint-') || startsWith(github.ref, 'refs/heads/plan/checkpoint-')
+        env:
+          CHECKPOINT_BRANCH: ${{ github.head_ref || github.ref_name }}
+        run: python -m tools.self_use_preflight --worker-branch "$CHECKPOINT_BRANCH"
       - name: Write the selected issue verification receipts
         run: python tools/checkpoint.py receipts "$RUNNER_TEMP/issue-receipts"
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
