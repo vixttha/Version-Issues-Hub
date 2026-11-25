@@ -168,6 +168,42 @@
           "anchor": "def test_schema_loader_rejects_nonfinite_or_extreme_literals(self):"
         }
       ]
+    },
+    {
+      "id": "readme-recovery-replay",
+      "label": "Read-only stale candidate recovery remains blocked",
+      "documented_in": [
+        {
+          "path": ".github/workflows/readme-hq.yml",
+          "anchor": "# Replay checks recovery reporting, not permission to advance a checkpoint."
+        }
+      ],
+      "changed_in": [
+        {
+          "path": ".github/workflows/readme-hq.yml",
+          "anchor": "python \"$GITHUB_WORKSPACE/audit/verify_readme_recovery.py\" --self-test"
+        }
+      ],
+      "implemented_in": [
+        {
+          "path": "audit/verify_readme_recovery.py",
+          "anchor": "def verify_recovery(observed, expected, installed_sha):"
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "audit/verify_readme_recovery.py",
+          "anchor": "def test_stale_candidate_is_a_blocker_not_resume(self):"
+        },
+        {
+          "path": "audit/verify_readme_recovery.py",
+          "anchor": "def test_stale_without_pr_rejected(self):"
+        },
+        {
+          "path": "audit/verify_readme_recovery.py",
+          "anchor": "def test_reject_wrong_authority_and_identity(self):"
+        }
+      ]
     }
   ]
 }

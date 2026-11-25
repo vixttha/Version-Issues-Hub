@@ -79,24 +79,9 @@ jobs:
           git show "$state_sha:ledger/handoff.json" > "$RUNNER_TEMP/vib-handoff.json"
           python -m tools.session --target vixttha/Version-Issues-Hub inspect > "$RUNNER_TEMP/vib-inspect.json"
           test "$(git ls-remote origin refs/heads/Version-Issues-Hub | cut -f1)" = "$state_sha"
-          python - "$state_sha" <<'PY'
-          import json, os, sys
-          from pathlib import Path
-          root = Path(os.environ["RUNNER_TEMP"])
-          observed = json.loads((root / "vib-inspect.json").read_text())
-          expected = json.loads((root / "vib-handoff.json").read_text())["active"]
-          assert observed["installed_sha"] == sys.argv[1], "Installed revision drift"
-          assert observed["owner_merge_required"] is True and observed["evidence_verified"] is False
-          assert observed["repository"] == "vixttha/Version-Issues-Hub"
-          assert observed["active"] == expected, "Recovered active handoff differs from pinned ledger"
-          if expected is None:
-              assert observed["status"] == "head_scope_required" and observed["issue"] is None
-          else:
-              assert observed["status"] == "resume", "Active checkpoint not resumable"
-              assert observed["issue"]["number"] == expected["issue"]
-              assert observed["issue"]["version"] == expected["version"]
-          print(json.dumps(observed, indent=2))
-          PY
+          # Replay checks recovery reporting, not permission to advance a checkpoint.
+          python "$GITHUB_WORKSPACE/audit/verify_readme_recovery.py" --self-test
+          python "$GITHUB_WORKSPACE/audit/verify_readme_recovery.py" "$state_sha" "$RUNNER_TEMP/vib-handoff.json" "$RUNNER_TEMP/vib-inspect.json"
           python -B -m unittest discover -s tests -v
 
   live-readme-render:
