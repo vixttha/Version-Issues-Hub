@@ -2,12 +2,12 @@
   "active": {
     "issue": 34,
     "version": "v0.0.0.32",
-    "phase": "Worker",
-    "fix_sha": null,
-    "candidate_sha": null,
-    "pull_request": null,
+    "phase": "Validate",
+    "fix_sha": "d9994cfb699409d6d377e8edd72e8865c2cfa1e7",
+    "candidate_sha": "1e85153765c0ca908f2ee44f2973ba59b0669c23",
+    "pull_request": 2,
     "evidence": [],
-    "next_action": "Owner-directed individual checkpoint: reconcile existing PR50 with current engineering, verify post-publication repair; retain optional gate isolation and live enforcement qualification limit. No activation."
+    "next_action": "PR50 engineering merge verified exact preview tree and parents. Validate actual engineering SHA and PR2 proposed merge; optional gate remains disabled, live qualification and main integration pending."
   },
   "history": [
     {
