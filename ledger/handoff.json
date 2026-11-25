@@ -2,11 +2,11 @@
   "active": {
     "issue": 40,
     "version": "v0.0.0.23",
-    "phase": "Worker",
-    "next_action": "Owner requested VIB workflow for exact PR49 validation and licensing integration. Rework stale candidate to current reviewed snapshot; preserve historical handoff and all installed package pins.",
-    "fix_sha": null,
-    "candidate_sha": null,
-    "pull_request": null,
+    "phase": "Validate",
+    "next_action": "Worker candidate reconciles engineering and licensing pins. Validate exact run 45665944043 and pending external review; historical installed snapshot used by preflight is not current ref.",
+    "fix_sha": "4445ecc4ca6d54d8f4268c380ebe1e093a6b1069",
+    "candidate_sha": "4445ecc4ca6d54d8f4268c380ebe1e093a6b1069",
+    "pull_request": 49,
     "evidence": []
   },
   "history": [
