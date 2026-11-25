@@ -180,12 +180,14 @@ def main():
     check("accepted README frozen", branch("readme-hq") == M["readme"])
     check("homepage branch pinned", branch("review/vib-homepage-preflight") == M["homepage"]["head"])
     check("self state pinned", branch("Version-Issues-Hub") == M["installed_state"])
-    for key in ("engineering", "licensing_review", "homepage", "archive", "acceptance_review"):
+    for key in ("engineering", "licensing_history", "licensing_review", "homepage", "archive", "acceptance_review"):
         receipt(key, M[key])
     check_live_acceptance_matrix(M["acceptance_review"])
     check_acceptance_receipt_archives(M["acceptance_review"])
     check_live_acceptance_matrix(M["engineering"])
     check_acceptance_receipt_archives(M["engineering"])
+    check_live_acceptance_matrix(M["licensing_review"])
+    check_acceptance_receipt_archives(M["licensing_review"])
     original = leaves(M["readme"])
     derivative = leaves(M["homepage"]["head"])
     frozen = {k:v for k,v in original.items() if k.startswith("workspace/v0.0.1/accepted/")}

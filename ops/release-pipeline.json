@@ -31,21 +31,31 @@
     ]
   },
   "licensing_review": {
-    "head": "d1e8e1a922446d137a793d1fded105f427122ec5",
+    "head": "70242433f07d49e9d78f900eccc7745aa7063838",
     "pr": 48,
-    "merge": "e2e4643edfec94ab9cbe4d34d442779a9f5c0cf9",
+    "merge": "db714e30b1d306fcac49bf44639b0038609cadd6",
     "runs": [
-      45421603402,
-      45421603459,
-      45421619822
+      45665549458,
+      45665549764,
+      45665560799,
+      45665560758,
+      45665561089
     ],
-    "attempts": {
-      "45421603402": 1,
-      "45421603459": 2,
-      "45421619822": 1
-    },
-    "jobs": 4,
-    "historical_base": "265e0e4724bc409b16d2605fc4d59d2f3f658eaf"
+    "jobs": 9,
+    "live_runs": [
+      45665549764,
+      45665560758
+    ],
+    "receipt_runs": [
+      {
+        "run": 45665549458,
+        "event": "push"
+      },
+      {
+        "run": 45665560799,
+        "event": "pull_request"
+      }
+    ]
   },
   "homepage": {
     "head": "15868e46c97c0b93d132dc02492e6b7b046e244f",
@@ -230,7 +240,7 @@
   ],
   "release_blockers": [
     "#37 two qualified independent host trials and final acceptance",
-    "#47 historical technical acceptance; integrate licensing with new engineering head and verify rights/provenance",
+    "#47 integrated licensing candidate technical checks passed; rights/provenance, exact CodeRabbit and Head integration remain",
     "#45 commercial brand clearance",
     "#46 final homepage destination and updated operative legal source pin validation",
     "#40 exact final candidate owner acceptance, integration and release approval",
@@ -297,5 +307,19 @@
       "issue": 51,
       "version": "v0.0.0.25"
     }
-  ]
+  ],
+  "licensing_history": {
+    "head": "d1e8e1a922446d137a793d1fded105f427122ec5",
+    "runs": [
+      45421603402,
+      45421603459,
+      45421619822
+    ],
+    "attempts": {
+      "45421603402": 1,
+      "45421603459": 2,
+      "45421619822": 1
+    },
+    "jobs": 4
+  }
 }
