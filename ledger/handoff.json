@@ -1,20 +1,5 @@
 {
-  "active": {
-    "issue": 9,
-    "version": "v0.0.0.3",
-    "phase": "Head",
-    "next_action": "Auditor verified original installer fix and current isolated install, empty/wrong target and occupied refusal. Stage assigned installer criteria only; #37 independent harness and optional enforcement remain open.",
-    "fix_sha": "fbb76a77f896fb39290a1b862e7dde1a74ae3a8a",
-    "candidate_sha": "95e05af7b2a675491a01f8450fb20db8871b1f41",
-    "pull_request": 2,
-    "evidence": [
-      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45698345230/attempts/1",
-      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45698358367/attempts/1",
-      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45698345281/attempts/1",
-      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45698358329/attempts/1",
-      "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45698358388/attempts/1"
-    ]
-  },
+  "active": null,
   "history": [
     {
       "decision": "PR49 CodeRabbit finding 4682051116: rework exact product SHA comparisons and add regression checks; preserve previous evidence.",
@@ -212,6 +197,27 @@
       },
       "disposition": "staged",
       "decision": "Owner-directed solo continuation; existing #7 technical fix accepted for staging on PR2, not main integration or closure.",
+      "merged_sha": null
+    },
+    {
+      "handoff": {
+        "issue": 9,
+        "version": "v0.0.0.3",
+        "phase": "Head",
+        "next_action": "Auditor verified original installer fix and current isolated install, empty/wrong target and occupied refusal. Stage assigned installer criteria only; #37 independent harness and optional enforcement remain open.",
+        "fix_sha": "fbb76a77f896fb39290a1b862e7dde1a74ae3a8a",
+        "candidate_sha": "95e05af7b2a675491a01f8450fb20db8871b1f41",
+        "pull_request": 2,
+        "evidence": [
+          "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45698345230/attempts/1",
+          "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45698358367/attempts/1",
+          "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45698345281/attempts/1",
+          "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45698358329/attempts/1",
+          "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45698358388/attempts/1"
+        ]
+      },
+      "disposition": "staged",
+      "decision": "Owner-directed solo continuation; existing #9 installer technical fix accepted for staging on PR2, not main integration or closure. Broader independent host acceptance and optional enforcement are not certified.",
       "merged_sha": null
     }
   ],
