@@ -166,6 +166,14 @@
         {
           "path": "research/vib53/test_contract.py",
           "anchor": "def test_scope_rejects_failed_and_stale(self):"
+        },
+        {
+          "path": "research/vib53/test_contract.py",
+          "anchor": "def test_pending_order_and_rejected_intent_isolation(self):"
+        },
+        {
+          "path": "research/vib53/test_contract.py",
+          "anchor": "def test_malformed_rate_limit_is_safe(self):"
         }
       ]
     }

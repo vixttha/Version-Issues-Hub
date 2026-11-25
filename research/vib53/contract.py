@@ -21,7 +21,7 @@ def migrate(ledger, handoff, baseline, policy):
     checkpoint.require(checkpoint.LINE, baseline, "baseline")
     return {"schema": 2, "ledger": copy.deepcopy(ledger),
             "legacy_history": copy.deepcopy(handoff["history"]), "baseline": baseline,
-            "policy": policy, "lanes": {}, "intents": {}, "receipts": {}}
+            "policy": policy, "lanes": {}, "intents": {}, "intent_order": [], "receipts": {}, "rejected": {}}
 
 def scope(state, issue, candidate, base, run, attempt, generation):
     row = next(x for x in state["ledger"]["issues"] if x["issue"] == issue)
@@ -31,6 +31,10 @@ def scope(state, issue, candidate, base, run, attempt, generation):
                    "run": run, "attempt": attempt, "generation": generation})
 
 def enqueue(state, op, intent):
+    if not isinstance(op, str) or not op or not isinstance(intent, dict):
+        raise ValueError("invalid intent")
+    if not {"issue", "actor", "generation", "action"} <= set(intent):
+        raise ValueError("incomplete intent")
     old = state["intents"].get(op)
     if old is not None:
         if old != intent:
@@ -39,6 +43,7 @@ def enqueue(state, op, intent):
     if not isinstance(op, str) or not op or not isinstance(intent, dict):
         raise ValueError("invalid intent")
     state["intents"][op] = copy.deepcopy(intent)
+    state["intent_order"].append(op)
     return True
 
 def apply(state, op):
@@ -46,6 +51,8 @@ def apply(state, op):
     intent = state["intents"][op]
     if op in state["receipts"]:
         return False
+    if op in state["rejected"]:
+        raise ValueError("intent already rejected")
     issue, actor, generation, action = (intent[k] for k in ("issue", "actor", "generation", "action"))
     if type(issue) is not int or issue <= 0 or not isinstance(actor, str) or not actor or type(generation) is not int:
         raise ValueError("invalid assignment identity")
@@ -103,9 +110,10 @@ def apply(state, op):
     return True
 
 def pending(state, actor, generation):
-    return sorted(op for op, intent in state["intents"].items()
-                  if op not in state["receipts"] and intent["actor"] == actor
-                  and intent["generation"] == generation)
+    return [op for op in state["intent_order"]
+            if op not in state["receipts"] and op not in state["rejected"]
+            and state["intents"][op]["actor"] == actor
+            and state["intents"][op]["generation"] == generation]
 
 def retry_policy(status, headers, now, attempt):
     """Pure classification, not a live HTTP transport. Delay is seconds."""
@@ -114,10 +122,13 @@ def retry_policy(status, headers, now, attempt):
         ("retry-after" in headers or headers.get("x-ratelimit-remaining") == "0"))
     if limited:
         delay = max(60, 2 ** min(attempt, 8))
-        if "retry-after" in headers:
-            delay = max(delay, int(headers["retry-after"]))
-        if headers.get("x-ratelimit-remaining") == "0":
-            delay = max(delay, int(headers["x-ratelimit-reset"]) - now)
+        try:
+            if "retry-after" in headers:
+                delay = max(delay, int(headers["retry-after"]))
+            if headers.get("x-ratelimit-remaining") == "0" and "x-ratelimit-reset" in headers:
+                delay = max(delay, int(headers["x-ratelimit-reset"]) - now)
+        except (ValueError, TypeError):
+            return "stop", 0
         return "defer", delay
     if status in (408, 500, 502, 503, 504):
         return "reconcile", max(1, 2 ** min(attempt, 8))
@@ -143,4 +154,16 @@ class ContractStore(RetryStore):
 
     def recover_pending(self, actor, generation):
         for op in pending(self.read(self.head()), actor, generation):
-            self.transaction(lambda s: apply(s, op))
+            def resume(s):
+                if op in s["receipts"] or op in s["rejected"]:
+                    return False
+                candidate = copy.deepcopy(s)
+                try:
+                    changed = apply(candidate, op)
+                except ValueError as error:
+                    s["rejected"][op] = {"intent_digest": digest(s["intents"][op]), "reason": str(error)}
+                    return True
+                if changed:
+                    s.update(candidate)
+                return changed
+            self.transaction(resume)

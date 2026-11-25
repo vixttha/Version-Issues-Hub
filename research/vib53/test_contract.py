@@ -144,3 +144,30 @@ class ContractTests(unittest.TestCase):
         s["policy"]="changed"
         with self.assertRaisesRegex(ValueError,"scope changed"):
             perform(s,"audit",intent(1,"a","advance",evidence=e))
+
+    def test_pending_order_and_rejected_intent_isolation(self):
+        with tempfile.TemporaryDirectory() as temp:
+            store = ContractStore(Path(temp))
+            store.transaction(lambda s: (s.update(initial()) or True))
+            operations = [
+                ("z-claim", intent(1,"a","claim",authorized=True,criteria=["test"])),
+                ("bad", intent(2,"a","advance")),
+                ("a-advance", intent(1,"a","advance")),
+                ("other", intent(3,"b","claim",authorized=True,criteria=["test"])),
+            ]
+            for op, i in operations:
+                store.transaction(lambda s: enqueue(s,op,i))
+            store.recover_pending("a",1)
+            s = store.read(store.head())
+            self.assertEqual(s["lanes"]["1"]["phase"],"Validate")
+            self.assertEqual(set(s["receipts"]),{"z-claim","a-advance"})
+            self.assertEqual(set(s["rejected"]),{"bad"})
+            self.assertEqual(pending(s,"b",1),["other"])
+            store.recover_pending("b",1)
+            before=store.head()
+            store.recover_pending("a",1)
+            self.assertEqual(store.head(),before)
+
+    def test_malformed_rate_limit_is_safe(self):
+        self.assertEqual(retry_policy(429,{"Retry-After":"invalid"},100,0),("stop",0))
+        self.assertEqual(retry_policy(403,{"X-RateLimit-Remaining":"0"},100,0),("defer",60))
