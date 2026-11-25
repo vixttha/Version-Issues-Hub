@@ -1,5 +1,9 @@
 # VIB legal review notice — REVIEW_ONLY_NOT_A_GRANT
 
+**Historical review record — superseded for current licensing guidance (2026-11-25).** For the approved licensing candidate, consult the root [VIB-NOTICE.md](../../VIB-NOTICE.md) and [LICENSE](../../LICENSE), and the [owner-approved #47 closure](https://github.com/vixttha/Version-Issues-Hub/issues/47#issuecomment-7170051089). The notice below records pre-approval proposals and statements as they stood during review; references to this branch, pending approval and proposed scope describe that historical snapshot, not the current candidate. This document itself remains non-operative and grants no rights. The approved candidate is not a stable release or independent legal clearance.
+
+## Archived pre-approval text (unchanged)
+
 **Not an operative license. Not approved for distribution or installation.** The adjacent VIB-LICENSE.md is an unmodified reference text for a proposed license. This branch and its files do not make VIB available under that license. Existing permissions, platform terms, applicable law and third-party grants are unchanged.
 
 Product: Version-Issues-Hub-Branch (VIB). Proposed software license: PolyForm Strict 1.0.0 for cleared VIB-owned software and documentation only. Rights holder and scope must be confirmed before an operative notice is published. Brand marks and artwork, third-party materials and adopter-created project records are not included in that proposed grant. Do not overwrite or relicense an adopter's LICENSE or third-party notices. Commercial use outside permitted purposes would require separate permission. No price, payment mechanism, trial or commercial license approved.
