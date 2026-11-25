@@ -57,6 +57,18 @@ jobs:
       - name: PowerShell ref and argument safety
         if: always() && runner.os == 'Windows'
         run: python -B vault/vib/issue54/run.py powershell2
+      - name: Python ledger and handoff boundaries
+        if: always()
+        run: python -B vault/vib/issue54/run.py schema
+      - name: Python targeted mutation controls
+        if: always()
+        run: python -B vault/vib/issue54/run.py mutation
+      - name: Bash Git attributes
+        if: always() && runner.os == 'Linux'
+        run: python -B vault/vib/issue54/run.py bash3
+      - name: PowerShell Git attributes
+        if: always() && runner.os == 'Windows'
+        run: python -B vault/vib/issue54/run.py powershell3
       - name: Retain probe evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
