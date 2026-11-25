@@ -2,11 +2,11 @@
   "active": {
     "issue": 25,
     "version": "v0.0.0.12",
-    "phase": "Worker",
-    "next_action": "Owner-authorized historical recovery; no product edits or version change.",
-    "fix_sha": null,
-    "candidate_sha": null,
-    "pull_request": null,
+    "phase": "Validate",
+    "next_action": "Verify original upgrade and retirement fixture controls, including repaired Windows suite.",
+    "fix_sha": "78decbe8d6ff4eb9ab7e19394cec8790a12ecfae",
+    "candidate_sha": "07a73f55a2b1f7ecbf873a3921f1e397034a88e6",
+    "pull_request": 2,
     "evidence": []
   },
   "history": [
