@@ -104,6 +104,70 @@
           "anchor": "def test_permanent_error_is_not_retried(self):"
         }
       ]
+    },
+    {
+      "id": "research-53-contract",
+      "label": "Durable intent, fencing, scope and legacy migration contract",
+      "documented_in": [
+        {
+          "path": "research/vib53/README.md",
+          "anchor": "## Ordered qualification contract"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "research/vib53/contract.py",
+          "anchor": "class ContractStore(RetryStore):"
+        }
+      ],
+      "implemented_in": [
+        {
+          "path": "research/vib53/contract.py",
+          "anchor": "def migrate(ledger, handoff, baseline, policy):"
+        },
+        {
+          "path": "research/vib53/contract.py",
+          "anchor": "def apply(state, op):"
+        },
+        {
+          "path": "research/vib53/contract.py",
+          "anchor": "def retry_policy(status, headers, now, attempt):"
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "research/vib53/test_contract.py",
+          "anchor": "def test_durable_process_resume(self):"
+        },
+        {
+          "path": "research/vib53/test_contract.py",
+          "anchor": "def test_finite_competing_arrivals(self):"
+        },
+        {
+          "path": "research/vib53/test_contract.py",
+          "anchor": "def test_ownership_fence(self):"
+        },
+        {
+          "path": "research/vib53/test_contract.py",
+          "anchor": "def test_retry_classification(self):"
+        },
+        {
+          "path": "research/vib53/test_contract.py",
+          "anchor": "def test_scope_isolation(self):"
+        },
+        {
+          "path": "research/vib53/test_contract.py",
+          "anchor": "def test_legacy_migration_preserves_history(self):"
+        },
+        {
+          "path": "research/vib53/test_contract.py",
+          "anchor": "def test_full_phase_model(self):"
+        },
+        {
+          "path": "research/vib53/test_contract.py",
+          "anchor": "def test_scope_rejects_failed_and_stale(self):"
+        }
+      ]
     }
   ]
 }
