@@ -24,7 +24,7 @@ jobs:
           persist-credentials: false
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
-          ref: 'e8359a4acaf2e956332585aa69a109e3242dad50'
+          ref: 'b68796db12681fe4d43b562c8647deca38fa819c'
           path: candidate
           persist-credentials: false
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
@@ -38,11 +38,32 @@ jobs:
           python-version: '3.12'
       - name: Fetch exact historical Git objects
         run: git -C archive fetch --no-tags origin 26e9fe8c019a33c5f84f77a37da70925505204e3 a472e04f4c2cc781c654000d6c0567e703f32791
-      - name: Reproduce RD-002 and independently exercise recovery controls
-        run: python vault/vib/independent-audit/test_recovery.py
-      - name: Audit 72 historical code graphs and high-impact relationships
+      - name: Reproduce pending origin and malformed API boundary
+        run: python vault/vib/independent-audit/followup.py
+      - name: Reconcile historical .8 to .9 Graphify relationships
         if: always()
-        run: python vault/vib/independent-audit/audit_history.py
+        run: python vault/vib/independent-audit/audit_09.py
+      - name: Checkout exact .8 for historical gate tests
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: 'd5272dbfbe63f721820d01316d0e932503b53062'
+          path: historical08
+          persist-credentials: false
+      - name: Run .8 gate regression tests
+        working-directory: historical08
+        run: python -m unittest discover -s tests -p test_gate.py -v
+      - name: Checkout exact .9 for historical gate and Standard tests
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: '0bb2cae91c1673231645e6301c95d333a4a35afd'
+          path: historical09
+          persist-credentials: false
+      - name: Run .9 gate regression tests
+        working-directory: historical09
+        run: python -m unittest discover -s tests -p test_gate.py -v
+      - name: Run .9 Standard regression tests
+        working-directory: historical09
+        run: python -m unittest discover -s tests -p test_standard.py -v
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         if: always()
         with:
