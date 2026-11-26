@@ -48,6 +48,8 @@ class ReleaseCheckpointMappingTests(unittest.TestCase):
         # Keep the allowlist exact: unknown, duplicate, or missing nodes still fail.
         if "v0-0-0-37" in expected:
             expected.update({"v0-0-0-37-review-recovery", "v0-0-0-37-api-boundaries"})
+        if "v0-0-0-40" in expected:
+            expected.add("v0-0-0-40-execution")
         self.assertEqual(set(ids), expected)
 
 
