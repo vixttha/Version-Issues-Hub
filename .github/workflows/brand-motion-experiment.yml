@@ -1,0 +1,61 @@
+name: Brand motion experiment
+on:
+  push:
+    branches: [Brand-Identity]
+    paths:
+      - 'brand-identity/10-motion/sequential-v1/**'
+      - '.github/workflows/brand-motion-experiment.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  render:
+    if: github.event.repository.private == false && github.ref == 'refs/heads/Brand-Identity'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    defaults:
+      run:
+        working-directory: brand-identity/10-motion/sequential-v1
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Verify checkout and install tools
+        run: |
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg webp python3-pil
+          npm install --no-audit --no-fund
+          node --version
+          ./node_modules/.bin/hyperframes --version
+          img2webp -version
+      - name: Qualify exact source and prepare compositions
+        run: |
+          python3 ../../08-review/verify_lock.py
+          python3 prepare.py
+      - name: Lint, inspect and render RGBA frames
+        run: |
+          for theme in light dark; do
+            (
+              cd "build/$theme"
+              ../../node_modules/.bin/hyperframes lint
+              ../../node_modules/.bin/hyperframes inspect
+              ../../node_modules/.bin/hyperframes render --format png-sequence --output frames --fps 24 --workers 1
+            )
+          done
+      - name: Encode and verify exact visible pixels and loop
+        run: |
+          python3 encode_verify.py
+          cp package-lock.json build/exports/npm-resolved-lock.json
+          printf '%s\n' "$GITHUB_SHA" > build/exports/render-commit.txt
+          cat build/exports/verification.json >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: vib-sequential-v1-experimental
+          path: brand-identity/10-motion/sequential-v1/build/exports/
+          if-no-files-found: error
+          retention-days: 30
