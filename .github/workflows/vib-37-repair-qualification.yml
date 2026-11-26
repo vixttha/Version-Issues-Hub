@@ -48,6 +48,13 @@ jobs:
       - name: PowerShell independent receipt reconciliation
         shell: pwsh
         run: ./vault/vib/repair-qualification/verify.ps1 "$env:RUNNER_TEMP/itqs/before/report.json" "$env:RUNNER_TEMP/itqs/after/report.json" "$env:RUNNER_TEMP/itqs/reconciliation.txt"
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: '24.22.3'
+          package-manager-cache: false
+      - name: Independent polyglot receipt oracle and mutation controls
+        shell: bash
+        run: python vault/vib/repair-qualification/polyglot/run.py "$RUNNER_TEMP/itqs/after/report.json" "$RUNNER_TEMP/itqs/polyglot"
       - name: Existing native workload, contention and compatibility suite
         shell: bash
         working-directory: after
