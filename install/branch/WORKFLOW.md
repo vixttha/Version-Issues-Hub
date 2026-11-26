@@ -30,6 +30,10 @@ Legacy handoff schema v1 requires exactly one in-progress row matching the activ
 
 Read-only inspect distinguishes a matching merged PR (`merged_reconciliation_required`), a closed unmerged PR (`closed_pr_rework_required`), a changed candidate (`stale_candidate`), an unverifiable PR state (`pr_state_unverified`), and a non-open active issue (`issue_reconciliation_required`). In solo mode `blocked_other_active_issue` applies to a different non-staged requested issue while the active slot is occupied. A requested staged issue can still be inspected read-only through its archived handoff and PR. Normal verification transitions require an open issue and open unmerged PR. Return to Head for a recorded owner decision or rework as appropriate; a merged PR without required verification is not automatically accepted. No status changes the repository.
 
+### Read-only recovery and evidence reuse
+
+Use `inspect --issue ISSUE --recovery-plan` with the current `--expected-sha` to obtain a recommended next step and exact-run evidence reuse advisory. The command reads only, verifies the installed lease before and after, and never advances a phase. It offers only links already recorded for the exact same issue/fix/candidate/PR/base/proposed merge, after revalidating current run attempts and pins. Missing or stale evidence is refused; a revalidated link is not a new test execution or independent certification. Pending closure, owner holds, experimental history and actual merged/closed PRs require reconciliation rather than automatic replay. Normal owner decisions and mutation rules still apply.
+
 ## Connector-only hosts
 
 A host without Python can read the installed branch files at the current SHA via GitHub connector, read the issue and PR, and use the same transition rules. Authorized writers must update both ledger and handoff atomically via a new tree and commit parented at the observed state SHA, then a non-force ref update. Verify the new ref. If the tools cannot guarantee an atomic, non-force update or verify the package pin, stop before claiming or changing state. Do not perform direct writes to product branches or another project's catalog.

@@ -407,12 +407,23 @@
     {
       "issue": 92,
       "version": "v0.0.0.41",
-      "state": "in_progress",
+      "state": "deferred",
       "acceptance": [
         "Enforce a bounded, explicit owner-approved issue scope for changes and qualification; bind any scope amendment to the issue/version and reviewed exact revision, refuse unauthorized expansion and preserve existing immutable acceptance criteria.",
         "Keep experimental capabilities and their evidence separate from accepted production capabilities; default to the singleton workflow and prevent unauthorized activation or promotion of experimental parallel behavior; preserve #53/.37 historical experimental disposition and deferred findings.",
         "Preserve #37/#40 release holds, owner qualification law, exact evidence and owner authority; refuse stale, wrong-scope or contradictory approval and prevent implied integration, migration, release or advanced qualification.",
         "Use small deterministic regression controls, ordinary public Ubuntu/Windows runners, Graphify and CodeRabbit; preserve historical mappings, archive bytes and the six laws. No live migration, production merge, schedule restart, advanced trials, paid runners, new dependencies or .42 recovery/evidence-reuse work."
+      ]
+    },
+    {
+      "issue": 94,
+      "version": "v0.0.0.42",
+      "state": "in_progress",
+      "acceptance": [
+        "Provide a concise read-only recovery and next-handoff plan from canonical state, including active, staged, stale, merged, closed and pending-closure conditions; never automatically mutate state or infer authorization.",
+        "Permit reuse of recorded verification references only for the same issue, fix, candidate, PR, base and proposed merge after fresh exact-run validation and current installed-state lease checks; refuse stale, ambiguous, cross-issue or missing evidence.",
+        "Preserve the singleton workflow, immutable version mappings and historical receipts; keep production, issue closure, experimental activation and owner decisions separate; retain #37/#40/#53 holds.",
+        "Qualify bounded deterministic regressions on ordinary public Ubuntu/Windows runners, Graphify and CodeRabbit, preserving all six laws and prior evidence; no live migration, main integration, release, advanced qualification, new dependency or schedule restart."
       ]
     }
   ],

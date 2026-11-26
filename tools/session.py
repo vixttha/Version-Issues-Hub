@@ -1039,6 +1039,107 @@ def inspect(api, state, requested=None):
             **({"active_issues": [a["issue"] for a in rows]}
                                   if handoff["schema_version"] == 2 else {})}
 
+def recovery_plan(api, state, requested=None):
+    """Read-only, lease-bound next step and same-issue evidence reuse advisory."""
+    from tools import gate
+    def require_lease():
+        if install.read_ref(api, state["prefix"], install.BRANCH) != state["ref"]:
+            raise ValueError("Installed state advanced; reload recovery plan")
+    require_lease()
+    observed = inspect(api, state, requested)
+    info = observed["issue"]
+    number = info["number"] if info is not None else None
+    status = observed["status"]
+    active = observed["staged"] or observed["active"]
+    lifecycle = observed.get("lifecycle") or {}
+    pending = pending_closure(state["handoff"])
+    if pending is not None:
+        status = "closure_reconciliation_required"
+    elif state["handoff"]["schema_version"] == PARALLEL_HANDOFF_SCHEMA:
+        status = "experimental_history_only"
+    elif (state["ledger"]["repository"] == "vixttha/Version-Issues-Hub"
+          and number in SELF_USE_HELD_ISSUES):
+        status = "owner_hold"
+    elif lifecycle.get("closure_synchronization") == "state_matches_historical_receipt":
+        status = "closure_recorded"
+    elif lifecycle.get("engineering_completion") == "recorded" and status == "head_scope_required":
+        status = "engineering_complete"
+    actions = {
+        "closure_reconciliation_required": "Reconcile durable closure with owner; never replay issue mutation.",
+        "experimental_history_only": "Inspect historical state only; experimental activation remains suspended.",
+        "owner_hold": "Retain owner hold; do not claim or promote this issue.",
+        "closure_recorded": "Retain historical closure receipt; no new closure or integration.",
+        "engineering_complete": "Retain engineering receipt; production and issue closure remain separate decisions.",
+        "head_scope_required": "Head must select and authorize scope before claim.",
+        "blocked_other_active_issue": "Resume the existing active issue or obtain a Head disposition.",
+        "issue_selection_required": "Select the exact issue for read-only inspection.",
+        "stale_candidate": "Review changed PR; refresh or return to Head without reusing stale evidence.",
+        "stale_integration_evidence": "Refresh integration pins and revalidate at the current merge.",
+        "merged_reconciliation_required": "Return to Head; verify actual merge and owner disposition.",
+        "closed_pr_rework_required": "Return to Head for rework decision; preserve prior evidence.",
+        "pr_state_unverified": "Stop and verify the actual PR state.",
+        "issue_reconciliation_required": "Return to Head; reconcile the live issue and archived state.",
+        "staged": "Review staged evidence; owner decides whether to revalidate or reconcile.",
+    }
+    phases = {
+        "Worker": "Implement only approved scope; record fix and exact candidate before Validate.",
+        "Validate": "Validate exact candidate and run attempts before Internal Auditor.",
+        "Internal Auditor": "Audit exact scope, pins and evidence before returning to Head.",
+        "Head": "Owner decides disposition; no automatic merge, closure or release.",
+    }
+    action = (phases[active["phase"]] if status == "resume" and active is not None
+              else actions.get(status, "Stop and reconcile unknown state with Head."))
+    reuse = {"status": "not_available", "links": []}
+    if status in ("resume", "staged") and active is not None and active["issue"] == number:
+        links = evidence_links(state["ledger"]["repository"], active["evidence"])
+        if links:
+            reuse["status"] = "revalidation_required"
+            try:
+                if (not active["fix_sha"] or not active["candidate_sha"]
+                        or not active["pull_request"] or any(not active.get(k) for k in PIN_KEYS)):
+                    raise ValueError("Missing exact evidence pins")
+                # Only links recorded on this exact issue handoff are considered.
+                # A run once recorded against another fix on this issue is stale.
+                for record in state["handoff"]["history"]:
+                    previous = record["handoff"]
+                    if previous["issue"] == number and previous["fix_sha"] != active["fix_sha"]:
+                        old_runs = {evidence_run(state["ledger"]["repository"], link)[0]
+                                    for link in previous["evidence"]}
+                        if any(evidence_run(state["ledger"]["repository"], link)[0] in old_runs
+                               for link in links):
+                            raise ValueError("Archived run belongs to another fix")
+                gate.check_ancestry(api, state["prefix"], active["fix_sha"], active["candidate_sha"])
+                verify_candidate_runs(api, state, active, links)
+            except (ValueError, KeyError, TypeError, install.ApiError, OSError):
+                reuse["status"] = "refused"
+            else:
+                reuse = {"status": "exact_run_revalidated", "links": links,
+                         "issue": number, "fix_sha": active["fix_sha"],
+                         "candidate_sha": active["candidate_sha"], "pull_request": active["pull_request"],
+                         **{key: active[key] for key in sorted(PIN_KEYS)}}
+            # Evidence checks may observe a PR or issue change after the initial
+            # inspection. Never return the earlier phase action on that basis.
+            try:
+                latest = inspect(api, state, requested)
+            except (ValueError, KeyError, TypeError, install.ApiError, OSError):
+                status = "pr_state_unverified"
+                action = actions[status]
+                reuse = {"status": "refused", "links": []}
+            else:
+                observed = latest
+                status = latest["status"]
+                if status not in ("resume", "staged"):
+                    action = actions.get(status, "Stop and reconcile unknown state with Head.")
+                    reuse = {"status": "refused", "links": []}
+                elif reuse["status"] == "refused":
+                    status = "evidence_revalidation_required"
+                    action = "Revalidate exact recorded evidence or return to Head; do not advance."
+    require_lease()
+    return {**observed, "recovery_status": status, "recommended_next_action": action,
+            "evidence_reuse": reuse, "read_only": True,
+            "owner_decision_required": True, "evidence_verified": False}
+
+
 def verify_closed_staged_pr(api, state, previous):
     """Require the same archived PR to remain closed and unmerged."""
     pr = pr_response(api.request("GET", state["prefix"] + "/pulls/" +
@@ -1952,6 +2053,7 @@ def main():
     sub = p.add_subparsers(dest="command", required=True)
     status = sub.add_parser("inspect")
     status.add_argument("--issue", type=int)
+    status.add_argument("--recovery-plan", action="store_true", help="Read-only next step and exact evidence reuse advisory")
     recovery = sub.add_parser("inspect-operation", help="Read-only confirmation from a retained recovery ticket")
     ticket_input = recovery.add_mutually_exclusive_group(required=True)
     ticket_input.add_argument("--ticket-json")
@@ -2008,7 +2110,8 @@ def main():
         source_cache = {}
         state = load(api, args.target, args.expected_sha, _source_cache=source_cache)
         if args.command == "inspect":
-            result = inspect(api, state, args.issue)
+            result = (recovery_plan(api, state, args.issue) if args.recovery_plan
+                      else inspect(api, state, args.issue))
         elif args.command == "issue-closure":
             from pathlib import Path
             if not args.owner_approved or (args.apply and (not token or not args.expected_sha)):
