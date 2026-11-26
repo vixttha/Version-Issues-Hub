@@ -1620,8 +1620,12 @@ def reconcile_historical_integration(api, state, number, decision, policy):
                 raise ValueError("Archived run belongs to stale integration evidence; use a new run")
             root = prefix + "/actions/runs/" + str(run)
             for suffix in ("", "/attempts/" + str(attempt)):
-                standard.check_pr_run(api.request("GET", root + suffix), preview_policy, run, attempt,
-                                      api=api, prefix=prefix)
+                item = install.response_object(api.request("GET", root + suffix), "historical preview run")
+                standard.check_pr_run(item, preview_policy, run, attempt, api=api, prefix=prefix)
+                # A historical preview is no longer available from the live PR.
+                # Even an exact reported preview SHA needs the recorded PR association.
+                if not install.response_rows(item.get("pull_requests", []), "historical PR associations"):
+                    raise ValueError("Historical preview run lacks exact PR association")
         return tree
     preview_tree = check_preview()
     def read_pr():

@@ -123,6 +123,40 @@ class IssueIsolationTests(unittest.TestCase):
         self.transition(api,s,session.finish(api,s,"blocked","B blocked"),B)
         self.assertEqual(self.issue_view(s,A),integrated)
 
+    def test_historical_reconcile_preserves_active_worker_and_requires_pr_association(self):
+        from unittest.mock import patch
+        from test_session import TREE
+        api,s=self.staged_then_active()
+        original=copy.deepcopy(s)
+        isolated=copy.deepcopy(s)
+        isolated["handoff"]["active"]=None
+        review=post_policy(isolated,A)
+        policy={"schema_version":1,"outcome":"historical_product_integration",
+                "archive_index":0,"archive_digest":session.closure_digest(s["handoff"]["history"][0]),
+                "premerge":{"merge_sha":PROPOSED,"evidence":[RUN]},"review":review}
+        api.pr.update(state="closed",merged=True,merge_commit_sha=NEXT)
+        api.product=NEXT
+        request=api.request
+        def preview(method,path,body=None):
+            if method=="GET" and path.endswith("/git/commits/"+PROPOSED):
+                return {"sha":PROPOSED,"tree":{"sha":TREE},"parents":[{"sha":BASE},{"sha":CANDIDATE}]}
+            return request(method,path,body)
+        with patch.object(api,"request",side_effect=preview):
+            # Exact preview metadata without an actual PR association is insufficient.
+            with patch.dict(api.pre_run,{"head_sha":PROPOSED,"pull_requests":[]}):
+                with self.assertRaisesRegex(ValueError,"Historical preview run lacks exact PR association"):
+                    session.reconcile(api,s,A,"Historical integration",policy=policy)
+            self.assertEqual(s,original)
+            self.assertEqual(api.writes,[])
+            ledger,handoff=session.reconcile(api,s,A,"Historical integration",policy=policy)
+            self.assertEqual(session.save(api,s,ledger,handoff,issue=A,policy=policy)["status"],"planned")
+            self.assertEqual(s,original)
+            self.assertEqual(handoff["active"],original["handoff"]["active"])
+            self.assertEqual(handoff["history"][:-1],original["handoff"]["history"])
+            self.assertEqual(ledger["issues"][1],original["ledger"]["issues"][1])
+            self.assertEqual(ledger["issues"][0]["state"],"integrated")
+            self.assertEqual(api.writes,[])
+
     def test_wrong_issue_post_merge_policy_rejected_without_mutation(self):
         api,s=self.staged_then_active()
         api.pr.update(state="closed",merged=True,merge_commit_sha=NEXT)
