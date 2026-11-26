@@ -658,3 +658,29 @@ class RecoveryTests(unittest.TestCase):
                                 _history_cache=cache)
         self.assertEqual(uncached.call_count-cached.call_count, 2)
         self.assertEqual(set(cache), {(latest["prefix"], latest["ref"])})
+
+    def test_pending_origin_tampering_does_not_certify_publication(self):
+        api = self.api
+        with tempfile.TemporaryDirectory() as directory:
+            paths = []
+            result = self.recover(lambda s: self.claim(s, B), B,
+                on_pending_intent=lambda intent: paths.append(session.persist_pending_intent(directory, intent)),
+                on_recovery_ticket=lambda ticket: session.persist_recovery_ticket(directory, ticket))
+            fresh = session.load(api, REPO)
+            before = list(api.writes)
+            original = json.loads(paths[0].read_text(encoding="utf-8"))
+            for origin in (result["installed_sha"], "0"*40):
+                with self.subTest(origin=origin):
+                    paths[0].write_text(json.dumps({**original, "initial_sha": origin}), encoding="utf-8")
+                    old = api.request
+                    def compare(method, path, body=None):
+                        if "/compare/" in path:
+                            if origin == "0"*40:
+                                raise install.ApiError(404)
+                            return {"status":"behind","merge_base_commit":{"sha":self.s["ref"]}}
+                        return old(method, path, body)
+                    with patch.object(api, "request", side_effect=compare):
+                        inspected = session.inspect_pending(api, fresh, paths[0])
+                    self.assertEqual(inspected["candidates"][0]["status"], "unconfirmed")
+                    self.assertFalse(inspected["origin_intent_authenticated"])
+            self.assertEqual(api.writes, before)

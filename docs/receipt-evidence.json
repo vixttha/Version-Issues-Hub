@@ -1140,6 +1140,78 @@
           "anchor": "def test_qualified_history_cache_avoids_two_duplicate_immutable_reads(self):"
         }
       ]
+    },
+    {
+      "id": "v0-0-0-37-api-boundaries",
+      "label": "Issue #53 · independent API-boundary repair (same checkpoint)",
+      "documented_in": [
+        {
+          "path": "docs/v0.0.0.37.md",
+          "anchor": "### Independent audit boundary repairs"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "ledger/issue-versions.json",
+          "anchor": "\"issue\": 53,"
+        }
+      ],
+      "implemented_in": [
+        {
+          "path": "tools/session.py",
+          "anchor": "def inspect_pending(api, state, path):"
+        },
+        {
+          "path": "tools/install.py",
+          "anchor": "def read_ref(api, prefix, branch):"
+        },
+        {
+          "path": "tools/install.py",
+          "anchor": "def read_text(api, prefix, path, ref):"
+        },
+        {
+          "path": "tools/lifecycle.py",
+          "anchor": "def tree_entries(api, prefix, sha, *, commit=None):"
+        },
+        {
+          "path": "tools/gate.py",
+          "anchor": "def exact_collection(api, path, key):"
+        },
+        {
+          "path": "tools/standard.py",
+          "anchor": "def check_pr_run(item, policy, run, attempt):"
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tests/test_contention_recovery.py",
+          "anchor": "def test_pending_origin_tampering_does_not_certify_publication(self):"
+        },
+        {
+          "path": "tests/test_api_boundaries.py",
+          "anchor": "def test_malformed_ref_responses_are_controlled(self):"
+        },
+        {
+          "path": "tests/test_api_boundaries.py",
+          "anchor": "def test_malformed_file_content_is_controlled(self):"
+        },
+        {
+          "path": "tests/test_api_boundaries.py",
+          "anchor": "def test_malformed_tree_rows_are_controlled(self):"
+        },
+        {
+          "path": "tests/test_api_boundaries.py",
+          "anchor": "def test_boolean_ids_do_not_match_integer_identity(self):"
+        },
+        {
+          "path": "tests/test_api_boundaries.py",
+          "anchor": "def test_invalid_collection_rows_fail_closed(self):"
+        },
+        {
+          "path": "tests/test_api_boundaries.py",
+          "anchor": "def test_malformed_nested_pr_compare_and_run_fail_closed(self):"
+        }
+      ]
     }
   ]
 }

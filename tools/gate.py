@@ -67,27 +67,27 @@ def exact_collection(api, path, key):
     count = value.get("total_count")
     if type(count) is not int or count < 0 or not isinstance(rows, list) or count != len(rows):
         raise ValueError("Incomplete GitHub collection; gate fails closed")
-    return rows
+    return install.response_rows(rows, key)
 
 def assert_current_pr(api, prefix, policy):
-    pr = api.request("GET", prefix + "/pulls/" + str(policy["pull_request"]))
-    if (pr.get("number") != policy["pull_request"] or pr.get("state") != "open"
-            or pr.get("merged") is not False or pr["base"]["ref"] != policy["product_branch"]
-            or pr["base"]["repo"]["id"] != policy["repository_id"]
-            or pr["head"]["repo"]["id"] != policy["repository_id"]
-            or pr["head"]["sha"] != policy["head_sha"] or pr["base"]["sha"] != policy["base_sha"]
+    pr = session.pr_response(api.request("GET", prefix + "/pulls/" + str(policy["pull_request"])))
+    if (not install.same_id(pr.get("number"), policy["pull_request"]) or pr.get("state") != "open"
+            or pr.get("merged") is not False or pr["base"].get("ref") != policy["product_branch"]
+            or not install.same_id(pr["base"]["repo"].get("id"), policy["repository_id"])
+            or not install.same_id((pr["head"].get("repo") or {}).get("id"), policy["repository_id"])
+            or pr["head"].get("sha") != policy["head_sha"] or pr["base"].get("sha") != policy["base_sha"]
             or pr.get("merge_commit_sha") != policy["merge_sha"]):
         raise ValueError("PR identity, head, base or merge candidate is stale or unsupported")
     if install.read_ref(api, prefix, policy["product_branch"]) != policy["base_sha"]:
         raise ValueError("Product base changed")
-    merge = api.request("GET", prefix + "/git/commits/" + policy["merge_sha"])
-    if merge.get("sha") != policy["merge_sha"] or [p["sha"] for p in merge["parents"]] != [policy["base_sha"], policy["head_sha"]]:
+    merge = install.response_object(api.request("GET", prefix + "/git/commits/" + policy["merge_sha"]), "merge commit")
+    if merge.get("sha") != policy["merge_sha"] or [p.get("sha") for p in install.response_rows(merge.get("parents"), "merge parents")] != [policy["base_sha"], policy["head_sha"]]:
         raise ValueError("Proposed merge has incorrect parents")
     return pr
 
 def check_ancestry(api, prefix, fix, head):
-    comparison = api.request("GET", prefix + "/compare/" + fix + "..." + head)
-    if comparison.get("status") not in ("ahead", "identical") or comparison["merge_base_commit"]["sha"] != fix:
+    comparison = install.response_object(api.request("GET", prefix + "/compare/" + fix + "..." + head), "comparison")
+    if comparison.get("status") not in ("ahead", "identical") or install.response_object(comparison.get("merge_base_commit"), "merge base").get("sha") != fix:
         raise ValueError("Issue fix is not an ancestor of the PR head")
 
 def check_test(api, prefix, policy, evidence, test):
@@ -115,9 +115,10 @@ def check_test(api, prefix, policy, evidence, test):
     latest = api.request("GET", root)
     exact = api.request("GET", root + "/attempts/" + str(attempt))
     for item in (latest, exact):
-        if (item.get("id") != run or item.get("run_attempt") != attempt
-                or item["repository"]["id"] != policy["repository_id"]
-                or item.get("workflow_id") != test["workflow_id"]
+        item = install.response_object(item, "workflow run")
+        if (not install.same_id(item.get("id"), run) or not install.same_id(item.get("run_attempt"), attempt)
+                or not install.same_id(install.response_object(item.get("repository"), "run repository").get("id"), policy["repository_id"])
+                or not install.same_id(item.get("workflow_id"), test["workflow_id"])
                 or item.get("head_sha") != test["run_head_sha"]
                 or item.get("status") != "completed" or item.get("conclusion") != "success"):
             raise ValueError("Workflow run attempt is stale, untrusted or unsuccessful")
@@ -127,7 +128,7 @@ def check_test(api, prefix, policy, evidence, test):
         raise ValueError("Required job is missing, skipped or failed")
     job = matches[0]
     for step in test["steps"]:
-        selected = [s for s in job.get("steps", []) if s.get("name") == step]
+        selected = [s for s in install.response_rows(job.get("steps", []), "job steps") if s.get("name") == step]
         if len(selected) != 1 or selected[0].get("status") != "completed" or selected[0].get("conclusion") != "success":
             raise ValueError("Required test step is missing, skipped or failed")
     return {"check_id": positive(row["id"], "check ID"), "app_id": test["app_id"],

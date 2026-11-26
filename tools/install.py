@@ -191,6 +191,26 @@ def repo_path(name):
         raise ValueError("Invalid repository name")
     return "/repos/" + quote(name, safe="/")
 
+class MalformedResponse(ValueError):
+    """Invalid remote response shape, not a transport failure or retry signal."""
+
+
+def response_object(value, label):
+    if not isinstance(value, dict):
+        raise MalformedResponse("Malformed GitHub " + label)
+    return value
+
+
+def response_rows(value, label):
+    if not isinstance(value, list) or any(not isinstance(row, dict) for row in value):
+        raise MalformedResponse("Malformed GitHub " + label)
+    return value
+
+
+def same_id(value, expected):
+    return type(value) is int and value > 0 and value == expected
+
+
 def read_ref(api, prefix, branch):
     try:
         data = api.request("GET", prefix + "/git/ref/heads/" + quote(branch, safe="/"))
@@ -198,9 +218,14 @@ def read_ref(api, prefix, branch):
         if exc.status == 404:
             return None
         raise
-    if data.get("ref") != "refs/heads/" + branch or data["object"]["type"] != "commit":
-        raise ValueError("Unexpected GitHub ref response")
-    return require(SHA, data["object"]["sha"], "ref revision")
+    data = response_object(data, "ref response")
+    obj = response_object(data.get("object"), "ref object")
+    if data.get("ref") != "refs/heads/" + branch or obj.get("type") != "commit":
+        raise MalformedResponse("Unexpected GitHub ref response")
+    try:
+        return require(SHA, obj.get("sha"), "ref revision")
+    except ValueError as exc:
+        raise MalformedResponse(str(exc)) from exc
 
 def wait_ref(api, prefix, branch, expected, previous=None):
     """After a successful write, tolerate only absent/known-old readback, never repeat the write."""
@@ -220,8 +245,11 @@ def wait_ref(api, prefix, branch, expected, previous=None):
 def read_text(api, prefix, path, ref):
     require(SHA, ref, "file revision")
     item = api.request("GET", prefix + "/contents/" + quote(path, safe="/") + "?ref=" + ref)
+    item = response_object(item, "file response")
     if item.get("type") != "file" or item.get("encoding") != "base64" or item.get("path") != path:
         raise ValueError("Package source is not a regular file")
+    if not isinstance(item.get("content"), str):
+        raise MalformedResponse("Malformed GitHub file content")
     raw = base64.b64decode("".join(item["content"].split()), validate=True)
     blob = hashlib.sha1(b"blob " + str(len(raw)).encode() + b"\0" + raw).hexdigest()
     if blob != item.get("sha"):

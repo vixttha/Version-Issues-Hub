@@ -225,16 +225,27 @@ def load(api, target, expected_sha=None, *, _source_cache=None):
 
 def get_issue(api, state, number):
     value = api.request("GET", state["prefix"] + "/issues/" + str(issue_number(number)))
-    if value.get("number") != number or "pull_request" in value:
+    value = install.response_object(value, "issue")
+    if not install.same_id(value.get("number"), number) or "pull_request" in value:
         raise ValueError("Expected an actual GitHub issue, not a PR")
     return value
 
+def pr_response(pr):
+    pr = install.response_object(pr, "PR")
+    base = install.response_object(pr.get("base"), "PR base")
+    install.response_object(base.get("repo"), "PR base repository")
+    head = install.response_object(pr.get("head"), "PR head")
+    if head.get("repo") is not None:
+        install.response_object(head["repo"], "PR head repository")
+    return pr
+
+
 def get_pr(api, state, active):
-    pr = api.request("GET", state["prefix"] + "/pulls/" + str(issue_number(active["pull_request"])))
-    if (pr.get("number") != active["pull_request"]
-            or pr["base"]["ref"] != state["manifest"]["product_branch"]
-            or pr["base"]["repo"]["id"] != state["manifest"]["target_repository_id"]
-            or pr["head"]["sha"] != active["candidate_sha"]):
+    pr = pr_response(api.request("GET", state["prefix"] + "/pulls/" + str(issue_number(active["pull_request"]))))
+    if (not install.same_id(pr.get("number"), active["pull_request"])
+            or pr["base"].get("ref") != state["manifest"]["product_branch"]
+            or not install.same_id(pr["base"]["repo"].get("id"), state["manifest"]["target_repository_id"])
+            or pr["head"].get("sha") != active["candidate_sha"]):
         raise ValueError("PR candidate or target changed; return to Worker and reverify")
     return pr
 
@@ -251,19 +262,19 @@ def integration_snapshot(api, state, active):
     """Read the current ordinary PR test merge, including its actual parents."""
     pr = require_open_pr(api, state, active)
     prefix = state["prefix"]
-    if (pr.get("head", {}).get("repo") or {}).get("id") != state["manifest"]["target_repository_id"]:
+    if not install.same_id((pr.get("head", {}).get("repo") or {}).get("id"), state["manifest"]["target_repository_id"]):
         raise ValueError("PR head repository changed or unsupported")
     base = install.require(install.SHA, pr["base"].get("sha"), "PR base")
     merged = install.require(install.SHA, pr.get("merge_commit_sha"), "proposed merge")
     if install.read_ref(api, prefix, state["manifest"]["product_branch"]) != base:
         raise ValueError("Product base changed; refresh integration evidence")
-    commit = api.request("GET", prefix + "/git/commits/" + merged)
-    if (commit.get("sha") != merged or [p["sha"] for p in commit["parents"]] !=
+    commit = install.response_object(api.request("GET", prefix + "/git/commits/" + merged), "merge commit")
+    if (commit.get("sha") != merged or [p.get("sha") for p in install.response_rows(commit.get("parents"), "commit parents")] !=
             [base, active["candidate_sha"]] or base == active["candidate_sha"]):
         raise ValueError("Proposed merge parents changed or unsupported")
     observed = require_open_pr(api, state, active)
     if (observed["base"].get("sha") != base or observed.get("merge_commit_sha") != merged
-            or (observed.get("head", {}).get("repo") or {}).get("id") != state["manifest"]["target_repository_id"]
+            or not install.same_id((observed.get("head", {}).get("repo") or {}).get("id"), state["manifest"]["target_repository_id"])
             or install.read_ref(api, prefix, state["manifest"]["product_branch"]) != base):
         raise ValueError("Product base or proposed merge changed during inspection")
     return {"integration_base_sha": base, "integration_merge_sha": merged}
@@ -279,8 +290,8 @@ def refresh_candidate(api, state, active, note):
     from tools import gate
     if get_issue(api, state, active["issue"]).get("state") != "open":
         raise ValueError("Issue is not open; owner reconciliation required")
-    pr = api.request("GET", state["prefix"] + "/pulls/" + str(issue_number(active["pull_request"])))
-    candidate = install.require(install.SHA, pr["head"]["sha"], "current PR head")
+    pr = pr_response(api.request("GET", state["prefix"] + "/pulls/" + str(issue_number(active["pull_request"]))))
+    candidate = install.require(install.SHA, pr["head"].get("sha"), "current PR head")
     refreshed = {**active, "candidate_sha": candidate, "phase": "Validate",
                  "next_action": text(note, "next action"), "evidence": []}
     refreshed.update(integration_snapshot(api, state, refreshed))
@@ -412,10 +423,10 @@ def claim(api, state, number, criteria, note, *, resume_prior_line=False, parall
             previous = prior["handoff"]
             pr = api.request("GET", state["prefix"] + "/pulls/" +
                              str(issue_number(previous["pull_request"])))
-            if (pr.get("number") != previous["pull_request"]
+            if (not install.same_id(pr.get("number"), previous["pull_request"])
                     or pr.get("state") != "closed" or pr.get("merged") is not False
                     or pr.get("base", {}).get("ref") != state["manifest"]["product_branch"]
-                    or pr.get("base", {}).get("repo", {}).get("id") != state["manifest"]["target_repository_id"]):
+                    or not install.same_id(pr.get("base", {}).get("repo", {}).get("id"), state["manifest"]["target_repository_id"])):
                 raise ValueError("Staged rework requires a verified closed unmerged PR")
             worker = {"issue": number, "version": row["version"], "phase": "Worker",
                       "next_action": text(note, "next action"), "fix_sha": None,
@@ -593,9 +604,9 @@ def confirm_handoff(api, prefix, old, new, tree, *, operation_id=None):
         observed = install.read_ref(api, prefix, install.BRANCH)
         if observed == new:
             if operation_id is not None:
-                commit = api.request("GET", prefix + "/git/commits/" + new)
-                if (commit.get("sha") != new or commit.get("tree", {}).get("sha") != tree
-                        or [p.get("sha") for p in commit.get("parents", [])] != [old]):
+                commit = install.response_object(api.request("GET", prefix + "/git/commits/" + new), "candidate commit")
+                if (commit.get("sha") != new or install.response_object(commit.get("tree"), "commit tree").get("sha") != tree
+                        or [p.get("sha") for p in install.response_rows(commit.get("parents"), "commit parents")] != [old]):
                     raise ValueError("Candidate commit does not match the proposed transaction")
                 verify_operation_commit(commit, operation_id)
             return observed
@@ -603,16 +614,16 @@ def confirm_handoff(api, prefix, old, new, tree, *, operation_id=None):
             continue
         if observed is None:
             raise ValueError("Installed branch disappeared")
-        comparison = api.request("GET", prefix + "/compare/" + new + "..." + observed)
+        comparison = install.response_object(api.request("GET", prefix + "/compare/" + new + "..." + observed), "candidate comparison")
         if (comparison.get("status") != "ahead" or type(comparison.get("behind_by")) is not int
                 or comparison.get("behind_by") != 0
                 or type(comparison.get("ahead_by")) is not int or comparison["ahead_by"] <= 0
-                or comparison.get("base_commit", {}).get("sha") != new
-                or comparison.get("merge_base_commit", {}).get("sha") != new):
+                or install.response_object(comparison.get("base_commit"), "base commit").get("sha") != new
+                or install.response_object(comparison.get("merge_base_commit"), "merge base").get("sha") != new):
             raise ValueError("Observed revision does not establish candidate ancestry")
-        commit = api.request("GET", prefix + "/git/commits/" + new)
-        if (commit.get("sha") != new or commit.get("tree", {}).get("sha") != tree
-                or [p.get("sha") for p in commit.get("parents", [])] != [old]):
+        commit = install.response_object(api.request("GET", prefix + "/git/commits/" + new), "candidate commit")
+        if (commit.get("sha") != new or install.response_object(commit.get("tree"), "commit tree").get("sha") != tree
+                or [p.get("sha") for p in install.response_rows(commit.get("parents"), "commit parents")] != [old]):
             raise ValueError("Candidate commit does not match the proposed transaction")
         if operation_id is not None:
             verify_operation_commit(commit, operation_id)
@@ -696,14 +707,34 @@ def inspect_pending(api, state, path):
             raise ValueError("Pending candidate does not match journal identity")
         install.require(install.SHA, ticket.get("candidate_sha"), "recovery candidate")
         try:
+            origin = intent["initial_sha"]
+            parent = install.require(install.SHA, ticket.get("parent_sha"), "recovery parent")
+            if origin != parent:
+                comparison = install.response_object(api.request(
+                    "GET", state["prefix"] + "/compare/" + origin + "..." + parent), "journal ancestry")
+                base = install.response_object(comparison.get("merge_base_commit"), "merge base")
+                if (comparison.get("status") != "ahead"
+                        or type(comparison.get("behind_by")) is not int or comparison["behind_by"] != 0
+                        or type(comparison.get("ahead_by")) is not int or comparison["ahead_by"] <= 0
+                        or base.get("sha") != origin
+                        or install.response_object(comparison.get("base_commit"), "base commit").get("sha") != origin):
+                    raise ValueError("Pending origin is not an ancestor of candidate parent")
             result = inspect_operation(api, state, ticket)
+            result["origin_ancestry_verified"] = True
+        except install.ApiError as exc:
+            if exc.status != 404 or exc.retry_after is not None:
+                raise
+            result = {"status": "unconfirmed", "candidate_sha": ticket["candidate_sha"],
+                      "origin_ancestry_verified": False}
         except ValueError:
             # Unconfirmed evidence is not proof of nonpublication. API errors
             # (including throttling) propagate immediately; do not keep polling.
-            result = {"status": "unconfirmed", "candidate_sha": ticket["candidate_sha"]}
+            result = {"status": "unconfirmed", "candidate_sha": ticket["candidate_sha"],
+                      "origin_ancestry_verified": False}
         outcomes.append(result)
     return {"status": "inspection_only", "operation_id": op, "issue": intent["issue"],
             "initial_sha": intent["initial_sha"], "candidates": outcomes,
+            "origin_intent_authenticated": False,
             "read_only": True, "automatic_replay": False}
 
 
@@ -962,8 +993,8 @@ def retry_scope(api, previous, fresh, number, rejection, *, _history_cache=None)
     for _ in range(32):
         if cursor == old:
             break
-        commit = api.request("GET", prefix + "/git/commits/" + cursor)
-        parents = commit.get("parents", [])
+        commit = install.response_object(api.request("GET", prefix + "/git/commits/" + cursor), "intervening commit")
+        parents = install.response_rows(commit.get("parents"), "commit parents")
         if commit.get("sha") != cursor or len(parents) != 1:
             raise ValueError("Intervening history is not a verified linear handoff chain")
         parent = install.require(install.SHA, parents[0].get("sha"), "intervening parent")
@@ -977,7 +1008,7 @@ def retry_scope(api, previous, fresh, number, rejection, *, _history_cache=None)
     if isinstance(rejection, HandoffRejected):
         for sha, commit, parent in path:
             if sha == rejection.candidate_sha:
-                if parent != old or commit.get("tree", {}).get("sha") != rejection.tree_sha:
+                if parent != old or install.response_object(commit.get("tree"), "commit tree").get("sha") != rejection.tree_sha:
                     raise HandoffUnconfirmed(sha)
                 if rejection.operation_id is not None:
                     try:
@@ -1158,7 +1189,7 @@ def recover_save(api, target, state, plan, issue, *, attempts=4, rounds=1, reque
                 if isinstance(error, HandoffRejected) and read_error is not error:
                     raise HandoffUnconfirmed(error.candidate_sha, read_error.retry_after) from None
                 raise
-            except (AttributeError, KeyError, TypeError, OSError):
+            except (install.MalformedResponse, AttributeError, KeyError, TypeError, OSError):
                 # After an attempted ref write, malformed or interrupted
                 # recovery reads must retain the exact candidate identity.
                 if isinstance(error, HandoffRejected):

@@ -42,17 +42,18 @@ def validate_policy(policy):
 
 def check_pr_run(item, policy, run, attempt):
     """A head-only run without an exact base association is not integration evidence."""
-    if (item.get("id") != run or item.get("run_attempt") != attempt
-            or (item.get("repository") or {}).get("id") != policy["repository_id"]
+    item = install.response_object(item, "workflow run")
+    if (not install.same_id(item.get("id"), run) or not install.same_id(item.get("run_attempt"), attempt)
+            or not install.same_id(install.response_object(item.get("repository"), "run repository").get("id"), policy["repository_id"])
             or item.get("event") != "pull_request"
             or item.get("head_sha") not in (policy["head_sha"], policy["merge_sha"])
             or item.get("status") != "completed" or item.get("conclusion") != "success"):
         raise ValueError("Run is stale, unsuccessful or unrelated")
-    prs = item.get("pull_requests") or []
+    prs = install.response_rows(item.get("pull_requests", []), "run PR associations")
     if ((prs or item["head_sha"] != policy["merge_sha"])
-            and not any(p.get("number") == policy["pull_request"]
-                        and (p.get("head") or {}).get("sha") == policy["head_sha"]
-                        and (p.get("base") or {}).get("sha") == policy["base_sha"] for p in prs)):
+            and not any(install.same_id(p.get("number"), policy["pull_request"])
+                        and install.response_object(p.get("head"), "run PR head").get("sha") == policy["head_sha"]
+                        and install.response_object(p.get("base"), "run PR base").get("sha") == policy["base_sha"] for p in prs)):
         raise ValueError("Run PR association does not match current head and base")
 
 def check_test(api, prefix, policy, evidence, test, *, post_merge=False):
@@ -62,15 +63,16 @@ def check_test(api, prefix, policy, evidence, test, *, post_merge=False):
         raise ValueError("Run is not in staged evidence")
     root = prefix + "/actions/runs/" + str(run)
     for item in (api.request("GET", root), api.request("GET", root + "/attempts/" + str(attempt))):
-        if (item.get("id") != run or item.get("run_attempt") != attempt
-                or item["repository"]["id"] != policy["repository_id"]
-                or item.get("workflow_id") != test["workflow_id"]
+        item = install.response_object(item, "workflow run")
+        if (not install.same_id(item.get("id"), run) or not install.same_id(item.get("run_attempt"), attempt)
+                or not install.same_id(install.response_object(item.get("repository"), "run repository").get("id"), policy["repository_id"])
+                or not install.same_id(item.get("workflow_id"), test["workflow_id"])
                 or (not post_merge and (item.get("event") != "pull_request"
                     or item.get("head_sha") not in (policy["head_sha"], policy["merge_sha"])))
                 or (post_merge and (item.get("event") not in ("push", "workflow_dispatch")
                     or item.get("head_sha") != policy["merge_sha"]
                     or item.get("head_branch") != policy["product_branch"]
-                    or (item.get("head_repository") or {}).get("id") != policy["repository_id"]))
+                    or not install.same_id(install.response_object(item.get("head_repository"), "run head repository").get("id"), policy["repository_id"])))
                 or item.get("status") != "completed" or item.get("conclusion") != "success"):
             raise ValueError("Run is stale, unsuccessful or unrelated")
         if not post_merge:
@@ -80,16 +82,16 @@ def check_test(api, prefix, policy, evidence, test, *, post_merge=False):
     if len(matches) != 1 or matches[0].get("status") != "completed" or matches[0].get("conclusion") != "success":
         raise ValueError("Required job missing or unsuccessful")
     job = matches[0]
-    if post_merge and (job.get("run_id") != run or job.get("run_attempt") != attempt
+    if post_merge and (not install.same_id(job.get("run_id"), run) or not install.same_id(job.get("run_attempt"), attempt)
             or job.get("head_sha") != policy["merge_sha"]):
         raise ValueError("Post-merge job identity mismatch")
     for step in test["steps"]:
-        matches = [s for s in job.get("steps", []) if s.get("name") == step]
+        matches = [s for s in install.response_rows(job.get("steps", []), "job steps") if s.get("name") == step]
         if len(matches) != 1 or matches[0].get("status") != "completed" or matches[0].get("conclusion") != "success":
             raise ValueError("Required step missing or unsuccessful")
     if post_merge:
-        latest = api.request("GET", root)
-        if latest.get("id") != run or latest.get("run_attempt") != attempt or latest.get("status") != "completed" or latest.get("conclusion") != "success":
+        latest = install.response_object(api.request("GET", root), "latest run")
+        if not install.same_id(latest.get("id"), run) or not install.same_id(latest.get("run_attempt"), attempt) or latest.get("status") != "completed" or latest.get("conclusion") != "success":
             raise ValueError("Post-merge run changed during review")
     return {"run": run, "attempt": attempt, "job_id": gate.positive(job["id"], "job ID"),
             "url": url, "checkout_review_required": True}
@@ -147,11 +149,11 @@ def verify_integration(api, state, active, pr, policy):
     mappings = {(test["run"], test["attempt"], test["workflow_id"])
                 for criterion in scope[0]["criteria"] for test in criterion["checks"]}
     for run, attempt, workflow in sorted(mappings):
-        latest = api.request("GET", prefix + "/actions/runs/" + str(run))
-        if (latest.get("id") != run or latest.get("run_attempt") != attempt
-                or (latest.get("repository") or {}).get("id") != policy["repository_id"]
-                or (latest.get("head_repository") or {}).get("id") != policy["repository_id"]
-                or latest.get("workflow_id") != workflow
+        latest = install.response_object(api.request("GET", prefix + "/actions/runs/" + str(run)), "latest run")
+        if (not install.same_id(latest.get("id"), run) or not install.same_id(latest.get("run_attempt"), attempt)
+                or not install.same_id(install.response_object(latest.get("repository"), "run repository").get("id"), policy["repository_id"])
+                or not install.same_id(install.response_object(latest.get("head_repository"), "run head repository").get("id"), policy["repository_id"])
+                or not install.same_id(latest.get("workflow_id"), workflow)
                 or latest.get("event") not in ("push", "workflow_dispatch")
                 or latest.get("head_sha") != merged or latest.get("head_branch") != policy["product_branch"]
                 or latest.get("status") != "completed" or latest.get("conclusion") != "success"):
@@ -176,7 +178,7 @@ def evaluate(api, target, policy):
         for path in (root + "/attempts/" + str(attempt), root):
             item = api.request("GET", path)
             check_pr_run(item, policy, run, attempt)
-            if item.get("workflow_id") != workflow:
+            if not install.same_id(item.get("workflow_id"), workflow):
                 raise ValueError("Run workflow changed during review")
     if install.read_ref(api, prefix, install.BRANCH) != policy["installed_sha"]:
         raise ValueError("Installed state advanced during Standard review")

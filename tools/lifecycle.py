@@ -7,18 +7,24 @@ from tools import checkpoint, install, session
 def tree_entries(api, prefix, sha, *, commit=None):
     if commit is None:
         commit = api.request("GET", prefix + "/git/commits/" + sha)
+    commit = install.response_object(commit, "commit")
     if commit.get("sha") != sha:
         raise ValueError("Commit identity mismatch")
-    tree = install.require(install.SHA, commit["tree"]["sha"], "tree SHA")
-    result = api.request("GET", prefix + "/git/trees/" + tree + "?recursive=1")
+    tree = install.require(install.SHA, install.response_object(commit.get("tree"), "commit tree").get("sha"), "tree SHA")
+    result = install.response_object(api.request("GET", prefix + "/git/trees/" + tree + "?recursive=1"), "tree")
     if result.get("sha") != tree or result.get("truncated") is not False:
         raise ValueError("Tree is incomplete")
     entries = {}
-    for item in result["tree"]:
-        path = item["path"]
+    modes = {"blob": ("100644", "100755", "120000"), "tree": ("040000",), "commit": ("160000",)}
+    for item in install.response_rows(result.get("tree"), "tree entries"):
+        path, kind, mode = item.get("path"), item.get("type"), item.get("mode")
+        if (not isinstance(path, str) or any(part in ("", ".", "..") for part in path.split("/"))
+                or "\0" in path or not isinstance(kind, str) or mode not in modes.get(kind, ())):
+            raise install.MalformedResponse("Malformed GitHub tree entry")
+        blob = install.require(install.SHA, item.get("sha"), "tree entry SHA")
         if path in entries:
             raise ValueError("Duplicate tree path")
-        entries[path] = (item["type"], item["mode"], item["sha"])
+        entries[path] = (kind, mode, blob)
     return tree, entries
 
 def digest_files(files):
