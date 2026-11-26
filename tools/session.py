@@ -369,13 +369,14 @@ def legacy_approval_statement(review):
 
 
 def closure_policy(policy, ledger, number):
-    if (not isinstance(policy, dict) or set(policy) != {
+    binding = checkpoint.bindings(ledger).get(issue_number(number))
+    if (binding is None or not isinstance(policy, dict) or set(policy) != {
             "schema_version", "repository", "issue", "version", "archive_ref",
             "archive_digest", "archive_index", "reason", "owner_decision", "engineering"}
             or type(policy["schema_version"]) is not int or policy["schema_version"] != 2
             or policy["repository"] != ledger["repository"]
             or issue_number(policy["issue"]) != number
-            or checkpoint.bindings(ledger).get(number) != policy["version"]):
+            or binding != policy["version"]):
         raise ValueError("Issue closure policy identity mismatch")
     install.require(install.SHA, policy["archive_ref"], "historical archive revision")
     if type(policy["archive_index"]) is not int or policy["archive_index"] < 0:
@@ -390,6 +391,28 @@ def closure_policy(policy, ledger, number):
     return policy
 
 
+def validate_closure_approval(archive, ledger, number, policy):
+    """Check immutable local approval for both loading and publication."""
+    stored = engineering_receipt(archive, ledger)
+    if policy["reason"] == "not_planned":
+        if stored is not None:
+            raise ValueError("Engineering-complete work cannot be recorded as not planned")
+        return None
+    envelope = policy["engineering"]
+    review = engineering_policy(envelope, ledger, number)
+    if archive["disposition"] != "deferred" or (stored is not None and stored["policy"] != envelope):
+        raise ValueError("Engineering closure evidence conflicts with the archive")
+    expected_pins = {"fix_sha": review["issues"][0]["fix_sha"],
+                     "candidate_sha": review["head_sha"], "pull_request": review["pull_request"]}
+    for key, expected in expected_pins.items():
+        recorded = archive["handoff"][key]
+        if recorded is not None and recorded != expected:
+            raise ValueError("Closure evidence conflicts with archived handoff pin: " + key)
+    if stored is None and archive["decision"] != legacy_approval_statement(review):
+        raise ValueError("Legacy closure requires an unambiguous approved archived PR/fix/candidate/merge tuple; owner reconciliation required")
+    return review
+
+
 def validate_closure_history(handoff, ledger):
     # The original archived record stays byte-for-byte intact; closure never
     # supersedes its engineering or production disposition.
@@ -402,7 +425,7 @@ def validate_closure_history(handoff, ledger):
         number = record["handoff"]["issue"]
         receipt = closure_receipt(record)
         if receipt is None:
-            if number in pending:
+            if pending:
                 raise ValueError("Issue history changed during pending closure")
             prior[number] = index
             continue
@@ -415,12 +438,14 @@ def validate_closure_history(handoff, ledger):
                 or record["disposition"] != basis["disposition"]
                 or record["merged_sha"] != basis["merged_sha"]
                 or basis["disposition"] not in ("deferred", "blocked")
-                or (policy["reason"] == "completed" and basis["disposition"] != "deferred")
-                or (policy["reason"] == "not_planned" and engineering_receipt(basis, ledger) is not None)):
+                or (policy["reason"] == "completed" and basis["disposition"] != "deferred")):
             raise ValueError("Closure receipt changed its historical disposition")
+        validate_closure_approval(basis, ledger, number, policy)
         if receipt["status"] == "pending":
             identity = closure_digest(policy)
-            if number in pending or identity in used or basis_index in confirmed_occurrences:
+            if pending:
+                raise ValueError("Overlapping pending issue closure")
+            if identity in used or basis_index in confirmed_occurrences:
                 raise ValueError("Duplicate pending issue closure for confirmed archive occurrence")
             used.add(identity)
             pending[number] = receipt
@@ -553,33 +578,17 @@ def verify_closure_basis(api, state, number, policy):
             or old_manifest["product_branch"] != state["manifest"]["product_branch"]
             or old_handoff["history"] != handoff["history"][:len(old_handoff["history"])]):
         raise ValueError("Historical closure archive or repository identity mismatch")
-    stored = engineering_receipt(archive, ledger)
+    review = validate_closure_approval(archive, ledger, number, policy)
     if policy["reason"] == "not_planned":
-        if stored is not None:
-            raise ValueError("Engineering-complete work cannot be recorded as not planned")
-        # Historical not-planned cases can be reconciled, not newly closed by
-        # this command without a separate structured disposition contract.
+        # Reconciliation only; never create a new not-planned closure.
         item = get_issue(api, state, number)
         if item.get("state") != "closed" or item.get("state_reason") != "not_planned":
             raise ValueError("Not-planned closure requires an existing matching GitHub disposition")
         return archive
     envelope = policy["engineering"]
-    review = engineering_policy(envelope, ledger, number)
     if (row["state"] != "deferred" or envelope["production_branch"] != state["manifest"]["product_branch"]
-            or review["source_sha"] != old_manifest["source_sha"]
-            or (stored is not None and stored["policy"] != envelope)):
+            or review["source_sha"] != old_manifest["source_sha"]):
         raise ValueError("Engineering closure evidence conflicts with the archive")
-    expected_pins = {"fix_sha": review["issues"][0]["fix_sha"],
-                     "candidate_sha": review["head_sha"], "pull_request": review["pull_request"]}
-    for key, expected in expected_pins.items():
-        recorded = archive["handoff"][key]
-        if recorded is not None and recorded != expected:
-            raise ValueError("Closure evidence conflicts with archived handoff pin: " + key)
-    if stored is None:
-        # No inference from arbitrary historical prose. Only an entire,
-        # unambiguous positive statement for this exact tuple is eligible.
-        if archive["decision"] != legacy_approval_statement(review):
-            raise ValueError("Legacy closure requires an unambiguous approved archived PR/fix/candidate/merge tuple; owner reconciliation required")
     gate.check_ancestry(api, prefix, review["installed_sha"], historical)
     # Keep the reviewed historical policy immutable. Only the transient proof
     # view binds Standard's freshness check to the current mutation lease.

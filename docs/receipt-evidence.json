@@ -1390,6 +1390,10 @@
         {
           "path": "tests/test_issue_closure.py",
           "anchor": "def test_identical_archive_occurrences_are_distinct_and_old_policy_refused(self):"
+        },
+        {
+          "path": "tests/test_issue_closure.py",
+          "anchor": "def test_unbound_closure_policy_rejects_null_version_before_api_access(self):"
         }
       ]
     },
@@ -1424,6 +1428,14 @@
         {
           "path": "tools/session.py",
           "anchor": "def reconcile(api, state, number, decision, *, policy=None):"
+        },
+        {
+          "path": "tools/session.py",
+          "anchor": "def validate_closure_approval(archive, ledger, number, policy):"
+        },
+        {
+          "path": "tools/session.py",
+          "anchor": "def validate_closure_history(handoff, ledger):"
         }
       ],
       "tested_by": [
@@ -1462,6 +1474,14 @@
         {
           "path": "tests/test_issue_closure.py",
           "anchor": "def test_ambiguous_or_lost_execution_acquisition_never_patches_issue(self):"
+        },
+        {
+          "path": "tests/test_issue_closure.py",
+          "anchor": "def test_history_loader_validates_archived_approval_for_every_receipt(self):"
+        },
+        {
+          "path": "tests/test_issue_closure.py",
+          "anchor": "def test_history_loader_rejects_overlapping_closures_even_when_resolved(self):"
         }
       ]
     }

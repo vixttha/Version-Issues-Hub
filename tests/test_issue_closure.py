@@ -637,3 +637,101 @@ class ClosureTests(unittest.TestCase):
                 session.closure_plan(self.api, self.state, 247, {**second, "owner_decision": "Replay"},
                                      "pending", owner_approved=True)
         self.assertFalse(self.api.writes)
+
+    def test_unbound_closure_policy_rejects_null_version_before_api_access(self):
+        policy = {**self.policy, "issue": 999, "version": None,
+                  "reason": "not_planned", "engineering": None}
+        with patch.object(self.api, "request") as request:
+            for operation in (
+                lambda: session.closure_policy(policy, self.state["ledger"], 999),
+                lambda: session.verify_closure_basis(self.api, self.state, 999, policy),
+                lambda: session.closure_plan(self.api, self.state, 999, policy, "pending", owner_approved=True),
+                lambda: session.complete_closure(self.api, self.state, 999, policy, owner_approved=True, apply=True),
+                lambda: session.cancel_closure_plan(self.api, self.state, 999, policy, "Cancel", owner_approved=True),
+            ):
+                with self.assertRaisesRegex(ValueError, "policy identity mismatch"):
+                    operation()
+            request.assert_not_called()
+
+    def test_history_loader_validates_archived_approval_for_every_receipt(self):
+        import json
+        original = copy.deepcopy(self.state)
+        for kind in ("structured", "legacy", "wrong_envelope", "wrong_pin", "mixed"):
+            with self.subTest(kind=kind):
+                state = copy.deepcopy(original)
+                archive = state["handoff"]["history"][-1]
+                policy = copy.deepcopy(self.policy)
+                review = policy["engineering"]["review"]
+                if kind == "wrong_envelope":
+                    review["pull_request"] += 1
+                if kind in ("legacy", "wrong_pin", "mixed"):
+                    archive["decision"] = session.legacy_approval_statement(review)
+                if kind == "wrong_pin":
+                    archive["handoff"]["pull_request"] = review["pull_request"] + 1
+                    archive["handoff"]["fix_sha"] = review["issues"][0]["fix_sha"]
+                    archive["handoff"]["candidate_sha"] = review["head_sha"]
+                if kind == "mixed":
+                    archive["decision"] += " Rejected; superseded."
+                policy["archive_digest"] = session.closure_digest(archive)
+                for stage in ("pending", "executing", "confirmed"):
+                    receipt = {"status": stage, "policy": policy}
+                    if stage != "pending":
+                        receipt["execution_id"] = "1" * 32
+                    state["handoff"]["history"].append({**copy.deepcopy(archive),
+                        "decision": session.CLOSURE_DECISION + json.dumps(receipt)})
+                with patch.object(self.api, "request") as request:
+                    if kind in ("structured", "legacy"):
+                        session.validate_handoff(state["handoff"], state["ledger"])
+                    else:
+                        with self.assertRaisesRegex(ValueError, "Engineering closure evidence|archived handoff pin|unambiguous approved"):
+                            session.validate_handoff(state["handoff"], state["ledger"])
+                    request.assert_not_called()
+        self.assertFalse(self.api.writes)
+
+    def test_history_loader_rejects_overlapping_closures_even_when_resolved(self):
+        import json
+        ledger = copy.deepcopy(self.state["ledger"])
+        handoff = copy.deepcopy(self.state["handoff"])
+        first = handoff["history"][-1]
+        first.update(decision="Owner blocked first", disposition="blocked")
+        ledger["issues"][0]["state"] = "blocked"
+        row = copy.deepcopy(ledger["issues"][0])
+        row.update(issue=248, version="v1.0.6.2")
+        ledger["issues"].append(row)
+        second = copy.deepcopy(first)
+        second["handoff"].update(issue=248, version=row["version"])
+        second["decision"] = "Owner blocked second"
+        handoff["history"].append(second)
+        policies = [
+            {**self.policy, "archive_digest": session.closure_digest(first),
+             "reason": "not_planned", "engineering": None},
+            {**self.policy, "issue": 248, "version": row["version"],
+             "archive_index": len(handoff["history"]) - 1,
+             "archive_digest": session.closure_digest(second),
+             "reason": "not_planned", "engineering": None},
+        ]
+        def record(i, stage):
+            receipt = {"status": stage, "policy": policies[i]}
+            if stage == "cancelled":
+                receipt["cancellation"] = {"owner_decision": "Owner cancels",
+                    "state": "closed", "state_reason": "not_planned"}
+            if stage in ("executing", "confirmed"):
+                receipt["execution_id"] = str(i + 1) * 32
+            return {**copy.deepcopy((first, second)[i]),
+                    "decision": session.CLOSURE_DECISION + json.dumps(receipt)}
+        for sequence, allowed in (
+            ([(0, "pending"), (0, "cancelled"), (1, "pending"), (1, "cancelled")], True),
+            ([(0, "pending"), (1, "pending"), (0, "cancelled"), (1, "cancelled")], False),
+            ([(0, "pending"), (1, "pending"), (0, "executing"), (0, "confirmed"), (1, "cancelled")], False),
+        ):
+            candidate = {**handoff, "history": handoff["history"] + [record(i, stage) for i, stage in sequence]}
+            if allowed:
+                session.validate_handoff(candidate, ledger)
+            else:
+                with self.assertRaisesRegex(ValueError, "Overlapping pending issue closure"):
+                    session.validate_handoff(candidate, ledger)
+        candidate = {**handoff, "history": handoff["history"] +
+                    [record(0, "pending"), copy.deepcopy(second), record(0, "cancelled")]}
+        with self.assertRaisesRegex(ValueError, "history changed during pending closure"):
+            session.validate_handoff(candidate, ledger)
+        self.assertFalse(self.api.writes)
