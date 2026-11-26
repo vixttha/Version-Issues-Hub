@@ -154,10 +154,16 @@ class ScopeControlTests(unittest.TestCase):
         successor = {**record, "previous_approval_sha": predecessor,
                      "reviewed_sha": "e"*40, "owner_decision": "Reviewed forward correction"}
         path = "ledger/scope-approvals/v0.0.0.43.json"
-        old = {**self.ledger, "issues": []}
-        new = {**old, "issues": [{"issue":96, "version":"v0.0.0.43",
+        previous = {"issue":92, "version":"v0.0.0.41",
+                    "state":"deferred", "acceptance":["bounded repair"]}
+        old = {**self.ledger, "issues": [previous]}
+        new = {**old, "issues": [previous, {"issue":96, "version":"v0.0.0.43",
                             "state":"in_progress", "acceptance":record["criteria"]}]}
-        before = {"schema_version":1, "active":None, "history":[]}
+        archive = {"handoff":{"issue":92,"version":"v0.0.0.41","phase":"Head",
+                    "next_action":"Historical review","fix_sha":None,"candidate_sha":None,
+                    "pull_request":None,"evidence":[]}, "disposition":"deferred",
+                    "decision":"Preserved owner decision","merged_sha":None}
+        before = {"schema_version":1, "active":None, "history":[archive]}
         active = {"issue":96, "version":"v0.0.0.43", "phase":"Worker",
                   "next_action":"Repair", "fix_sha":None, "candidate_sha":None,
                   "pull_request":None, "evidence":[]}
@@ -180,8 +186,8 @@ class ScopeControlTests(unittest.TestCase):
                     {**successor,"allowed_paths":["new.py"]},"f"*40)
             with self.assertRaisesRegex(ValueError,"not eligible"):
                 scope.verify_043_scope_genesis("1"*40,path,record,successor,"f"*40)
-            after["history"] = [{"unexpected":"archive"}]
-            with self.assertRaises(ValueError):
+            after["history"] = [{**archive, "decision":"Changed owner decision"}]
+            with self.assertRaisesRegex(ValueError, "changed historical state or Worker identity"):
                 scope.verify_043_scope_genesis(predecessor,path,record,successor,"f"*40)
 
     def test_legacy_explicit_preflight_cannot_bypass_scope(self):

@@ -952,15 +952,7 @@ def verify_candidate_runs(api, state, active, links):
     policy = {"repository_id": state["manifest"]["target_repository_id"],
               "pull_request": active["pull_request"], "head_sha": active["candidate_sha"],
               "base_sha": active["integration_base_sha"], "merge_sha": active["integration_merge_sha"]}
-    # An old run must not be re-labelled as fresh by a rerun or mutable PR
-    # association. Keep its original record; require a new run for changed pins.
-    invalidated = set()
-    for record in state["handoff"]["history"]:
-        old = record["handoff"]
-        if (old["issue"] == active["issue"] and
-                any(old.get(k) != active.get(k) for k in PIN_KEYS | {"candidate_sha", "pull_request"})):
-            invalidated.update(evidence_run(state["ledger"]["repository"], link)[0]
-                               for link in old["evidence"])
+    invalidated = invalidated_archive_runs(state, active)
     for link in links:
         run, attempt = evidence_run(state["ledger"]["repository"], link)
         if run in invalidated:
@@ -974,6 +966,18 @@ def verify_candidate_runs(api, state, active, links):
         standard.check_pr_run(api.request("GET", state["prefix"] + "/actions/runs/" + str(run)),
                               policy, run, attempt)
     require_fresh_snapshot(api, state, active)
+
+
+def invalidated_archive_runs(state, active):
+    # Never relabel an archived run as fresh for different candidate or preview pins.
+    invalidated = set()
+    for record in state["handoff"]["history"]:
+        old = record["handoff"]
+        if (old["issue"] == active["issue"] and
+                any(old.get(k) != active.get(k) for k in PIN_KEYS | {"candidate_sha", "pull_request"})):
+            invalidated.update(evidence_run(state["ledger"]["repository"], link)[0]
+                               for link in old["evidence"])
+    return invalidated
 
 def inspect(api, state, requested=None):
     handoff = state["handoff"]
@@ -1320,6 +1324,7 @@ def require_integration_debt_clear(api, state, number):
     debt = unresolved_integration_debt(state)
     if any(row["issue"] == number for row in debt):
         return
+    policies = []
     for row in debt:
         prior = next((r for r in reversed(state["handoff"]["history"])
                       if r["handoff"]["issue"] == row["issue"]
@@ -1327,7 +1332,8 @@ def require_integration_debt_clear(api, state, number):
         if (prior is None or row["state"] not in ("staged", "deferred")
                 or prior["disposition"] != row["state"]):
             raise ValueError("Missing current integration debt archive; owner reconciliation required")
-        check_deferral(api, state, prior, number)
+        policies.append(check_deferral(api, state, prior, number))
+    return policies
 
 
 def claim(api, state, number, criteria, note, *, resume_prior_line=False, parallel=False,
@@ -1554,6 +1560,12 @@ def reconcile_historical_integration(api, state, number, decision, policy):
                 raise ValueError("Historical engineering production target differs")
             fix = engineering["policy"]["review"]["issues"][0]["fix_sha"]
         elif legacy is not None:
+            expected_pins = {"pull_request": int(legacy.group(1)), "fix_sha": legacy.group(2),
+                             "candidate_sha": legacy.group(3)}
+            for key, expected in expected_pins.items():
+                recorded = prior["handoff"][key]
+                if recorded is not None and recorded != expected:
+                    raise ValueError("Historical engineering approval conflicts with archived handoff pin: " + key)
             fix = legacy.group(2)
         else:
             raise ValueError("Deferred work lacks exact engineering approval; owner reconciliation required")
@@ -1585,8 +1597,11 @@ def reconcile_historical_integration(api, state, number, decision, policy):
                     != [review["base_sha"], review["head_sha"]]
                 or review["base_sha"] == review["head_sha"]):
             raise ValueError("Historical product preview parents differ")
+        invalidated = invalidated_archive_runs(state, candidate)
         for link in evidence:
             run, attempt = evidence_run(state["ledger"]["repository"], link)
+            if run in invalidated:
+                raise ValueError("Archived run belongs to stale integration evidence; use a new run")
             root = prefix + "/actions/runs/" + str(run)
             for suffix in ("", "/attempts/" + str(attempt)):
                 standard.check_pr_run(api.request("GET", root + suffix), preview_policy, run, attempt)
@@ -1972,11 +1987,12 @@ def save(api, state, ledger, handoff, apply=False, *, issue=None, operation_id=N
                 or closure_receipt(appended_closure[0]) is None):
             raise ValueError("Reconcile unresolved closure before unrelated state publication")
     def revalidate_claim_and_deferrals():
+        policies = []
         previous = {a["issue"] for a in active_rows(state["handoff"])}
         for active in active_rows(handoff):
             if active["issue"] not in previous:
                 require_product_lineage(api, state)
-                require_integration_debt_clear(api, state, active["issue"])
+                policies.extend(require_integration_debt_clear(api, state, active["issue"]) or [])
         appended = handoff["history"][len(state["handoff"]["history"]):]
         before = {row["issue"]: row for row in state["ledger"]["issues"]}
         for row in ledger["issues"]:
@@ -1986,11 +2002,34 @@ def save(api, state, ledger, handoff, apply=False, *, issue=None, operation_id=N
                          and r["disposition"] == "integrated"]
                 if len(proof) != 1:
                     raise ValueError("Integration debt cannot clear without exact integration archive")
+                record = proof[0]
+                if record["decision"].startswith(HISTORICAL_INTEGRATION_DECISION):
+                    receipt = checkpoint.parse_json(record["decision"][len(HISTORICAL_INTEGRATION_DECISION):])
+                    if (not isinstance(receipt, dict) or set(receipt) != {"owner_decision", "policy"}
+                            or receipt["policy"] != policy or not isinstance(policy, dict)
+                            or policy.get("outcome") != "historical_product_integration"):
+                        raise ValueError("Historical integration requires exact reconciliation proof")
+                else:
+                    prior = next((a for a in active_rows(state["handoff"])
+                                  if a["issue"] == row["issue"]), None)
+                    if prior is None:
+                        archived = next((r for r in reversed(state["handoff"]["history"])
+                                         if r["handoff"]["issue"] == row["issue"]
+                                         and closure_receipt(r) is None), None)
+                        if archived is None or archived["disposition"] != "staged":
+                            raise ValueError("Historical integration requires exact reconciliation proof")
+                        prior = archived["handoff"]
+                    proposed = record["handoff"]
+                    if (prior["phase"] != "Head" or any(prior.get(k) != proposed.get(k)
+                            for k in PIN_KEYS | {"fix_sha", "candidate_sha", "pull_request"})
+                            or not set(prior["evidence"]).issubset(proposed["evidence"])):
+                        raise ValueError("Integration publication must preserve original handoff pins")
         for record in appended:
             if deferral_record(record) is not None:
                 if deferral_approved is not True:
                     raise ValueError("Explicit owner approval of integration debt deferral required")
-                check_deferral(api, state, record)
+                policies.append(check_deferral(api, state, record))
+        return policies
     revalidate_claim_and_deferrals()
     if not apply:
         return {"status": "planned", "ledger": ledger, "handoff": handoff}
@@ -2010,7 +2049,7 @@ def save(api, state, ledger, handoff, apply=False, *, issue=None, operation_id=N
             rework_prs.append(prior["handoff"])
     def revalidate_publication():
         from tools import standard
-        revalidate_claim_and_deferrals()
+        policies = revalidate_claim_and_deferrals()
         for previous in rework_prs:
             verify_closed_staged_pr(api, state, previous)
         for record in appended:
@@ -2050,6 +2089,7 @@ def save(api, state, ledger, handoff, apply=False, *, issue=None, operation_id=N
                         or not record["decision"].endswith("\nPost-merge policy: " + json.dumps(
                             policy, sort_keys=True, separators=(",", ":"), ensure_ascii=True, allow_nan=False))):
                     raise ValueError("Integrated publication proof does not match reviewed record")
+        return policies
     revalidate_publication()
     prefix, old = state["prefix"], state["ref"]
     if install.read_ref(api, prefix, install.BRANCH) != old:
@@ -2078,7 +2118,10 @@ def save(api, state, ledger, handoff, apply=False, *, issue=None, operation_id=N
                             "operation_id": operation_id})
     # A journal sink can take time. Check proof after it completes, as close
     # to the actual ref update as possible (the API is not a shared transaction).
-    revalidate_publication()
+    policies = revalidate_publication()
+    for deferral in policies:
+        if not deferral["approved_at"] <= time.time() < deferral["expires_at"]:
+            raise ValueError("Integration debt deferral expired before publication")
     # Fast-forward-only CAS: a divergent writer cannot overwrite a competing handoff.
     ambiguous = False
     try:

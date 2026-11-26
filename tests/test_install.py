@@ -190,6 +190,20 @@ class InstallerTests(unittest.TestCase):
         self.assertEqual(self.api.refs[install.BRANCH], "e" * 40)
         self.assertEqual(self.api.refs["trunk"], PRODUCT)
 
+    def test_post_install_default_change_requires_inspection(self):
+        original = self.api.request
+        def race(method, path, body=None):
+            result = original(method, path, body)
+            if method == "POST" and path.endswith("/git/refs"):
+                self.api.metadata["default_branch"] = "other"
+            return result
+        self.api.request = race
+        with self.assertRaisesRegex(ValueError, INSTALLED + ".*inspect before retrying"):
+            install.install(self.api, TARGET, PIN, "v1.0.6", True)
+        self.assertEqual(self.api.refs[install.BRANCH], INSTALLED)
+        self.assertEqual(self.api.refs["trunk"], PRODUCT)
+        self.assertEqual(len(self.api.writes), 3)
+
     def test_default_branch_collision_refused(self):
         self.api.metadata["default_branch"] = install.BRANCH
         with self.assertRaisesRegex(ValueError, "product default"):
@@ -372,3 +386,4 @@ class InstallerTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+

@@ -440,8 +440,16 @@ def install(api, target, source_sha, baseline, apply=False, *, product_branch=No
     installed = api.request("GET", prefix + "/git/commits/" + commit)
     if installed.get("sha") != commit or installed["tree"]["sha"] != tree:
         raise ValueError("Installed tree read-back mismatch")
-    if read_ref(api, prefix, branch) != product:
-        raise ValueError("Product ref changed concurrently; inspect before retrying")
+    try:
+        latest = api.request("GET", prefix)
+        if (latest.get("id") != meta["id"] or latest.get("full_name") != meta["full_name"]
+                or latest.get("default_branch") != default or product_target(latest, manifest) != branch):
+            raise ValueError("Target identity or default branch changed")
+        if read_ref(api, prefix, branch) != product:
+            raise ValueError("Product ref changed concurrently")
+    except (ValueError, ApiError, KeyError, OSError) as exc:
+        raise ValueError("Installed ref was created at " + commit +
+                         "; final product verification failed; inspect before retrying: " + str(exc)) from exc
     return {**plan, "status": "installed", "installed_sha": commit, "installed_tree_sha": tree}
 
 def main():

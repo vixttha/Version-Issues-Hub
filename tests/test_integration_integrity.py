@@ -228,3 +228,46 @@ class IntegrationIntegrityTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 session.reconcile(self.api,self.state,247,"Owner integration",policy=policy)
         self.assertEqual(self.api.writes,[])
+
+    def test_direct_integration_cannot_replace_archived_fix(self):
+        from test_session import post_policy
+        self.reach_head()
+        self.state["ledger"], self.state["handoff"] = session.finish(
+            self.api, self.state, "staged", "Owner stages")
+        self.api.pr.update(state="closed", merged=True, merge_commit_sha=NEXT)
+        self.api.product = NEXT
+        policy = post_policy(self.state)
+        ledger, handoff = session.reconcile(self.api, self.state, 247, "Owner integrates", policy=policy)
+        self.assertEqual(session.save(self.api,self.state,ledger,handoff,issue=247,policy=policy)["status"],"planned")
+        handoff["history"][-1]["handoff"]["fix_sha"] = "1"*40
+        for apply in (False, True):
+            with self.assertRaisesRegex(ValueError,"preserve original handoff pins"):
+                session.save(self.api,self.state,ledger,handoff,apply,issue=247,policy=policy)
+        self.assertEqual(self.api.writes, [])
+
+    def test_historical_legacy_conflicting_pin_rejected(self):
+        from test_session import post_policy, PROPOSED
+        self.reach_head()
+        self.state["ledger"], self.state["handoff"] = session.finish(
+            self.api, self.state, "deferred",
+            "Owner-approved engineering completion: PR #8; fix " + "1"*40 +
+            "; candidate " + CANDIDATE + "; merge " + NEXT + ".")
+        archive = self.state["handoff"]["history"][0]
+        review = post_policy(self.state)
+        review["issues"][0]["fix_sha"] = "1"*40
+        policy = {"schema_version":1,"outcome":"historical_product_integration",
+                  "archive_index":0,"archive_digest":session.closure_digest(archive),
+                  "premerge":{"merge_sha":PROPOSED,"evidence":[RUN]},"review":review}
+        with self.assertRaisesRegex(ValueError,"conflicts with archived handoff pin"):
+            session.reconcile(self.api,self.state,247,"Owner integrates",policy=policy)
+        self.assertEqual(self.api.writes, [])
+
+    def test_archived_run_invalidated_when_preview_changes(self):
+        self.reach_head()
+        self.state["ledger"], self.state["handoff"] = session.finish(
+            self.api, self.state, "staged", "Owner stages")
+        active = copy.deepcopy(self.state["handoff"]["history"][0]["handoff"])
+        self.assertEqual(session.invalidated_archive_runs(self.state, active), set())
+        active["integration_merge_sha"] = "1"*40
+        self.assertIn(session.evidence_run(self.state["ledger"]["repository"], RUN)[0],
+                      session.invalidated_archive_runs(self.state, active))
