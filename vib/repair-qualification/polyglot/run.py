@@ -8,13 +8,15 @@ contract=json.loads((here/"contract.json").read_text(encoding="utf-8"))
 def run(cmd,expected=True):
     p=subprocess.run([str(x) for x in cmd],capture_output=True,text=True,encoding="utf-8",errors="replace",timeout=180)
     if (p.returncode==0)!=expected:raise RuntimeError(f"unexpected result {cmd}: {p.returncode} {p.stdout} {p.stderr}")
+    if not expected and not any(marker in (p.stdout+" "+p.stderr) for marker in ("bad header","invalid receipt header","bad assertion","bad case","invalid case","incomplete","missing cases","missing rows","omitted cases")):
+        raise RuntimeError(f"negative control failed for an unrelated reason: {cmd}: {p.stdout} {p.stderr}")
     return p.stdout.strip()
 versions={x:run([x,"--version"]) for x in ("node","dotnet","javac")}
-tsc=shutil.which("tsc")
-if not tsc:raise RuntimeError("TypeScript compiler unavailable; no compile qualification")
-# Windows npm installs the compiler as a .cmd shim; invoke via cmd explicitly.
-tc=["cmd","/d","/c",tsc] if os.name=="nt" else [tsc]
+tsc=Path(os.environ["RUNNER_TEMP"])/"itqs-ts"/"node_modules"/"typescript"/"bin"/"tsc"
+if not tsc.is_file():raise RuntimeError("Pinned TypeScript compiler unavailable")
+tc=["node",tsc]
 versions["tsc"]=run(tc+["--version"])
+if versions["tsc"]!="Version 5.9.3":raise RuntimeError("wrong TypeScript compiler version")
 run(tc+["--noEmit","--strict","--target","ES2022","--module","ESNext",here/"verify.ts"])
 # Copy source to temp; no generated binaries or obj paths in the audit checkout.
 csdir=work/"csharp";shutil.copytree(here/"csharp",csdir,dirs_exist_ok=True)

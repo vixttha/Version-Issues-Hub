@@ -52,6 +52,9 @@ jobs:
         with:
           node-version: '24.22.3'
           package-manager-cache: false
+      - name: Install exact audit-only TypeScript compiler (no lifecycle scripts)
+        shell: bash
+        run: npm install --prefix "$RUNNER_TEMP/itqs-ts" --ignore-scripts --no-audit --no-fund --save-exact typescript@5.9.3
       - name: Independent polyglot receipt oracle and mutation controls
         shell: bash
         run: python vault/vib/repair-qualification/polyglot/run.py "$RUNNER_TEMP/itqs/after/report.json" "$RUNNER_TEMP/itqs/polyglot"
