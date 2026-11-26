@@ -1296,6 +1296,54 @@
           "anchor": "def test_engineering_completion_apply_and_readback(self):"
         }
       ]
+    },
+    {
+      "id": "v0-0-0-40",
+      "label": "Issue #86 · independent closure and ledger synchronization",
+      "documented_in": [
+        {
+          "path": "docs/v0.0.0.40.md",
+          "anchor": "## Independent lifecycle states"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "ledger/issue-versions.json",
+          "anchor": "\"issue\": 86,"
+        }
+      ],
+      "implemented_in": [
+        {
+          "path": "tools/session.py",
+          "anchor": "def closure_status(state, item):"
+        },
+        {
+          "path": "tools/session.py",
+          "anchor": "def verify_closure_basis(api, state, number, policy):"
+        },
+        {
+          "path": "tools/session.py",
+          "anchor": "def complete_closure(api, state, number, policy, *, owner_approved=False, apply=False):"
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tests/test_issue_closure.py",
+          "anchor": "def test_closure_status_independent(self):"
+        },
+        {
+          "path": "tests/test_issue_closure.py",
+          "anchor": "def test_intent_is_append_only_and_idempotent(self):"
+        },
+        {
+          "path": "tests/test_issue_closure.py",
+          "anchor": "def test_partial_failure_retains_pending_intent(self):"
+        },
+        {
+          "path": "tests/test_issue_closure.py",
+          "anchor": "def test_exact_evidence_and_historical_identity(self):"
+        }
+      ]
     }
   ]
 }
