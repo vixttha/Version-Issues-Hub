@@ -36,6 +36,7 @@ jobs:
       - name: Qualify exact source and prepare compositions
         run: |
           python3 ../../08-review/verify_lock.py
+          python3 -m unittest test_prepare -v
           python3 prepare.py
       - name: Lint, inspect and render RGBA frames
         run: |

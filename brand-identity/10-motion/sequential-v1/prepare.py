@@ -8,6 +8,15 @@ BASE = "388c6ef968aa15edf3caa34e9de6819dcda24e7f"
 LOCK = "brand-identity/08-review/brand-lock.json"
 def sha(b): return hashlib.sha256(b).hexdigest()
 def git_show(path): return subprocess.check_output(["git", "-C", str(ROOT), "show", BASE + ":" + path])
+def validate_canvas(svg):
+    doc = ET.fromstring(svg)
+    ns = "{http://www.w3.org/2000/svg}"
+    divider = {"id":"divider","x":"220","y":"768","width":"1008","height":"12","fill":"#315BCD"}
+    if doc.tag != ns+"svg" or doc.attrib.get("viewBox") != "0 0 1448 1086":
+        raise ValueError("unexpected canvas dimensions")
+    if [r.attrib for r in doc.iter(ns+"rect")] != [divider]:
+        raise ValueError("unexpected background or divider")
+    return doc
 def prepare():
     lock_bytes = git_show(LOCK)
     if (ROOT/LOCK).read_bytes() != lock_bytes: raise ValueError("brand lock changed")
@@ -29,9 +38,7 @@ def prepare():
             rect = '<rect width="1448" height="1086" fill="#F3F6FC"/>'
             if svg.count(rect) != 1: raise ValueError("unexpected light background")
             svg = svg.replace(rect,"",1)
-        doc = ET.fromstring(svg)
-        ns = "{http://www.w3.org/2000/svg}"
-        if doc.attrib.get("viewBox") != "0 0 1448 1086" or doc.findall(ns+"rect"): raise ValueError("unexpected canvas")
+        doc = validate_canvas(svg)
         if len([x for x in doc.iter() if x.get("id") == "checkpoint-circuit"]) != 1: raise ValueError("missing circuit")
         # Inset overlays inside the exact hollow rim bounds; avoid alpha edge drift.
         rings = []
