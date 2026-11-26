@@ -15,3 +15,4 @@
 | IDEA-000009 | Permanent project-local VIB identity | adopted | not\_applicable |
 | IDEA-000010 | Issue-specific reuse of verified evidence | adopted | planned |
 | IDEA-000011 | Repository visibility and execution policy research | exploring | not\_planned |
+| IDEA-000020 | Product-first permanent rebrand and commercial name clearance | captured | not\_planned |

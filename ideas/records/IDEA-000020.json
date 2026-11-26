@@ -1,0 +1,54 @@
+{
+  "schema_version": 1,
+  "id": "IDEA-000020",
+  "title": "Product-first permanent rebrand and commercial name clearance",
+  "summary": "Defer full product rebranding until engineering readiness is demonstrated and the owner explicitly authorizes the rebrand. The current Version-Issues-Hub name, VIB abbreviation, Circuit Industrial v2 logo, Cobalt Precision palette, slogans and existing visual assets remain frozen as an interim identity under VIB-BRAND-LOCK-001. No public rollout approval is granted for the README/homepage, website, documentation, official releases or marketing; internal review candidates may use unchanged existing assets without publication. Preserve current project and workflow identities, historical evidence and version mappings. The future rebrand should reflect the proven software, audience and value, and evaluate name, abbreviation, logo, palette, typography, slogans, messaging, accessibility and trademark conflicts before separate owner approval for commercial use and rollout. No registration, spending, renaming, release, or implementation is authorized by this record.",
+  "kind": "product",
+  "origin": {
+    "created_by": "human",
+    "source": "Owner direction in project conversation, 2026-11-26; recorded as a future idea, not implementation approval."
+  },
+  "lifecycle_status": "captured",
+  "implementation_status": "not_planned",
+  "testing": {
+    "status": "untested"
+  },
+  "importance": "high",
+  "complexity": "high",
+  "categories": [
+    "branding",
+    "product identity",
+    "commercial readiness",
+    "release presentation"
+  ],
+  "benefits": [
+    "Establish product quality before choosing a permanent public identity.",
+    "Align the future brand with demonstrated capabilities and intended audience.",
+    "Separate visual approval, trademark review and public rollout authority."
+  ],
+  "risks": [
+    "Premature public promotion or renaming could confuse adopters and break durable links or branch discovery.",
+    "Potential trademark conflicts remain unassessed; perform preliminary clearance for shortlisted names, marks and slogans before commercial adoption.",
+    "Do not reinterpret the existing visual lock or .43 README candidate as public rollout approval."
+  ],
+  "related_ideas": [
+    "IDEA-000005",
+    "IDEA-000009"
+  ],
+  "evidence": [
+    {
+      "relation": "context",
+      "claim": "Existing owner-approved visual baseline is locked and public rollout and commercial clearance remain pending.",
+      "repository": "vixttha/Version-Issues-Hub",
+      "commit": "388c6ef968aa15edf3caa34e9de6819dcda24e7f",
+      "path": "brand-identity/08-review/BRAND-LOCK.md"
+    },
+    {
+      "relation": "context",
+      "claim": "Exact approved assets, palette, slogans and change-control limitations.",
+      "repository": "vixttha/Version-Issues-Hub",
+      "commit": "388c6ef968aa15edf3caa34e9de6819dcda24e7f",
+      "path": "brand-identity/08-review/brand-lock.json"
+    }
+  ]
+}
