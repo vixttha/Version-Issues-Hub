@@ -5361,7 +5361,15 @@
       "production_revision": "1b11865f79464ae7db9a648467e8c2c1cb898a02",
       "production_fix_ancestry": "not_present_main_is_single_root",
       "action": "verify exact engineering archive then qualify historical product integration policy",
-      "actual_record_changed": false
+      "actual_record_changed": false,
+      "engineering_evidence_reference": {
+        "canonical_revision": "77b8d09d2471b20fe517bea35c6efc0bd047ddeb",
+        "archive_index": 56,
+        "source_path": "ledger/handoff.json",
+        "decision": "Owner-approved engineering completion: PR #91; fix 024046556bf00b649b2428c112f5456210036dfb; candidate e963d92a09dabdf879b4808b65159a57a5348c51; merge 43ef2b660aae5ccee00009e900509158f0137d0f.",
+        "next_action": "Owner-authorized corrective engineering completion for installed closure compatibility, PR #91 merged at 43ef2b660aae5ccee00009e900509158f0137d0f; head e963d92a09dabdf879b4808b65159a57a5348c51, base 8cbb4562fb2e2425eaae52b9145513e2f5927ba2, identical tested tree 413b10757a3f06b16ed61f8a2555233eab3870f4. Original permanent fix 024046556bf00b649b2428c112f5456210036dfb retained. Exact premerge 10/10 including CodeRabbit 140053840566; actual merge 11/11, four public Ubuntu/Windows jobs each 322 discovered, 318 passed, four intentional skips (1272 passes), two staged-preserving regressions passed each, Graphify 43/43 twice; runs 45863368417,45863368206,45863368376,45863359893,45863359914 attempt 1. Review and closure audit https://github.com/vixttha/Version-Issues-Hub/issues/86#issuecomment-7198389124. All scoped engineering gates met; no independent certification. Production integration deferred; legacy installed main-bound schema-1 state uses null production pins. Live upgrade and synchronized closure require separately reviewed exact scope authorization; #86 remains open. Preserve all 56 archives, 40 permanent mappings and #37/#40/#53 holds. Owner authorizes .41 next.",
+        "production_pins_unchanged": true
+      }
     },
     {
       "issue": 92,
@@ -5373,7 +5381,15 @@
       "production_revision": "1b11865f79464ae7db9a648467e8c2c1cb898a02",
       "production_fix_ancestry": "not_present_main_is_single_root",
       "action": "verify exact engineering archive then qualify historical product integration policy",
-      "actual_record_changed": false
+      "actual_record_changed": false,
+      "engineering_evidence_reference": {
+        "canonical_revision": "77b8d09d2471b20fe517bea35c6efc0bd047ddeb",
+        "archive_index": 57,
+        "source_path": "ledger/handoff.json",
+        "decision": "Owner-approved engineering completion: PR #93; fix c25d8a3dca5ed90656ac4679028188c03f2e5a50; candidate b1c60dd6680ce99726a7b2fa1349cd9d9e3a04f4; merge c7a4995c99fed8d1e87970a744c4cde378ebed1e.",
+        "next_action": "Owner-authorized .41 engineering completion: PR #93 merged into plan/v0.0.1 at c7a4995c99fed8d1e87970a744c4cde378ebed1e; fix c25d8a3dca5ed90656ac4679028188c03f2e5a50; candidate b1c60dd6680ce99726a7b2fa1349cd9d9e3a04f4; base 43ef2b660aae5ccee00009e900509158f0137d0f; identical tested tree 7b01c3427f677b5bbdd8b9f23f8d524d3bf6a3e7. Scope approval 5a42e6526c783b75996dc25137ae9efb3ca86ee5, 16/16 paths. Premerge 10/10 including CodeRabbit 140079829269, both review findings resolved; actual merge 11/11, four public Ubuntu/Windows jobs each 329 discovered, 325 passed, 4 intentional skips (1300 passes, 16 skips), Graphify 44/44 twice. Actual merge runs 45870708693,45870708676,45870717828,45870717814,45870717847. All four locked criteria met in ordinary scoped engineering review; no independent host certification. Existing installed schema-1 main-bound package requires production-deferred disposition with null production pins; no live migration, main merge, synchronized issue closure, experimental activation, release or .42 claim. Preserve all 57 archives, 41 permanent mappings and #37/#40/#53 holds.",
+        "production_pins_unchanged": true
+      }
     },
     {
       "issue": 94,
@@ -5385,7 +5401,15 @@
       "production_revision": "1b11865f79464ae7db9a648467e8c2c1cb898a02",
       "production_fix_ancestry": "not_present_main_is_single_root",
       "action": "verify exact engineering archive then qualify historical product integration policy",
-      "actual_record_changed": false
+      "actual_record_changed": false,
+      "engineering_evidence_reference": {
+        "canonical_revision": "77b8d09d2471b20fe517bea35c6efc0bd047ddeb",
+        "archive_index": 61,
+        "source_path": "ledger/handoff.json",
+        "decision": "VIB-ENGINEERING-COMPLETE-1: {\"owner_decision\":\"Owner approved merging PR #95 at exact head 8a2f6fb2f651493eee1dc08d9bae3d805208d5c3 into the engineering branch, verifying post-merge CI, recording .42 engineering completion and releasing the active workflow slot.\",\"policy\":{\"engineering_branch\":\"plan/v0.0.0.1\",\"outcome\":\"engineering_complete\",\"production_branch\":\"main\",\"review\":{\"base_sha\":\"c7a4995c99fed8d1e87970a744c4cde378ebed1e\",\"head_sha\":\"8a2f6fb2f651493eee1dc08d9bae3d805208d5c3\",\"installed_sha\":\"e3c9bdd2a1a367ca44dc615f92208d16bb1c904d\",\"issues\":[{\"criteria\":[{\"checks\":[{\"attempt\":1,\"job_name\":\"verify\",\"run\":45879664694,\"steps\":[\"Check the ledger and verify the receipt contract\",\"Write the selected issue verification receipts\"],\"workflow_id\":424946967},{\"attempt\":1,\"job_name\":\"verify-windows\",\"run\":45879664694,\"steps\":[\"Run full Windows regression suite\"],\"workflow_id\":424946967}],\"text\":\"Provide a concise read-only recovery and next-handoff plan from canonical state, including active, staged, stale, merged, closed and pending-closure conditions; never automatically mutate state or infer authorization.\"},{\"checks\":[{\"attempt\":1,\"job_name\":\"verify\",\"run\":45879664694,\"steps\":[\"Check the ledger and verify the receipt contract\",\"Write the selected issue verification receipts\"],\"workflow_id\":424946967},{\"attempt\":1,\"job_name\":\"verify-windows\",\"run\":45879664694,\"steps\":[\"Run full Windows regression suite\"],\"workflow_id\":424946967}],\"text\":\"Permit reuse of recorded verification references only for the same issue, fix, candidate, PR, base and proposed merge after fresh exact-run validation and current installed-state lease checks; refuse stale, ambiguous, cross-issue or missing evidence.\"},{\"checks\":[{\"attempt\":1,\"job_name\":\"verify\",\"run\":45879664694,\"steps\":[\"Check the ledger and verify the receipt contract\",\"Write the selected issue verification receipts\"],\"workflow_id\":424946967},{\"attempt\":1,\"job_name\":\"verify-windows\",\"run\":45879664694,\"steps\":[\"Run full Windows regression suite\"],\"workflow_id\":424946967},{\"attempt\":1,\"job_name\":\"live (core)\",\"run\":45879664729,\"steps\":[\"Live public read-only install planning and adopter recovery\"],\"workflow_id\":428658276},{\"attempt\":1,\"job_name\":\"live (external)\",\"run\":45879664729,\"steps\":[\"Live public read-only install planning and adopter recovery\"],\"workflow_id\":428658276}],\"text\":\"Preserve the singleton workflow, immutable version mappings and historical receipts; keep production, issue closure, experimental activation and owner decisions separate; retain #37/#40/#53 holds.\"},{\"checks\":[{\"attempt\":1,\"job_name\":\"verify\",\"run\":45879664694,\"steps\":[\"Check the ledger and verify the receipt contract\",\"Write the selected issue verification receipts\"],\"workflow_id\":424946967},{\"attempt\":1,\"job_name\":\"verify-windows\",\"run\":45879664694,\"steps\":[\"Run full Windows regression suite\"],\"workflow_id\":424946967},{\"attempt\":1,\"job_name\":\"graphify\",\"run\":45879664694,\"steps\":[\"Map VIB issue evidence at the tested checkout\"],\"workflow_id\":424946967},{\"attempt\":1,\"job_name\":\"live (core)\",\"run\":45879664729,\"steps\":[\"Live public read-only install planning and adopter recovery\"],\"workflow_id\":428658276},{\"attempt\":1,\"job_name\":\"live (external)\",\"run\":45879664729,\"steps\":[\"Live public read-only install planning and adopter recovery\"],\"workflow_id\":428658276}],\"text\":\"Qualify bounded deterministic regressions on ordinary public Ubuntu/Windows runners, Graphify and CodeRabbit, preserving all six laws and prior evidence; no live migration, main integration, release, advanced qualification, new dependency or schedule restart.\"}],\"fix_sha\":\"d42401171119b7abbb42d3ebc270358d753208ab\",\"issue\":94,\"version\":\"v0.0.0.42\"}],\"merge_sha\":\"3160df17f60b3eaa9a9e70e1ca13bffcfe2eb4e8\",\"product_branch\":\"plan/v0.0.0.1\",\"pull_request\":95,\"repository\":\"vixttha/Version-Issues-Hub\",\"repository_id\":1465107353,\"schema_version\":1,\"source_sha\":\"c7a4995c99fed8d1e87970a744c4cde378ebed1e\"},\"schema_version\":1}}",
+        "next_action": "Owner approved exact engineering merge PR #95; actual merge 3160df17f60b3eaa9a9e70e1ca13bffcfe2eb4e8 verified with 11/11 post-merge checks. Logical Validate/Internal Auditor evidence review completed; engineering-only Head disposition, no production pins.",
+        "production_pins_unchanged": true
+      }
     }
   ],
   "recovery_receipts": [

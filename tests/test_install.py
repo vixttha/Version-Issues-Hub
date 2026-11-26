@@ -18,6 +18,7 @@ PREFIX = "/repos/" + TARGET
 class FakeGitHub:
     def __init__(self):
         self.refs = {"trunk": PRODUCT}
+        self.expected_parent = PRODUCT
         self.writes = []
         self.entries = {}
         self.metadata = {"id": 42, "full_name": TARGET, "default_branch": "trunk"}
@@ -33,7 +34,7 @@ class FakeGitHub:
                 self.entries = {e["path"]: e["content"] for e in body["tree"]}
                 return {"sha": TREE}
             if path == PREFIX + "/git/commits":
-                assert body["parents"] == [PRODUCT] and body["tree"] == TREE
+                assert body["parents"] == [self.expected_parent] and body["tree"] == TREE
                 return {"sha": INSTALLED}
             if path == PREFIX + "/git/refs":
                 branch = body["ref"].removeprefix("refs/heads/")
@@ -73,17 +74,20 @@ class InstallerTests(unittest.TestCase):
         self.api = FakeGitHub()
 
     def test_explicit_alternate_product_target_plan(self):
-        self.api.refs["release"] = PRODUCT
+        release = "f" * 40
+        self.api.refs["release"] = release
+        self.api.expected_parent = release
         with patch.object(install, "source_files", return_value={
                 "tools/install.py": "DESIGNATED_PRODUCT_TARGET_V1 = True\n"}):
             with self.assertRaisesRegex(ValueError, "owner approval"):
                 install.install(self.api, TARGET, PIN, "v1.0.6", product_branch="release",
-                                product_sha=PRODUCT)
+                                product_sha=release)
             plan = install.install(self.api, TARGET, PIN, "v1.0.6",
-                product_branch="release", product_sha=PRODUCT,
+                product_branch="release", product_sha=release,
                 product_decision="Owner uses release branch for product integration", owner_approved=True)
             manifest = plan["manifest"]
             self.assertEqual(manifest["product_branch"], "release")
+            self.assertEqual(manifest["product_baseline_sha"], release)
             self.assertEqual(install.product_target(self.api.metadata, manifest), "release")
             with self.assertRaisesRegex(ValueError, "changed"):
                 install.product_target({**self.api.metadata, "default_branch":"other"}, manifest)
@@ -93,9 +97,17 @@ class InstallerTests(unittest.TestCase):
                     product_decision="Owner selected release", owner_approved=True)
         with self.assertRaisesRegex(ValueError, "lacks reviewed"):
             install.install(self.api, TARGET, PIN, "v1.0.6",
-                product_branch="release", product_sha=PRODUCT,
+                product_branch="release", product_sha=release,
                 product_decision="Owner selected release", owner_approved=True)
         self.assertEqual(self.api.writes, [])
+        with patch.object(install, "source_files", return_value={
+                "tools/install.py": "DESIGNATED_PRODUCT_TARGET_V1 = True\n"}):
+            result = install.install(self.api, TARGET, PIN, "v1.0.6", True,
+                product_branch="release", product_sha=release,
+                product_decision="Owner selected release", owner_approved=True)
+        self.assertEqual(result["manifest"]["product_baseline_sha"], release)
+        self.assertEqual(self.api.writes[1][1]["parents"], [release])
+        self.assertEqual(self.api.refs["trunk"], PRODUCT)
 
     def test_install_isolated_branch(self):
         result = install.install(self.api, TARGET, PIN, "v1.0.6", True)

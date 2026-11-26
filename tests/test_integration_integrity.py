@@ -224,6 +224,20 @@ class IntegrationIntegrityTests(unittest.TestCase):
             self.assertEqual(handoff["history"][-1]["merged_sha"],NEXT)
             self.assertEqual(session.save(self.api,self.state,ledger,handoff,issue=247,
                                           policy=policy)["status"],"planned")
+            # Revert only during the second (final) preview review.
+            reads = [0]
+            def rollback(method,path,body=None):
+                result = request(method,path,body)
+                if path.endswith("/actions/runs/123/attempts/1"):
+                    reads[0] += 1
+                    if reads[0] == 2:
+                        self.api.product = BASE
+                return result
+            with patch.object(self.api,"request",side_effect=rollback):
+                with self.assertRaises(ValueError):
+                    session.reconcile(self.api,self.state,247,"Owner integration",policy=policy)
+            self.assertEqual(reads[0], 2)
+            self.api.product = NEXT
             self.api.pre_run["run_attempt"] = 2
             with self.assertRaises(ValueError):
                 session.reconcile(self.api,self.state,247,"Owner integration",policy=policy)
