@@ -41,6 +41,7 @@
     "test_session.SessionTests.test_closed_issue_requires_head_reconciliation",
     "test_session.SessionTests.test_evidence_required_and_repo_bound",
     "test_session.SessionTests.test_explicit_prior_line_recovery_preserves_assignment",
+    "test_session.SessionTests.test_finish_and_reconcile_require_coherent_closed_merged_pr",
     "test_session.SessionTests.test_fresh_session_recovers_active_issue",
     "test_session.SessionTests.test_handoff_loop_and_owner_integration",
     "test_session.SessionTests.test_inspect_distinguishes_closed_and_merged_pr",
@@ -51,6 +52,7 @@
     "test_session.SessionTests.test_prior_line_recovery_refuses_terminal_future_and_new_rows",
     "test_session.SessionTests.test_rejects_pr_as_issue",
     "test_session.SessionTests.test_rework_requires_open_issue_and_unmerged_pr",
+    "test_session.SessionTests.test_stage_rejects_unverified_pr_flags_without_writes",
     "test_session.SessionTests.test_stage_two_issues_and_reconcile_only_after_merge",
     "test_session.SessionTests.test_staged_stale_candidate_refused_and_prior_evidence_retained",
     "test_session.SessionTests.test_stale_pr_and_rework"
@@ -66,10 +68,12 @@
   ],
   "test_gate.py": [
     "test_gate.GateTests.test_changed_state_after_pending_never_turns_green",
+    "test_gate.GateTests.test_collection_count_requires_nonnegative_exact_integer",
     "test_gate.GateTests.test_duplicate_gate_after_pending_refuses_success",
     "test_gate.GateTests.test_empty_scope_and_self_check",
     "test_gate.GateTests.test_existing_gate_cannot_be_shadowed",
     "test_gate.GateTests.test_failed_gate_never_publishes",
+    "test_gate.GateTests.test_gate_rejects_unverified_merge_flags_without_publication",
     "test_gate.GateTests.test_incomplete_scope",
     "test_gate.GateTests.test_missing_or_spoofed_app",
     "test_gate.GateTests.test_revoke_previous_green_even_after_state_changed",
@@ -90,12 +94,14 @@
     "test_lifecycle.LifecycleTests.test_archive_collision_refused",
     "test_lifecycle.LifecycleTests.test_archive_preserves_exact_history_without_deletion",
     "test_lifecycle.LifecycleTests.test_competing_writer_during_upgrade_cannot_be_overwritten",
+    "test_lifecycle.LifecycleTests.test_fixture_preserves_exact_utf8_and_line_endings",
     "test_lifecycle.LifecycleTests.test_fresh_cli_install_upgrade_archive_remove_restore",
     "test_lifecycle.LifecycleTests.test_legal_review_upgrade_is_plan_only_and_preserves_adopter_license",
     "test_lifecycle.LifecycleTests.test_non_descendant_and_collision_refused",
     "test_lifecycle.LifecycleTests.test_prepare_requires_explicit_apply_and_owner",
     "test_lifecycle.LifecycleTests.test_prepared_upgrade_moves_no_ref_and_can_be_confirmed_after_external_advance",
     "test_lifecycle.LifecycleTests.test_upgrade_preserves_real_git_state_and_product",
+    "test_lifecycle.LifecycleTests.test_upgrade_rejects_actual_package_byte_or_mode_tampering",
     "test_lifecycle.LifecycleTests.test_upgrade_requires_owner_and_current_revision"
   ],
   "test_acceptance_snapshot.py": [
