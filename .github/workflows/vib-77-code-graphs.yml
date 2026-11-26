@@ -1,8 +1,8 @@
-name: VIB 77 historical raw Graphify code graphs
+name: VIB 77 cumulative Graphify and native retrieval
 on:
   push:
     branches: [review/vib-77-code-graphs]
-    paths: ['tools/vib-code-graph-inventory.json','tools/build-vib-code-graphs.py','tools/preserve-vib-code-graphs.py','.github/workflows/vib-77-code-graphs.yml']
+    paths: ['tools/select-cumulative-graphs.py','tools/build-cumulative-graphs.py','tools/audit-inferred-graphs.py','tools/preserve-cumulative-graphs.py','tools/test-code-graph-retrieval.py','lib/code-graph.mjs','veraphifiy.mjs','.github/workflows/vib-77-code-graphs.yml']
 permissions:
   contents: read
 jobs:
@@ -41,12 +41,15 @@ jobs:
           python -m pip install --require-hashes --no-deps --only-binary=:all: -r producer/versions/v0.0.8/requirements.txt
           python -m pip check
       - name: Build actual code graphs for all 36 historical source pins
-        run: python vault/tools/build-vib-code-graphs.py
+        run: |
+          python vault/tools/select-cumulative-graphs.py
+          python vault/tools/build-cumulative-graphs.py
+          python vault/tools/audit-inferred-graphs.py
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         if: always()
         with:
-          name: vib-code-graphs-${{ github.run_id }}-${{ github.run_attempt }}
-          path: ${{ runner.temp }}/vib-code-graphs
+          name: vib-cumulative-graphs-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/vib-cumulative-graphs
           if-no-files-found: error
   preserve:
     needs: generate
@@ -59,14 +62,18 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           ref: ${{ github.sha }}
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: '24.22.3'
+          package-manager-cache: false
       - name: Download and verify raw graph artifact
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh run download "$GITHUB_RUN_ID" --name "vib-code-graphs-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" --dir "$RUNNER_TEMP/graphs"
-          python3 tools/preserve-vib-code-graphs.py
+          gh run download "$GITHUB_RUN_ID" --name "vib-cumulative-graphs-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" --dir "$RUNNER_TEMP/graphs"
+          python3 tools/preserve-cumulative-graphs.py
       - name: Preserve version directories on review branch only
         run: |
-          git add archives/code-graphs
-          git -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' commit -m "Preserve 36 raw historical Graphify code graphs"
+          git add archives/cumulative-code-graphs
+          git -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' commit -m "Preserve 36 cumulative Graphify code graphs and source audit"
           git push origin HEAD:refs/heads/review/vib-77-code-graphs

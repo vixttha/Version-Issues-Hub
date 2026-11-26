@@ -80,3 +80,13 @@ Remain standalone. Other tools are optional; their absence must not block normal
 A compatible agent may enumerate the target repository's branch refs, resolve this branch to a commit, and read its entry point at that exact commit. Read-only discovery confers no execution, write, integration or release authority. If this branch or marker is absent, the tool is absent or legacy/unverified; continue independently. Check the target's own instructions and owner scope before any action. The marker describes a capability, not a required registry or package version.
 
 Installation convention: human or agent selects a reviewed exact source SHA, checks the dedicated target branch and collisions, follows this product's own installation guide, and records source/target SHA and preserved product state. Never merge a template workspace wholesale into product source. Existing installations require explicit reviewed upgrades; preserve local records and prior receipts. Optional evidence links do not authorize writes. No mandatory coordinator or other ecosystem tool.
+
+## VIB code graph retrieval (local integration candidate)
+
+Original fix-source graphs remain immutable in `archives/code-graphs`. The separately reconstructed cumulative prefix view is in `archives/cumulative-code-graphs`; it selects real first-parent commits covering all preceding engineering fix pins. Shared source commits and operational .23 are explicit, not fabricated releases. Use either index to obtain independent source and graph digest pins. Example syntax:
+
+```sh
+node veraphifiy.mjs code-graph --archive archives --project vixttha/Version-Issues-Hub --version v0.0.0.36 --scope cumulative --source SHA --graph-sha256 DIGEST
+```
+
+`code-verify` returns the verified receipt; `code-graph` returns receipt and actual graph. Raw graphs are retained unchanged. The .36 inference review labels false target matches and confirmed static relationships without pretending to be a runtime trace. This local VIB integration does not change the upstream Veraphify published version.
