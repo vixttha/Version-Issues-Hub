@@ -62,12 +62,24 @@ jobs:
           build/browser-venv/bin/python -m playwright install --with-deps chromium firefox webkit
           build/browser-venv/bin/python browser_verify.py | tee build/browser-verification.json
           cat build/browser-verification.json >> "$GITHUB_STEP_SUMMARY"
-      # Generated images remain ephemeral until the owner explicitly approves review storage.
+      # One-time review request. Normal pushes and manual runs do not retain media.
+      - name: Upload temporary owner review copies
+        if: ${{ success() && github.event_name == 'push' && github.event.before == '2b5f6dd0b0b6a7031406681e5cff275c0812630b' && github.event.head_commit.message == 'Owner-requested temporary Sequential Activation review download 2026-11-26' }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: vib-sequential-v1-owner-review
+          path: |
+            brand-identity/10-motion/sequential-v1/build/exports/vib-sequential-light.webp
+            brand-identity/10-motion/sequential-v1/build/exports/vib-sequential-dark.webp
+            brand-identity/10-motion/sequential-v1/build/exports/verification.json
+          if-no-files-found: error
+          retention-days: 1
+      # Local generated images always removed. Review copies are permitted only above.
       - name: Record retention gate and remove ephemeral media
         if: always()
         run: |
           rm -rf -- build
-          echo "Generated images not uploaded; owner storage approval pending." >> "$GITHUB_STEP_SUMMARY"
+          echo "Runner media removed; only the one-time authorized review upload may persist for one day." >> "$GITHUB_STEP_SUMMARY"
   windows-verifier:
     if: github.event.repository.private == false && github.ref == 'refs/heads/Brand-Identity'
     runs-on: windows-latest
