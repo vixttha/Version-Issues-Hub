@@ -126,3 +126,62 @@ class EngineeringCompletionTests(unittest.TestCase):
         malformed["history"][-1]["merged_sha"] = NEXT
         with self.assertRaises(ValueError):
             session.validate_handoff(malformed, ledger)
+
+    def test_engineering_completion_apply_and_readback(self):
+        # Use distinct fixture revisions for production, engineering and publication.
+        import base64
+        import hashlib
+        import json
+        from tools import install
+
+        saved = "9" * 40
+        prefix = self.state["prefix"]
+        original_request = self.api.request
+        files = {}
+
+        def request(method, path, body=None):
+            if method == "GET" and path == prefix + "/git/ref/heads/trunk":
+                return {"ref": "refs/heads/trunk",
+                        "object": {"type": "commit", "sha": BASE}}
+            if method == "POST" and path == prefix + "/git/trees":
+                response = original_request(method, path, body)
+                files.update({item["path"]: item["content"] for item in body["tree"]})
+                return response
+            if method == "POST" and path == prefix + "/git/commits":
+                original_request(method, path, body)
+                return {"sha": saved}
+            if method == "PATCH" and path == prefix + "/git/refs/heads/" + install.BRANCH:
+                self.assertEqual(body, {"sha": saved, "force": False})
+                self.api.writes.append((method, path, copy.deepcopy(body)))
+                self.api.ref = saved
+                return {}
+            if method == "GET" and path.startswith(prefix + "/contents/"):
+                filename, revision = path[len(prefix + "/contents/"):].split("?ref=")
+                self.assertEqual(revision, self.api.ref)
+                raw = files[filename].encode("utf-8")
+                return {"type": "file", "encoding": "base64", "path": filename,
+                        "content": base64.b64encode(raw).decode("ascii"),
+                        "sha": hashlib.sha1(b"blob " + str(len(raw)).encode() + b"\0" + raw).hexdigest()}
+            return original_request(method, path, body)
+
+        with patch.object(self.api, "request", side_effect=request):
+            ledger, handoff = self.finish()
+            result = session.save(self.api, self.state, ledger, handoff, True,
+                                  issue=247, engineering_approved=True)
+            self.assertEqual(result, {"status": "saved", "installed_sha": saved})
+            self.assertEqual([method for method, _, _ in self.api.writes],
+                             ["POST", "POST", "PATCH"])
+            self.assertEqual(install.read_ref(self.api, prefix, install.BRANCH), saved)
+            self.assertEqual(install.read_ref(self.api, prefix, BRANCH), NEXT)
+            product = install.read_ref(self.api, prefix, "trunk")
+            self.assertEqual(product, BASE)
+            restored = {**self.state, "ref": saved, "product_sha": product,
+                        "ledger": json.loads(install.read_text(self.api, prefix, session.LEDGER, saved)),
+                        "handoff": json.loads(install.read_text(self.api, prefix, session.HANDOFF, saved))}
+            self.assertEqual((restored["ledger"], restored["handoff"]), (ledger, handoff))
+            observed = session.inspect(self.api, restored, 247)
+            self.assertEqual(observed["status"], "engineering_complete")
+            self.assertIs(observed["production_integrated"], False)
+            self.assertEqual(observed["engineering_completion"]["policy"], self.policy)
+            self.assertIsNone(restored["handoff"]["active"])
+            self.assertEqual(observed["issue"]["state"], "open")

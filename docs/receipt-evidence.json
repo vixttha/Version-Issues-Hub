@@ -1290,6 +1290,10 @@
         {
           "path": "tests/test_engineering_completion.py",
           "anchor": "def test_ordinary_production_path_cannot_accept_engineering_pr(self):"
+        },
+        {
+          "path": "tests/test_engineering_completion.py",
+          "anchor": "def test_engineering_completion_apply_and_readback(self):"
         }
       ]
     }
