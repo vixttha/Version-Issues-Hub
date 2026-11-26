@@ -30,6 +30,9 @@ class Remote(GitApi):
 
 class RecoveryTests(unittest.TestCase):
     def setUp(self):
+        experiment = patch.object(session, "EXPERIMENTAL_PARALLEL_ENABLED", True)
+        experiment.start()
+        self.addCleanup(experiment.stop)
         tmp = tempfile.TemporaryDirectory()
         self.addCleanup(tmp.cleanup)
         self.api = Remote(tmp.name)

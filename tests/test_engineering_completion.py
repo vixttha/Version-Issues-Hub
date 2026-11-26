@@ -58,6 +58,7 @@ class EngineeringCompletionTests(unittest.TestCase):
         self.assertIs(observed["production_integrated"], False)
         self.assertFalse(self.api.writes)
 
+    @patch.object(session, "EXPERIMENTAL_PARALLEL_ENABLED", True)
     def test_schema_two_and_other_lane_preserved(self):
         active = self.state["handoff"]["active"]
         self.state["handoff"].update(schema_version=2, active=[active])

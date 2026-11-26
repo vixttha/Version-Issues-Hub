@@ -9,6 +9,12 @@ from test_gate import fixture, Fake as GateFake, REPO, PREFIX, HEAD, BASE
 A,B=247,248
 
 class ParallelTests(unittest.TestCase):
+    def setUp(self):
+        # Synthetic historical compatibility only, never a production opt-in.
+        experiment = patch.object(session, "EXPERIMENTAL_PARALLEL_ENABLED", True)
+        experiment.start()
+        self.addCleanup(experiment.stop)
+
     def apply(self,s,result,issue):
         ledger,handoff=result
         before=copy.deepcopy(s)

@@ -16,6 +16,9 @@ ACTIVE_KEYS = {"issue", "version", "phase", "next_action", "fix_sha",
                "candidate_sha", "pull_request", "evidence"}
 PIN_KEYS = {"integration_base_sha", "integration_merge_sha"}
 PARALLEL_HANDOFF_SCHEMA = 2
+# Historical reader capability is not production activation authority.
+EXPERIMENTAL_PARALLEL_ENABLED = False
+SELF_USE_HELD_ISSUES = (37, 40, 53)
 HANDOFF = "ledger/handoff.json"
 LEDGER = "ledger/issue-versions.json"
 
@@ -89,11 +92,23 @@ def supports_parallel_package(files):
             and declarations[0].value.value == PARALLEL_HANDOFF_SCHEMA)
 
 
+def require_experimental_parallel():
+    if EXPERIMENTAL_PARALLEL_ENABLED is not True:
+        raise ValueError("Experimental parallel mode suspended; separate owner-reviewed source authorization required")
+
+
+def require_unheld_scope(state, numbers):
+    if (state["ledger"]["repository"].lower() == install.SOURCE.lower()
+            and set(numbers).intersection(SELF_USE_HELD_ISSUES)):
+        raise ValueError("Owner-held or experimental self-use issue requires separate reviewed authorization")
+
+
 def require_parallel_package(state):
     if state.get("parallel_supported") is not True:
         raise ValueError("Installed package lacks parallel handoff support; upgrade the pinned reader first")
     if state["manifest"].get("enforcement") != "disabled":
         raise ValueError("Parallel mode requires disabled optional enforcement")
+    require_experimental_parallel()
 
 
 def active_rows(handoff):
@@ -1038,6 +1053,9 @@ def claim(api, state, number, criteria, note, *, resume_prior_line=False, parall
     validate_handoff(state["handoff"], state["ledger"])
     if pending_closure(state["handoff"]) is not None:
         raise ValueError("Reconcile pending closure before claiming work")
+    require_unheld_scope(state, [number])
+    if parallel or state["handoff"]["schema_version"] == 2:
+        require_parallel_package(state)
     item = get_issue(api, state, number)
     if item.get("state") != "open":
         raise ValueError("Only an open GitHub issue can be claimed")
@@ -1504,6 +1522,7 @@ def check_issue_delta(state, ledger, handoff, number=None):
         else:
             raise ValueError("Issue scope required for state mutation")
     number = issue_number(number)
+    require_unheld_scope(state, [number])
     old_rows = {r["issue"]: r for r in before_ledger["issues"]}
     new_rows = {r["issue"]: r for r in ledger["issues"]}
     if {n:r for n,r in old_rows.items() if n != number} != {
