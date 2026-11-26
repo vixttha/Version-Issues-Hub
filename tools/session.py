@@ -565,7 +565,8 @@ def confirm_handoff(api, prefix, old, new, tree, *, operation_id=None):
         if observed is None:
             raise ValueError("Installed branch disappeared")
         comparison = api.request("GET", prefix + "/compare/" + new + "..." + observed)
-        if (comparison.get("status") != "ahead" or comparison.get("behind_by") != 0
+        if (comparison.get("status") != "ahead" or type(comparison.get("behind_by")) is not int
+                or comparison.get("behind_by") != 0
                 or type(comparison.get("ahead_by")) is not int or comparison["ahead_by"] <= 0
                 or comparison.get("base_commit", {}).get("sha") != new
                 or comparison.get("merge_base_commit", {}).get("sha") != new):
@@ -721,7 +722,10 @@ def save(api, state, ledger, handoff, apply=False, *, issue=None, operation_id=N
         observed = confirm_handoff(api, prefix, old, new, tree, operation_id=operation_id)
     except install.ApiError as error:
         raise HandoffUnconfirmed(new, error.retry_after) from None
-    except (ValueError, KeyError, TypeError, OSError):
+    except (ValueError, KeyError, TypeError, OSError, AttributeError):
+        # Valid JSON can still have the wrong shape (for example a list or
+        # null instead of a ref/compare/commit object). Preserve the candidate
+        # after publication; never treat malformed readback as a retry signal.
         raise HandoffUnconfirmed(new) from None
     result = {"status": "saved", "installed_sha": new}
     if operation_id is not None:
