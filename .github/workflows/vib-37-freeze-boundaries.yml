@@ -1,0 +1,45 @@
+name: VIB .37 freeze boundary qualification
+on:
+  push:
+    branches: [review/vib-37-freeze-boundaries]
+    paths: ['.github/workflows/vib-37-freeze-boundaries.yml', 'vib/independent-audit/freeze_boundaries_37.py']
+permissions:
+  contents: read
+jobs:
+  boundary:
+    if: github.repository == 'vixttha/Version-Issues-Hub' && github.event.repository.private == false
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [ubuntu-24.04, windows-latest]
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 10
+    env:
+      PYTHONUTF8: '1'
+      PYTHONDONTWRITEBYTECODE: '1'
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          path: vault
+          persist-credentials: false
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          path: candidate
+          ref: '041e187dc1d383082c1a4805e6d4743eec97e535'
+          persist-credentials: false
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          path: installed
+          ref: '382714357d68d1883706c51ce3acbf7e7ebb538f'
+          persist-credentials: false
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
+        with:
+          python-version: '3.12'
+      - name: Bound target and abrupt process exit controls
+        run: python vault/vib/independent-audit/freeze_boundaries_37.py
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        if: always()
+        with:
+          name: freeze-boundaries-${{ matrix.runner }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/freeze-boundaries.json
+          if-no-files-found: error
