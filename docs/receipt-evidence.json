@@ -103,7 +103,7 @@
       "implemented_in": [
         {
           "path": "tools/session.py",
-          "anchor": "def load(api, target, expected_sha=None):"
+          "anchor": "def load(api, target, expected_sha=None, *, _source_cache=None):"
         }
       ],
       "tested_by": [
@@ -131,7 +131,7 @@
       "implemented_in": [
         {
           "path": "tools/session.py",
-          "anchor": "def reconcile(api, state, number, decision):"
+          "anchor": "def reconcile(api, state, number, decision, *, policy=None):"
         }
       ],
       "tested_by": [
@@ -607,7 +607,7 @@
       "implemented_in": [
         {
           "path": "tools/session.py",
-          "anchor": "def claim(api, state, number, criteria, note, *, resume_prior_line=False):"
+          "anchor": "def claim(api, state, number, criteria, note, *, resume_prior_line=False, parallel=False,"
         }
       ],
       "tested_by": [
@@ -978,6 +978,242 @@
         {
           "path": "tests/test_checkpoint.py",
           "anchor": "def test_explicit_receipt_selection_rejects_invalid_before_generation(self, ancestry, make_receipt):"
+        }
+      ]
+    },
+    {
+      "id": "v0-0-0-37",
+      "label": "Issue #53 · independent issue-scoped VIB handoff",
+      "documented_in": [
+        {
+          "path": "docs/v0.0.0.37.md",
+          "anchor": "## Current-baseline reconciliation"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "ledger/issue-versions.json",
+          "anchor": "\"issue\": 53,"
+        }
+      ],
+      "implemented_in": [
+        {
+          "path": "tools/session.py",
+          "anchor": "def recover_save(api, target, state, plan, issue, *, attempts=4, rounds=1, request=None,"
+        },
+        {
+          "path": "tools/session.py",
+          "anchor": "def inspect_operation(api, state, ticket):"
+        },
+        {
+          "path": "tools/session.py",
+          "anchor": "def persist_recovery_ticket(directory, ticket):"
+        },
+        {
+          "path": "tools/session.py",
+          "anchor": "def inspect_pending(api, state, path):"
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tests/test_vib53_qualification.py",
+          "anchor": "def test_bounded_concurrent_workloads(self):"
+        },
+        {
+          "path": "tests/test_transaction_confirmation.py",
+          "anchor": "def test_malformed_post_write_readback_retains_candidate(self):"
+        },
+        {
+          "path": "tests/test_contention_recovery.py",
+          "anchor": "def test_prepublication_ticket_confirms_exact_candidate_read_only(self):"
+        },
+        {
+          "path": "tests/test_vib53_qualification.py",
+          "anchor": "def test_full_lifecycle_with_one_hundred_distinct_issue_lanes(self):"
+        },
+        {
+          "path": "tests/test_contention_recovery.py",
+          "anchor": "def test_durable_ticket_survives_fresh_process_and_refuses_overwrite(self):"
+        },
+        {
+          "path": "tests/test_contention_recovery.py",
+          "anchor": "def test_retry_source_cache_never_caches_installed_bytes(self):"
+        },
+        {
+          "path": "tests/test_vib53_qualification.py",
+          "anchor": "def test_matched_serial_and_parallel_protocol_cost(self):"
+        },
+        {
+          "path": "tests/test_contention_recovery.py",
+          "anchor": "def test_pending_identity_persisted_before_first_candidate_even_on_deferral(self):"
+        },
+        {
+          "path": "tests/test_contention_recovery.py",
+          "anchor": "def test_pending_inventory_recovers_published_candidate_without_mutation(self):"
+        }
+      ]
+    },
+    {
+      "id": "v0-0-0-37-review-recovery",
+      "label": "Issue #53 · v0.0.0.37 review and recovery safeguards (same checkpoint)",
+      "documented_in": [
+        {
+          "path": "docs/v0.0.0.37.md",
+          "anchor": "### Matched protocol benchmark and recovery boundary"
+        },
+        {
+          "path": "docs/v0.0.0.37.md",
+          "anchor": "### Consistent confirmation and bounded immutable caching"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "ledger/issue-versions.json",
+          "anchor": "\"issue\": 53,"
+        }
+      ],
+      "implemented_in": [
+        {
+          "path": "tools/session.py",
+          "anchor": "def evidence_run(repo, link):"
+        },
+        {
+          "path": "tools/session.py",
+          "anchor": "def claim(api, state, number, criteria, note, *, resume_prior_line=False, parallel=False,"
+        },
+        {
+          "path": "tools/session.py",
+          "anchor": "def save(api, state, ledger, handoff, apply=False, *, issue=None, operation_id=None,"
+        },
+        {
+          "path": "tools/session.py",
+          "anchor": "def recover_save(api, target, state, plan, issue, *, attempts=4, rounds=1, request=None,"
+        },
+        {
+          "path": "tools/session.py",
+          "anchor": "def validate_retry_history(api, previous, fresh, number, path, confirmed=None, *, _history_cache=None):"
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tests/test_session.py",
+          "anchor": "def test_case_insensitive_run_urls_and_duplicate_identity(self):"
+        },
+        {
+          "path": "tests/test_session.py",
+          "anchor": "def test_staged_closed_unmerged_rework_preserves_history(self):"
+        },
+        {
+          "path": "tests/test_session.py",
+          "anchor": "def test_integrated_publication_rechecks_policy_and_rejects_rerun(self):"
+        },
+        {
+          "path": "tests/test_contention_recovery.py",
+          "anchor": "def test_idempotent_claim_does_not_create_pending_journal_or_ticket(self):"
+        },
+        {
+          "path": "tests/test_contention_recovery.py",
+          "anchor": "def test_malformed_rejected_write_recovery_retains_candidate(self):"
+        },
+        {
+          "path": "tests/test_session.py",
+          "anchor": "def test_staged_publication_rechecks_after_recovery_ticket_sink(self):"
+        },
+        {
+          "path": "tests/test_contention_recovery.py",
+          "anchor": "def test_published_candidate_with_valid_same_issue_descendant_is_confirmed(self):"
+        },
+        {
+          "path": "tests/test_contention_recovery.py",
+          "anchor": "def test_published_candidate_does_not_bypass_intervening_integrity(self):"
+        },
+        {
+          "path": "tests/test_contention_recovery.py",
+          "anchor": "def test_confirmed_candidate_cannot_change_unrelated_tree(self):"
+        },
+        {
+          "path": "tests/test_contention_recovery.py",
+          "anchor": "def test_reconstructed_history_must_match_fresh_endpoint(self):"
+        },
+        {
+          "path": "tests/test_contention_recovery.py",
+          "anchor": "def test_qualified_history_cache_avoids_two_duplicate_immutable_reads(self):"
+        }
+      ]
+    },
+    {
+      "id": "v0-0-0-37-api-boundaries",
+      "label": "Issue #53 · independent API-boundary repair (same checkpoint)",
+      "documented_in": [
+        {
+          "path": "docs/v0.0.0.37.md",
+          "anchor": "### Independent audit boundary repairs"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "ledger/issue-versions.json",
+          "anchor": "\"issue\": 53,"
+        }
+      ],
+      "implemented_in": [
+        {
+          "path": "tools/session.py",
+          "anchor": "def inspect_pending(api, state, path):"
+        },
+        {
+          "path": "tools/install.py",
+          "anchor": "def read_ref(api, prefix, branch):"
+        },
+        {
+          "path": "tools/install.py",
+          "anchor": "def read_text(api, prefix, path, ref):"
+        },
+        {
+          "path": "tools/lifecycle.py",
+          "anchor": "def tree_entries(api, prefix, sha, *, commit=None):"
+        },
+        {
+          "path": "tools/gate.py",
+          "anchor": "def exact_collection(api, path, key):"
+        },
+        {
+          "path": "tools/standard.py",
+          "anchor": "def check_pr_run(item, policy, run, attempt):"
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tests/test_contention_recovery.py",
+          "anchor": "def test_pending_origin_tampering_does_not_certify_publication(self):"
+        },
+        {
+          "path": "tests/test_api_boundaries.py",
+          "anchor": "def test_malformed_ref_responses_are_controlled(self):"
+        },
+        {
+          "path": "tests/test_api_boundaries.py",
+          "anchor": "def test_malformed_file_content_is_controlled(self):"
+        },
+        {
+          "path": "tests/test_api_boundaries.py",
+          "anchor": "def test_malformed_tree_rows_are_controlled(self):"
+        },
+        {
+          "path": "tests/test_api_boundaries.py",
+          "anchor": "def test_boolean_ids_do_not_match_integer_identity(self):"
+        },
+        {
+          "path": "tests/test_api_boundaries.py",
+          "anchor": "def test_invalid_collection_rows_fail_closed(self):"
+        },
+        {
+          "path": "tests/test_api_boundaries.py",
+          "anchor": "def test_malformed_nested_pr_compare_and_run_fail_closed(self):"
+        },
+        {
+          "path": "tests/test_contention_recovery.py",
+          "anchor": "def test_pending_origin_valid_after_competing_publication(self):"
         }
       ]
     }

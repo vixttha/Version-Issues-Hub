@@ -45,8 +45,7 @@ class GitApi:
         env={**os.environ,"GIT_AUTHOR_NAME":"VIB test","GIT_AUTHOR_EMAIL":"vib@example.invalid",
              "GIT_COMMITTER_NAME":"VIB test","GIT_COMMITTER_EMAIL":"vib@example.invalid",
              "GIT_INDEX_FILE":str(Path(self.path)/"fixture-index")}
-        return subprocess.check_output(["git","-C",self.path,*args],
-            input=None if data is None else data.encode("utf-8"),env=env).decode("utf-8").strip()
+        return subprocess.check_output(["git","-C",self.path,*args],input=data.encode("utf-8") if data is not None else None,env=env).decode("utf-8").strip()
     def tree(self,files,base=None):
         self.git("read-tree",base or "--empty")
         for p,s in files.items():

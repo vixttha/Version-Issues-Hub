@@ -28,7 +28,8 @@ def fixture():
                                  "criteria": [{"text": "Check", "checks": [copy.deepcopy(TEST)]}]})
         ledger["issues"].append({"issue": issue, "version": version, "state": "staged", "acceptance": ["Check"]})
         active = {"issue": issue, "version": version, "phase": "Head", "next_action": "Owner decision",
-                  "fix_sha": FIX, "candidate_sha": HEAD, "pull_request": 8, "evidence": [RUN]}
+                  "fix_sha": FIX, "candidate_sha": HEAD, "pull_request": 8, "evidence": [RUN],
+                  "integration_base_sha": BASE, "integration_merge_sha": MERGE}
         history.append({"handoff": active, "disposition": "staged", "decision": "Owner stages", "merged_sha": None})
     state = {"prefix": PREFIX, "ref": STATE, "product_sha": BASE,
              "manifest": {"target_repository_id": 42, "target_repository": REPO,
