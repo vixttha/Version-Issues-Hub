@@ -1357,11 +1357,59 @@
         },
         {
           "path": "tests/test_issue_closure.py",
-          "anchor": "def test_partial_failure_retains_pending_intent(self):"
+          "anchor": "def test_exact_evidence_and_historical_identity(self):"
         },
         {
           "path": "tests/test_issue_closure.py",
-          "anchor": "def test_exact_evidence_and_historical_identity(self):"
+          "anchor": "def test_legacy_closure_cannot_replace_archived_pins(self):"
+        },
+        {
+          "path": "tests/test_issue_closure.py",
+          "anchor": "def test_reclaimed_issue_cannot_report_confirmed_closure(self):"
+        },
+        {
+          "path": "tests/test_issue_closure.py",
+          "anchor": "def test_reserved_prefix_compatibility_fails_closed(self):"
+        }
+      ]
+    },
+    {
+      "id": "v0-0-0-40-execution",
+      "label": "Issue #86 · closure execution serialization and recovery (same checkpoint)",
+      "documented_in": [
+        {
+          "path": "docs/v0.0.0.40.md",
+          "anchor": "## Orange Team / Purple Team retest matrix"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "ledger/issue-versions.json",
+          "anchor": "\"issue\": 86,"
+        }
+      ],
+      "implemented_in": [
+        {
+          "path": "tools/session.py",
+          "anchor": "def complete_closure(api, state, number, policy, *, owner_approved=False, apply=False):"
+        },
+        {
+          "path": "tools/session.py",
+          "anchor": "def cancel_closure_plan(api, state, number, policy, decision, *, owner_approved=False, recovery_execution=None):"
+        },
+        {
+          "path": "tools/lifecycle.py",
+          "anchor": "def idle_state(api, target, expected_sha):"
+        },
+        {
+          "path": "tools/session.py",
+          "anchor": "def reconcile(api, state, number, decision, *, policy=None):"
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tests/test_issue_closure.py",
+          "anchor": "def test_partial_failure_retains_pending_intent(self):"
         },
         {
           "path": "tests/test_issue_closure.py",
@@ -1385,23 +1433,11 @@
         },
         {
           "path": "tests/test_issue_closure.py",
-          "anchor": "def test_legacy_closure_cannot_replace_archived_pins(self):"
-        },
-        {
-          "path": "tests/test_issue_closure.py",
           "anchor": "def test_cancelled_intent_cannot_be_replayed(self):"
         },
         {
           "path": "tests/test_issue_closure.py",
-          "anchor": "def test_reclaimed_issue_cannot_report_confirmed_closure(self):"
-        },
-        {
-          "path": "tests/test_issue_closure.py",
           "anchor": "def test_execution_claim_blocks_replay_cancel_and_lifecycle(self):"
-        },
-        {
-          "path": "tests/test_issue_closure.py",
-          "anchor": "def test_reserved_prefix_compatibility_fails_closed(self):"
         },
         {
           "path": "tests/test_issue_closure.py",

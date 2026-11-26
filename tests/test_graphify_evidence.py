@@ -33,3 +33,22 @@ class GraphifyEvidenceTests(unittest.TestCase):
                            ("mcp_verified", 1), ("feature_links", {}), ("graph_sha256", "0" * 64)):
             with self.subTest(key=key), self.assertRaises(ValueError):
                 graphify_evidence.verify_shard(manifest, {**receipt, key: value}, graph)
+
+    def test_closure_graph_groups_cover_all_tests_within_mapper_limit(self):
+        import ast
+        import json
+        from pathlib import Path
+        root = Path(__file__).resolve().parents[1]
+        manifest = json.loads((root / "docs/receipt-evidence.json").read_text(encoding="utf-8"))
+        groups = [f for f in manifest["features"] if f["id"] in ("v0-0-0-40", "v0-0-0-40-execution")]
+        self.assertEqual(len(groups), 2)
+        source = ast.parse((root / "tests/test_issue_closure.py").read_text(encoding="utf-8"))
+        expected = {f"def {node.name}(self):" for node in ast.walk(source)
+                    if isinstance(node, ast.FunctionDef) and node.name.startswith("test_")}
+        actual = [ref["anchor"] for group in groups for ref in group["tested_by"]
+                  if ref["path"] == "tests/test_issue_closure.py"]
+        self.assertEqual(set(actual), expected)
+        self.assertEqual(len(actual), len(expected))
+        for group in manifest["features"]:
+            for relation in ("documented_in", "changed_in", "implemented_in", "tested_by"):
+                self.assertTrue(1 <= len(group[relation]) <= 12, (group["id"], relation))

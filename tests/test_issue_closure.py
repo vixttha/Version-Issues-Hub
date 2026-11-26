@@ -460,6 +460,13 @@ class ClosureTests(unittest.TestCase):
                                                     "pending", owner_approved=True)
             self.state.update(ledger=ledger, handoff=handoff)
             for stage in ("pending", "executing"):
+                with self.assertRaisesRegex(ValueError, "unresolved closure"):
+                    session.reconcile(self.api, self.state, 248, "Unrelated integration")
+                proposed = copy.deepcopy(self.state["ledger"])
+                proposed["issues"].append({"issue": 248, "version": "v1.0.6.2",
+                                           "state": "assigned", "acceptance": ["Other"]})
+                with self.assertRaisesRegex(ValueError, "unresolved closure"):
+                    session.save(self.api, self.state, proposed, self.state["handoff"], issue=248)
                 with patch.object(session, "load", return_value=self.state):
                     with self.assertRaisesRegex(ValueError, "unresolved closure"):
                         lifecycle.upgrade(self.api, self.state["ledger"]["repository"],

@@ -1139,6 +1139,8 @@ def integration_decision(decision, policy):
 
 def reconcile(api, state, number, decision, *, policy=None):
     validate_handoff(state["handoff"], state["ledger"])
+    if pending_closure(state["handoff"]) is not None:
+        raise ValueError("Reconcile unresolved closure before integration reconciliation")
     ledger = copy.deepcopy(state["ledger"])
     handoff = copy.deepcopy(state["handoff"])
     # Reconciliation operates on one staged issue, not the active slot.
@@ -1477,6 +1479,13 @@ def save(api, state, ledger, handoff, apply=False, *, issue=None, operation_id=N
     check_issue_delta(state, ledger, handoff, issue)
     if ledger == state["ledger"] and handoff == state["handoff"]:
         return {"status": "unchanged", "installed_sha": state["ref"]}
+    unresolved = pending_closure(state["handoff"])
+    if unresolved is not None:
+        appended_closure = handoff["history"][len(state["handoff"]["history"]):]
+        if (ledger != state["ledger"] or len(appended_closure) != 1
+                or appended_closure[0]["handoff"]["issue"] != unresolved["issue"]
+                or closure_receipt(appended_closure[0]) is None):
+            raise ValueError("Reconcile unresolved closure before unrelated state publication")
     if not apply:
         return {"status": "planned", "ledger": ledger, "handoff": handoff}
     # Recheck proof for newly staged rows before persisting. A stale stage
