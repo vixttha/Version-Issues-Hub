@@ -5,7 +5,7 @@ function Check-Manifest([string[]]$lines) {
   if ($lines.Count -ne $expected.Count) { throw 'Missing or extra evidence' }
   $seen = @()
   foreach ($line in $lines) {
-    if ($line -cnotmatch '^([a-f0-9]{64})  ([a-z-]+\.json)$') { throw 'Malformed evidence' }
+    if ($line -cnotmatch '^([a-f0-9]{64}) \*([a-z-]+\.json)$') { throw 'Malformed evidence' }
     $hash=$Matches[1]; $name=$Matches[2]
     if ($name -cnotin $expected -or $name -cin $seen) { throw 'Unexpected or repeated evidence' }
     if ((Get-FileHash -Algorithm SHA256 -LiteralPath $name).Hash.ToLowerInvariant() -cne $hash) { throw 'Digest mismatch' }
@@ -20,7 +20,7 @@ foreach ($bad in @('omitted','duplicate','forged')) {
     switch ($bad) {
       'omitted' { Check-Manifest @($lines[0]) }
       'duplicate' { Check-Manifest @($lines[0],$lines[0],$lines[2],$lines[3]) }
-      'forged' { Check-Manifest @(('0'*64+'  api-boundaries.json'),$lines[1],$lines[2],$lines[3]) }
+      'forged' { Check-Manifest @(('0'*64+' *api-boundaries.json'),$lines[1],$lines[2],$lines[3]) }
     }
   } catch { $failed=$true }
   if (-not $failed) { throw "Accepted invalid $bad evidence" }
