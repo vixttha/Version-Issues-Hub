@@ -57,7 +57,7 @@ def overlay_mask(base,overlay,box,accent):
     for rgb,c in zip(overlay.crop(bounds).split()[:3],accent):
         for value,alpha in zip(rgb.getdata(),a.crop(bounds).getdata()):
             if alpha:
-                check(abs(value-c)*alpha<=255,"overlay color not approved accent")
+                check(value==c if alpha==255 else abs(value-c)*alpha<=255,"overlay color not approved accent")
     result=Image.alpha_composite(base,overlay)
     check(result.getchannel("A").tobytes()==base.getchannel("A").tobytes(),"composited alpha drift")
     return result
