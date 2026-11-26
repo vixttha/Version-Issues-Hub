@@ -164,6 +164,81 @@ class QualificationTests(unittest.TestCase):
                                elapsed_seconds=round(time.perf_counter()-start,3), api_requests=api.requests)
                 print("VIB53_SCALE "+json.dumps(metrics,sort_keys=True),flush=True)
 
+    def test_full_lifecycle_with_one_hundred_distinct_issue_lanes(self):
+        # Separate from the four-worker contention workload: qualify every
+        # phase and PR/run association for 100 logical lanes, not live hosts.
+        class EvidenceGit(MemoryGit):
+            def __init__(self):
+                super().__init__()
+                self.prs, self.runs = {}, {}
+            def register_candidate(self, number):
+                pr, run = number + 10000, number + 20000
+                fix = self.commit(self.tree({"fixture": str(number)}), [self.product])
+                merged = self.commit(self.tree({"fixture": str(number)}), [self.product, fix])
+                self.prs[pr] = {"number": pr, "state": "open", "merged": False,
+                                "head": {"sha": fix, "repo": {"id": 42}},
+                                "base": {"ref": "main", "sha": self.product, "repo": {"id": 42}},
+                                "merge_commit_sha": merged}
+                self.runs[run] = {"id": run, "run_attempt": 1, "repository": {"id": 42},
+                                  "event": "pull_request", "head_sha": fix, "status": "completed",
+                                  "conclusion": "success", "pull_requests": [
+                                      {"number": pr, "head": {"sha": fix},
+                                       "base": {"sha": self.product}}]}
+                return fix, pr, f"https://github.com/{REPO}/actions/runs/{run}/attempts/1"
+            def request(self, method, path, body=None):
+                if method == "GET" and path.startswith(PREFIX + "/pulls/"):
+                    return copy.deepcopy(self.prs[int(path.rsplit("/", 1)[1])])
+                if method == "GET" and path.startswith(PREFIX + "/actions/runs/"):
+                    run = int(path.split("/runs/", 1)[1].split("/", 1)[0])
+                    return copy.deepcopy(self.runs[run])
+                return super().request(method, path, body)
+        api = EvidenceGit()
+        numbers = list(range(1000, 1100))
+        candidates = {number: api.register_candidate(number) for number in numbers}
+        with patch.object(install, "source_files", return_value=PACKAGE), \
+             patch.object(install, "read_text", side_effect=lambda api, prefix, path, ref: api.read(ref, path)):
+            def apply(number, plan):
+                current = session.load(api, REPO)
+                before = {n: session.issue_view(current["ledger"], current["handoff"], n)
+                          for n in numbers if n != number}
+                result = session.recover_save(api, REPO, current, plan, number)
+                self.assertEqual(result["status"], "saved")
+                fresh = session.load(api, REPO)
+                self.assertEqual(before, {n: session.issue_view(fresh["ledger"], fresh["handoff"], n)
+                                          for n in numbers if n != number})
+                return fresh
+            for number in numbers:
+                apply(number, lambda current: session.claim(api, current, number, ["proof"], "claim"))
+            # One stalled Worker cannot prevent other distinct lanes from reaching Head.
+            stalled = numbers[0]
+            for number in numbers[1:]:
+                fix, pr, run = candidates[number]
+                apply(number, lambda current: session.advance(api, current, "validate", issue=number,
+                                                              fix=fix, candidate=fix, pr=pr))
+                current = session.load(api, REPO)
+                wrong = candidates[stalled][2]
+                with self.assertRaisesRegex(ValueError, "unrelated|association"):
+                    session.advance(api, current, "wrong lane", issue=number, evidence=[wrong])
+                self.assertEqual(api.head, current["ref"])
+                apply(number, lambda current: session.advance(api, current, "audit", issue=number, evidence=[run]))
+                apply(number, lambda current: session.advance(api, current, "Head", issue=number))
+                apply(number, lambda current: session.finish(api, current, "staged", "owner test", issue=number))
+            self.assertEqual([a["issue"] for a in session.active_rows(session.load(api, REPO)["handoff"])], [stalled])
+            fix, pr, run = candidates[stalled]
+            apply(stalled, lambda current: session.advance(api, current, "validate", issue=stalled,
+                                                           fix=fix, candidate=fix, pr=pr))
+            apply(stalled, lambda current: session.advance(api, current, "audit", issue=stalled, evidence=[run]))
+            apply(stalled, lambda current: session.advance(api, current, "Head", issue=stalled))
+            final = apply(stalled, lambda current: session.finish(api, current, "staged", "owner test", issue=stalled))
+        self.assertEqual(final["handoff"]["active"], [])
+        self.assertEqual(len(final["handoff"]["history"]), 100)
+        self.assertEqual(len(api.published), 500)
+        self.assertEqual(len(set(checkpoint.bindings(final["ledger"]).values())), 101)
+        self.assertEqual(final["ledger"]["issues"][0], RETIRED)
+        self.assertEqual(api.read(api.head, "notes/custom.md"), "keep me")
+        self.assertEqual(api.read(api.product, "product.txt"), "unchanged")
+        print("VIB53_FULL_LOOP 100 staged logical lanes; 500 exact simulated ref publications; 99 cross-lane run rejections", flush=True)
+
     def test_starvation_counterexample_with_real_production_retry(self):
         api=MemoryGit()
         with patch.object(install,"source_files",return_value=PACKAGE), \

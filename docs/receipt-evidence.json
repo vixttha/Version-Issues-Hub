@@ -1018,6 +1018,10 @@
         {
           "path": "tests/test_contention_recovery.py",
           "anchor": "def test_prepublication_ticket_confirms_exact_candidate_read_only(self):"
+        },
+        {
+          "path": "tests/test_vib53_qualification.py",
+          "anchor": "def test_full_lifecycle_with_one_hundred_distinct_issue_lanes(self):"
         }
       ]
     }
