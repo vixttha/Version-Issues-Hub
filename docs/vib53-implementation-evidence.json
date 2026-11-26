@@ -23,7 +23,7 @@
         },
         {
           "path": "tools/session.py",
-          "anchor": "def save(api, state, ledger, handoff, apply=False, *, issue=None, operation_id=None):"
+          "anchor": "def save(api, state, ledger, handoff, apply=False, *, issue=None, operation_id=None,"
         }
       ],
       "tested_by": [
@@ -257,7 +257,7 @@
       "changed_in": [
         {
           "path": "tools/session.py",
-          "anchor": "def save(api, state, ledger, handoff, apply=False, *, issue=None, operation_id=None):"
+          "anchor": "def save(api, state, ledger, handoff, apply=False, *, issue=None, operation_id=None,"
         }
       ],
       "implemented_in": [
@@ -325,7 +325,7 @@
       "changed_in": [
         {
           "path": "tools/session.py",
-          "anchor": "def save(api, state, ledger, handoff, apply=False, *, issue=None, operation_id=None):"
+          "anchor": "def save(api, state, ledger, handoff, apply=False, *, issue=None, operation_id=None,"
         }
       ],
       "implemented_in": [
@@ -497,7 +497,7 @@
       "changed_in": [
         {
           "path": "tools/session.py",
-          "anchor": "def recover_save(api, target, state, plan, issue, *, attempts=4, rounds=1, request=None):"
+          "anchor": "def recover_save(api, target, state, plan, issue, *, attempts=4, rounds=1, request=None,"
         }
       ],
       "implemented_in": [
@@ -565,7 +565,7 @@
       "changed_in": [
         {
           "path": "tools/session.py",
-          "anchor": "def recover_save(api, target, state, plan, issue, *, attempts=4, rounds=1, request=None):"
+          "anchor": "def recover_save(api, target, state, plan, issue, *, attempts=4, rounds=1, request=None,"
         }
       ],
       "implemented_in": [
@@ -657,7 +657,7 @@
       "changed_in": [
         {
           "path": "tools/session.py",
-          "anchor": "def recover_save(api, target, state, plan, issue, *, attempts=4, rounds=1, request=None):"
+          "anchor": "def recover_save(api, target, state, plan, issue, *, attempts=4, rounds=1, request=None,"
         }
       ],
       "implemented_in": [

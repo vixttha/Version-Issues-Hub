@@ -999,7 +999,11 @@
       "implemented_in": [
         {
           "path": "tools/session.py",
-          "anchor": "def recover_save(api, target, state, plan, issue, *, attempts=4, rounds=1, request=None):"
+          "anchor": "def recover_save(api, target, state, plan, issue, *, attempts=4, rounds=1, request=None,"
+        },
+        {
+          "path": "tools/session.py",
+          "anchor": "def inspect_operation(api, state, ticket):"
         }
       ],
       "tested_by": [
@@ -1010,6 +1014,10 @@
         {
           "path": "tests/test_transaction_confirmation.py",
           "anchor": "def test_malformed_post_write_readback_retains_candidate(self):"
+        },
+        {
+          "path": "tests/test_contention_recovery.py",
+          "anchor": "def test_prepublication_ticket_confirms_exact_candidate_read_only(self):"
         }
       ]
     }
