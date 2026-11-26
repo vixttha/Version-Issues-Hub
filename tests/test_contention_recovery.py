@@ -612,3 +612,49 @@ class RecoveryTests(unittest.TestCase):
         self.assertEqual(caught.exception.candidate_sha, published)
         self.assertEqual(save.call_count, 1)
         self.assertEqual(api.writes, before)
+
+    def test_confirmed_candidate_cannot_change_unrelated_tree(self):
+        api = self.api
+        ledger, handoff = self.claim(self.s, B)
+        result = self.recover(lambda s: self.claim(s, B), B)
+        tree = api.tree({session.LEDGER: install.render(ledger),
+                         session.HANDOFF: install.render(handoff),
+                         "notes/custom.md": "tampered\n"},
+                        api.git("rev-parse", self.s["ref"]+"^{tree}"))
+        candidate = api.git("commit-tree", tree, "-p", self.s["ref"],
+                            data="VIB cooperative handoff\n\nVIB-Operation: "+result["operation_id"]+"\n")
+        api.ref(install.BRANCH, candidate)
+        fresh = session.load(api, REPO)
+        error = session.HandoffRejected(install.ApiError(422), candidate, tree, result["operation_id"])
+        with self.assertRaises(session.HandoffUnconfirmed) as caught:
+            session.retry_scope(api, self.s, fresh, B, error)
+        self.assertEqual(caught.exception.candidate_sha, candidate)
+
+    def test_reconstructed_history_must_match_fresh_endpoint(self):
+        api = self.api
+        result = session.save(api, self.s, *self.claim(self.s, C), True, issue=C)
+        fresh = session.load(api, REPO, result["installed_sha"])
+        fresh["handoff"] = copy.deepcopy(fresh["handoff"])
+        session.select_active(fresh["handoff"], C)["next_action"] = "different endpoint"
+        cache = {}
+        with self.assertRaisesRegex(ValueError, "Reconstructed history does not match"):
+            session.retry_scope(api, self.s, fresh, B, session.HandoffStale("advanced"),
+                                _history_cache=cache)
+        self.assertEqual(cache, {})
+
+    def test_qualified_history_cache_avoids_two_duplicate_immutable_reads(self):
+        api = self.api
+        first = session.save(api, self.s, *self.claim(self.s, C), True, issue=C)
+        fresh = session.load(api, REPO, first["installed_sha"])
+        cache = {}
+        session.retry_scope(api, self.s, fresh, B, session.HandoffStale("advanced"),
+                            _history_cache=cache)
+        second = session.save(api, fresh, *self.claim(fresh, C+1), True, issue=C+1)
+        latest = session.load(api, REPO, second["installed_sha"])
+        with patch.object(api, "request", wraps=api.request) as uncached:
+            session.retry_scope(api, fresh, latest, B, session.HandoffStale("advanced"))
+        with patch.object(api, "request", wraps=api.request) as cached:
+            session.retry_scope(api, fresh, latest, B, session.HandoffStale("advanced"),
+                                _history_cache=cache)
+        self.assertEqual(uncached.call_count-cached.call_count, 2)
+        self.assertEqual(set(cache), {(latest["prefix"], latest["ref"])})

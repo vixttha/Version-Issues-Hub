@@ -707,6 +707,14 @@ def inspect_pending(api, state, path):
             "read_only": True, "automatic_replay": False}
 
 
+def non_state_entries(entries):
+    """Exclude only the two state files and their tree ancestors."""
+    return {p: entry for p, entry in entries.items()
+            if p not in (LEDGER, HANDOFF)
+            and not (entry[0] == "tree"
+                     and any(f.startswith(p + "/") for f in (LEDGER, HANDOFF)))}
+
+
 def inspect_operation(api, state, ticket):
     """Read-only proof of one published candidate; never resume or replay a write."""
     keys = {"schema_version", "repository", "issue", "parent_sha", "candidate_sha",
@@ -733,12 +741,7 @@ def inspect_operation(api, state, ticket):
         observed_tree, next_entries = lifecycle.tree_entries(api, state["prefix"], new)
         # Recursive Git tree listings also contain ancestor directory entries,
         # whose object IDs change when either allowed state file changes.
-        def unrelated(entries):
-            return {p: entry for p, entry in entries.items()
-                    if p not in (LEDGER, HANDOFF)
-                    and not (entry[0] == "tree"
-                             and any(f.startswith(p + "/") for f in (LEDGER, HANDOFF)))}
-        if observed_tree != tree or unrelated(prior_entries) != unrelated(next_entries):
+        if observed_tree != tree or non_state_entries(prior_entries) != non_state_entries(next_entries):
             raise ValueError("Recovery candidate changed unrelated tree entries")
         def read_state(path, ref, entries):
             entry = entries.get(path)
@@ -941,7 +944,7 @@ def issue_view(ledger, handoff, number):
             [r for r in handoff["history"] if r["handoff"]["issue"] == number])
 
 
-def retry_scope(api, previous, fresh, number, rejection):
+def retry_scope(api, previous, fresh, number, rejection, *, _history_cache=None):
     """Prove intervening single-parent commits did not touch this issue.
 
     Reading only the two endpoint snapshots would miss a change-and-revert.
@@ -984,7 +987,7 @@ def retry_scope(api, previous, fresh, number, rejection):
                 confirmed = sha
                 break
     try:
-        validate_retry_history(api, previous, fresh, number, path, confirmed)
+        validate_retry_history(api, previous, fresh, number, path, confirmed, _history_cache=_history_cache)
     except ValueError as exc:
         if confirmed is not None:
             # The candidate exists, but the later chain has not qualified.
@@ -994,7 +997,7 @@ def retry_scope(api, previous, fresh, number, rejection):
     return confirmed
 
 
-def validate_retry_history(api, previous, fresh, number, path, confirmed=None):
+def validate_retry_history(api, previous, fresh, number, path, confirmed=None, *, _history_cache=None):
     """Check each adjacent transaction even when the candidate is already published."""
     prefix, old = fresh["prefix"], previous["ref"]
     expected = issue_view(previous["ledger"], previous["handoff"], number)
@@ -1003,7 +1006,11 @@ def validate_retry_history(api, previous, fresh, number, path, confirmed=None):
     prior_handoff = previous["handoff"]
     prior_schema = prior_handoff["schema_version"]
     from tools import lifecycle
-    _, old_entries = lifecycle.tree_entries(api, prefix, old)
+    key = (prefix, old)
+    if _history_cache is not None and key in _history_cache:
+        old_entries = _history_cache[key]
+    else:
+        _, old_entries = lifecycle.tree_entries(api, prefix, old)
     package_paths = previous["manifest"]["package_files_sha256"]
     protected = {p: old_entries.get(p) for p in package_paths}
     if any(entry is None or entry[:2] != ("blob", "100644") for entry in protected.values()):
@@ -1013,6 +1020,8 @@ def validate_retry_history(api, previous, fresh, number, path, confirmed=None):
         _, entries = lifecycle.tree_entries(api, prefix, sha, commit=commit)
         if any(entries.get(p) != entry for p, entry in protected.items()):
             raise ValueError("Installed package changed during contention")
+        if sha == confirmed and non_state_entries(prior_entries) != non_state_entries(entries):
+            raise ValueError("Confirmed candidate changed unrelated tree entries")
         def read(file, prior_value):
             entry = entries.get(file)
             if (entry is None or entry[:2] != ("blob", "100644")
@@ -1061,6 +1070,13 @@ def validate_retry_history(api, previous, fresh, number, path, confirmed=None):
         prior_handoff = handoff
         prior_entries = entries
         prior_schema = handoff["schema_version"]
+    if prior_ledger != fresh["ledger"] or prior_handoff != fresh["handoff"]:
+        raise ValueError("Reconstructed history does not match fresh endpoint")
+    # Retain only the last fully qualified immutable tree in this invocation.
+    # No live reference, installed bytes or failed history is cached.
+    if _history_cache is not None:
+        _history_cache.clear()
+        _history_cache[(prefix, fresh["ref"])] = dict(prior_entries)
 
 
 def planned_issue_view(ledger, handoff, number, new_issue):
@@ -1098,7 +1114,7 @@ class HandoffDeferred(ValueError):
 
 
 def recover_save(api, target, state, plan, issue, *, attempts=4, rounds=1, request=None,
-                 on_recovery_ticket=None, on_pending_intent=None):
+                 on_recovery_ticket=None, on_pending_intent=None, _source_cache=None):
     """Replan only a proved unrelated, definitive conflict; never replay a PATCH."""
     if type(attempts) is not int or not 1 <= attempts <= 4:
         raise ValueError("Contention attempts must be between 1 and 4")
@@ -1119,7 +1135,8 @@ def recover_save(api, target, state, plan, issue, *, attempts=4, rounds=1, reque
                            "issue": issue, "initial_sha": initial_sha,
                            "operation_id": operation_id})
     budget = attempts * rounds
-    source_cache = {}
+    source_cache = {} if _source_cache is None else _source_cache
+    history_cache = {}
     for attempt in range(budget):
         try:
             result = save(api, state, ledger, handoff, True, issue=issue, operation_id=operation_id,
@@ -1136,7 +1153,7 @@ def recover_save(api, target, state, plan, issue, *, attempts=4, rounds=1, reque
             install.time.sleep(random.uniform(1, min(8, 2 ** (attempt + 1))))
             try:
                 fresh = load(api, target, _source_cache=source_cache)
-                confirmed = retry_scope(api, state, fresh, issue, error)
+                confirmed = retry_scope(api, state, fresh, issue, error, _history_cache=history_cache)
             except install.ApiError as read_error:
                 if isinstance(error, HandoffRejected) and read_error is not error:
                     raise HandoffUnconfirmed(error.candidate_sha, read_error.retry_after) from None
@@ -1213,7 +1230,8 @@ def main():
     token = os.environ.get("GH_TOKEN") or os.environ.get("GITHUB_TOKEN")
     api = install.GitHub(token)
     try:
-        state = load(api, args.target, args.expected_sha)
+        source_cache = {}
+        state = load(api, args.target, args.expected_sha, _source_cache=source_cache)
         if args.command == "inspect":
             result = inspect(api, state, args.issue)
         elif args.command == "inspect-operation":
@@ -1262,7 +1280,8 @@ def main():
                     persist_pending_intent(args.recovery_dir, intent)
                 result = recover_save(api, args.target, state, plan, scope, rounds=2, request=request,
                                       on_recovery_ticket=emit_ticket,
-                                      on_pending_intent=emit_pending if args.recovery_dir is not None else None)
+                                      on_pending_intent=emit_pending if args.recovery_dir is not None else None,
+                                      _source_cache=source_cache)
             else:
                 ledger, handoff = plan(state)
                 result = save(api, state, ledger, handoff, args.apply, issue=scope, policy=policy)
