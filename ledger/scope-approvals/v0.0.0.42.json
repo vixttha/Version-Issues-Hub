@@ -4,8 +4,8 @@
   "issue": 94,
   "version": "v0.0.0.42",
   "base_sha": "c7a4995c99fed8d1e87970a744c4cde378ebed1e",
-  "reviewed_sha": "c7a4995c99fed8d1e87970a744c4cde378ebed1e",
-  "previous_approval_sha": null,
+  "reviewed_sha": "c357788f5cb0c1b9632c27503ff32bbdae7a95ce",
+  "previous_approval_sha": "3d011c9cd4ca8879351898801d376905c21b40b6",
   "criteria": [
     "Provide a concise read-only recovery and next-handoff plan from canonical state, including active, staged, stale, merged, closed and pending-closure conditions; never automatically mutate state or infer authorization.",
     "Permit reuse of recorded verification references only for the same issue, fix, candidate, PR, base and proposed merge after fresh exact-run validation and current installed-state lease checks; refuse stale, ambiguous, cross-issue or missing evidence.",
@@ -24,5 +24,5 @@
   ],
   "qualification": "ordinary",
   "disposition": "engineering_only",
-  "owner_decision": "Owner selected Option 1 and delegated implementation and ordinary qualification under locked roadmap .42. Bounded paths selected by Worker; no production integration, advanced trials, migration, release or expansion."
+  "owner_decision": "Owner explicitly approved publication of MR-042-001 corrective commit b1aac7dc2daba811a22abe3f431d29bc7922d27f and amendment/re-pin of .42 Worker snapshot without scope expansion. Reviewed candidate c357788f5cb0c1b9632c27503ff32bbdae7a95ce; retain original criteria, baseline, eight allowed paths, engineering-only and ordinary qualification."
 }
