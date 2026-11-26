@@ -240,6 +240,9 @@ def finish_engineering(api, state, decision, *, policy, owner_approved=False, is
         raise ValueError("Explicit owner approval is required")
     validate_handoff(state["handoff"], state["ledger"])
     active = select_active(state["handoff"], issue)
+    require_unheld_scope(state, [active["issue"]])
+    if state["handoff"]["schema_version"] == 2:
+        require_experimental_parallel()
     if (active["phase"] != "Head" or any(active[k] is not None for k in
             ("fix_sha", "candidate_sha", "pull_request")) or active["evidence"] or PIN_KEYS & set(active)):
         raise ValueError("Engineering completion requires Head without production candidate pins")
