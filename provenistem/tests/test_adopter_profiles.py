@@ -1,5 +1,6 @@
 """Synthetic cross-adopter compatibility fixtures; no private records copied."""
 import json
+import os
 import re
 import shutil
 import tempfile
@@ -212,6 +213,35 @@ class AdopterProfiles(unittest.TestCase):
         clean = self.root / "missing" / "provenistem"
         self.assertEqual(adopter.plan(ROOT, clean)["status"], "NEW_DESTINATION")
         self.assertFalse(clean.exists())
+
+    def test_non_regular_host_schema_and_targets_are_blocked(self):
+        schema = self.host / "ideas/schema/v1/idea.schema.json"
+        schema.unlink()
+        schema.mkdir()
+        result = adopter.plan(ROOT, self.host)
+        self.assertEqual(result["status"], "NAMESPACE_COLLISION")
+        self.assertEqual(result["entries"], [])
+        self.assertIn("ideas/schema/v1/idea.schema.json (non-regular schema)", result["markers"])
+        self.assertEqual(adopter.main([str(self.host)]), 2)
+        self.assertTrue(schema.is_dir())
+        schema.rmdir()
+        if hasattr(os, "mkfifo"):
+            # Use subprocess timeouts so a regression cannot hang the entire suite.
+            import subprocess
+            os.mkfifo(schema)
+            command = [sys.executable, str(ROOT / "tools/adopter.py"), str(self.host)]
+            result = subprocess.run(command, capture_output=True, text=True, timeout=5)
+            self.assertEqual(result.returncode, 2)
+            self.assertEqual(json.loads(result.stdout)["status"], "NAMESPACE_COLLISION")
+            schema.unlink()
+            target = self.host / "templates/idea.example.json"
+            target.parent.mkdir()
+            os.mkfifo(target)
+            result = subprocess.run(command, capture_output=True, text=True, timeout=5)
+            self.assertEqual(result.returncode, 2)
+            self.assertEqual(json.loads(result.stdout)["status"], "BLOCKED")
+            self.assertIn("not a regular file", result.stdout)
+            self.assertTrue(target.exists())
 
     def test_clean_host_plan_never_writes(self):
         dest = self.root / "brand-new-root"

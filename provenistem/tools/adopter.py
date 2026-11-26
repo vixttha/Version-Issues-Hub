@@ -74,6 +74,8 @@ def governance_collision(destination):
     if idea_schema.exists() or idea_schema.is_symlink():
         if library.has_link_component(destination, idea_schema):
             found.append("ideas/schema/v1/idea.schema.json (symlink)")
+        elif not idea_schema.is_file():
+            found.append("ideas/schema/v1/idea.schema.json (non-regular schema)")
         else:
             try:
                 if idea_schema.stat().st_size > library.MAX_RECORD_BYTES:
@@ -134,6 +136,8 @@ def plan(source, destination):
             else:
                 action = "REVIEW_LOCAL_DIFFERENCE"
             entries.append({"path": relative.as_posix(), "action": action})
+        elif target.exists():
+            raise ValueError(f"host path is not a regular file or directory: {relative}")
         else:
             entries.append({"path": relative.as_posix(), "action": "ADD"})
     return {"status": "EXISTING_DESTINATION", "writes": False, "entries": entries}
