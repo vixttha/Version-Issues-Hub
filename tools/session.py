@@ -426,6 +426,12 @@ def verify_closure_basis(api, state, number, policy):
             or review["source_sha"] != old_manifest["source_sha"]
             or (stored is not None and stored["policy"] != envelope)):
         raise ValueError("Engineering closure evidence conflicts with the archive")
+    expected_pins = {"fix_sha": review["issues"][0]["fix_sha"],
+                     "candidate_sha": review["head_sha"], "pull_request": review["pull_request"]}
+    for key, expected in expected_pins.items():
+        recorded = archive["handoff"][key]
+        if recorded is not None and recorded != expected:
+            raise ValueError("Closure evidence conflicts with archived handoff pin: " + key)
     if stored is None:
         # Legacy prose alone is not proof. Require all exact historical pins
         # to be present in the immutable owner decision, then verify live

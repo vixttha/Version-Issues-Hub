@@ -207,3 +207,43 @@ class ClosureTests(unittest.TestCase):
             self.assertEqual(self.api.writes, before)
             self.assertEqual(sum(method == "PATCH" and path.endswith("/issues/247")
                                  for method, path, _ in self.api.writes), 1)
+
+    def test_legacy_closure_cannot_replace_archived_pins(self):
+        review = self.policy["engineering"]["review"]
+        expected = {"fix_sha": review["issues"][0]["fix_sha"],
+                    "candidate_sha": review["head_sha"], "pull_request": review["pull_request"]}
+        original = copy.deepcopy(self.state)
+        for field, wrong in ((None, None), ("fix_sha", "7" * 40),
+                             ("candidate_sha", "6" * 40), ("pull_request", 999),
+                             ("empty", None)):
+            with self.subTest(field=field):
+                self.state = copy.deepcopy(original)
+                archive = self.state["handoff"]["history"][-1]
+                archive["decision"] = ("Owner reviewed PR #" + str(review["pull_request"])
+                    + " fix " + expected["fix_sha"] + " candidate " + expected["candidate_sha"]
+                    + " merge " + review["merge_sha"])
+                archive["handoff"].update(expected)
+                if field == "empty":
+                    archive["handoff"].update({key: None for key in expected})
+                    archive["handoff"]["evidence"] = []
+                    for key in session.PIN_KEYS:
+                        archive["handoff"].pop(key, None)
+                elif field:
+                    archive["handoff"][field] = wrong
+                policy = {**self.policy, "archive_digest": session.closure_digest(archive)}
+                historical = {session.HANDOFF: self.state["handoff"],
+                              session.LEDGER: self.state["ledger"],
+                              "vib-install.json": {**self.state["manifest"],
+                                 "target_repository": self.state["ledger"]["repository"]}}
+                with patch.object(install, "read_text", side_effect=lambda api, prefix, path, ref:
+                                  install.render(historical[path])), \
+                        patch.object(gate, "check_ancestry"), \
+                        patch("tools.standard.verify_merged_destination") as verify:
+                    if field in (None, "empty"):
+                        self.assertEqual(session.verify_closure_basis(self.api, self.state, 247, policy), archive)
+                        verify.assert_called_once()
+                    else:
+                        with self.assertRaisesRegex(ValueError, "archived handoff pin: " + field):
+                            session.verify_closure_basis(self.api, self.state, 247, policy)
+                        verify.assert_not_called()
+        self.assertFalse(self.api.writes)

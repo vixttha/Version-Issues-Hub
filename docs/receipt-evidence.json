@@ -1346,6 +1346,10 @@
         {
           "path": "tests/test_issue_closure.py",
           "anchor": "def test_full_fixture_apply_readback_and_idempotence(self):"
+        },
+        {
+          "path": "tests/test_issue_closure.py",
+          "anchor": "def test_legacy_closure_cannot_replace_archived_pins(self):"
         }
       ]
     }
