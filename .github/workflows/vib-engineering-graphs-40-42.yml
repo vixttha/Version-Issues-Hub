@@ -86,10 +86,11 @@ jobs:
       - name: Download and verify exact graph bytes
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh run download "$GITHUB_RUN_ID" --name "engineering-graphs-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" --dir "$RUNNER_TEMP/engineering-code-graphs-40-42"
+        run: gh run download "$GITHUB_RUN_ID" --name "engineering-graphs-40-42-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" --dir "$RUNNER_TEMP/engineering-code-graphs-40-42"
       - name: Validate and retain graphs on isolated review branch
         run: |
           python3 tools/engineering-graphs-40-42.py retain
+          python3 tools/engineering-graphs-37-40.py validate-existing
           git add archives/engineering-code-graphs-40-42
           git -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' commit -m "Retain verified .40-.42 engineering merge graphs"
           git push origin HEAD:refs/heads/review/veraphify-sync-40-42
