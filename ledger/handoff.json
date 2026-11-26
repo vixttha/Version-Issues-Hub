@@ -1,5 +1,14 @@
 {
-  "active": null,
+  "active": {
+    "issue": 86,
+    "version": "v0.0.0.40",
+    "phase": "Worker",
+    "next_action": "Owner-approved MR-040-001 corrective repair on existing .40 assignment. Preserve PR #87, original fix pin, prior 55 archives and main. Recognize exact legacy engineering approvals and refuse contradictory not_planned reconciliation; verify inspection and add ordinary regression coverage; fresh public CI and CodeRabbit, no migration, issue closure, release or .41. Engineering base d57771313191eb4ab5a5d20db8a5f2da9bda55a9.",
+    "fix_sha": null,
+    "candidate_sha": null,
+    "pull_request": null,
+    "evidence": []
+  },
   "history": [
     {
       "decision": "PR49 CodeRabbit finding 4682051116: rework exact product SHA comparisons and add regression checks; preserve previous evidence.",
