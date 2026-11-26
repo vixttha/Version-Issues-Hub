@@ -1555,29 +1555,29 @@
         },
         {
           "path": "tools/gate.py",
-          "anchor": "    session.require_unheld_scope(state, [row[\"issue\"] for row in policy[\"issues\"]])"
+          "anchor": "session.require_unheld_scope(state, [row[\"issue\"] for row in policy[\"issues\"]])"
         },
         {
           "path": "tools/standard.py",
-          "anchor": "    session.require_unheld_scope(state, [active[\"issue\"]])"
+          "anchor": "session.require_unheld_scope(state, [active[\"issue\"]])"
         }
       ],
       "tested_by": [
         {
           "path": "tests/test_scope_control.py",
-          "anchor": "    def test_exact_scope_and_criteria_refuse_unauthorized_expansion(self):"
+          "anchor": "def test_exact_scope_and_criteria_refuse_unauthorized_expansion(self):"
         },
         {
           "path": "tests/test_scope_control.py",
-          "anchor": "    def test_revision_bound_scope_amendment_and_stale_ref(self):"
+          "anchor": "def test_revision_bound_scope_amendment_and_stale_ref(self):"
         },
         {
           "path": "tests/test_scope_control.py",
-          "anchor": "    def test_parallel_activation_and_forged_publication_refused(self):"
+          "anchor": "def test_parallel_activation_and_forged_publication_refused(self):"
         },
         {
           "path": "tests/test_scope_control.py",
-          "anchor": "    def test_held_issues_and_experimental_gate_refused(self):"
+          "anchor": "def test_held_issues_and_experimental_gate_refused(self):"
         }
       ]
     }
