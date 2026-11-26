@@ -554,3 +554,28 @@ class RecoveryTests(unittest.TestCase):
                     session.inspect_pending(api, fresh, paths[0])
             self.assertEqual(inspect.call_count, 1)
             self.assertEqual(api.writes, before)
+
+    def test_idempotent_claim_does_not_create_pending_journal_or_ticket(self):
+        api = self.api
+        before = list(api.writes)
+        with tempfile.TemporaryDirectory() as directory:
+            for _ in range(2):
+                result = self.recover(
+                    lambda s: session.claim(api, s, A, ["A"], "A"), A,
+                    on_pending_intent=lambda intent: session.persist_pending_intent(directory, intent),
+                    on_recovery_ticket=lambda ticket: session.persist_recovery_ticket(directory, ticket))
+                self.assertEqual(result, {"status": "unchanged", "installed_sha": self.s["ref"]})
+            self.assertEqual(list(Path(directory).iterdir()), [])
+        self.assertEqual(api.writes, before)
+
+    def test_malformed_rejected_write_recovery_retains_candidate(self):
+        for error in (AttributeError("invalid response"), KeyError("sha"),
+                      TypeError("wrong response shape"), OSError("read interrupted")):
+            with self.subTest(error=type(error).__name__):
+                rejection = session.HandoffRejected(install.ApiError(422), "a"*40, "b"*40)
+                with patch.object(session, "save", side_effect=rejection) as save, \
+                     patch.object(session, "load", side_effect=error):
+                    with self.assertRaises(session.HandoffUnconfirmed) as caught:
+                        self.recover(lambda s: self.claim(s, B), B)
+                self.assertEqual(caught.exception.candidate_sha, "a"*40)
+                self.assertEqual(save.call_count, 1)

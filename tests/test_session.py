@@ -530,3 +530,20 @@ class SessionTests(unittest.TestCase):
                 self.api.run["run_attempt"] = 1
                 self.assertEqual(session.save(self.api, self.state, ledger, handoff, True,
                                               policy=policy)["installed_sha"], NEXT)
+
+    def test_staged_publication_rechecks_after_recovery_ticket_sink(self):
+        self.claim()
+        self.advance(fix=FIX, candidate=CANDIDATE, pr=8)
+        self.advance(evidence=[RUN])
+        self.advance()
+        ledger, handoff = session.finish(self.api, self.state, "staged", "Owner stages")
+        tickets = []
+        def sink(ticket):
+            tickets.append(ticket)
+            self.api.run["run_attempt"] = 2
+        with self.assertRaises(ValueError):
+            session.save(self.api, self.state, ledger, handoff, True, issue=247,
+                         operation_id="a"*64, on_recovery_ticket=sink)
+        self.assertEqual(len(tickets), 1)
+        self.assertEqual(self.api.ref, HEAD)
+        self.assertFalse(any(method == "PATCH" for method, _, _ in self.api.writes))

@@ -890,14 +890,15 @@ def save(api, state, ledger, handoff, apply=False, *, issue=None, operation_id=N
     install.require(install.SHA, new, "handoff commit")
     if new == old:
         raise ValueError("Proposed handoff commit equals its parent")
-    # Recheck after creating the objects, immediately before publishing the ref.
-    revalidate_publication()
     # Emit the exact recovery ticket before publication. If its sink fails,
     # do not attempt the ref update. It contains no raw intent or credential.
     if operation_id is not None and on_recovery_ticket is not None:
         on_recovery_ticket({"schema_version": 1, "repository": prefix, "issue": issue_number(issue),
                             "parent_sha": old, "candidate_sha": new, "tree_sha": tree,
                             "operation_id": operation_id})
+    # A journal sink can take time. Check proof after it completes, as close
+    # to the actual ref update as possible (the API is not a shared transaction).
+    revalidate_publication()
     # Fast-forward-only CAS: a divergent writer cannot overwrite a competing handoff.
     ambiguous = False
     try:
@@ -1089,7 +1090,8 @@ def recover_save(api, target, state, plan, issue, *, attempts=4, rounds=1, reque
     issue = issue_number(issue)
     ledger, handoff = plan(state)
     check_issue_delta(state, ledger, handoff, issue)
-    if handoff["schema_version"] != 2:
+    if handoff["schema_version"] != 2 or (ledger == state["ledger"] and handoff == state["handoff"]):
+        # An idempotent inspection/claim is not a new pending mutation.
         return save(api, state, ledger, handoff, True, issue=issue)
     new_issue = issue_view(state["ledger"], state["handoff"], issue)[0] is None
     intended = planned_issue_view(ledger, handoff, issue, new_issue)
@@ -1121,6 +1123,12 @@ def recover_save(api, target, state, plan, issue, *, attempts=4, rounds=1, reque
             except install.ApiError as read_error:
                 if isinstance(error, HandoffRejected) and read_error is not error:
                     raise HandoffUnconfirmed(error.candidate_sha, read_error.retry_after) from None
+                raise
+            except (AttributeError, KeyError, TypeError, OSError):
+                # After an attempted ref write, malformed or interrupted
+                # recovery reads must retain the exact candidate identity.
+                if isinstance(error, HandoffRejected):
+                    raise HandoffUnconfirmed(error.candidate_sha) from None
                 raise
 
             if confirmed is not None:

@@ -1062,6 +1062,18 @@
         {
           "path": "tests/test_session.py",
           "anchor": "def test_integrated_publication_rechecks_policy_and_rejects_rerun(self):"
+        },
+        {
+          "path": "tests/test_contention_recovery.py",
+          "anchor": "def test_idempotent_claim_does_not_create_pending_journal_or_ticket(self):"
+        },
+        {
+          "path": "tests/test_contention_recovery.py",
+          "anchor": "def test_malformed_rejected_write_recovery_retains_candidate(self):"
+        },
+        {
+          "path": "tests/test_session.py",
+          "anchor": "def test_staged_publication_rechecks_after_recovery_ticket_sink(self):"
         }
       ]
     }
