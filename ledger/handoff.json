@@ -1,14 +1,5 @@
 {
-  "active": {
-    "issue": 86,
-    "version": "v0.0.0.40",
-    "phase": "Head",
-    "next_action": "Owner-authorized PR #91 engineering merge 43ef2b660aae5ccee00009e900509158f0137d0f; exact head e963d92a09dabdf879b4808b65159a57a5348c51; base 8cbb4562fb2e2425eaae52b9145513e2f5927ba2; identical tested tree 413b10757a3f06b16ed61f8a2555233eab3870f4. Internal Auditor exact-head review 10/10, zero unresolved threads; actual merge CI at readback 9/11, remaining jobs must pass before completion. Retain active slot at Head; no production integration, closure, live migration or .41 allocation yet. Original .40 fix pin 024046556bf00b649b2428c112f5456210036dfb preserved. Use installed main-bound legacy return-to-Head path with null production pins. After actual checks pass, append engineering-only production-deferred disposition with exact approved PR/fix/head/merge grammar. User authorized next .41 claim only after slot released.",
-    "fix_sha": null,
-    "candidate_sha": null,
-    "pull_request": null,
-    "evidence": []
-  },
+  "active": null,
   "history": [
     {
       "decision": "PR49 CodeRabbit finding 4682051116: rework exact product SHA comparisons and add regression checks; preserve previous evidence.",
@@ -1149,6 +1140,21 @@
       },
       "disposition": "deferred",
       "decision": "Owner-approved engineering completion: PR #88; fix 024046556bf00b649b2428c112f5456210036dfb; candidate edf1602fdc99555d51736c07165d7ac73777eb0e; merge 8cbb4562fb2e2425eaae52b9145513e2f5927ba2.",
+      "merged_sha": null
+    },
+    {
+      "handoff": {
+        "issue": 86,
+        "version": "v0.0.0.40",
+        "phase": "Head",
+        "next_action": "Owner-authorized corrective engineering completion for installed closure compatibility, PR #91 merged at 43ef2b660aae5ccee00009e900509158f0137d0f; head e963d92a09dabdf879b4808b65159a57a5348c51, base 8cbb4562fb2e2425eaae52b9145513e2f5927ba2, identical tested tree 413b10757a3f06b16ed61f8a2555233eab3870f4. Original permanent fix 024046556bf00b649b2428c112f5456210036dfb retained. Exact premerge 10/10 including CodeRabbit 140053840566; actual merge 11/11, four public Ubuntu/Windows jobs each 322 discovered, 318 passed, four intentional skips (1272 passes), two staged-preserving regressions passed each, Graphify 43/43 twice; runs 45863368417,45863368206,45863368376,45863359893,45863359914 attempt 1. Review and closure audit https://github.com/vixttha/Version-Issues-Hub/issues/86#issuecomment-7198389124. All scoped engineering gates met; no independent certification. Production integration deferred; legacy installed main-bound schema-1 state uses null production pins. Live upgrade and synchronized closure require separately reviewed exact scope authorization; #86 remains open. Preserve all 56 archives, 40 permanent mappings and #37/#40/#53 holds. Owner authorizes .41 next.",
+        "fix_sha": null,
+        "candidate_sha": null,
+        "pull_request": null,
+        "evidence": []
+      },
+      "disposition": "deferred",
+      "decision": "Owner-approved engineering completion: PR #91; fix 024046556bf00b649b2428c112f5456210036dfb; candidate e963d92a09dabdf879b4808b65159a57a5348c51; merge 43ef2b660aae5ccee00009e900509158f0137d0f.",
       "merged_sha": null
     }
   ],
