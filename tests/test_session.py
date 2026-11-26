@@ -464,3 +464,69 @@ class SessionTests(unittest.TestCase):
         self.advance(rework=True)
         session.validate_handoff(self.state["handoff"], self.state["ledger"])
         self.assertEqual(self.state["handoff"]["history"][0]["disposition"], "rework")
+
+    def test_case_insensitive_run_urls_and_duplicate_identity(self):
+        self.claim()
+        self.advance(fix=FIX, candidate=CANDIDATE, pr=8)
+        with self.assertRaisesRegex(ValueError, "Duplicate"):
+            session.evidence_links(REPO, [RUN, RUN.upper()])
+        self.advance(evidence=[RUN.upper()])
+        self.advance()
+        self.assertEqual(self.state["handoff"]["active"]["evidence"], [RUN.upper()])
+
+    def test_staged_closed_unmerged_rework_preserves_history(self):
+        self.claim()
+        self.advance(fix=FIX, candidate=CANDIDATE, pr=8)
+        self.advance(evidence=[RUN])
+        self.advance()
+        self.state["ledger"], self.state["handoff"] = session.finish(
+            self.api, self.state, "staged", "Owner stages")
+        before = copy.deepcopy(self.state)
+        for status, merged in (("open", False), ("closed", True), ("closed", None)):
+            self.api.pr.update(state=status, merged=merged)
+            with self.assertRaisesRegex(ValueError, "verified closed unmerged"):
+                session.claim(self.api, self.state, 247, [], "rework", rework_staged=True)
+        self.api.pr.update(state="closed", merged=False)
+        ledger, handoff = session.claim(self.api, self.state, 247, [], "rework", rework_staged=True)
+        self.assertEqual(handoff["active"]["phase"], "Worker")
+        self.assertIsNone(handoff["active"]["pull_request"])
+        self.assertEqual(handoff["history"], before["handoff"]["history"])
+        self.assertEqual(ledger["issues"][0]["version"], before["ledger"]["issues"][0]["version"])
+        self.assertEqual(ledger["issues"][0]["acceptance"], before["ledger"]["issues"][0]["acceptance"])
+        self.assertEqual(self.state, before)
+
+    def test_integrated_publication_rechecks_policy_and_rejects_rerun(self):
+        for staged in (False, True):
+            with self.subTest(staged=staged):
+                self.setUp()
+                self.claim()
+                self.advance(fix=FIX, candidate=CANDIDATE, pr=8)
+                self.advance(evidence=[RUN])
+                self.advance()
+                if staged:
+                    self.state["ledger"], self.state["handoff"] = session.finish(
+                        self.api, self.state, "staged", "Owner stages")
+                self.api.pr.update(state="closed", merged=True, merge_commit_sha=NEXT)
+                self.api.product = NEXT
+                policy = post_policy(self.state)
+                if staged:
+                    ledger, handoff = session.reconcile(self.api, self.state, 247, "Owner integrates", policy=policy)
+                else:
+                    ledger, handoff = session.finish(self.api, self.state, "integrated", "Owner integrates", policy=policy)
+                with self.assertRaisesRegex(ValueError, "policy"):
+                    session.save(self.api, self.state, ledger, handoff, True)
+                self.assertEqual(self.api.writes, [])
+                original = self.api.request
+                def race(method, path, body=None):
+                    result = original(method, path, body)
+                    if method == "POST" and path.endswith("/git/commits"):
+                        self.api.run["run_attempt"] = 2
+                    return result
+                with patch.object(self.api, "request", side_effect=race):
+                    with self.assertRaises(ValueError):
+                        session.save(self.api, self.state, ledger, handoff, True, policy=policy)
+                self.assertEqual(self.api.ref, HEAD)
+                self.assertFalse(any(method == "PATCH" for method, _, _ in self.api.writes))
+                self.api.run["run_attempt"] = 1
+                self.assertEqual(session.save(self.api, self.state, ledger, handoff, True,
+                                              policy=policy)["installed_sha"], NEXT)

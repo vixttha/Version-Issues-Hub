@@ -607,7 +607,7 @@
       "implemented_in": [
         {
           "path": "tools/session.py",
-          "anchor": "def claim(api, state, number, criteria, note, *, resume_prior_line=False, parallel=False):"
+          "anchor": "def claim(api, state, number, criteria, note, *, resume_prior_line=False, parallel=False,"
         }
       ],
       "tested_by": [

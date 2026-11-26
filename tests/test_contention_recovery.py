@@ -1,5 +1,6 @@
 """Bounded contention recovery, using actual Git objects and a simulated API."""
 import copy
+import json
 import tempfile
 import unittest
 from pathlib import Path

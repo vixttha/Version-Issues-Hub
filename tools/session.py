@@ -28,12 +28,20 @@ def issue_number(value):
         raise ValueError("Invalid GitHub issue or PR number")
     return value
 
-def evidence_links(repo, links):
+def evidence_run(repo, link):
     pattern = re.compile(r"https://github\.com/" + re.escape(repo) +
-                         r"/actions/runs/[1-9][0-9]*/attempts/[1-9][0-9]*", re.I)
-    if not isinstance(links, list) or any(not isinstance(x, str) or not pattern.fullmatch(x) for x in links):
+                         r"/actions/runs/([1-9][0-9]*)/attempts/([1-9][0-9]*)", re.I)
+    match = pattern.fullmatch(link) if isinstance(link, str) else None
+    if match is None:
         raise ValueError("Use exact repository GitHub Actions run-attempt URLs")
-    if len(set(links)) != len(links):
+    return tuple(map(int, match.groups()))
+
+
+def evidence_links(repo, links):
+    if not isinstance(links, list):
+        raise ValueError("Use exact repository GitHub Actions run-attempt URLs")
+    identities = [evidence_run(repo, link) for link in links]
+    if len(set(identities)) != len(identities):
         raise ValueError("Duplicate evidence link")
     return links
 
@@ -293,10 +301,10 @@ def verify_candidate_runs(api, state, active, links):
         old = record["handoff"]
         if (old["issue"] == active["issue"] and
                 any(old.get(k) != active.get(k) for k in PIN_KEYS | {"candidate_sha", "pull_request"})):
-            invalidated.update(int(re.search(r"/runs/([0-9]+)/", link).group(1))
+            invalidated.update(evidence_run(state["ledger"]["repository"], link)[0]
                                for link in old["evidence"])
     for link in links:
-        run, attempt = map(int, re.search(r"/runs/([0-9]+)/attempts/([0-9]+)$", link).groups())
+        run, attempt = evidence_run(state["ledger"]["repository"], link)
         if run in invalidated:
             raise ValueError("Archived run belongs to stale integration evidence; use a new run")
         root = state["prefix"] + "/actions/runs/" + str(run)
@@ -304,7 +312,7 @@ def verify_candidate_runs(api, state, active, links):
             standard.check_pr_run(item, policy, run, attempt)
     # Re-read every earlier run after all links were inspected.
     for link in links:
-        run, attempt = map(int, re.search(r"/runs/([0-9]+)/attempts/([0-9]+)$", link).groups())
+        run, attempt = evidence_run(state["ledger"]["repository"], link)
         standard.check_pr_run(api.request("GET", state["prefix"] + "/actions/runs/" + str(run)),
                               policy, run, attempt)
     require_fresh_snapshot(api, state, active)
@@ -361,7 +369,8 @@ def inspect(api, state, requested=None):
             "staged": staged, **({"active_issues": [a["issue"] for a in rows]}
                                   if handoff["schema_version"] == 2 else {})}
 
-def claim(api, state, number, criteria, note, *, resume_prior_line=False, parallel=False):
+def claim(api, state, number, criteria, note, *, resume_prior_line=False, parallel=False,
+          rework_staged=False):
     validate_handoff(state["handoff"], state["ledger"])
     item = get_issue(api, state, number)
     if item.get("state") != "open":
@@ -371,6 +380,8 @@ def claim(api, state, number, criteria, note, *, resume_prior_line=False, parall
     rows = active_rows(handoff)
     active = next((a for a in rows if a["issue"] == number), None)
     if active is not None:
+        if rework_staged:
+            raise ValueError("Staged rework requires a staged issue")
         record = next(x for x in ledger["issues"] if x["issue"] == number)
         if criteria and criteria != record["acceptance"]:
             raise ValueError("Existing acceptance criteria differ")
@@ -387,6 +398,8 @@ def claim(api, state, number, criteria, note, *, resume_prior_line=False, parall
     row = next((x for x in ledger["issues"] if x["issue"] == number), None)
     if row is not None and row["state"] in ("integrated", "retired"):
         raise ValueError("Historical issue cannot be reclaimed")
+    if rework_staged and (row is None or row["state"] != "staged"):
+        raise ValueError("Staged rework requires a staged issue")
     if row is not None and row["state"] == "staged":
         if resume_prior_line or row["version"].rsplit(".", 1)[0] != baseline:
             raise ValueError("Staged prior-line issue requires owner reconciliation")
@@ -395,7 +408,21 @@ def claim(api, state, number, criteria, note, *, resume_prior_line=False, parall
         prior = next((r for r in reversed(handoff["history"]) if r["handoff"]["issue"] == number), None)
         if prior is None or prior["disposition"] != "staged":
             raise ValueError("Missing latest staged handoff")
-        put_active(handoff, number, refresh_candidate(api, state, prior["handoff"], note))
+        if rework_staged:
+            previous = prior["handoff"]
+            pr = api.request("GET", state["prefix"] + "/pulls/" +
+                             str(issue_number(previous["pull_request"])))
+            if (pr.get("number") != previous["pull_request"]
+                    or pr.get("state") != "closed" or pr.get("merged") is not False
+                    or pr.get("base", {}).get("ref") != state["manifest"]["product_branch"]
+                    or pr.get("base", {}).get("repo", {}).get("id") != state["manifest"]["target_repository_id"]):
+                raise ValueError("Staged rework requires a verified closed unmerged PR")
+            worker = {"issue": number, "version": row["version"], "phase": "Worker",
+                      "next_action": text(note, "next action"), "fix_sha": None,
+                      "candidate_sha": None, "pull_request": None, "evidence": []}
+            put_active(handoff, number, worker)
+        else:
+            put_active(handoff, number, refresh_candidate(api, state, prior["handoff"], note))
         row["state"] = "in_progress"
         validate_handoff(handoff, ledger)
         return ledger, handoff
@@ -818,7 +845,7 @@ class HandoffRejected(install.ApiError):
 
 
 def save(api, state, ledger, handoff, apply=False, *, issue=None, operation_id=None,
-         on_recovery_ticket=None):
+         on_recovery_ticket=None, policy=None):
     if operation_id is not None and (not isinstance(operation_id, str)
             or not re.fullmatch(r"[0-9a-f]{64}", operation_id)):
         raise ValueError("Invalid operation identity")
@@ -829,10 +856,21 @@ def save(api, state, ledger, handoff, apply=False, *, issue=None, operation_id=N
         return {"status": "planned", "ledger": ledger, "handoff": handoff}
     # Recheck proof for newly staged rows before persisting. A stale stage
     # must not be published merely because its earlier plan was successful.
-    staged = [record["handoff"] for record in handoff["history"][len(state["handoff"]["history"]):]
-              if record["disposition"] == "staged"]
-    for active in staged:
-        verify_candidate_runs(api, state, active, active["evidence"])
+    appended = handoff["history"][len(state["handoff"]["history"]):]
+    def revalidate_publication():
+        from tools import standard
+        for record in appended:
+            active = record["handoff"]
+            if record["disposition"] == "staged":
+                verify_candidate_runs(api, state, active, active["evidence"])
+            elif record["disposition"] == "integrated":
+                merged, links = standard.verify_integration(api, state, active,
+                                                             get_pr(api, state, active), policy)
+                if (merged != record["merged_sha"] or not set(links).issubset(active["evidence"])
+                        or not record["decision"].endswith("\nPost-merge policy: " + json.dumps(
+                            policy, sort_keys=True, separators=(",", ":"), ensure_ascii=True, allow_nan=False))):
+                    raise ValueError("Integrated publication proof does not match reviewed record")
+    revalidate_publication()
     prefix, old = state["prefix"], state["ref"]
     if install.read_ref(api, prefix, install.BRANCH) != old:
         raise HandoffStale("Installed branch advanced; reload")
@@ -853,8 +891,7 @@ def save(api, state, ledger, handoff, apply=False, *, issue=None, operation_id=N
     if new == old:
         raise ValueError("Proposed handoff commit equals its parent")
     # Recheck after creating the objects, immediately before publishing the ref.
-    for active in staged:
-        verify_candidate_runs(api, state, active, active["evidence"])
+    revalidate_publication()
     # Emit the exact recovery ticket before publication. If its sink fails,
     # do not attempt the ref update. It contains no raw intent or credential.
     if operation_id is not None and on_recovery_ticket is not None:
@@ -1122,6 +1159,7 @@ def main():
     c.add_argument("--note", required=True)
     c.add_argument("--owner-approved", action="store_true")
     c.add_argument("--parallel", action="store_true", help="Owner-approved opt-in to parallel handoffs when claiming a new active issue")
+    c.add_argument("--rework-staged", action="store_true", help="Owner-approved rework of a staged issue with a closed unmerged PR")
     c.add_argument("--resume-prior-line", action="store_true", help="Resume an eligible unresolved historical checkpoint without renumbering")
     a = sub.add_parser("advance")
     a.add_argument("--note", required=True)
@@ -1175,7 +1213,8 @@ def main():
             def plan(current):
                 if args.command == "claim":
                     return claim(api, current, args.issue, args.acceptance, args.note,
-                        resume_prior_line=args.resume_prior_line, parallel=args.parallel)
+                        resume_prior_line=args.resume_prior_line, parallel=args.parallel,
+                        rework_staged=args.rework_staged)
                 if args.command == "advance":
                     return advance(api, current, args.note, fix=args.fix, candidate=args.candidate,
                         pr=args.pr, evidence=args.evidence, rework=args.rework,
@@ -1201,7 +1240,7 @@ def main():
                                       on_pending_intent=emit_pending if args.recovery_dir is not None else None)
             else:
                 ledger, handoff = plan(state)
-                result = save(api, state, ledger, handoff, args.apply, issue=scope)
+                result = save(api, state, ledger, handoff, args.apply, issue=scope, policy=policy)
         print(install.render(result), end="")
     except (ValueError, KeyError, TypeError, OSError, install.ApiError) as exc:
         install.cli_error(p, "VIB session stopped", exc)
