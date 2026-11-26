@@ -51,7 +51,7 @@ class ClosureTests(unittest.TestCase):
                 session.claim(self.api, self.state, 248, ["test"], "Other")
             with self.assertRaises(ValueError):
                 session.closure_plan(self.api, self.state, 247, self.policy,
-                                     "confirmed", owner_approved=True)
+                                     "confirmed", owner_approved=True, execution_id="1" * 32)
         self.assertFalse(self.api.writes)
 
     def test_confirmation_requires_matching_readback(self):
@@ -60,17 +60,21 @@ class ClosureTests(unittest.TestCase):
             ledger, handoff = session.closure_plan(self.api, self.state, 247, self.policy,
                                                     "pending", owner_approved=True)
             self.state.update(ledger=ledger, handoff=handoff)
+            execution = "1" * 32
+            ledger, handoff = session.closure_plan(self.api, self.state, 247, self.policy,
+                        "executing", owner_approved=True, execution_id=execution)
+            self.state.update(ledger=ledger, handoff=handoff)
             with patch.object(session, "get_issue", return_value={"number": 247, "state": "closed", "state_reason": "not_planned"}):
                 with self.assertRaises(ValueError):
-                    session.closure_plan(self.api, self.state, 247, self.policy, "confirmed", owner_approved=True)
+                    session.closure_plan(self.api, self.state, 247, self.policy, "confirmed", owner_approved=True, execution_id="1" * 32)
             with patch.object(session, "get_issue", return_value={"number": 247, "state": "closed", "state_reason": "completed"}):
                 ledger, handoff = session.closure_plan(self.api, self.state, 247, self.policy,
-                                                        "confirmed", owner_approved=True)
+                                                        "confirmed", owner_approved=True, execution_id="1" * 32)
             self.assertEqual(ledger, self.state["ledger"])
             self.assertEqual(handoff["history"][:-1], self.state["handoff"]["history"])
             result = session.closure_status({**self.state, "handoff": handoff},
                                             {"number": 247, "state": "closed", "state_reason": "completed"})
-            self.assertEqual(result["closure_synchronization"], "confirmed")
+            self.assertEqual(result["closure_synchronization"], "state_matches_historical_receipt")
             self.assertFalse(result["production_integrated"])
         self.assertFalse(self.api.writes)
 
@@ -88,11 +92,10 @@ class ClosureTests(unittest.TestCase):
                     session.complete_closure(self.api, self.state, 247, self.policy,
                                              owner_approved=True, apply=True)
             self.assertEqual(self.state, before)
-            with patch.object(session, "get_issue", return_value={"number": 247, "state": "closed", "state_reason": "completed"}), \
-                    patch.object(session, "save_closure", return_value={"status": "saved"}) as save:
-                self.assertEqual(session.complete_closure(self.api, self.state, 247, self.policy,
-                                                          owner_approved=True, apply=True)["status"], "saved")
-                self.assertTrue(save.called)
+            with patch.object(session, "save_closure", side_effect=ValueError("lost acquisition response")):
+                with self.assertRaisesRegex(ValueError, "partial"):
+                    session.complete_closure(self.api, self.state, 247, self.policy,
+                                             owner_approved=True, apply=True)
         self.assertFalse(self.api.writes)
 
     def test_exact_evidence_and_historical_identity(self):
@@ -136,7 +139,7 @@ class ClosureTests(unittest.TestCase):
 
         prefix = self.state["prefix"]
         historical_ref = self.state["ref"]
-        pending_ref, confirmed_ref = "8" * 40, "9" * 40
+        pending_ref, executing_ref, confirmed_ref = "8" * 40, "7" * 40, "9" * 40
         current = {"number": 247, "state": "open", "state_reason": None}
         contents = {historical_ref: {session.LEDGER: install.render(self.state["ledger"]),
                     session.HANDOFF: install.render(self.state["handoff"]),
@@ -156,7 +159,7 @@ class ClosureTests(unittest.TestCase):
                 return {"ref": "refs/heads/trunk", "object": {"type": "commit", "sha": BASE}}
             if method == "GET" and "/compare/" in path:
                 first, last = path.rsplit("/", 1)[1].split("...")
-                if first == last or (first == historical_ref and last in (pending_ref, confirmed_ref)):
+                if first == last or (first == historical_ref and last in (pending_ref, executing_ref, confirmed_ref)):
                     return {"status": "identical" if first == last else "ahead",
                             "merge_base_commit": {"sha": first}}
             if method == "GET" and path.startswith(prefix + "/contents/"):
@@ -166,6 +169,7 @@ class ClosureTests(unittest.TestCase):
                         "content": base64.b64encode(raw).decode("ascii"),
                         "sha": hashlib.sha1(b"blob " + str(len(raw)).encode() + b"\0" + raw).hexdigest()}
             if method == "GET" and path in (prefix + "/git/commits/" + pending_ref,
+                                             prefix + "/git/commits/" + executing_ref,
                                              prefix + "/git/commits/" + confirmed_ref):
                 return {"sha": path.rsplit("/", 1)[1], "tree": {"sha": TREE}}
             if method == "POST" and path == prefix + "/git/trees":
@@ -176,7 +180,10 @@ class ClosureTests(unittest.TestCase):
             if method == "POST" and path == prefix + "/git/commits":
                 self.assertEqual(body["parents"], [self.api.ref])
                 self.api.writes.append((method, path, copy.deepcopy(body)))
-                new = pending_ref if self.api.ref == HEAD else confirmed_ref
+                history = json.loads(staged[session.HANDOFF])["history"]
+                status = session.closure_receipt(history[-1])["status"]
+                new = {"pending": pending_ref, "executing": executing_ref,
+                       "confirmed": confirmed_ref, "cancelled": confirmed_ref}[status]
                 contents[new] = {**contents[self.api.ref], **staged}
                 return {"sha": new}
             if method == "PATCH" and path == prefix + "/git/refs/heads/" + install.BRANCH:
@@ -246,14 +253,18 @@ class ClosureTests(unittest.TestCase):
             self.assertEqual(second["installed_sha"], confirmed_ref)
             final = restored(confirmed_ref)
             self.assertEqual(final["ledger"], self.state["ledger"])
-            self.assertEqual(final["handoff"]["history"][:-2], self.state["handoff"]["history"])
-            self.assertEqual(session.closure_status(final, current)["closure_synchronization"], "confirmed")
+            self.assertEqual(final["handoff"]["history"][:-3], self.state["handoff"]["history"])
+            receipts = session.closure_records(final["handoff"], 247)
+            self.assertEqual([r["status"] for r in receipts], ["pending", "executing", "confirmed"])
+            self.assertEqual(receipts[1]["execution_id"], receipts[2]["execution_id"])
+            self.assertFalse(session.closure_status(final, current)["closure_event_verified"])
+            self.assertEqual(session.closure_status(final, current)["closure_synchronization"], "state_matches_historical_receipt")
             self.assertEqual(install.read_ref(self.api, prefix, "trunk"), BASE)
             self.assertEqual(install.read_ref(self.api, prefix, BRANCH), NEXT)
             self.assertFalse(session.closure_status(final, current)["production_integrated"])
             before = copy.deepcopy(self.api.writes)
             self.assertEqual(session.complete_closure(self.api, final, 247, self.policy,
-                                                       owner_approved=True, apply=True)["status"], "already_confirmed")
+                                                       owner_approved=True, apply=True)["status"], "historical_receipt_matches_state")
             self.assertEqual(self.api.writes, before)
             self.assertEqual(sum(method == "PATCH" and path.endswith("/issues/247")
                                  for method, path, _ in self.api.writes), 1)
@@ -328,12 +339,15 @@ class ClosureTests(unittest.TestCase):
             ledger, handoff = session.closure_plan(self.api, self.state, 247, self.policy,
                                                     "pending", owner_approved=True)
             self.state.update(ledger=ledger, handoff=handoff)
+            ledger, handoff = session.closure_plan(self.api, self.state, 247, self.policy,
+                        "executing", owner_approved=True, execution_id="1" * 32)
+            self.state.update(ledger=ledger, handoff=handoff)
             closed = {"number": 247, "state": "closed", "state_reason": "completed"}
             with patch.object(session, "get_issue", return_value=closed):
                 ledger, handoff = session.closure_plan(self.api, self.state, 247, self.policy,
-                                                        "confirmed", owner_approved=True)
+                                                        "confirmed", owner_approved=True, execution_id="1" * 32)
             self.state.update(ledger=ledger, handoff=handoff)
-            self.assertEqual(session.closure_status(self.state, closed)["closure_synchronization"], "confirmed")
+            self.assertEqual(session.closure_status(self.state, closed)["closure_synchronization"], "state_matches_historical_receipt")
             ledger, handoff = session.claim(self.api, self.state, 247, ["test"], "Reopened work")
             self.state.update(ledger=ledger, handoff=handoff)
             result = session.closure_status(self.state, closed)
@@ -343,4 +357,57 @@ class ClosureTests(unittest.TestCase):
             self.assertFalse(result["production_integrated"])
             with patch.object(session, "get_issue", return_value=closed):
                 self.assertEqual(session.inspect(self.api, self.state, 247)["lifecycle"], result)
+        self.assertFalse(self.api.writes)
+
+    def test_execution_claim_blocks_replay_cancel_and_lifecycle(self):
+        from tools import lifecycle
+        archive = self.state["handoff"]["history"][-1]
+        with patch.object(session, "verify_closure_basis", return_value=archive):
+            ledger, handoff = session.closure_plan(self.api, self.state, 247, self.policy,
+                                                    "pending", owner_approved=True)
+            self.state.update(ledger=ledger, handoff=handoff)
+            for stage in ("pending", "executing"):
+                with patch.object(session, "load", return_value=self.state):
+                    with self.assertRaisesRegex(ValueError, "unresolved closure"):
+                        lifecycle.upgrade(self.api, self.state["ledger"]["repository"],
+                                          self.state["ref"], "5" * 40)
+                    with self.assertRaisesRegex(ValueError, "unresolved closure"):
+                        lifecycle.prepare_retirement(self.api, self.state["ledger"]["repository"],
+                                                     self.state["ref"])
+                if stage == "pending":
+                    ledger, handoff = session.closure_plan(self.api, self.state, 247, self.policy,
+                            "executing", owner_approved=True, execution_id="1" * 32)
+                    self.state.update(ledger=ledger, handoff=handoff)
+            self.assertEqual(session.pending_closure(self.state["handoff"])["execution_id"], "1" * 32)
+            with self.assertRaisesRegex(ValueError, "already acquired"):
+                session.complete_closure(self.api, self.state, 247, self.policy,
+                                         owner_approved=True, apply=True)
+            with self.assertRaises(ValueError):
+                session.closure_plan(self.api, self.state, 247, self.policy, "executing",
+                                     owner_approved=True, execution_id="2" * 32)
+            for recovery in (None, "2" * 32):
+                with self.assertRaises(ValueError):
+                    session.cancel_closure_plan(self.api, self.state, 247, self.policy, "Owner recovery",
+                              owner_approved=True, recovery_execution=recovery)
+            ledger, handoff = session.cancel_closure_plan(self.api, self.state, 247, self.policy,
+                "Owner stopped executor and reconciled issue", owner_approved=True,
+                recovery_execution="1" * 32)
+            self.assertEqual(handoff["history"][:-1], self.state["handoff"]["history"])
+            self.assertIsNone(session.pending_closure(handoff))
+            self.assertEqual(session.closure_records(handoff, 247)[-1]["execution_id"], "1" * 32)
+            self.state.update(ledger=ledger, handoff=handoff)
+            _, claimed = session.claim(self.api, self.state, 248, ["new"], "Resume work")
+            self.assertEqual(claimed["active"]["issue"], 248)
+        self.assertFalse(self.api.writes)
+
+    def test_reserved_prefix_compatibility_fails_closed(self):
+        archive = self.state["handoff"]["history"][-1]
+        with patch.object(session, "verify_closure_basis", return_value=archive):
+            _, handoff = session.closure_plan(self.api, self.state, 247, self.policy,
+                                               "pending", owner_approved=True)
+        with self.assertRaisesRegex(ValueError, "prefix"):
+            session.require_closure_compatible_history(handoff, False)
+        session.require_closure_compatible_history(handoff, True)
+        session.require_closure_compatible_history(self.state["handoff"], False)
+        self.assertFalse(session.supports_closure_execution({"tools/session.py": session.CLOSURE_DECISION}))
         self.assertFalse(self.api.writes)

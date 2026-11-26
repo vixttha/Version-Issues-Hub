@@ -1327,7 +1327,15 @@
         },
         {
           "path": "tools/session.py",
-          "anchor": "def cancel_closure_plan(api, state, number, policy, decision, *, owner_approved=False):"
+          "anchor": "def cancel_closure_plan(api, state, number, policy, decision, *, owner_approved=False, recovery_execution=None):"
+        },
+        {
+          "path": "tools/lifecycle.py",
+          "anchor": "def idle_state(api, target, expected_sha):"
+        },
+        {
+          "path": "tools/session.py",
+          "anchor": "def require_closure_compatible_history(handoff, supported):"
         }
       ],
       "tested_by": [
@@ -1366,6 +1374,14 @@
         {
           "path": "tests/test_issue_closure.py",
           "anchor": "def test_reclaimed_issue_cannot_report_confirmed_closure(self):"
+        },
+        {
+          "path": "tests/test_issue_closure.py",
+          "anchor": "def test_execution_claim_blocks_replay_cancel_and_lifecycle(self):"
+        },
+        {
+          "path": "tests/test_issue_closure.py",
+          "anchor": "def test_reserved_prefix_compatibility_fails_closed(self):"
         }
       ]
     }
