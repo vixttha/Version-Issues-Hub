@@ -2,10 +2,10 @@ name: Retained VIB code graph qualification
 on:
   push:
     branches: [review/vib-77-code-graphs, Veraphify]
-    paths: ['tools/verify-retained-code-graphs.py', '.github/workflows/vib-77-retained.yml', 'archives/code-graphs/**', 'archives/cumulative-code-graphs/**', 'lib/code-graph.mjs', 'veraphifiy.mjs']
+    paths: ['tools/verify-retained-code-graphs.py', 'tools/test-code-graph-retrieval.py', 'tools/audit-inferred-graphs.py', 'tools/test-inferred-scopes.py', '.gitattributes', '.github/workflows/vib-77-retained.yml', 'archives/code-graphs/**', 'archives/cumulative-code-graphs/**', 'lib/code-graph.mjs', 'veraphifiy.mjs']
   pull_request:
     branches: [Veraphify]
-    paths: ['tools/verify-retained-code-graphs.py', '.github/workflows/vib-77-retained.yml', 'archives/code-graphs/**', 'archives/cumulative-code-graphs/**', 'lib/code-graph.mjs', 'veraphifiy.mjs']
+    paths: ['tools/verify-retained-code-graphs.py', 'tools/test-code-graph-retrieval.py', 'tools/audit-inferred-graphs.py', 'tools/test-inferred-scopes.py', '.gitattributes', '.github/workflows/vib-77-retained.yml', 'archives/code-graphs/**', 'archives/cumulative-code-graphs/**', 'lib/code-graph.mjs', 'veraphifiy.mjs']
 permissions:
   contents: read
 jobs:
@@ -32,8 +32,10 @@ jobs:
       - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
         with:
           python-version: '3.12'
-      - name: Verify all retained code graphs and produce audited .36 view
-        run: python tools/verify-retained-code-graphs.py
+      - name: Verify all retained code graphs and audit inferred edges
+        run: |
+          python tools/test-inferred-scopes.py
+          python tools/verify-retained-code-graphs.py
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         if: always()
         with:

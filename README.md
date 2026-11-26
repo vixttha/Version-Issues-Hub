@@ -90,3 +90,7 @@ node veraphifiy.mjs code-graph --archive archives --project vixttha/Version-Issu
 ```
 
 `code-verify` returns the verified receipt; `code-graph` returns receipt and actual graph. Raw graphs are retained unchanged. The .36 inference review labels false target matches and confirmed static relationships without pretending to be a runtime trace. This local VIB integration does not change the upstream Veraphify published version.
+
+### Source review v2
+
+The original .36 review overlay is historical and superseded. The public retained qualification now audits all 72 graphs against pinned source. Lexically resolved inferred references are supported, incorrect targets rejected, and dynamic receiver or symbol bindings remain explicitly unverified. Derived views omit both rejected and unresolved inferred edges; original graphs are never changed. This is not proof of runtime behavior. Repeated extraction verifies retained bytes rather than reimporting an existing archive.

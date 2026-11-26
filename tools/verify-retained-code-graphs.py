@@ -43,24 +43,14 @@ assert ancestor(old["results"][29]["source"],old["results"][28]["source"])
 assert git("diff","--name-only","365a53437882e50d37a62b2940fab898b220ae9b","HEAD","--","archives/code-graphs","archives/candidates","archives/README.md")==""
 # Full native CLI reads and negative probes.
 subprocess.run([sys.executable,"tools/test-code-graph-retrieval.py"],check=True)
-# Source-reviewed view is derived independently; original raw graphs are untouched.
-overlay=read(archive/"cumulative-code-graphs/inferred-review-v0.0.0.36.json")
+# Old overlay is immutable historical evidence, superseded by fresh all-version audit.
 assert sha(archive/"cumulative-code-graphs/inferred-review-v0.0.0.36.json")=="c737ba73081449f48e60293f52c29a1b8165ce60d66158a50e8a20b8ceea689a"
-original=read(archive/"code-graphs/v0.0.0.36/graph.json")
-cumulative=read(archive/"cumulative-code-graphs/v0.0.0.36/graph.json")
-assert overlay["source"]==original["built_at_commit"] and overlay["graph_sha256"]==old["results"][-1]["graph_sha256"]
-assert {k:v for k,v in original.items() if k!="built_at_commit"}=={k:v for k,v in cumulative.items() if k!="built_at_commit"}
-def edge(e):return (e["source"],e["target"],e["relation"],e["source_file"],e["source_location"])
-def reviewed(e):return (e["source"],e["target"],e["relation"],e["source_file"],"L"+str(e["line"]))
-decisions={reviewed(e):e for e in overlay["relationships"]}
-inferred={edge(e) for e in original["links"] if e["confidence"]=="INFERRED"}
-assert len(decisions)==len(inferred)==51 and set(decisions)==inferred
-rejected={k for k,e in decisions.items() if e["verdict"].startswith("rejected_")}
-assert len(rejected)==16
-result={**cumulative,"links":[e for e in cumulative["links"] if not (e.get("confidence")=="INFERRED" and edge(e) in rejected)]}
-assert len(result["links"])==1212
+assert git("diff","--name-only","77071651bca0421361e15643d3ed68d8c32c9814","HEAD","--","archives/cumulative-code-graphs")==""
+import importlib.util
+spec=importlib.util.spec_from_file_location("audit",root/"tools/audit-inferred-graphs.py")
+audit=importlib.util.module_from_spec(spec);spec.loader.exec_module(audit)
 out=Path(os.environ["RUNNER_TEMP"])/"retained-graph-audit";out.mkdir(exist_ok=True)
-(out/"v0.0.0.36-reviewed-graph.json").write_bytes((json.dumps(result,indent=2)+"\n").encode("utf-8"))
-report={"status":"pass","historical_graphs":36,"cumulative_graphs":36,"native_positive":144,"native_negative":10,"inferred_reviewed":51,"false_inferred_removed":16,"reviewed_graph_edges":1212,"raw_graphs_preserved":True,"reviewed_source":cumulative["built_at_commit"],"reviewed_graph_sha256":sha(out/"v0.0.0.36-reviewed-graph.json"),"run":os.environ["GITHUB_RUN_ID"],"attempt":os.environ["GITHUB_RUN_ATTEMPT"],"checkout":git("rev-parse","HEAD")}
+result=audit.audit(root,archive,out/"source-review")
+report={"status":"pass","historical_graphs":36,"cumulative_graphs":36,"native_positive":144,"native_negative":10,"scope_regressions":7,"inferred_total":result["inferred_total"],"counts":result["counts"],"raw_graphs_preserved":True,"review_index_sha256":sha(out/"source-review/index.json"),"run":os.environ["GITHUB_RUN_ID"],"attempt":os.environ["GITHUB_RUN_ATTEMPT"],"checkout":git("rev-parse","HEAD")}
 (out/"report.json").write_bytes((json.dumps(report,indent=2)+"\n").encode("utf-8"))
 print(json.dumps(report))

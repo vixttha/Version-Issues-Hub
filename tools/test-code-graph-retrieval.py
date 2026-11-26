@@ -2,9 +2,9 @@ import json,subprocess,tempfile,shutil,os
 from pathlib import Path
 root=Path.cwd()
 archive=root/"archives"
-def read(p):return json.loads(p.read_text())
+def read(p):return json.loads(p.read_text(encoding="utf-8"))
 def call(command,r,scope,base=archive,extra=(),ok=True):
-    p=subprocess.run(["node","veraphifiy.mjs",command,"--archive",str(base),"--project","vixttha/Version-Issues-Hub","--version",r["version"],"--scope",scope,"--source",r["source"],"--graph-sha256",r["graph_sha256"],*extra],capture_output=True,text=True)
+    p=subprocess.run(["node","veraphifiy.mjs",command,"--archive",str(base),"--project","vixttha/Version-Issues-Hub","--version",r["version"],"--scope",scope,"--source",r["source"],"--graph-sha256",r["graph_sha256"],*extra],capture_output=True,encoding="utf-8")
     assert (p.returncode==0)==ok,p.stderr
     return json.loads(p.stdout) if ok else None
 for scope,folder in [("fix","code-graphs"),("cumulative","cumulative-code-graphs")]:
