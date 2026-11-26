@@ -421,8 +421,8 @@ def claim(api, state, number, criteria, note, *, resume_prior_line=False, parall
             raise ValueError("Missing latest staged handoff")
         if rework_staged:
             previous = prior["handoff"]
-            pr = api.request("GET", state["prefix"] + "/pulls/" +
-                             str(issue_number(previous["pull_request"])))
+            pr = pr_response(api.request("GET", state["prefix"] + "/pulls/" +
+                                         str(issue_number(previous["pull_request"]))))
             if (not install.same_id(pr.get("number"), previous["pull_request"])
                     or pr.get("state") != "closed" or pr.get("merged") is not False
                     or pr.get("base", {}).get("ref") != state["manifest"]["product_branch"]
@@ -710,8 +710,13 @@ def inspect_pending(api, state, path):
             origin = intent["initial_sha"]
             parent = install.require(install.SHA, ticket.get("parent_sha"), "recovery parent")
             if origin != parent:
-                comparison = install.response_object(api.request(
-                    "GET", state["prefix"] + "/compare/" + origin + "..." + parent), "journal ancestry")
+                try:
+                    comparison = api.request("GET", state["prefix"] + "/compare/" + origin + "..." + parent)
+                except install.ApiError as exc:
+                    if exc.status != 404 or exc.retry_after is not None:
+                        raise
+                    raise ValueError("Pending journal origin or parent not found") from exc
+                comparison = install.response_object(comparison, "journal ancestry")
                 base = install.response_object(comparison.get("merge_base_commit"), "merge base")
                 if (comparison.get("status") != "ahead"
                         or type(comparison.get("behind_by")) is not int or comparison["behind_by"] != 0
@@ -721,11 +726,6 @@ def inspect_pending(api, state, path):
                     raise ValueError("Pending origin is not an ancestor of candidate parent")
             result = inspect_operation(api, state, ticket)
             result["origin_ancestry_verified"] = True
-        except install.ApiError as exc:
-            if exc.status != 404 or exc.retry_after is not None:
-                raise
-            result = {"status": "unconfirmed", "candidate_sha": ticket["candidate_sha"],
-                      "origin_ancestry_verified": False}
         except ValueError:
             # Unconfirmed evidence is not proof of nonpublication. API errors
             # (including throttling) propagate immediately; do not keep polling.

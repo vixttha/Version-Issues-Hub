@@ -129,9 +129,9 @@ def verify_integration(api, state, active, pr, policy):
         if (value.get("merged") is not True or value.get("state") != "closed"
                 or value.get("merge_commit_sha") != merged):
             raise ValueError("Actual merged PR identity changed or is unverified")
-        commit = api.request("GET", prefix + "/git/commits/" + merged)
+        commit = install.response_object(api.request("GET", prefix + "/git/commits/" + merged), "merged commit")
         if (commit.get("sha") != merged or
-                [p["sha"] for p in commit["parents"]] != [policy["base_sha"], policy["head_sha"]]
+                [p.get("sha") for p in install.response_rows(commit.get("parents"), "merge parents")] != [policy["base_sha"], policy["head_sha"]]
                 or policy["base_sha"] == policy["head_sha"] or merged in (policy["base_sha"], policy["head_sha"])):
             raise ValueError("Unsupported merge history or incorrect actual merge parents")
         target = install.require(install.SHA, install.read_ref(api, prefix, policy["product_branch"]), "current product revision")

@@ -684,3 +684,49 @@ class RecoveryTests(unittest.TestCase):
                     self.assertEqual(inspected["candidates"][0]["status"], "unconfirmed")
                     self.assertFalse(inspected["origin_intent_authenticated"])
             self.assertEqual(api.writes, before)
+
+    def test_pending_origin_valid_after_competing_publication(self):
+        api = self.api
+        with tempfile.TemporaryDirectory() as directory:
+            paths = []
+            self.inject(lambda: session.save(api, self.s, *self.claim(self.s, C), True, issue=C))
+            result = self.recover(lambda s: self.claim(s, B), B,
+                on_pending_intent=lambda intent: paths.append(session.persist_pending_intent(directory, intent)),
+                on_recovery_ticket=lambda ticket: session.persist_recovery_ticket(directory, ticket))
+            fresh = session.load(api, REPO)
+            before = list(api.writes)
+            original = api.request
+            def comparison(method, path, body=None):
+                if "/compare/" in path:
+                    left, right = path.rsplit("/", 1)[1].split("...")
+                    # Real disposable Git object ancestry, simulated API shape.
+                    import subprocess
+                    try:
+                        common = api.git("merge-base", left, right)
+                    except subprocess.CalledProcessError:
+                        raise install.ApiError(404) from None
+                    ahead = int(api.git("rev-list", "--count", left+".."+right))
+                    behind = int(api.git("rev-list", "--count", right+".."+left))
+                    return {"status":"ahead" if ahead and not behind else
+                            "behind" if behind and not ahead else
+                            "identical" if not ahead and not behind else "diverged",
+                            "ahead_by":ahead,"behind_by":behind,
+                            "base_commit":{"sha":left},"merge_base_commit":{"sha":common}}
+                if "/git/commits/" in path:
+                    import subprocess
+                    try:
+                        return original(method, path, body)
+                    except subprocess.CalledProcessError:
+                        raise install.ApiError(404) from None
+                return original(method, path, body)
+            # An unaccepted candidate need not be inspected to establish the
+            # positive control. Keep the actual published ticket only.
+            for ticket in Path(directory).glob(result["operation_id"]+"-*.json"):
+                if result["installed_sha"] not in ticket.name:
+                    ticket.unlink()
+            with patch.object(api, "request", side_effect=comparison):
+                inspected = session.inspect_pending(api, fresh, paths[0])
+            self.assertEqual(inspected["candidates"][0]["installed_sha"], result["installed_sha"])
+            self.assertTrue(inspected["candidates"][0]["origin_ancestry_verified"])
+            self.assertFalse(inspected["origin_intent_authenticated"])
+            self.assertEqual(api.writes, before)

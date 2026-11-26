@@ -1210,6 +1210,10 @@
         {
           "path": "tests/test_api_boundaries.py",
           "anchor": "def test_malformed_nested_pr_compare_and_run_fail_closed(self):"
+        },
+        {
+          "path": "tests/test_contention_recovery.py",
+          "anchor": "def test_pending_origin_valid_after_competing_publication(self):"
         }
       ]
     }
