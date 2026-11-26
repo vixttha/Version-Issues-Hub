@@ -1,14 +1,5 @@
 {
-  "active": {
-    "issue": 86,
-    "version": "v0.0.0.40",
-    "phase": "Head",
-    "next_action": "Owner-authorized MR-040-001 corrective engineering completion; original PR #87 merge d57771313191eb4ab5a5d20db8a5f2da9bda55a9 and its receipt preserved. PR #88 corrective change first commit 6ce3ea5c576e7ddefb47bccc00661d7ae9d9670c; final candidate edf1602fdc99555d51736c07165d7ac73777eb0e; actual engineering merge 8cbb4562fb2e2425eaae52b9145513e2f5927ba2; tested identical tree 5cecb2d4566ec9ec4841fee107ac96985e0969f8. Original permanent .40 fix pin 024046556bf00b649b2428c112f5456210036dfb retained, not replaced by corrective commit. Premerge 10/10 including CodeRabbit 139986826103, zero unresolved threads; actual merge 11/11; each phase four public Ubuntu/Windows jobs each 320 discovered,316 passed,4 intentional skips; 24 closure methods passed in each job; Graphify 42/42 twice per phase. Runs before merge 45842224109,45842223644,45842223473,45842211914; actual merge 45844894627,45844894883,45844894712,45844880629,45844880671, all attempt 1. Exact-head review https://github.com/vixttha/Version-Issues-Hub/pull/88#issuecomment-7195670326 and actual merge receipt https://github.com/vixttha/Version-Issues-Hub/issues/86#issuecomment-7195685594. Scoped internal qualification only, not independent certification. Installed schema-1 main-bound package unchanged; production deferred; issue #86 remains open. No migration, live issue closure, release or .41 claim. Preserve all 55 prior archives.",
-    "fix_sha": null,
-    "candidate_sha": null,
-    "pull_request": null,
-    "evidence": []
-  },
+  "active": null,
   "history": [
     {
       "decision": "PR49 CodeRabbit finding 4682051116: rework exact product SHA comparisons and add regression checks; preserve previous evidence.",
@@ -1134,6 +1125,21 @@
       },
       "disposition": "deferred",
       "decision": "Owner-approved engineering completion: PR #87; fix 024046556bf00b649b2428c112f5456210036dfb; candidate c1a389c61710fa02a1d91d2abff4b15ec34359c5; merge d57771313191eb4ab5a5d20db8a5f2da9bda55a9.",
+      "merged_sha": null
+    },
+    {
+      "handoff": {
+        "issue": 86,
+        "version": "v0.0.0.40",
+        "phase": "Head",
+        "next_action": "Owner-authorized MR-040-001 corrective engineering completion; original PR #87 merge d57771313191eb4ab5a5d20db8a5f2da9bda55a9 and its receipt preserved. PR #88 corrective change first commit 6ce3ea5c576e7ddefb47bccc00661d7ae9d9670c; final candidate edf1602fdc99555d51736c07165d7ac73777eb0e; actual engineering merge 8cbb4562fb2e2425eaae52b9145513e2f5927ba2; tested identical tree 5cecb2d4566ec9ec4841fee107ac96985e0969f8. Original permanent .40 fix pin 024046556bf00b649b2428c112f5456210036dfb retained, not replaced by corrective commit. Premerge 10/10 including CodeRabbit 139986826103, zero unresolved threads; actual merge 11/11; each phase four public Ubuntu/Windows jobs each 320 discovered,316 passed,4 intentional skips; 24 closure methods passed in each job; Graphify 42/42 twice per phase. Runs before merge 45842224109,45842223644,45842223473,45842211914; actual merge 45844894627,45844894883,45844894712,45844880629,45844880671, all attempt 1. Exact-head review https://github.com/vixttha/Version-Issues-Hub/pull/88#issuecomment-7195670326 and actual merge receipt https://github.com/vixttha/Version-Issues-Hub/issues/86#issuecomment-7195685594. Scoped internal qualification only, not independent certification. Installed schema-1 main-bound package unchanged; production deferred; issue #86 remains open. No migration, live issue closure, release or .41 claim. Preserve all 55 prior archives.",
+        "fix_sha": null,
+        "candidate_sha": null,
+        "pull_request": null,
+        "evidence": []
+      },
+      "disposition": "deferred",
+      "decision": "Owner-approved engineering completion: PR #88; fix 024046556bf00b649b2428c112f5456210036dfb; candidate edf1602fdc99555d51736c07165d7ac73777eb0e; merge 8cbb4562fb2e2425eaae52b9145513e2f5927ba2.",
       "merged_sha": null
     }
   ],
