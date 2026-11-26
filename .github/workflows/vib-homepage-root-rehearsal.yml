@@ -1,0 +1,62 @@
+name: VIB unpublished root README rehearsal
+on:
+  push:
+    branches: [review/vib-homepage-v40]
+permissions:
+  contents: read
+jobs:
+  verify-root:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
+        with:
+          python-version: '3.12'
+      - name: Verify exact root preview scope and source pins
+        run: |
+          python - <<'PY'
+          import subprocess
+          def git(*args): return subprocess.check_output(['git', *args],text=True).strip()
+          source='8cbb4562fb2e2425eaae52b9145513e2f5927ba2'
+          assert git('rev-parse','HEAD^') == source
+          assert git('diff','--name-only',source,'HEAD').splitlines() == ['.github/workflows/vib-homepage-root-rehearsal.yml','README.md','assets/vib-logo-light.svg','assets/vib-logo.svg','tools/check_vib_homepage_root.cjs']
+          for name, sha in [('vib-logo.svg','3bf0564bc56d57159a6d1baf4d5baa9b4b5b3893'),('vib-logo-light.svg','df709a42fee10fcfada6747298dcda18f1465731')]:
+              assert git('rev-parse','HEAD:assets/'+name) == sha
+          for name in ('LICENSE','VIB-NOTICE.md'):
+              assert git('rev-parse','HEAD:'+name)==git('rev-parse',source+':'+name)
+          original=git('show',source+':README.md')
+          marker=original[original.index('<!-- agent-capability:v1'):original.index('-->',original.index('<!-- agent-capability:v1'))+3]
+          text=git('show','HEAD:README.md')
+          assert text.count(marker)==1 and 'not approved for publication' in text and source in text
+          assert '6ca1fb89f3893192d4b756a463cf7e906accffa6' in text and '11/11 postmerge' in text
+          print('Exact source, scope, discovery marker, legal and brand bytes verified')
+          PY
+  render-root:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: '24.22.3'
+          package-manager-cache: false
+      - run: node --check tools/check_vib_homepage_root.cjs
+      - run: |
+          npm install --prefix "$RUNNER_TEMP/vib-browser" --no-audit --no-fund --save-exact playwright@1.56.1
+          "$RUNNER_TEMP/vib-browser/node_modules/.bin/playwright" install chromium --with-deps
+      - run: NODE_PATH="$RUNNER_TEMP/vib-browser/node_modules" node tools/check_vib_homepage_root.cjs
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        if: always()
+        with:
+          name: vib-root-rehearsal-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/vib-readme-visual/
+          if-no-files-found: warn
+          retention-days: 7
