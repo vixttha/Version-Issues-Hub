@@ -301,7 +301,7 @@ class InstallerTests(unittest.TestCase):
                 with self.subTest(method=method, raw=raw), \
                      patch.object(api.opener, "open", return_value=io.BytesIO(raw)) as req, \
                      patch.object(install.time, "sleep") as delay:
-                    with self.assertRaisesRegex(ValueError, "Invalid GitHub JSON response") as raised:
+                    with self.assertRaisesRegex(install.ResponseDecodeError, "Invalid GitHub JSON response") as raised:
                         api.request(method, PREFIX + "/git/refs/heads/private?ref=secret")
                     self.assertEqual(req.call_count, 1)
                     delay.assert_not_called()

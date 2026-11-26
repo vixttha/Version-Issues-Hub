@@ -724,7 +724,12 @@ def inspect_pending(api, state, path):
                         or base.get("sha") != origin
                         or install.response_object(comparison.get("base_commit"), "base commit").get("sha") != origin):
                     raise ValueError("Pending origin is not an ancestor of candidate parent")
-            result = inspect_operation(api, state, ticket)
+            try:
+                result = inspect_operation(api, state, ticket)
+            except install.ApiError as exc:
+                if exc.status != 404 or exc.retry_after is not None:
+                    raise
+                raise ValueError("Pending candidate evidence not found") from exc
             result["origin_ancestry_verified"] = True
         except ValueError:
             # Unconfirmed evidence is not proof of nonpublication. API errors
@@ -937,7 +942,7 @@ def save(api, state, ledger, handoff, apply=False, *, issue=None, operation_id=N
     ambiguous = False
     try:
         api.request("PATCH", prefix + "/git/refs/heads/" + install.BRANCH, {"sha": new, "force": False})
-    except (install.ApiTransportError, json.JSONDecodeError):
+    except (install.ApiTransportError, install.ResponseDecodeError, json.JSONDecodeError):
         ambiguous = True
     except install.ApiError as error:
         # Rate limits and permanent errors must not trigger polling or resubmission.

@@ -59,7 +59,7 @@ def check_pr_run(item, policy, run, attempt):
 def check_test(api, prefix, policy, evidence, test, *, post_merge=False):
     run, attempt = test["run"], test["attempt"]
     url = f"https://github.com/{policy['repository']}/actions/runs/{run}/attempts/{attempt}"
-    if url not in evidence:
+    if url.lower() not in {link.lower() for link in evidence}:
         raise ValueError("Run is not in staged evidence")
     root = prefix + "/actions/runs/" + str(run)
     for item in (api.request("GET", root), api.request("GET", root + "/attempts/" + str(attempt))):

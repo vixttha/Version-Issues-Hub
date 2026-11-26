@@ -161,7 +161,7 @@ class GitHub:
                     except ValueError:
                         # A malformed write response is uncertain; never replay the write.
                         caution = "; inspect before retrying any write" if method != "GET" else ""
-                        raise ValueError(f"Invalid GitHub JSON response ({method} {api_operation(path)}){caution}") from None
+                        raise ResponseDecodeError(f"Invalid GitHub JSON response ({method} {api_operation(path)}){caution}") from None
             except HTTPError as exc:
                 code = exc.code
                 delay_hint = retry_delay(code, exc.headers, time.time())
@@ -193,6 +193,10 @@ def repo_path(name):
 
 class MalformedResponse(ValueError):
     """Invalid remote response shape, not a transport failure or retry signal."""
+
+
+class ResponseDecodeError(MalformedResponse):
+    """Invalid response encoding or JSON; a write may already have succeeded."""
 
 
 def response_object(value, label):

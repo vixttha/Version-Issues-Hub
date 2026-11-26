@@ -555,6 +555,53 @@ class RecoveryTests(unittest.TestCase):
             self.assertEqual(inspect.call_count, 1)
             self.assertEqual(api.writes, before)
 
+    def test_pending_inventory_missing_candidate_does_not_hide_later_ticket(self):
+        api = self.api
+        with tempfile.TemporaryDirectory() as directory:
+            paths = []
+            result = self.recover(lambda s: self.claim(s, B), B,
+                on_pending_intent=lambda intent: paths.append(session.persist_pending_intent(directory, intent)),
+                on_recovery_ticket=lambda ticket: session.persist_recovery_ticket(directory, ticket))
+            fresh = session.load(api, REPO)
+            missing = "0" * 40
+            session.persist_recovery_ticket(directory, {
+                "schema_version": 1, "repository": self.s["prefix"], "issue": B,
+                "parent_sha": self.s["ref"], "candidate_sha": missing,
+                "tree_sha": "a" * 40, "operation_id": result["operation_id"]})
+            before = list(api.writes)
+            original = api.request
+            for delay in (None, 60):
+                def request(method, path, body=None):
+                    if method == "GET" and "/compare/" + missing + "..." in path:
+                        raise install.ApiError(404, retry_after=delay)
+                    return original(method, path, body)
+                with patch.object(api, "request", side_effect=request):
+                    if delay is not None:
+                        with self.assertRaises(install.ApiError):
+                            session.inspect_pending(api, fresh, paths[0])
+                    else:
+                        inspected = session.inspect_pending(api, fresh, paths[0])
+                        self.assertEqual([x["status"] for x in inspected["candidates"]],
+                                         ["unconfirmed", "published"])
+                        self.assertEqual(inspected["candidates"][1]["installed_sha"], result["installed_sha"])
+            self.assertEqual(api.writes, before)
+
+    def test_decoding_failure_after_patch_confirms_without_replay(self):
+        api = self.api
+        original = api.request
+        calls = []
+        def request(method, path, body=None):
+            if method == "PATCH":
+                calls.append(body["sha"])
+                original(method, path, body)
+                raise install.ResponseDecodeError("Invalid GitHub JSON response")
+            return original(method, path, body)
+        with patch.object(api, "request", side_effect=request):
+            result = self.recover(lambda s: self.claim(s, B), B)
+        self.assertEqual(result["status"], "saved")
+        self.assertEqual(calls, [result["installed_sha"]])
+        self.assertEqual(session.load(api, REPO)["ref"], result["installed_sha"])
+
     def test_idempotent_claim_does_not_create_pending_journal_or_ticket(self):
         api = self.api
         before = list(api.writes)
@@ -570,7 +617,8 @@ class RecoveryTests(unittest.TestCase):
 
     def test_malformed_rejected_write_recovery_retains_candidate(self):
         for error in (AttributeError("invalid response"), KeyError("sha"),
-                      TypeError("wrong response shape"), OSError("read interrupted")):
+                      TypeError("wrong response shape"), OSError("read interrupted"),
+                      install.ResponseDecodeError("Invalid GitHub JSON response")):
             with self.subTest(error=type(error).__name__):
                 rejection = session.HandoffRejected(install.ApiError(422), "a"*40, "b"*40)
                 with patch.object(session, "save", side_effect=rejection) as save, \

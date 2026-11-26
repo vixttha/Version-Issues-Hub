@@ -30,6 +30,15 @@ class StandardTests(unittest.TestCase):
         self.assertEqual(len(result["issues"]),2)
         self.assertEqual(self.api.writes,[])
 
+    def test_staged_evidence_url_case_matches_exact_run_attempt(self):
+        check = self.policy["issues"][0]["criteria"][0]["checks"][0]
+        url = f"https://github.com/{REPO}/actions/runs/123/attempts/1"
+        receipt = standard.check_test(self.api, PREFIX, self.policy, [url.upper()], check)
+        self.assertEqual(receipt["url"], url)
+        with self.assertRaisesRegex(ValueError, "not in staged evidence"):
+            standard.check_test(self.api, PREFIX, self.policy, [url.upper()[:-1] + "2"], check)
+        self.assertEqual(self.api.writes, [])
+
     def test_stale_run_rejected(self):
         self.api.run["run_attempt"]=2
         with self.assertRaisesRegex(ValueError,"stale"):
