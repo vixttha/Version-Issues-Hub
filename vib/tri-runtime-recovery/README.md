@@ -1,0 +1,2 @@
+# Bounded VIB #63 recovery pilot
+Seven frozen deterministic schedules, actual VIB claim/save/recover_save with disposable Git objects and simulated API, including lost response and journal failure; Bash independently reconstructs Git history, PowerShell checks the bounded serial allocation model and negative metadata controls, fresh public runner repeats on raw retained bundles. No live remote, crash-kill, unbounded linearizability, production security or full #63 closure claim. Native files separate. Exact candidate pinned; no product source change.

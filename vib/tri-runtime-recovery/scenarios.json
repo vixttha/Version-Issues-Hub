@@ -1,0 +1,106 @@
+{
+  "schema": 1,
+  "source": "b68796db12681fe4d43b562c8647deca38fa819c",
+  "repository": "example/product",
+  "branch": "Version-Issues-Hub",
+  "scenarios": [
+    {
+      "name": "sequential-bc",
+      "mode": "sequence",
+      "requests": [
+        248,
+        249
+      ],
+      "published": [
+        248,
+        249
+      ],
+      "retries": 0,
+      "patches": 2,
+      "recovered": false
+    },
+    {
+      "name": "sequential-cb",
+      "mode": "sequence",
+      "requests": [
+        249,
+        248
+      ],
+      "published": [
+        249,
+        248
+      ],
+      "retries": 0,
+      "patches": 2,
+      "recovered": false
+    },
+    {
+      "name": "conflict-bc",
+      "mode": "conflict",
+      "requests": [
+        248,
+        249
+      ],
+      "published": [
+        249,
+        248
+      ],
+      "retries": 1,
+      "patches": 3,
+      "recovered": false
+    },
+    {
+      "name": "conflict-cb",
+      "mode": "conflict",
+      "requests": [
+        249,
+        248
+      ],
+      "published": [
+        248,
+        249
+      ],
+      "retries": 1,
+      "patches": 3,
+      "recovered": false
+    },
+    {
+      "name": "idempotent",
+      "mode": "sequence",
+      "requests": [
+        248,
+        248
+      ],
+      "published": [
+        248
+      ],
+      "retries": 0,
+      "patches": 1,
+      "recovered": false
+    },
+    {
+      "name": "lost-response",
+      "mode": "lost",
+      "requests": [
+        248
+      ],
+      "published": [
+        248
+      ],
+      "retries": 0,
+      "patches": 1,
+      "recovered": true
+    },
+    {
+      "name": "journal-failure",
+      "mode": "sink",
+      "requests": [
+        248
+      ],
+      "published": [],
+      "retries": 0,
+      "patches": 0,
+      "recovered": false
+    }
+  ]
+}

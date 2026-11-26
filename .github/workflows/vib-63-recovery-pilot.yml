@@ -1,0 +1,73 @@
+name: VIB #63 bounded tri-runtime recovery pilot
+on:
+  push:
+    branches: [review/vib-63-recovery-pilot]
+permissions:
+  contents: read
+jobs:
+  execute:
+    if: github.repository == 'vixttha/Version-Issues-Hub' && github.event.repository.private == false
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [ubuntu-24.04, windows-latest]
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 15
+    env:
+      GH_TOKEN: ''
+      GITHUB_TOKEN: ''
+      PYTHONUTF8: '1'
+      PYTHONDONTWRITEBYTECODE: '1'
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          path: vault
+          persist-credentials: false
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          path: product
+          ref: 'b68796db12681fe4d43b562c8647deca38fa819c'
+          persist-credentials: false
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
+        with:
+          python-version: '3.12'
+      - name: Execute actual VIB API simulation and preserve Git bundles
+        run: python vault/vib/tri-runtime-recovery/execute.py
+      - name: Bash raw Git replay
+        shell: bash
+        run: bash vault/vib/tri-runtime-recovery/replay.sh "$RUNNER_TEMP/vib63"
+      - name: PowerShell independent frozen scenario model
+        shell: pwsh
+        run: ./vault/vib/tri-runtime-recovery/model.ps1 -Root "$env:RUNNER_TEMP/vib63" -Contract vault/vib/tri-runtime-recovery/scenarios.json -Runner "$env:RUNNER_OS"
+      - name: Remove derived replay snapshots before upload
+        shell: bash
+        run: for d in "$RUNNER_TEMP/vib63"/*/observed; do rm -rf "$d"; done
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: vib63-recovery-${{ matrix.runner }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/vib63
+          if-no-files-found: error
+  fresh-audit:
+    needs: execute
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          pattern: vib63-recovery-*-${{ github.run_id }}-${{ github.run_attempt }}
+          path: retained
+          merge-multiple: false
+      - name: Fresh raw Git reconstruction on separate machine
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(find retained -mindepth 1 -maxdepth 1 -type d | wc -l)" -eq 2
+          for d in retained/*; do bash vib/tri-runtime-recovery/replay.sh "$d"; done
+      - name: Fresh independent semantic model
+        shell: pwsh
+        run: |
+          ./vib/tri-runtime-recovery/model.ps1 -Root "retained/vib63-recovery-ubuntu-24.04-${{ github.run_id }}-${{ github.run_attempt }}" -Contract vib/tri-runtime-recovery/scenarios.json -Runner Linux
+          ./vib/tri-runtime-recovery/model.ps1 -Root "retained/vib63-recovery-windows-latest-${{ github.run_id }}-${{ github.run_attempt }}" -Contract vib/tri-runtime-recovery/scenarios.json -Runner Windows
