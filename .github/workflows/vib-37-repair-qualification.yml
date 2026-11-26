@@ -31,6 +31,11 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           path: after
+          ref: '041e187dc1d383082c1a4805e6d4743eec97e535'
+          persist-credentials: false
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          path: before-review
           ref: 'ab03646daf4fee23e9857bd2ccbb4fd759891611'
           persist-credentials: false
       - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
@@ -42,6 +47,11 @@ jobs:
       - name: Qualify repaired source, not diagnostic expectations
         shell: bash
         run: python vault/vib/repair-qualification/qualify.py after "$RUNNER_TEMP/itqs/after" after
+      - name: Replay full-review defects and positive controls on both revisions
+        shell: bash
+        run: |
+          python vault/vib/repair-qualification/review_delta.py before-review before "$RUNNER_TEMP/itqs/review-before.json"
+          python vault/vib/repair-qualification/review_delta.py after after "$RUNNER_TEMP/itqs/review-after.json"
       - name: Bash exact-source and digest checks
         shell: bash
         run: bash vault/vib/repair-qualification/verify.sh

@@ -7,7 +7,7 @@ out=Path(sys.argv[2]).resolve()
 mode=sys.argv[3]
 out.mkdir(parents=True,exist_ok=True)
 source=subprocess.check_output(["git","-C",str(candidate),"rev-parse","HEAD"],text=True).strip()
-assert source == ({"before":"b68796db12681fe4d43b562c8647deca38fa819c","after":"ab03646daf4fee23e9857bd2ccbb4fd759891611"}[mode])
+assert source == ({"before":"b68796db12681fe4d43b562c8647deca38fa819c","after":"041e187dc1d383082c1a4805e6d4743eec97e535"}[mode])
 sys.path[:0]=[str(candidate),str(candidate/"tests")]
 from tools import install,lifecycle,session,gate,standard
 from test_contention_recovery import RecoveryTests,B,REPO

@@ -1,5 +1,5 @@
 # ITQS independent qualification, batch 1
-Product pins: failing baseline b68796db12681fe4d43b562c8647deca38fa819c; repair candidate ab03646daf4fee23e9857bd2ccbb4fd759891611. Parent audit 3ba37ceaaf518123d00b238a0c2767e2b12e3d15.
+Product pins: failing baseline b68796db12681fe4d43b562c8647deca38fa819c; repair candidate 041e187dc1d383082c1a4805e6d4743eec97e535. Parent audit 3ba37ceaaf518123d00b238a0c2767e2b12e3d15.
 No change to product, install, canonical ledger or checkpoint ownership. This is a strict test of the repair; baseline must exhibit specific failures. A PASS of the baseline step is not a product PASS. No live mutation. Origin ancestry is not origin authentication. API mocks, local Git objects, and native simulated workloads are not actual agent trials.
 
 ## Scope reconciliation
@@ -24,3 +24,5 @@ No change to product, install, canonical ledger or checkpoint ownership. This is
 |16 Lifecycle|16|test_vib53_qualification 100 logical lanes, test_post_merge|real independent hosts separate|
 
 No claim of 400 deduplicated tests. Before expanding, map each unique invariant + input + expected observation + source target against inventory. Cross-platform executions and subtests do not increase named method count. Python calls real candidate methods, Bash verifies Git pins/digests, PowerShell separately reconciles receipts. JS/TS/C#/Java extensions are deferred until the common evidence contract is frozen; do not impose on VIB. Head must review unresolved starvation, host-loss, origin authenticity and real-agent acceptance before closure. No merge.
+
+Full-review delta: independent mechanical probes retain the earlier 85-case contract and compare the immediately preceding candidate against the latest source for reopened/merged staged PRs, unchanged closed PR, partial JSON, invalid UTF-8 and decoded wrong-identity controls. No independent LLM acceptance is inferred.
