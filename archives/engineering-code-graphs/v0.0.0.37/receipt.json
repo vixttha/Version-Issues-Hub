@@ -1,0 +1,19 @@
+{
+  "version": "v0.0.0.37",
+  "issue": 53,
+  "source": "4ebeb16ed99ed2697309343b9ae5b1f54c341ff2",
+  "tree": "cb800cdd46108293de31c70ccdb3a72d4945acdd",
+  "disposition": "experimental_engineering_merge",
+  "original_fix_source": null,
+  "pr": 79,
+  "source_kind": "actual_engineering_merge",
+  "production_integrated": false,
+  "historical_test_claim": false,
+  "graphify_version": "0.9.109",
+  "mode": "code-only AST",
+  "nodes": 852,
+  "edges": 2532,
+  "graph_sha256": "e6966195e687aa61ebdd233f294c4033c9184de7d018f2f44004583917fe15e6",
+  "run": "45858889461",
+  "attempt": "1"
+}
