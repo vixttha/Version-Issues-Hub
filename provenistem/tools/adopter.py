@@ -97,6 +97,10 @@ def plan(source, destination):
         raise ValueError("source and host destination may not be the same")
     if library.has_link_component(source, source):
         raise ValueError("source root symlink")
+    # Check ancestors first: exists() can hide ENOTDIR for a missing child.
+    for parent in reversed(destination.parents):
+        if (parent.exists() or parent.is_symlink()) and not parent.is_dir():
+            raise ValueError(f"host destination ancestor is not a directory: {parent}")
     if destination.is_symlink() or (destination.exists() and not destination.is_dir()):
         raise ValueError("host destination is not a safe directory")
     if not destination.exists():

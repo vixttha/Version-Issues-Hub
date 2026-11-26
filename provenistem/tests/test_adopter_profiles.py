@@ -199,6 +199,20 @@ class AdopterProfiles(unittest.TestCase):
         self.assertEqual(adopter.main([str(dest)]), 1)
         self.assertEqual((dest / "ideas").read_text(), "HOST")
 
+    def test_missing_destination_below_file_is_blocked(self):
+        parent = self.root / "host-file"
+        parent.write_bytes(b"HOST")
+        for dest in (parent / "provenistem", parent / "missing" / "provenistem"):
+            with self.subTest(destination=dest):
+                with self.assertRaisesRegex(ValueError, "ancestor is not a directory"):
+                    adopter.plan(ROOT, dest)
+                self.assertEqual(adopter.main([str(dest)]), 2)
+                self.assertFalse(dest.exists())
+        self.assertEqual(parent.read_bytes(), b"HOST")
+        clean = self.root / "missing" / "provenistem"
+        self.assertEqual(adopter.plan(ROOT, clean)["status"], "NEW_DESTINATION")
+        self.assertFalse(clean.exists())
+
     def test_clean_host_plan_never_writes(self):
         dest = self.root / "brand-new-root"
         result = adopter.plan(ROOT, dest)
