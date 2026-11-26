@@ -202,7 +202,7 @@ class RecoveryTests(unittest.TestCase):
         tree=self.api.tree({session.LEDGER:install.render(ledger)},self.api.git("rev-parse",s["ref"]+"^{tree}"))
         self.api.ref(install.BRANCH,self.api.commit(tree,[s["ref"]]))
         fresh=session.load(self.api,REPO)
-        with self.assertRaisesRegex(ValueError,"Historical acceptance changed"):
+        with self.assertRaisesRegex(ValueError,"Historical acceptance criteria changed"):
             session.retry_scope(self.api,s,fresh,B,session.HandoffStale("advanced"))
 
     def test_package_change_then_restore_refused(self):

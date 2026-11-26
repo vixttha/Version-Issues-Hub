@@ -449,7 +449,8 @@ class SessionTests(unittest.TestCase):
                     broken["history"][0]["handoff"].update(changes)
                     with self.assertRaises(ValueError):
                         session.validate_handoff(broken, ledger)
-            self.assertEqual(handoff["history"][0]["handoff"]["evidence"], [RUN])
+            expected = [RUN, RUN.replace("/123/", "/124/")] if disposition == "integrated" else [RUN]
+            self.assertEqual(handoff["history"][0]["handoff"]["evidence"], expected)
 
     def test_archived_nonsuccess_dispositions_preserve_unverified_history(self):
         self.claim()

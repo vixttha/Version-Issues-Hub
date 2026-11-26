@@ -54,8 +54,9 @@ class IssueIsolationTests(unittest.TestCase):
             ledger,handoff=session.advance(api,s,"block B",return_to_head=True)
             ledger["issues"][0][field]=value
             before=copy.deepcopy(s)
+            expected = "Historical acceptance criteria changed" if field == "acceptance" else "scope violation"
             for apply in (False,True):
-                with self.assertRaisesRegex(ValueError,"scope violation"):
+                with self.assertRaisesRegex(ValueError,expected):
                     session.save(api,s,ledger,handoff,apply,issue=B)
             self.assertEqual(s,before)
         self.assertEqual(api.writes,[])
@@ -69,8 +70,9 @@ class IssueIsolationTests(unittest.TestCase):
                 bad["history"].append(copy.deepcopy(bad["history"][0]))
             else:
                 bad["history"][0]["handoff"]["evidence"]=[]
+            expected = "Archived staged/integrated handoff requires" if mutate == "rewrite" else "scope violation"
             for apply in (False,True):
-                with self.assertRaisesRegex(ValueError,"Historical handoff changed|scope violation"):
+                with self.assertRaisesRegex(ValueError,expected):
                     session.save(api,s,ledger,bad,apply,issue=B)
         self.assertEqual(api.writes,[])
 
