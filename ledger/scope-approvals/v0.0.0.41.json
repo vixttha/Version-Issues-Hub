@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "repository": "vixttha/Version-Issues-Hub",
+  "issue": 92,
+  "version": "v0.0.0.41",
+  "base_sha": "43ef2b660aae5ccee00009e900509158f0137d0f",
+  "reviewed_sha": "43ef2b660aae5ccee00009e900509158f0137d0f",
+  "previous_approval_sha": null,
+  "criteria": [
+    "Enforce a bounded, explicit owner-approved issue scope for changes and qualification; bind any scope amendment to the issue/version and reviewed exact revision, refuse unauthorized expansion and preserve existing immutable acceptance criteria.",
+    "Keep experimental capabilities and their evidence separate from accepted production capabilities; default to the singleton workflow and prevent unauthorized activation or promotion of experimental parallel behavior; preserve #53/.37 historical experimental disposition and deferred findings.",
+    "Preserve #37/#40 release holds, owner qualification law, exact evidence and owner authority; refuse stale, wrong-scope or contradictory approval and prevent implied integration, migration, release or advanced qualification.",
+    "Use small deterministic regression controls, ordinary public Ubuntu/Windows runners, Graphify and CodeRabbit; preserve historical mappings, archive bytes and the six laws. No live migration, production merge, schedule restart, advanced trials, paid runners, new dependencies or .42 recovery/evidence-reuse work."
+  ],
+  "allowed_paths": [
+    ".github/workflows/verify-checkpoint.yml",
+    "docs/receipt-evidence.json",
+    "docs/v0.0.0.41.md",
+    "install/branch/WORKFLOW.md",
+    "ledger/issue-versions.json",
+    "ledger/receipt-scope.json",
+    "ledger/self-use-worker.json",
+    "tests/test_contention_recovery.py",
+    "tests/test_engineering_completion.py",
+    "tests/test_parallel_handoff.py",
+    "tests/test_scope_control.py",
+    "tests/test_vib53_qualification.py",
+    "tools/gate.py",
+    "tools/self_use_preflight.py",
+    "tools/session.py",
+    "tools/standard.py"
+  ],
+  "qualification": "ordinary",
+  "disposition": "engineering_only",
+  "owner_decision": "Owner directed completion of all eight .41 tasks under the four locked #92 criteria; bounded implementation paths selected by the delegated Worker, subject to independent final review. No expanded qualification, experimental activation, live migration, main merge or release."
+}
