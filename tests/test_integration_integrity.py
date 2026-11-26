@@ -25,7 +25,7 @@ class IntegrationIntegrityTests(unittest.TestCase):
         self.state["ledger"], self.state["handoff"] = session.finish(
             self.api, self.state, "deferred", "Engineering complete, integration later")
         before = copy.deepcopy(self.state)
-        with self.assertRaisesRegex(ValueError, "integration debt"):
+        with self.assertRaisesRegex(ValueError, "(?i)integration debt"):
             session.claim(self.api, self.state, 248, ["test second"], "New work")
         self.assertEqual(self.state, before)
         self.assertEqual(self.api.writes, [])
@@ -35,7 +35,7 @@ class IntegrationIntegrityTests(unittest.TestCase):
         self.state["ledger"], self.state["handoff"] = session.finish(
             self.api, self.state, "staged", "Owner stages")
         before = copy.deepcopy(self.state)
-        with self.assertRaisesRegex(ValueError, "integration debt"):
+        with self.assertRaisesRegex(ValueError, "(?i)integration debt"):
             session.claim(self.api, self.state, 248, ["test second"], "New work")
         self.assertEqual(self.state, before)
         self.assertEqual(self.api.writes, [])
@@ -62,7 +62,7 @@ class IntegrationIntegrityTests(unittest.TestCase):
         self.assertEqual(session.save(self.api, self.state, ledger, handoff, issue=247,
                                       deferral_approved=True)["status"], "planned")
         self.state.update(ledger=ledger, handoff=handoff)
-        with self.assertRaisesRegex(ValueError, "integration debt"):
+        with self.assertRaisesRegex(ValueError, "(?i)integration debt"):
             session.claim(self.api, self.state, 249, ["other"], "Wrong scope")
         ledger, handoff = session.claim(self.api, self.state, 248, ["next"], "Approved")
         self.assertEqual(handoff["active"]["issue"], 248)
@@ -100,7 +100,7 @@ class IntegrationIntegrityTests(unittest.TestCase):
                              "next_action": "forged", "fix_sha": None, "candidate_sha": None,
                              "pull_request": None, "evidence": []}
         for apply in (False, True):
-            with self.assertRaisesRegex(ValueError, "integration debt"):
+            with self.assertRaisesRegex(ValueError, "(?i)integration debt"):
                 session.save(self.api, self.state, ledger, handoff, apply, issue=248)
         self.assertEqual(self.api.writes, [])
 
@@ -124,4 +124,30 @@ class IntegrationIntegrityTests(unittest.TestCase):
         self.api.pre_run["run_attempt"] = 2
         with self.assertRaises(ValueError):
             session.claim(self.api, self.state, 248, ["next"], "New work")
+        self.assertEqual(self.api.writes, [])
+
+    def test_blocked_rework_cannot_hide_historical_debt(self):
+        self.reach_head()
+        self.state["ledger"], self.state["handoff"] = session.finish(
+            self.api, self.state, "deferred", "Legacy debt")
+        self.state["ledger"], self.state["handoff"] = session.claim(
+            self.api, self.state, 247, ["test"], "Rework")
+        self.state["ledger"], self.state["handoff"] = session.advance(
+            self.api, self.state, "Blocked", return_to_head=True)
+        self.state["ledger"], self.state["handoff"] = session.finish(
+            self.api, self.state, "blocked", "Unresolved blocker")
+        self.assertEqual(session.unresolved_integration_debt(self.state)[0]["issue"],247)
+        with self.assertRaisesRegex(ValueError, "(?i)integration debt"):
+            session.claim(self.api, self.state, 248, ["next"], "Unrelated")
+        self.assertEqual(self.api.writes, [])
+
+    def test_ledger_only_integration_cannot_erase_debt(self):
+        self.reach_head()
+        self.state["ledger"], self.state["handoff"] = session.finish(
+            self.api, self.state, "deferred", "Legacy debt")
+        ledger, handoff = copy.deepcopy(self.state["ledger"]), copy.deepcopy(self.state["handoff"])
+        ledger["issues"][0]["state"] = "integrated"
+        for apply in (False, True):
+            with self.assertRaisesRegex(ValueError,"exact integration archive"):
+                session.save(self.api,self.state,ledger,handoff,apply,issue=247)
         self.assertEqual(self.api.writes, [])

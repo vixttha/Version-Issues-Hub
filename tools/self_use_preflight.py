@@ -149,6 +149,50 @@ def approval_parent(revision, path):
     return approval_change(parents[0], path)
 
 
+# Incident-specific, forward-only recovery for the malformed #96 claim.
+# The original combined commit is never accepted as a current approval.
+# Only an independent policy-only successor may invoke this validation.
+MALFORMED_043_SCOPE = "08f9b79cbbf9be50a396c1a54cf92dd308c0b268"
+MALFORMED_043_PARENT = "5a7dff464e2dd763c3a72717abc0d3a2dc12dd78"
+
+
+def verify_043_scope_genesis(revision, path, approval, successor, successor_revision):
+    if (revision != MALFORMED_043_SCOPE
+            or path != "ledger/scope-approvals/v0.0.0.43.json"
+            or approval["issue"] != 96 or approval["version"] != "v0.0.0.43"
+            or approval["repository"] != "vixttha/Version-Issues-Hub"
+            or approval["previous_approval_sha"] is not None
+            or successor["previous_approval_sha"] != revision):
+        raise ValueError("Malformed scope genesis is not eligible for incident recovery")
+    if (checkpoint.git("show", "-s", "--format=%P", revision).split()
+            != [MALFORMED_043_PARENT]
+            or changed_paths(MALFORMED_043_PARENT, revision) != {
+                path, "ledger/issue-versions.json", "ledger/handoff.json"}
+            or approval_change(MALFORMED_043_PARENT, path) is not None):
+        raise ValueError("Malformed scope genesis ancestry or paths differ")
+    if approval_parent(successor_revision, path) != revision:
+        raise ValueError("Recovery must be an independent scope-policy successor")
+    immutable = SCOPE_KEYS - {"reviewed_sha", "previous_approval_sha", "owner_decision"}
+    if any(successor[k] != approval[k] for k in immutable):
+        raise ValueError("Recovery must retain exact original scope")
+    def read(rev, file):
+        return checkpoint.parse_json(checkpoint.git("show", rev + ":" + file))
+    old = read(MALFORMED_043_PARENT, "ledger/issue-versions.json")
+    new = read(revision, "ledger/issue-versions.json")
+    before = read(MALFORMED_043_PARENT, "ledger/handoff.json")
+    after = read(revision, "ledger/handoff.json")
+    session.validate_handoff(before, old)
+    session.validate_handoff(after, new)
+    checkpoint.check_history(new, old)
+    if (before["schema_version"] != 1 or after["schema_version"] != 1
+            or before["active"] is not None or before["history"] != after["history"]
+            or new["issues"][:-1] != old["issues"]
+            or new["issues"][-1] != {"issue": 96, "version": "v0.0.0.43",
+                "state": "in_progress", "acceptance": approval["criteria"]}
+            or after["active"]["issue"] != 96 or after["active"]["phase"] != "Worker"):
+        raise ValueError("Malformed claim changed historical state or Worker identity")
+
+
 def verify_scope(pin, issue, version, head, current, pr_base=None):
     path = "ledger/scope-approvals/" + version + ".json"
     def read(revision):
@@ -164,8 +208,14 @@ def verify_scope(pin, issue, version, head, current, pr_base=None):
     ancestor(approval["base_sha"], head)
     ancestor(approval["reviewed_sha"], head)
     cursor, child = pin, approval
+    successor = None
     for _ in range(32):
         prior = child["previous_approval_sha"]
+        if cursor == MALFORMED_043_SCOPE:
+            if successor is None or pin == cursor:
+                raise ValueError("Malformed canonical scope requires independent recovery approval")
+            verify_043_scope_genesis(cursor, path, child, successor[1], successor[0])
+            break
         if approval_parent(cursor, path) != prior:
             raise ValueError("Scope approval predecessor does not match actual canonical history")
         if prior is None:
@@ -179,6 +229,7 @@ def verify_scope(pin, issue, version, head, current, pr_base=None):
             raise ValueError("Amendment must bind a new reviewed revision and unchanged baseline")
         ancestor(parent["reviewed_sha"], child["reviewed_sha"])
         assert_scope_paths(parent, scope_paths(parent["base_sha"], child["reviewed_sha"]))
+        successor = (cursor, child)
         cursor, child = prior, parent
     else:
         raise ValueError("Scope amendment chain exceeds bound")

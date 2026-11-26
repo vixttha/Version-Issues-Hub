@@ -136,6 +136,54 @@ class ScopeControlTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "not an ancestor"):
                 scope.verify_scope(pin, 92, "v0.0.0.41", head, current)
 
+    def test_malformed_043_scope_cannot_authorize_itself(self):
+        record = {**self.record, "issue": 96, "version": "v0.0.0.43"}
+        ledger = {**self.ledger, "issues": [{"issue": 96, "version": "v0.0.0.43",
+                        "state": "in_progress", "acceptance": record["criteria"]}]}
+        pin = scope.MALFORMED_043_SCOPE
+        with patch.object(scope.checkpoint, "git", side_effect=lambda *args:
+                json.dumps(ledger if args[1].endswith("issue-versions.json") else record)), \
+             patch.object(scope, "approval_change", return_value=pin), \
+             patch.object(scope, "ancestor"):
+            with self.assertRaisesRegex(ValueError, "independent recovery"):
+                scope.verify_scope(pin, 96, "v0.0.0.43", "d"*40, pin)
+
+    def test_malformed_043_recovery_preserves_scope_and_exact_claim(self):
+        record = {**self.record, "issue": 96, "version": "v0.0.0.43"}
+        predecessor = scope.MALFORMED_043_SCOPE
+        successor = {**record, "previous_approval_sha": predecessor,
+                     "reviewed_sha": "e"*40, "owner_decision": "Reviewed forward correction"}
+        path = "ledger/scope-approvals/v0.0.0.43.json"
+        old = {**self.ledger, "issues": []}
+        new = {**old, "issues": [{"issue":96, "version":"v0.0.0.43",
+                            "state":"in_progress", "acceptance":record["criteria"]}]}
+        before = {"schema_version":1, "active":None, "history":[]}
+        active = {"issue":96, "version":"v0.0.0.43", "phase":"Worker",
+                  "next_action":"Repair", "fix_sha":None, "candidate_sha":None,
+                  "pull_request":None, "evidence":[]}
+        after = {**before, "active":active}
+        def read(*args):
+            if args[1] == "-s":
+                return scope.MALFORMED_043_PARENT
+            rev, file = args[1].split(":",1)
+            prior = rev == scope.MALFORMED_043_PARENT
+            return json.dumps((old if prior else new) if file.endswith("issue-versions.json")
+                              else (before if prior else after))
+        with patch.object(scope.checkpoint, "git", side_effect=read), \
+             patch.object(scope, "changed_paths", return_value={path,"ledger/issue-versions.json",
+                                                               "ledger/handoff.json"}), \
+             patch.object(scope, "approval_change", return_value=None), \
+             patch.object(scope, "approval_parent", return_value=predecessor):
+            scope.verify_043_scope_genesis(predecessor,path,record,successor,"f"*40)
+            with self.assertRaisesRegex(ValueError,"retain exact original scope"):
+                scope.verify_043_scope_genesis(predecessor,path,record,
+                    {**successor,"allowed_paths":["new.py"]},"f"*40)
+            with self.assertRaisesRegex(ValueError,"not eligible"):
+                scope.verify_043_scope_genesis("1"*40,path,record,successor,"f"*40)
+            after["history"] = [{"unexpected":"archive"}]
+            with self.assertRaises(ValueError):
+                scope.verify_043_scope_genesis(predecessor,path,record,successor,"f"*40)
+
     def test_legacy_explicit_preflight_cannot_bypass_scope(self):
         with patch("sys.argv", ["preflight", "--installed-ref", "a"*40, "--issue", "92"]), \
              patch.object(scope, "read_projection", return_value="v0.0.0.41"), \

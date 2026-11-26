@@ -1241,7 +1241,20 @@ def check_deferral(api, state, record, next_issue=None):
 
 
 def unresolved_integration_debt(state):
-    return [r for r in state["ledger"]["issues"] if r["state"] in ("staged", "deferred")]
+    # A rework or blocked disposition must not erase earlier integration debt.
+    # Only a recorded integrated disposition may resolve it; actual integration
+    # proof is rechecked on publication, not inferred from the ledger label.
+    outstanding = set()
+    for record in state["handoff"]["history"]:
+        if closure_receipt(record) is not None:
+            continue
+        number = record["handoff"]["issue"]
+        if record["disposition"] in ("staged", "deferred"):
+            outstanding.add(number)
+        elif record["disposition"] == "integrated":
+            outstanding.discard(number)
+    return [r for r in state["ledger"]["issues"]
+            if r["state"] in ("staged", "deferred") or r["issue"] in outstanding]
 
 
 def require_integration_debt_clear(api, state, number):
@@ -1256,8 +1269,9 @@ def require_integration_debt_clear(api, state, number):
         prior = next((r for r in reversed(state["handoff"]["history"])
                       if r["handoff"]["issue"] == row["issue"]
                       and closure_receipt(r) is None), None)
-        if prior is None or prior["disposition"] != row["state"]:
-            raise ValueError("Missing integration debt archive; owner reconciliation required")
+        if (prior is None or row["state"] not in ("staged", "deferred")
+                or prior["disposition"] != row["state"]):
+            raise ValueError("Missing current integration debt archive; owner reconciliation required")
         check_deferral(api, state, prior, number)
 
 
@@ -1810,7 +1824,16 @@ def save(api, state, ledger, handoff, apply=False, *, issue=None, operation_id=N
         for active in active_rows(handoff):
             if active["issue"] not in previous:
                 require_integration_debt_clear(api, state, active["issue"])
-        for record in handoff["history"][len(state["handoff"]["history"]):]:
+        appended = handoff["history"][len(state["handoff"]["history"]):]
+        before = {row["issue"]: row for row in state["ledger"]["issues"]}
+        for row in ledger["issues"]:
+            old = before.get(row["issue"])
+            if row["state"] == "integrated" and (old is None or old["state"] != "integrated"):
+                proof = [r for r in appended if r["handoff"]["issue"] == row["issue"]
+                         and r["disposition"] == "integrated"]
+                if len(proof) != 1:
+                    raise ValueError("Integration debt cannot clear without exact integration archive")
+        for record in appended:
             if deferral_record(record) is not None:
                 if deferral_approved is not True:
                     raise ValueError("Explicit owner approval of integration debt deferral required")
