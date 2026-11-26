@@ -1696,6 +1696,70 @@
           "anchor": "def test_malformed_043_scope_cannot_authorize_itself(self):"
         }
       ]
+    },
+    {
+      "id": "v0-0-0-43-review",
+      "label": "Issue #96 · review-driven publication and recovery safeguards (candidate)",
+      "documented_in": [
+        {
+          "path": "docs/v0.0.0.43.md",
+          "anchor": "## Review-driven corrective preparation"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "tools/session.py",
+          "anchor": "def invalidated_archive_runs(state, active):"
+        },
+        {
+          "path": "tools/install.py",
+          "anchor": "Installed ref was created at "
+        }
+      ],
+      "implemented_in": [
+        {
+          "path": "tools/session.py",
+          "anchor": "Integration publication must preserve original handoff pins"
+        },
+        {
+          "path": "tools/session.py",
+          "anchor": "Integration debt deferral expired before publication"
+        },
+        {
+          "path": "tools/session.py",
+          "anchor": "Historical engineering approval conflicts with archived handoff pin"
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tests/test_integration_integrity.py",
+          "anchor": "def test_direct_integration_cannot_replace_archived_fix(self):"
+        },
+        {
+          "path": "tests/test_integration_integrity.py",
+          "anchor": "def test_historical_legacy_conflicting_pin_rejected(self):"
+        },
+        {
+          "path": "tests/test_integration_integrity.py",
+          "anchor": "def test_archived_run_invalidated_when_preview_changes(self):"
+        },
+        {
+          "path": "tests/test_integration_integrity.py",
+          "anchor": "def test_expiry_after_final_remote_validation_refuses_patch(self):"
+        },
+        {
+          "path": "tests/test_install.py",
+          "anchor": "def test_post_install_default_change_requires_inspection(self):"
+        },
+        {
+          "path": "tests/test_scope_control.py",
+          "anchor": "def test_malformed_043_recovery_preserves_scope_and_exact_claim(self):"
+        },
+        {
+          "path": "tests/test_graphify_evidence.py",
+          "anchor": "def test_integration_integrity_graph_anchors_match_exact_source(self):"
+        }
+      ]
     }
   ]
 }

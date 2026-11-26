@@ -271,3 +271,28 @@ class IntegrationIntegrityTests(unittest.TestCase):
         active["integration_merge_sha"] = "1"*40
         self.assertIn(session.evidence_run(self.state["ledger"]["repository"], RUN)[0],
                       session.invalidated_archive_runs(self.state, active))
+
+    def test_expiry_after_final_remote_validation_refuses_patch(self):
+        from unittest.mock import patch
+        self.reach_head()
+        decision = bounded_deferral(self.state, self.api, 248)
+        approved = json.loads(decision[len(session.DEFERRAL_DECISION):])
+        ledger, handoff = session.finish(self.api, self.state, "staged", decision,
+                                         deferral_approved=True)
+        clock = [approved["approved_at"]]
+        journal = [False]
+        original = session.verify_candidate_runs
+        def verify(*args, **kwargs):
+            result = original(*args, **kwargs)
+            if journal[0]:
+                clock[0] = approved["expires_at"]
+            return result
+        def ticket(_):
+            journal[0] = True
+        with patch.object(session.time, "time", side_effect=lambda: clock[0]), \
+             patch.object(session, "verify_candidate_runs", side_effect=verify):
+            with self.assertRaisesRegex(ValueError,"expired before publication"):
+                session.save(self.api,self.state,ledger,handoff,True,issue=247,
+                             deferral_approved=True,operation_id="a"*64,on_recovery_ticket=ticket)
+        self.assertEqual([w[0] for w in self.api.writes], ["POST","POST"])
+        self.assertEqual(self.api.ref, self.state["ref"])
