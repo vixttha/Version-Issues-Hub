@@ -2,6 +2,7 @@ name: VIB independent .37 and historical relationship audit
 on:
   push:
     branches: [review/vib-53-independent-audit]
+    paths-ignore: ['.github/workflows/vib-37-archive-readback.yml', 'vib/independent-audit/archive_readback_37.py']
 permissions:
   contents: read
 jobs:
