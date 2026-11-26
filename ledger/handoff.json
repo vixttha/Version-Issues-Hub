@@ -1,5 +1,14 @@
 {
-  "active": null,
+  "active": {
+    "issue": 84,
+    "version": "v0.0.0.39",
+    "phase": "Worker",
+    "next_action": "Implement engineering completion vs production integration separation on engineering base 26243de4d616598989bdbc15ac74966241bd9a6c. Preserve .37/.38 historical dispositions; no live migration, main merge, release, advanced qualification, schedule restart or scope expansion into .40–.42. Use ordinary scoped regression only.",
+    "fix_sha": null,
+    "candidate_sha": null,
+    "pull_request": null,
+    "evidence": []
+  },
   "history": [
     {
       "decision": "PR49 CodeRabbit finding 4682051116: rework exact product SHA comparisons and add regression checks; preserve previous evidence.",
