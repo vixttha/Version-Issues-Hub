@@ -1,0 +1,41 @@
+{
+  "schema_version": 1,
+  "id": "IDEA-000012",
+  "title": "Independent implementation provenance",
+  "summary": "Capture a VIB-specific research-to-requirements policy: lawful source inspection, private provenance, original design and tests, no unapproved reuse, required legal notices preserved. Owner-approved direction is separate from package integration.",
+  "kind": "process",
+  "origin": {
+    "created_by": "joint",
+    "source": "Owner-directed VIB engineering research and independent implementation discussion, 2026-11-25; source-level provenance retained separately."
+  },
+  "lifecycle_status": "captured",
+  "implementation_status": "not_planned",
+  "testing": {
+    "status": "untested"
+  },
+  "importance": "high",
+  "complexity": "medium",
+  "categories": [
+    "governance",
+    "provenance"
+  ],
+  "benefits": [
+    "Maintains product identity and traceable development"
+  ],
+  "risks": [
+    "Private source records must not leak; provenance is not legal clearance or formal clean-room proof"
+  ],
+  "related_ideas": [
+    "IDEA-000005",
+    "IDEA-000009"
+  ],
+  "evidence": [
+    {
+      "relation": "context",
+      "claim": "Existing VIB candidate context only; does not establish implementation or acceptance of this idea.",
+      "repository": "vixttha/Version-Issues-Hub",
+      "commit": "a4684c3fd61e5d7a8472b1fa23831bec26341b80",
+      "path": "ENGINEERING-LAWS.md"
+    }
+  ]
+}

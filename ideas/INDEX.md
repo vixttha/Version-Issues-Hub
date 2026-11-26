@@ -15,3 +15,11 @@
 | IDEA-000009 | Permanent project-local VIB identity | adopted | not\_applicable |
 | IDEA-000010 | Issue-specific reuse of verified evidence | adopted | planned |
 | IDEA-000011 | Repository visibility and execution policy research | exploring | not\_planned |
+| IDEA-000012 | Independent implementation provenance | captured | not\_planned |
+| IDEA-000013 | Recover pending intent across host loss | captured | not\_planned |
+| IDEA-000014 | Rate-limit-aware transaction efficiency | captured | not\_planned |
+| IDEA-000015 | Adversarial authorization and scope checks | captured | not\_planned |
+| IDEA-000016 | Read-only recovery and blocker diagnostics | captured | not\_planned |
+| IDEA-000017 | Lifecycle fault-injection qualification | captured | not\_planned |
+| IDEA-000018 | Provider-neutral onboarding readiness | captured | not\_planned |
+| IDEA-000019 | Regression isolation and order independence | captured | not\_planned |

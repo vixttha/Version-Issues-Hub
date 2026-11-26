@@ -1,0 +1,42 @@
+{
+  "schema_version": 1,
+  "id": "IDEA-000014",
+  "title": "Rate-limit-aware transaction efficiency",
+  "summary": "Measure API calls per authorized transition and reduce redundant immutable reads while honoring rate-limit cooldown, bounded retries and fresh mutable-state checks. Compare matched workloads at different logical client counts.",
+  "kind": "research",
+  "origin": {
+    "created_by": "joint",
+    "source": "Owner-directed VIB engineering research and independent implementation discussion, 2026-11-25; source-level provenance retained separately."
+  },
+  "lifecycle_status": "captured",
+  "implementation_status": "not_planned",
+  "testing": {
+    "status": "untested"
+  },
+  "importance": "high",
+  "complexity": "high",
+  "categories": [
+    "performance",
+    "recovery"
+  ],
+  "benefits": [
+    "Lower API pressure and reproducible performance comparisons"
+  ],
+  "risks": [
+    "Caching mutable refs or ignoring cooldown can undermine correctness; simulations are not actual independent-agent trials"
+  ],
+  "related_ideas": [
+    "IDEA-000008",
+    "IDEA-000010",
+    "IDEA-000011"
+  ],
+  "evidence": [
+    {
+      "relation": "context",
+      "claim": "Existing VIB candidate context only; does not establish implementation or acceptance of this idea.",
+      "repository": "vixttha/Version-Issues-Hub",
+      "commit": "a4684c3fd61e5d7a8472b1fa23831bec26341b80",
+      "path": "tests/test_vib53_qualification.py"
+    }
+  ]
+}

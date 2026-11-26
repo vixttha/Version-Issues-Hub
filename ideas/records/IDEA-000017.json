@@ -1,0 +1,41 @@
+{
+  "schema_version": 1,
+  "id": "IDEA-000017",
+  "title": "Lifecycle fault-injection qualification",
+  "summary": "Extend non-destructive lifecycle qualification with interrupted upgrade, missing or altered files, incompatible schema, concurrent state movement and rollback preservation cases. Verify exact original data and evidence remain intact.",
+  "kind": "research",
+  "origin": {
+    "created_by": "joint",
+    "source": "Owner-directed VIB engineering research and independent implementation discussion, 2026-11-25; source-level provenance retained separately."
+  },
+  "lifecycle_status": "captured",
+  "implementation_status": "not_planned",
+  "testing": {
+    "status": "untested"
+  },
+  "importance": "high",
+  "complexity": "medium",
+  "categories": [
+    "installation",
+    "verification"
+  ],
+  "benefits": [
+    "Improves installer and upgrade confidence"
+  ],
+  "risks": [
+    "Existing lifecycle implementation must not be replaced; no real adopter migration without owner approval"
+  ],
+  "related_ideas": [
+    "IDEA-000005",
+    "IDEA-000009"
+  ],
+  "evidence": [
+    {
+      "relation": "context",
+      "claim": "Existing VIB candidate context only; does not establish implementation or acceptance of this idea.",
+      "repository": "vixttha/Version-Issues-Hub",
+      "commit": "a4684c3fd61e5d7a8472b1fa23831bec26341b80",
+      "path": "install/branch/WORKFLOW.md"
+    }
+  ]
+}

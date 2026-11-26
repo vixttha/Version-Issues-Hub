@@ -1,0 +1,42 @@
+{
+  "schema_version": 1,
+  "id": "IDEA-000013",
+  "title": "Recover pending intent across host loss",
+  "summary": "Explore provider-neutral recovery of an interrupted authorized operation when the original host disappears. Compare retained tickets with repository-native evidence; distinguish same-intent recovery from new intent, and never replay an uncertain mutation.",
+  "kind": "architecture",
+  "origin": {
+    "created_by": "joint",
+    "source": "Owner-directed VIB engineering research and independent implementation discussion, 2026-11-25; source-level provenance retained separately."
+  },
+  "lifecycle_status": "captured",
+  "implementation_status": "not_planned",
+  "testing": {
+    "status": "untested"
+  },
+  "importance": "critical",
+  "complexity": "high",
+  "categories": [
+    "recovery",
+    "transactions"
+  ],
+  "benefits": [
+    "Reduces abandoned work without losing issue identity"
+  ],
+  "risks": [
+    "Remote persistence may expose data or add contention; no mandatory service, automatic reassignment or exactly-once claim"
+  ],
+  "related_ideas": [
+    "IDEA-000007",
+    "IDEA-000008",
+    "IDEA-000009"
+  ],
+  "evidence": [
+    {
+      "relation": "context",
+      "claim": "Existing VIB candidate context only; does not establish implementation or acceptance of this idea.",
+      "repository": "vixttha/Version-Issues-Hub",
+      "commit": "a4684c3fd61e5d7a8472b1fa23831bec26341b80",
+      "path": "tools/session.py"
+    }
+  ]
+}

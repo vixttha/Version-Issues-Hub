@@ -1,0 +1,42 @@
+{
+  "schema_version": 1,
+  "id": "IDEA-000016",
+  "title": "Read-only recovery and blocker diagnostics",
+  "summary": "Explore a portable machine-readable inspection view distinguishing confirmed, unconfirmed, stale, conflicting, throttled and owner-review-required operations, with actionable non-mutating recovery guidance.",
+  "kind": "feature",
+  "origin": {
+    "created_by": "joint",
+    "source": "Owner-directed VIB engineering research and independent implementation discussion, 2026-11-25; source-level provenance retained separately."
+  },
+  "lifecycle_status": "captured",
+  "implementation_status": "not_planned",
+  "testing": {
+    "status": "untested"
+  },
+  "importance": "high",
+  "complexity": "medium",
+  "categories": [
+    "diagnostics",
+    "recovery"
+  ],
+  "benefits": [
+    "Helps a fresh agent recover without guessing"
+  ],
+  "risks": [
+    "Must not disclose secrets, infer approval, or convert unknown outcomes into success"
+  ],
+  "related_ideas": [
+    "IDEA-000007",
+    "IDEA-000008",
+    "IDEA-000010"
+  ],
+  "evidence": [
+    {
+      "relation": "context",
+      "claim": "Existing VIB candidate context only; does not establish implementation or acceptance of this idea.",
+      "repository": "vixttha/Version-Issues-Hub",
+      "commit": "a4684c3fd61e5d7a8472b1fa23831bec26341b80",
+      "path": "tools/session.py"
+    }
+  ]
+}
