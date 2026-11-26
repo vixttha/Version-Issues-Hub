@@ -103,7 +103,7 @@
       "implemented_in": [
         {
           "path": "tools/session.py",
-          "anchor": "def load(api, target, expected_sha=None):"
+          "anchor": "def load(api, target, expected_sha=None, *, _source_cache=None):"
         }
       ],
       "tested_by": [
@@ -1004,6 +1004,10 @@
         {
           "path": "tools/session.py",
           "anchor": "def inspect_operation(api, state, ticket):"
+        },
+        {
+          "path": "tools/session.py",
+          "anchor": "def persist_recovery_ticket(directory, ticket):"
         }
       ],
       "tested_by": [
@@ -1022,6 +1026,18 @@
         {
           "path": "tests/test_vib53_qualification.py",
           "anchor": "def test_full_lifecycle_with_one_hundred_distinct_issue_lanes(self):"
+        },
+        {
+          "path": "tests/test_contention_recovery.py",
+          "anchor": "def test_durable_ticket_survives_fresh_process_and_refuses_overwrite(self):"
+        },
+        {
+          "path": "tests/test_contention_recovery.py",
+          "anchor": "def test_retry_source_cache_never_caches_installed_bytes(self):"
+        },
+        {
+          "path": "tests/test_vib53_qualification.py",
+          "anchor": "def test_matched_serial_and_parallel_protocol_cost(self):"
         }
       ]
     }

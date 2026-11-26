@@ -239,6 +239,51 @@ class QualificationTests(unittest.TestCase):
         self.assertEqual(api.read(api.product, "product.txt"), "unchanged")
         print("VIB53_FULL_LOOP 100 staged logical lanes; 500 exact simulated ref publications; 99 cross-lane run rejections", flush=True)
 
+    def test_matched_serial_and_parallel_protocol_cost(self):
+        # Same tasks and same mock API; a protocol cost comparison, not AI productivity.
+        measurements = []
+        for workers in (1, 4):
+            api = MemoryGit()
+            numbers = list(range(3000, 3008))
+            started = time.perf_counter()
+            deferred = []
+            real_sleep = time.sleep
+            with patch.object(install, "source_files", return_value=PACKAGE), \
+                 patch.object(install, "read_text", side_effect=lambda api, prefix, path, ref: api.read(ref, path)), \
+                 patch.object(install.time, "sleep", side_effect=lambda delay: real_sleep(delay/1000)):
+                for phase in ("claim", "head", "finish"):
+                    def execute(number):
+                        state = session.load(api, REPO)
+                        def plan(current):
+                            if phase == "claim":
+                                return session.claim(api, current, number, ["proof"], "claim")
+                            if phase == "head":
+                                return session.advance(api, current, "Head", issue=number, return_to_head=True)
+                            return session.finish(api, current, "blocked", "test", issue=number)
+                        try:
+                            result = session.recover_save(api, REPO, state, plan, number, rounds=2)
+                        except session.HandoffDeferred:
+                            return False
+                        self.assertEqual(result["status"], "saved")
+                        return True
+                    with ThreadPoolExecutor(max_workers=workers) as pool:
+                        results = list(pool.map(execute, numbers))
+                    for number, success in zip(numbers, results):
+                        if not success:
+                            deferred.append(number)
+                            self.assertTrue(execute(number))
+                final = session.load(api, REPO)
+            self.assertEqual(final["handoff"]["active"], [])
+            self.assertEqual(len(api.published), 24)
+            self.assertEqual(len(final["handoff"]["history"]), 8)
+            self.assertEqual({r["issue"] for r in final["ledger"]["issues"]}, {7, *numbers})
+            self.assertEqual(len(set(checkpoint.bindings(final["ledger"]).values())), 9)
+            measurements.append({"workers": workers, "publications": len(api.published),
+                                 "requests": api.requests, "rejections": api.rejected,
+                                 "resubmissions": len(deferred),
+                                 "seconds": round(time.perf_counter()-started, 3)})
+        print("VIB53_MATCHED_PROTOCOL " + json.dumps(measurements, sort_keys=True), flush=True)
+
     def test_starvation_counterexample_with_real_production_retry(self):
         api=MemoryGit()
         with patch.object(install,"source_files",return_value=PACKAGE), \
