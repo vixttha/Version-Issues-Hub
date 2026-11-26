@@ -217,6 +217,18 @@ class IntegrationIntegrityTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError,"digest"):
                 session.reconcile(self.api,self.state,247,"Owner integration",
                     policy={**policy,"archive_digest":"0"*64})
+            # Matching parent pins and successful runs do not establish tree equality.
+            for bad_tree in (None, {}, {"sha":"invalid"}, {"sha":"1"*40}):
+                with self.subTest(actual_tree=bad_tree):
+                    def wrong_tree(method,path,body=None):
+                        result = request(method,path,body)
+                        if method == "GET" and path.endswith("/git/commits/"+NEXT):
+                            return {**result, "tree":bad_tree}
+                        return result
+                    with patch.object(self.api,"request",side_effect=wrong_tree):
+                        with self.assertRaisesRegex(ValueError,"historical actual merge tree|Historical actual merge tree"):
+                            session.reconcile(self.api,self.state,247,"Owner integration",policy=policy)
+                    self.assertEqual(self.api.writes,[])
             ledger,handoff = session.reconcile(self.api,self.state,247,"Owner integration",policy=policy)
             self.assertEqual(ledger["issues"][0]["state"],"integrated")
             self.assertEqual(handoff["history"][:-1],archive)
@@ -224,6 +236,19 @@ class IntegrationIntegrityTests(unittest.TestCase):
             self.assertEqual(handoff["history"][-1]["merged_sha"],NEXT)
             self.assertEqual(session.save(self.api,self.state,ledger,handoff,issue=247,
                                           policy=policy)["status"],"planned")
+            # A differing final preview tree must fail, even when run metadata
+            # reports the exact preview rather than the branch head.
+            preview_reads = [0]
+            def changed_preview(method,path,body=None):
+                result = request(method,path,body)
+                if method == "GET" and path.endswith("/git/commits/"+PROPOSED):
+                    preview_reads[0] += 1
+                    if preview_reads[0] > 1:
+                        return {**result, "tree":{"sha":"1"*40}}
+                return result
+            with patch.object(self.api,"request",side_effect=changed_preview):
+                with self.assertRaises(ValueError):
+                    session.reconcile(self.api,self.state,247,"Owner integration",policy=policy)
             # Revert only during the second (final) preview review.
             reads = [0]
             def rollback(method,path,body=None):

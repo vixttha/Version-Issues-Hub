@@ -1610,6 +1610,9 @@ def reconcile_historical_integration(api, state, number, decision, policy):
                     != [review["base_sha"], review["head_sha"]]
                 or review["base_sha"] == review["head_sha"]):
             raise ValueError("Historical product preview parents differ")
+        tree = install.require(install.SHA,
+                               install.response_object(commit.get("tree"), "historical preview tree").get("sha"),
+                               "historical preview tree")
         invalidated = invalidated_archive_runs(state, candidate)
         for link in evidence:
             run, attempt = evidence_run(state["ledger"]["repository"], link)
@@ -1619,7 +1622,8 @@ def reconcile_historical_integration(api, state, number, decision, policy):
             for suffix in ("", "/attempts/" + str(attempt)):
                 standard.check_pr_run(api.request("GET", root + suffix), preview_policy, run, attempt,
                                       api=api, prefix=prefix)
-    check_preview()
+        return tree
+    preview_tree = check_preview()
     def read_pr():
         pr = get_pr(api, state, candidate)
         if not install.same_id((pr["head"].get("repo") or {}).get("id"),
@@ -1628,8 +1632,20 @@ def reconcile_historical_integration(api, state, number, decision, policy):
         return pr
     merged, links = standard.verify_merged_destination(api, state, candidate, read_pr(), review,
         state["manifest"]["product_branch"], read_pr)
-    check_preview()
-    # Final preview reads may outlast the earlier product ancestry check.
+    if check_preview() != preview_tree:
+        raise ValueError("Historical preview tree changed during review")
+    actual = install.response_object(api.request("GET", prefix + "/git/commits/" + merged),
+                                     "historical actual merge")
+    if (actual.get("sha") != merged
+            or [p.get("sha") for p in install.response_rows(actual.get("parents"), "actual merge parents")]
+                != [review["base_sha"], review["head_sha"]]):
+        raise ValueError("Historical actual merge identity or parents differ")
+    actual_tree = install.require(install.SHA,
+                                  install.response_object(actual.get("tree"), "historical actual merge tree").get("sha"),
+                                  "historical actual merge tree")
+    if actual_tree != preview_tree:
+        raise ValueError("Historical actual merge tree differs from tested preview")
+    # Final preview and tree reads may outlast the earlier product ancestry check.
     # GitHub cannot atomically compare both refs; later rollback is unsupported.
     from tools import gate
     branch = state["manifest"]["product_branch"]
