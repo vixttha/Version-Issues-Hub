@@ -1345,7 +1345,15 @@
         },
         {
           "path": "tests/test_issue_closure.py",
+          "anchor": "def test_owner_and_exact_archive_required(self):"
+        },
+        {
+          "path": "tests/test_issue_closure.py",
           "anchor": "def test_intent_is_append_only_and_idempotent(self):"
+        },
+        {
+          "path": "tests/test_issue_closure.py",
+          "anchor": "def test_confirmation_requires_matching_readback(self):"
         },
         {
           "path": "tests/test_issue_closure.py",
@@ -1361,11 +1369,23 @@
         },
         {
           "path": "tests/test_issue_closure.py",
-          "anchor": "def test_legacy_closure_cannot_replace_archived_pins(self):"
+          "anchor": "def test_cancel_stale_intent_and_resume_work(self):"
         },
         {
           "path": "tests/test_issue_closure.py",
-          "anchor": "def test_cancel_stale_intent_and_resume_work(self):"
+          "anchor": "def test_competing_cancel_wins_execution_cas(self):"
+        },
+        {
+          "path": "tests/test_issue_closure.py",
+          "anchor": "def test_competing_completion_wins_cancel_cas(self):"
+        },
+        {
+          "path": "tests/test_issue_closure.py",
+          "anchor": "def test_restart_after_lost_issue_response_requires_recovery(self):"
+        },
+        {
+          "path": "tests/test_issue_closure.py",
+          "anchor": "def test_legacy_closure_cannot_replace_archived_pins(self):"
         },
         {
           "path": "tests/test_issue_closure.py",

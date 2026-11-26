@@ -682,6 +682,8 @@ def complete_closure(api, state, number, policy, *, owner_approved=False, apply=
     if last["status"] == "confirmed":
         if item.get("state") != "closed" or item.get("state_reason") != policy["reason"]:
             raise ValueError("Historical closure receipt conflicts with live issue state")
+        if install.read_ref(api, state["prefix"], install.BRANCH) != state["ref"]:
+            raise ValueError("Installed state advanced during closure observation")
         return {"status": "historical_receipt_matches_state", "installed_sha": state["ref"],
                 "closure_event_verified": False}
     if item.get("state") not in ("open", "closed") or (item["state"] == "closed" and item.get("state_reason") != policy["reason"]):

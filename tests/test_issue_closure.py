@@ -130,7 +130,16 @@ class ClosureTests(unittest.TestCase):
     def test_cancel_stale_intent_and_resume_work(self):
         self.exercise_publication(cancel=True)
 
-    def exercise_publication(self, *, cancel):
+    def test_competing_cancel_wins_execution_cas(self):
+        self.exercise_publication(cancel=False, interleave="cancel_wins")
+
+    def test_competing_completion_wins_cancel_cas(self):
+        self.exercise_publication(cancel=False, interleave="complete_wins")
+
+    def test_restart_after_lost_issue_response_requires_recovery(self):
+        self.exercise_publication(cancel=False, interleave="lost_issue_response")
+
+    def exercise_publication(self, *, cancel, interleave=None):
         import base64
         import hashlib
         import json
@@ -146,6 +155,8 @@ class ClosureTests(unittest.TestCase):
                     "vib-install.json": install.render({**self.state["manifest"],
                         "target_repository": self.state["ledger"]["repository"]})}}
         staged = {}
+        parents = {}
+        rival = {}
         original_request = self.api.request
         def request(method, path, body=None):
             if method == "GET" and path == prefix + "/issues/247":
@@ -154,6 +165,8 @@ class ClosureTests(unittest.TestCase):
                 self.assertEqual(body, {"state": "closed", "state_reason": "completed"})
                 self.api.writes.append((method, path, copy.deepcopy(body)))
                 current.update(body)
+                if interleave == "lost_issue_response":
+                    raise OSError("issue response lost after mutation")
                 return copy.deepcopy(current)
             if method == "GET" and path == prefix + "/git/ref/heads/trunk":
                 return {"ref": "refs/heads/trunk", "object": {"type": "commit", "sha": BASE}}
@@ -185,11 +198,25 @@ class ClosureTests(unittest.TestCase):
                 new = {"pending": pending_ref, "executing": executing_ref,
                        "confirmed": confirmed_ref, "cancelled": confirmed_ref}[status]
                 contents[new] = {**contents[self.api.ref], **staged}
+                parents[new] = body["parents"][0]
                 return {"sha": new}
             if method == "PATCH" and path == prefix + "/git/refs/heads/" + install.BRANCH:
                 self.assertFalse(body["force"])
                 self.api.writes.append((method, path, copy.deepcopy(body)))
-                self.api.ref = body["sha"]
+                new = body["sha"]
+                if interleave == "cancel_wins" and new == executing_ref:
+                    contents[confirmed_ref] = {**contents[pending_ref],
+                        session.HANDOFF: install.render(rival["handoff"])}
+                    parents[confirmed_ref] = pending_ref
+                    self.api.ref = confirmed_ref
+                elif interleave == "complete_wins" and new == confirmed_ref and self.api.ref == pending_ref:
+                    contents[executing_ref] = {**contents[pending_ref],
+                        session.HANDOFF: install.render(rival["handoff"])}
+                    parents[executing_ref] = pending_ref
+                    self.api.ref = executing_ref
+                if parents[new] != self.api.ref:
+                    raise install.ApiError(422)
+                self.api.ref = new
                 return {}
             return original_request(method, path, body)
         def restored(pin):
@@ -204,6 +231,65 @@ class ClosureTests(unittest.TestCase):
             self.assertEqual(first["installed_sha"], pending_ref)
             self.assertEqual(current["state"], "open")
             pending = restored(pending_ref)
+            if interleave == "cancel_wins":
+                _, rival["handoff"] = session.cancel_closure_plan(
+                    self.api, pending, 247, self.policy, "Owner cancels", owner_approved=True)
+                with self.assertRaisesRegex(ValueError, "partial"):
+                    session.complete_closure(self.api, pending, 247, self.policy,
+                                             owner_approved=True, apply=True)
+                final = restored(confirmed_ref)
+                self.assertEqual(session.closure_records(final["handoff"], 247)[-1]["status"], "cancelled")
+                self.assertIsNone(session.pending_closure(final["handoff"]))
+                self.assertEqual(current["state"], "open")
+                self.assertFalse(any(method == "PATCH" and "/issues/" in path
+                                     for method, path, _ in self.api.writes))
+                return
+            if interleave == "complete_wins":
+                _, rival["handoff"] = session.closure_plan(
+                    self.api, pending, 247, self.policy, "executing",
+                    owner_approved=True, execution_id="1" * 32)
+                ledger, handoff = session.cancel_closure_plan(
+                    self.api, pending, 247, self.policy, "Owner cancels", owner_approved=True)
+                with self.assertRaises(install.ApiError):
+                    session.save_closure(self.api, pending, ledger, handoff, 247,
+                                         apply=True, owner_approved=True)
+                executing = restored(executing_ref)
+                self.assertEqual(session.pending_closure(executing["handoff"])["execution_id"], "1" * 32)
+                with self.assertRaisesRegex(ValueError, "already acquired"):
+                    session.complete_closure(self.api, executing, 247, self.policy,
+                                             owner_approved=True, apply=True)
+                self.assertEqual(current["state"], "open")
+                self.assertFalse(any(method == "PATCH" and "/issues/" in path
+                                     for method, path, _ in self.api.writes))
+                return
+            if interleave == "lost_issue_response":
+                with self.assertRaisesRegex(ValueError, "partial"):
+                    session.complete_closure(self.api, pending, 247, self.policy,
+                                             owner_approved=True, apply=True)
+                restarted = restored(executing_ref)
+                execution = session.pending_closure(restarted["handoff"])["execution_id"]
+                self.assertEqual(current["state"], "closed")
+                before = copy.deepcopy(self.api.writes)
+                with self.assertRaisesRegex(ValueError, "already acquired"):
+                    session.complete_closure(self.api, restarted, 247, self.policy,
+                                             owner_approved=True, apply=True)
+                with self.assertRaises(ValueError):
+                    session.cancel_closure_plan(self.api, restarted, 247, self.policy,
+                                                "Owner recovery", owner_approved=True)
+                self.assertEqual(before, self.api.writes)
+                ledger, handoff = session.cancel_closure_plan(
+                    self.api, restarted, 247, self.policy, "Owner stopped executor and inspected closed issue",
+                    owner_approved=True, recovery_execution=execution)
+                session.save_closure(self.api, restarted, ledger, handoff, 247,
+                                     apply=True, owner_approved=True)
+                final = restored(confirmed_ref)
+                last = session.closure_records(final["handoff"], 247)[-1]
+                self.assertEqual(last["execution_id"], execution)
+                self.assertEqual(last["cancellation"]["state"], "closed")
+                self.assertEqual(session.closure_status(final, current)["closure_synchronization"], "cancelled")
+                self.assertEqual(sum(method == "PATCH" and "/issues/" in path
+                                     for method, path, _ in self.api.writes), 1)
+                return
             if cancel:
                 self.api.run["run_attempt"] = 2
                 with self.assertRaises(ValueError):
