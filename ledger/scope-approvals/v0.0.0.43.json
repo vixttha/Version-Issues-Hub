@@ -4,8 +4,8 @@
   "issue": 96,
   "version": "v0.0.0.43",
   "base_sha": "3160df17f60b3eaa9a9e70e1ca13bffcfe2eb4e8",
-  "reviewed_sha": "3160df17f60b3eaa9a9e70e1ca13bffcfe2eb4e8",
-  "previous_approval_sha": null,
+  "reviewed_sha": "211302f22411e23af56cf7fb89545c249e59f9d4",
+  "previous_approval_sha": "08f9b79cbbf9be50a396c1a54cf92dd308c0b268",
   "criteria": [
     "Freeze unrelated development; preserve current refs and evidence; inventory concurrent agents/schedules, without unauthorized cancellation.",
     "Inventory all branches with exact SHA, purpose, dependencies, open PRs, ownership evidence, keep/archive/retire proposal. No deletion or default-branch changes without exact approval.",
@@ -62,5 +62,5 @@
   ],
   "qualification": "ordinary",
   "disposition": "engineering_only",
-  "owner_decision": "Owner approved continuation of locked #96 corrective scope after roadmap supersession and initial audit. Claim solely for integration-integrity corrective work. Allowed paths are the bounded engineering implementation and audit envelope; exact corrected architecture, exclusions, production candidate and merge require separate explicit owner approval. No release, advanced qualification, external adopter write or unrelated feature scope."
+  "owner_decision": "Proposed forward-only independent recovery of malformed #96 scope publication; exact reviewed source 211302f22411e23af56cf7fb89545c249e59f9d4. Publication requires separate explicit owner approval and independent review. Original scope, criteria, qualification and engineering-only disposition retained; no production merge, release or external upgrade authorized."
 }
