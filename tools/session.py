@@ -605,10 +605,29 @@ def inspect_operation(api, state, ticket):
         observed = confirm_handoff(api, state["prefix"], old, new, tree,
                                    operation_id=operation_id)
         # Bind the issue label to the actual candidate delta, not only the ticket.
-        before, after = (checkpoint.parse_json(install.read_text(api, state["prefix"], LEDGER, ref))
-                         for ref in (old, new))
-        h0, h1 = (checkpoint.parse_json(install.read_text(api, state["prefix"], HANDOFF, ref))
-                  for ref in (old, new))
+        # A matching trailer alone must not certify an unrelated tree mutation.
+        from tools import lifecycle
+        _, prior_entries = lifecycle.tree_entries(api, state["prefix"], old)
+        observed_tree, next_entries = lifecycle.tree_entries(api, state["prefix"], new)
+        # Recursive Git tree listings also contain ancestor directory entries,
+        # whose object IDs change when either allowed state file changes.
+        def unrelated(entries):
+            return {p: entry for p, entry in entries.items()
+                    if p not in (LEDGER, HANDOFF)
+                    and not (entry[0] == "tree"
+                             and any(f.startswith(p + "/") for f in (LEDGER, HANDOFF)))}
+        if observed_tree != tree or unrelated(prior_entries) != unrelated(next_entries):
+            raise ValueError("Recovery candidate changed unrelated tree entries")
+        def read_state(path, ref, entries):
+            entry = entries.get(path)
+            raw = install.read_text(api, state["prefix"], path, ref)
+            if entry != ("blob", "100644", lifecycle.blob_id(raw)):
+                raise ValueError("Recovery state blob identity mismatch")
+            return checkpoint.parse_json(raw)
+        before = read_state(LEDGER, old, prior_entries)
+        after = read_state(LEDGER, new, next_entries)
+        h0 = read_state(HANDOFF, old, prior_entries)
+        h1 = read_state(HANDOFF, new, next_entries)
         if (before["repository"] != state["ledger"]["repository"]
                 or after["repository"] != before["repository"]):
             raise ValueError("Recovery ledger repository mismatch")

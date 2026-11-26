@@ -427,3 +427,24 @@ class RecoveryTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "not confirmed"):
             session.inspect_operation(self.api, fresh, tickets[0])
         self.assertEqual(self.api.writes, writes)
+
+    def test_recovery_ticket_rejects_unrelated_tree_mutation(self):
+        api, state = self.api, self.s
+        ledger, handoff = self.claim(state, B)
+        intent = session.planned_issue_view(ledger, handoff, B, True)
+        operation_id = session.operation_identity(state, B, intent)
+        tree = api.tree({session.LEDGER: install.render(ledger),
+                         session.HANDOFF: install.render(handoff),
+                         "notes/custom.md": "tampered\n"},
+                        api.git("rev-parse", state["ref"] + "^{tree}"))
+        candidate = api.git("commit-tree", tree, "-p", state["ref"],
+                            data="VIB cooperative handoff\n\nVIB-Operation: " + operation_id + "\n")
+        api.ref(install.BRANCH, candidate)
+        fresh = session.load(api, REPO)
+        ticket = {"schema_version": 1, "repository": state["prefix"], "issue": B,
+                  "parent_sha": state["ref"], "candidate_sha": candidate,
+                  "tree_sha": tree, "operation_id": operation_id}
+        before = list(api.writes)
+        with self.assertRaisesRegex(ValueError, "unrelated tree entries"):
+            session.inspect_operation(api, fresh, ticket)
+        self.assertEqual(api.writes, before)
