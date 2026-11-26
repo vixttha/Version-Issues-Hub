@@ -368,6 +368,19 @@ def legacy_approval_statement(review):
             f"merge {review['merge_sha']}.")
 
 
+def legacy_engineering_approval(archive):
+    """Recognize the exact positive legacy grammar, not arbitrary prose."""
+    return re.fullmatch(
+        r"Owner-approved engineering completion: PR #([1-9][0-9]*); "
+        r"fix ([0-9a-f]{40}); candidate ([0-9a-f]{40}); merge ([0-9a-f]{40})\.",
+        archive["decision"])
+
+
+def archive_has_engineering_approval(archive, ledger):
+    return (engineering_receipt(archive, ledger) is not None
+            or legacy_engineering_approval(archive) is not None)
+
+
 def closure_policy(policy, ledger, number):
     binding = checkpoint.bindings(ledger).get(issue_number(number))
     if (binding is None or not isinstance(policy, dict) or set(policy) != {
@@ -395,7 +408,7 @@ def validate_closure_approval(archive, ledger, number, policy):
     """Check immutable local approval for both loading and publication."""
     stored = engineering_receipt(archive, ledger)
     if policy["reason"] == "not_planned":
-        if stored is not None:
+        if archive_has_engineering_approval(archive, ledger):
             raise ValueError("Engineering-complete work cannot be recorded as not planned")
         return None
     envelope = policy["engineering"]
@@ -512,8 +525,16 @@ def closure_status(state, item):
                       and row["state"] in ("deferred", "blocked"))
     confirmed = bool(matching and current_basis and consistent and last["status"] == "confirmed")
     engineering = "unverified"
-    if row and row["state"] == "deferred" and archive and engineering_receipt(archive, state["ledger"]):
+    approved = bool(archive and archive_has_engineering_approval(archive, state["ledger"]))
+    legacy = legacy_engineering_approval(archive) if archive else None
+    legacy_pins_match = bool(legacy and all(
+        archive["handoff"][key] is None or str(archive["handoff"][key]) == value
+        for key, value in zip(("pull_request", "fix_sha", "candidate_sha"), legacy.groups()[:3])))
+    if consistent and row["state"] == "deferred" and (
+            engineering_receipt(archive, state["ledger"]) or legacy_pins_match):
         engineering = "recorded"
+    disposition_conflict = bool(consistent and approved
+                                and github_state == "closed" and reason == "not_planned")
     if confirmed and last["policy"]["reason"] == "completed" and row and row["state"] == "deferred":
         engineering = "recorded"
     if last and last["status"] == "executing":
@@ -530,8 +551,13 @@ def closure_status(state, item):
     else:
         synchronization = ("conflict" if github_state == "closed" and active else
                            ("historical_unverified" if github_state == "closed" else "not_recorded"))
+    # Preserve an observed cancellation or the durable execution-recovery
+    # warning; disposition conflict is a separate dimension.
+    if disposition_conflict and synchronization not in ("cancelled", "execution_reconciliation_required"):
+        synchronization = "conflict"
     return {"issue": number, "version": row["version"] if row else None,
             "engineering_completion": engineering, "github_state": github_state,
+            "disposition_conflict": disposition_conflict,
             "github_state_reason": reason, "production_integrated": bool(row and row["state"] == "integrated"),
             "ledger_state": row["state"] if row else None, "closure_synchronization": synchronization,
             "archive_digest": closure_digest(archive) if archive else None,
