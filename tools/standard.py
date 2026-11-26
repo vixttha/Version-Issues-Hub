@@ -118,9 +118,42 @@ def verify_integration(api, state, active, pr, policy):
     session.require_unheld_scope(state, [active["issue"]])
     if state["handoff"]["schema_version"] == 2:
         session.require_experimental_parallel()
-    return verify_merged_destination(api, state, active, pr, policy,
-                                     state["manifest"]["product_branch"],
-                                     lambda: session.get_pr(api, state, active))
+    if policy is None:
+        raise ValueError("Integration requires an owner-reviewed post-merge policy")
+    validate_policy(policy)
+    if active.get("integration_base_sha") != policy["base_sha"]:
+        raise ValueError("Stale or unpinned integration base; historical reconciliation required")
+    preview_sha = install.require(install.SHA, active.get("integration_merge_sha"), "pinned integration preview")
+    prefix = state["prefix"]
+    def preview_tree():
+        preview = install.response_object(api.request("GET", prefix + "/git/commits/" + preview_sha),
+                                          "pinned integration preview")
+        if (preview.get("sha") != preview_sha
+                or [p.get("sha") for p in install.response_rows(preview.get("parents"), "preview parents")]
+                != [policy["base_sha"], policy["head_sha"]]):
+            raise ValueError("Pinned integration preview identity or parents differ")
+        return install.require(install.SHA, install.response_object(preview.get("tree"),
+                               "integration preview tree").get("sha"), "integration preview tree")
+    before = preview_tree()
+    branch = state["manifest"]["product_branch"]
+    merged, links = verify_merged_destination(api, state, active, pr, policy, branch,
+                                             lambda: session.get_pr(api, state, active))
+    actual = install.response_object(api.request("GET", prefix + "/git/commits/" + merged),
+                                     "actual product merge")
+    if (actual.get("sha") != merged
+            or [p.get("sha") for p in install.response_rows(actual.get("parents"), "actual merge parents")]
+            != [policy["base_sha"], policy["head_sha"]]):
+        raise ValueError("Actual merge identity or parents differ")
+    actual_tree = install.require(install.SHA, install.response_object(actual.get("tree"),
+                                 "actual integration tree").get("sha"), "actual integration tree")
+    if preview_tree() != before or actual_tree != before:
+        raise ValueError("Actual merge tree differs from tested preview")
+    current = install.require(install.SHA, install.read_ref(api, prefix, branch), "current product revision")
+    gate.check_ancestry(api, prefix, merged, current)
+    if (install.read_ref(api, prefix, branch) != current
+            or install.read_ref(api, prefix, install.BRANCH) != state["ref"]):
+        raise ValueError("Product integration target or installed state changed")
+    return merged, links
 
 
 def verify_merged_destination(api, state, active, pr, policy, destination, read_pr):
