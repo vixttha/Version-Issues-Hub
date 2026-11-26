@@ -181,6 +181,19 @@ class ScopeControlTests(unittest.TestCase):
              patch.object(scope, "approval_change", return_value=None), \
              patch.object(scope, "approval_parent", return_value=predecessor):
             scope.verify_043_scope_genesis(predecessor,path,record,successor,"f"*40)
+            # Exercise the real entry point as well as the incident helper.
+            def read_scope(*args):
+                if args[1] == "-s":
+                    return predecessor if args[-1] == "f"*40 else scope.MALFORMED_043_PARENT
+                revision, file = args[1].split(":",1)
+                if file == path:
+                    return json.dumps(successor if revision == "f"*40 else record)
+                return read(*args)
+            with patch.object(scope.checkpoint,"git",side_effect=read_scope), \
+                 patch.object(scope,"approval_change",side_effect=lambda rev,p:
+                              "f"*40 if rev == "f"*40 else predecessor if rev == predecessor else None), \
+                 patch.object(scope,"ancestor"), patch.object(scope,"scope_paths",return_value={"tools/session.py"}):
+                self.assertEqual(scope.verify_scope("f"*40,96,"v0.0.0.43","d"*40,"f"*40),successor)
             with self.assertRaisesRegex(ValueError,"retain exact original scope"):
                 scope.verify_043_scope_genesis(predecessor,path,record,
                     {**successor,"allowed_paths":["new.py"]},"f"*40)

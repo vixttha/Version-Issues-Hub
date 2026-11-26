@@ -400,3 +400,53 @@ class IntegrationIntegrityTests(unittest.TestCase):
                     session.recovery_plan(self.api,self.state,248)
                 self.assertEqual(caught.exception.retry_after,17)
         self.assertEqual(self.api.writes, [])
+
+    def test_staged_row_without_archive_refused(self):
+        self.reach_head()
+        ledger, handoff = session.finish(self.api,self.state,"staged","Owner stages")
+        handoff["history"] = copy.deepcopy(self.state["handoff"]["history"])
+        for apply in (False, True):
+            with self.assertRaisesRegex(ValueError,"matching final staged archive"):
+                session.save(self.api,self.state,ledger,handoff,apply,issue=247)
+        self.assertEqual(self.api.writes,[])
+
+    def test_expired_pinless_deferral_can_be_renewed(self):
+        from unittest.mock import patch
+        self.state["ledger"],self.state["handoff"] = session.claim(self.api,self.state,247,["test"],"Fix")
+        self.state["ledger"],self.state["handoff"] = session.advance(self.api,self.state,"Head",return_to_head=True)
+        first = bounded_deferral(self.state,self.api,248)
+        self.state["ledger"],self.state["handoff"] = session.finish(self.api,self.state,"deferred",first,deferral_approved=True)
+        original = copy.deepcopy(self.state["handoff"]["history"])
+        expiry = json.loads(first[len(session.DEFERRAL_DECISION):])["expires_at"]
+        with patch.object(session.time,"time",return_value=expiry+1):
+            with self.assertRaisesRegex(ValueError,"expired"):
+                session.claim(self.api,self.state,248,["next"],"Blocked")
+            self.state["ledger"],self.state["handoff"] = session.claim(self.api,self.state,247,["test"],"Renew")
+            self.state["ledger"],self.state["handoff"] = session.advance(self.api,self.state,"Head",return_to_head=True)
+            second = bounded_deferral(self.state,self.api,248)
+            self.state["ledger"],self.state["handoff"] = session.finish(self.api,self.state,"deferred",second,deferral_approved=True)
+            ledger,handoff = session.claim(self.api,self.state,248,["next"],"Approved")
+            self.assertEqual(handoff["active"]["issue"],248)
+            self.assertEqual(handoff["history"][:len(original)],original)
+        self.assertEqual(self.api.writes,[])
+
+    def test_integration_does_not_clear_other_fix(self):
+        from test_session import post_policy, FIX2
+        self.reach_head()
+        self.state["ledger"],self.state["handoff"] = session.finish(self.api,self.state,"deferred","Prior fix")
+        old = copy.deepcopy(self.state["handoff"]["history"][0])
+        # Simulate a separate reviewed fix for the same issue, using valid pins.
+        self.state["ledger"],self.state["handoff"] = session.claim(self.api,self.state,247,["test"],"Rework")
+        for kwargs in (dict(fix=FIX2,candidate=CANDIDATE,pr=8),dict(evidence=[RUN]),{}):
+            self.state["ledger"],self.state["handoff"] = session.advance(self.api,self.state,"next",**kwargs)
+        self.state["ledger"],self.state["handoff"] = session.finish(self.api,self.state,"staged","New fix")
+        self.api.pr.update(state="closed",merged=True,merge_commit_sha=NEXT)
+        self.api.product=NEXT
+        policy=post_policy(self.state)
+        ledger,handoff=session.reconcile(self.api,self.state,247,"Integrate second fix",policy=policy)
+        proposed={**self.state,"ledger":ledger,"handoff":handoff}
+        self.assertEqual(session.outstanding_integration_records(proposed)[247],[old])
+        for apply in (False,True):
+            with self.assertRaisesRegex(ValueError,"different historical fix unresolved"):
+                session.save(self.api,self.state,ledger,handoff,apply,issue=247,policy=policy)
+        self.assertEqual(self.api.writes,[])

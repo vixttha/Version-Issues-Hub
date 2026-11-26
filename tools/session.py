@@ -1255,19 +1255,42 @@ def check_deferral(api, state, record, next_issue=None):
     return policy
 
 
-def unresolved_integration_debt(state):
-    # A rework or blocked disposition must not erase earlier integration debt.
-    # Only a recorded integrated disposition may resolve it; actual integration
-    # proof is rechecked on publication, not inferred from the ledger label.
-    outstanding = set()
+def outstanding_integration_records(state):
+    # An obligation follows its original fix, not merely the issue number.
+    # Pinless ordinary deferrals may be renewed only by another bounded
+    # pinless ordinary deferral for the same issue. Preserve all archives.
+    outstanding = {}
     for record in state["handoff"]["history"]:
         if closure_receipt(record) is not None:
             continue
-        number = record["handoff"]["issue"]
+        active = record["handoff"]
+        records = outstanding.setdefault(active["issue"], [])
+        def fix_of(prior):
+            engineering = engineering_receipt(prior, state["ledger"])
+            legacy = legacy_engineering_approval(prior)
+            if engineering is not None:
+                return engineering["policy"]["review"]["issues"][0]["fix_sha"]
+            if legacy is not None:
+                # A conflicting legacy pin cannot be silently resolved.
+                if prior["handoff"]["fix_sha"] not in (None, legacy.group(2)):
+                    return ("conflicting", prior["handoff"]["fix_sha"], legacy.group(2))
+                return legacy.group(2)
+            return prior["handoff"]["fix_sha"]
         if record["disposition"] in ("staged", "deferred"):
-            outstanding.add(number)
+            if (record["disposition"] == "deferred" and fix_of(record) is None
+                    and deferral_record(record) is not None):
+                records[:] = [prior for prior in records
+                              if not (prior["disposition"] == "deferred" and fix_of(prior) is None
+                                      and deferral_record(prior) is not None)]
+            records.append(record)
         elif record["disposition"] == "integrated":
-            outstanding.discard(number)
+            records[:] = [prior for prior in records
+                          if fix_of(prior) not in (None, active["fix_sha"])]
+    return {number: records for number, records in outstanding.items() if records}
+
+
+def unresolved_integration_debt(state):
+    outstanding = outstanding_integration_records(state)
     return [r for r in state["ledger"]["issues"]
             if r["state"] in ("staged", "deferred") or r["issue"] in outstanding]
 
@@ -1330,16 +1353,10 @@ def require_integration_debt_clear(api, state, number):
         return
     policies = []
     for row in debt:
-        outstanding = []
-        latest = None
-        for record in state["handoff"]["history"]:
-            if record["handoff"]["issue"] != row["issue"] or closure_receipt(record) is not None:
-                continue
-            latest = record
-            if record["disposition"] == "integrated":
-                outstanding.clear()
-            elif record["disposition"] in ("staged", "deferred"):
-                outstanding.append(record)
+        outstanding = outstanding_integration_records(state).get(row["issue"], [])
+        latest = next((record for record in reversed(state["handoff"]["history"])
+                       if record["handoff"]["issue"] == row["issue"]
+                       and closure_receipt(record) is None), None)
         if (not outstanding or row["state"] not in ("staged", "deferred")
                 or latest is not outstanding[-1] or latest["disposition"] != row["state"]):
             raise ValueError("Missing current integration debt archive; owner reconciliation required")
@@ -2045,6 +2062,15 @@ def save(api, state, ledger, handoff, apply=False, *, issue=None, operation_id=N
                               if r["disposition"] == "integrated"]
         if set(integrated_records) - transitions:
             raise ValueError("Integration archive requires a matching integrated row transition")
+        staged_transitions = {row["issue"] for row in ledger["issues"]
+                              if row["state"] == "staged" and
+                              before.get(row["issue"], {}).get("state") != "staged"}
+        for number in staged_transitions:
+            dispositions = [r for r in appended if r["handoff"]["issue"] == number
+                            and closure_receipt(r) is None]
+            if (not dispositions or dispositions[-1]["disposition"] != "staged"
+                    or sum(r["disposition"] == "staged" for r in dispositions) != 1):
+                raise ValueError("Staged row requires a matching final staged archive")
         for row in ledger["issues"]:
             old = before.get(row["issue"])
             if row["state"] == "integrated" and (old is None or old["state"] != "integrated"):
@@ -2057,6 +2083,8 @@ def save(api, state, ledger, handoff, apply=False, *, issue=None, operation_id=N
                 if dispositions[-1] != proof[0]:
                     raise ValueError("Final archive disposition must match integrated row")
                 record = proof[0]
+                if outstanding_integration_records({**state, "ledger": ledger, "handoff": handoff}).get(row["issue"]):
+                    raise ValueError("Integration proof leaves a different historical fix unresolved; owner reconciliation required")
                 if record["decision"].startswith(HISTORICAL_INTEGRATION_DECISION):
                     receipt = checkpoint.parse_json(record["decision"][len(HISTORICAL_INTEGRATION_DECISION):])
                     if (not isinstance(receipt, dict) or set(receipt) != {"owner_decision", "policy"}

@@ -86,10 +86,12 @@ class SelfUsePreflightTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "does not match"):
             self_use_preflight.worker_record(record, "plan/checkpoint-wrong")
 
+    @patch("tools.self_use_preflight.checkpoint.git")
     @patch("tools.self_use_preflight.WORKER_RECORD")
     @patch("tools.self_use_preflight.subprocess.run")
     @patch("tools.self_use_preflight.read_projection")
-    def test_generic_branch_checks_canonical_ancestry_and_version(self, read, run, record):
+    def test_generic_branch_checks_canonical_ancestry_and_version(self, read, run, record, git):
+        git.return_value = "b"*40 + "\trefs/heads/Version-Issues-Hub"
         record.read_text.return_value = '{"schema_version":1,"issue":65,"version":"v0.0.0.31","installed_sha":"' + "a" * 40 + '"}'
         run.return_value = CompletedProcess([], 0)
         read.return_value = "v0.0.0.31"
@@ -97,6 +99,8 @@ class SelfUsePreflightTests(unittest.TestCase):
         self.assertEqual(self_use_preflight.verify_checkpoint_branch(branch),
                          ("a" * 40, 65, "v0.0.0.31"))
         read.assert_called_once_with("a" * 40, 65)
+        run.assert_any_call(["git", "fetch", "--no-tags", "--no-write-fetch-head", "origin", "b"*40], check=True)
+        run.assert_any_call(["git", "merge-base", "--is-ancestor", "a"*40, "b"*40], check=False)
         read.return_value = "v0.0.0.32"
         with self.assertRaisesRegex(ValueError, "differs"):
             self_use_preflight.verify_checkpoint_branch(branch)
@@ -106,3 +110,19 @@ class SelfUsePreflightTests(unittest.TestCase):
         record.read_text.side_effect = FileNotFoundError
         with self.assertRaises(FileNotFoundError):
             self_use_preflight.verify_checkpoint_branch(branch)
+
+    @patch("tools.self_use_preflight.verify_scope")
+    @patch("tools.self_use_preflight.checkpoint.git")
+    @patch("tools.self_use_preflight.WORKER_RECORD")
+    @patch("tools.self_use_preflight.subprocess.run")
+    @patch("tools.self_use_preflight.read_projection")
+    def test_scope_uses_same_observed_revision_as_ancestry(self, read, run, record, git, verify):
+        record.read_text.return_value = '{"schema_version":1,"issue":96,"version":"v0.0.0.43","installed_sha":"' + "a"*40 + '"}'
+        git.side_effect = ["b"*40 + "\trefs/heads/Version-Issues-Hub", "c"*40]
+        read.return_value = "v0.0.0.43"
+        run.return_value = CompletedProcess([], 0)
+        with patch.dict("os.environ", {"VIB_PR_BASE_SHA": "d"*40}):
+            self_use_preflight.verify_checkpoint_branch("plan/checkpoint-v0.0.0.43")
+        verify.assert_called_once_with("a"*40, 96, "v0.0.0.43", "c"*40, "b"*40, "d"*40)
+        run.assert_any_call(["git", "merge-base", "--is-ancestor", "a"*40, "b"*40], check=False)
+        self.assertEqual(git.call_count, 2)

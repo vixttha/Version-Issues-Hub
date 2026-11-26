@@ -243,16 +243,20 @@ def verify_checkpoint_branch(branch):
     pin, issue, version = worker_record(record, branch)
     # Read the public installed ref; a historical pin must be in its ancestry.
     # This is revision-bound evidence, not a claim that the Worker is still active.
-    subprocess.run(["git", "fetch", "--no-tags", "origin", "refs/heads/Version-Issues-Hub"],
+    ref = "refs/heads/Version-Issues-Hub"
+    observed = checkpoint.git("ls-remote", "--exit-code", "origin", ref).split()
+    if len(observed) != 2 or observed[1] != ref:
+        raise ValueError("Canonical installed ref is missing or ambiguous")
+    current = checkpoint.require(checkpoint.SHA, observed[0], "observed canonical revision")
+    subprocess.run(["git", "fetch", "--no-tags", "--no-write-fetch-head", "origin", current],
                    check=True)
-    if subprocess.run(["git", "merge-base", "--is-ancestor", pin, "FETCH_HEAD"],
+    if subprocess.run(["git", "merge-base", "--is-ancestor", pin, current],
                       check=False).returncode != 0:
         raise ValueError("Worker pin is not in canonical installed branch history")
     if read_projection(pin, issue) != version:
         raise ValueError("Worker record version differs from canonical assignment")
     if checkpoint.version_number(version) >= (0, 0, 0, 41):
         head = checkpoint.git("rev-parse", "HEAD")
-        current = checkpoint.git("rev-parse", "FETCH_HEAD")
         verify_scope(pin, issue, version, head, current, os.environ.get("VIB_PR_BASE_SHA") or None)
     return pin, issue, version
 

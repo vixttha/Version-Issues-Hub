@@ -55,9 +55,13 @@ class GraphifyEvidenceTests(unittest.TestCase):
 
     def test_integration_integrity_graph_anchors_match_exact_source(self):
         import json
+        import subprocess
         from pathlib import Path
         root = Path(__file__).resolve().parents[1]
-        manifest = json.loads((root / "docs/receipt-evidence.json").read_text(encoding="utf-8"))
+        revision = subprocess.check_output(["git", "-C", str(root), "rev-parse", "HEAD"], text=True).strip()
+        def blob(path):
+            return subprocess.check_output(["git", "-C", str(root), "show", revision + ":" + path]).decode("utf-8")
+        manifest = json.loads(blob("docs/receipt-evidence.json"))
         expected = {"v0-0-0-43", "v0-0-0-43-review"}
         groups = [f for f in manifest["features"] if f["id"] in expected]
         self.assertEqual({f["id"] for f in groups}, expected)
@@ -66,7 +70,7 @@ class GraphifyEvidenceTests(unittest.TestCase):
             for relation in ("documented_in", "changed_in", "implemented_in", "tested_by"):
                 seen = set()
                 for ref in group[relation]:
-                    lines = (root / ref["path"]).read_text(encoding="utf-8").splitlines()
+                    lines = blob(ref["path"]).splitlines()
                     with self.subTest(feature=group["id"], relation=relation, path=ref["path"], anchor=ref["anchor"]):
                         self.assertTrue(ref["anchor"] and ref["anchor"].strip() == ref["anchor"] and ref["anchor"].isprintable())
                         key = (ref["path"], ref["anchor"])
