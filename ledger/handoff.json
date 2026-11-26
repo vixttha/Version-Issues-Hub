@@ -1,5 +1,14 @@
 {
-  "active": null,
+  "active": {
+    "issue": 92,
+    "version": "v0.0.0.41",
+    "phase": "Worker",
+    "next_action": "Implement the locked .41 scope-control and experimental-disposition criteria only; ordinary focused regression, public runners, Graphify and CodeRabbit. Preserve single lane, historical experimental #53/.37, held #37/#40, existing mappings and owner approval boundaries. No live migration or closure writes, production integration, release, advanced qualification or .42 scope.",
+    "fix_sha": null,
+    "candidate_sha": null,
+    "pull_request": null,
+    "evidence": []
+  },
   "history": [
     {
       "decision": "PR49 CodeRabbit finding 4682051116: rework exact product SHA comparisons and add regression checks; preserve previous evidence.",

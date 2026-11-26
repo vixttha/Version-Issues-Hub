@@ -403,6 +403,17 @@
       "issue": 86,
       "state": "deferred",
       "version": "v0.0.0.40"
+    },
+    {
+      "issue": 92,
+      "version": "v0.0.0.41",
+      "state": "in_progress",
+      "acceptance": [
+        "Enforce a bounded, explicit owner-approved issue scope for changes and qualification; bind any scope amendment to the issue/version and reviewed exact revision, refuse unauthorized expansion and preserve existing immutable acceptance criteria.",
+        "Keep experimental capabilities and their evidence separate from accepted production capabilities; default to the singleton workflow and prevent unauthorized activation or promotion of experimental parallel behavior; preserve #53/.37 historical experimental disposition and deferred findings.",
+        "Preserve #37/#40 release holds, owner qualification law, exact evidence and owner authority; refuse stale, wrong-scope or contradictory approval and prevent implied integration, migration, release or advanced qualification.",
+        "Use small deterministic regression controls, ordinary public Ubuntu/Windows runners, Graphify and CodeRabbit; preserve historical mappings, archive bytes and the six laws. No live migration, production merge, schedule restart, advanced trials, paid runners, new dependencies or .42 recovery/evidence-reuse work."
+      ]
     }
   ],
   "repository": "vixttha/Version-Issues-Hub",
