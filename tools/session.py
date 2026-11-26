@@ -272,9 +272,19 @@ def closure_receipt(record):
     if not record["decision"].startswith(CLOSURE_DECISION):
         return None
     value = checkpoint.parse_json(record["decision"][len(CLOSURE_DECISION):])
-    if (not isinstance(value, dict) or set(value) != {"status", "policy"}
-            or value["status"] not in ("pending", "confirmed")
-            or not isinstance(value["policy"], dict)):
+    if (not isinstance(value, dict) or value.get("status") not in ("pending", "confirmed", "cancelled")
+            or not isinstance(value.get("policy"), dict)):
+        raise ValueError("Invalid issue closure receipt")
+    if value["status"] == "cancelled":
+        if set(value) != {"status", "policy", "cancellation"}:
+            raise ValueError("Invalid closure cancellation receipt")
+        cancel = value["cancellation"]
+        if (not isinstance(cancel, dict) or set(cancel) != {"owner_decision", "state", "state_reason"}
+                or cancel["state"] not in ("open", "closed")
+                or (cancel["state_reason"] is not None and not isinstance(cancel["state_reason"], str))):
+            raise ValueError("Invalid cancellation observation")
+        text(cancel["owner_decision"], "closure cancellation owner decision")
+    elif set(value) != {"status", "policy"}:
         raise ValueError("Invalid issue closure receipt")
     return value
 
@@ -314,6 +324,7 @@ def validate_closure_history(handoff, ledger):
     # supersedes its engineering or production disposition.
     prior = {}
     pending = {}
+    used = set()
     for record in handoff["history"]:
         number = record["handoff"]["issue"]
         receipt = closure_receipt(record)
@@ -333,15 +344,35 @@ def validate_closure_history(handoff, ledger):
                 or (policy["reason"] == "not_planned" and engineering_receipt(basis, ledger) is not None)):
             raise ValueError("Closure receipt changed its historical disposition")
         if receipt["status"] == "pending":
-            if number in pending:
+            identity = closure_digest(policy)
+            if number in pending or identity in used:
                 raise ValueError("Duplicate pending issue closure")
+            used.add(identity)
             pending[number] = policy
         elif pending.pop(number, None) != policy:
-            raise ValueError("Unmatched closure confirmation")
+            raise ValueError("Unmatched closure terminal receipt")
     if len(pending) > 1:
         raise ValueError("Only one pending issue closure is permitted")
     if pending and active_rows(handoff):
         raise ValueError("Pending closure must be reconciled before claiming work")
+    for number in pending:
+        row = next(r for r in ledger["issues"] if r["issue"] == number)
+        if row["state"] != prior[number]["disposition"]:
+            raise ValueError("Pending closure disposition changed")
+
+
+def pending_closure(handoff):
+    """Discover the single unresolved intent without needing an issue number."""
+    for record in reversed(handoff["history"]):
+        receipt = closure_receipt(record)
+        if receipt is not None:
+            number = record["handoff"]["issue"]
+            records = closure_records(handoff, number)
+            if records[-1]["status"] == "pending":
+                return {"issue": number, "version": records[-1]["policy"]["version"],
+                        "policy_digest": closure_digest(records[-1]["policy"]),
+                        "archive_digest": records[-1]["policy"]["archive_digest"]}
+    return None
 
 
 def closure_status(state, item):
@@ -356,18 +387,27 @@ def closure_status(state, item):
         raise ValueError("Unverified GitHub issue state")
     matching = last and github_state == "closed" and reason == last["policy"]["reason"]
     current_basis = last and archive and closure_digest(archive) == last["policy"]["archive_digest"]
-    confirmed = matching and current_basis and last["status"] == "confirmed"
+    active = any(a["issue"] == number for a in active_rows(state["handoff"]))
+    consistent = bool(row and archive and not active and row["state"] == archive["disposition"]
+                      and row["state"] in ("deferred", "blocked"))
+    confirmed = bool(matching and current_basis and consistent and last["status"] == "confirmed")
     engineering = "unverified"
     if row and row["state"] == "deferred" and archive and engineering_receipt(archive, state["ledger"]):
         engineering = "recorded"
     if confirmed and last["policy"]["reason"] == "completed" and row and row["state"] == "deferred":
         engineering = "recorded"
     if last and last["status"] == "pending":
-        synchronization = "pending_confirmation" if matching else ("pending_issue_close" if github_state == "open" else "conflict")
+        synchronization = ("pending_confirmation" if matching else
+                           ("pending_issue_close" if github_state == "open" else "conflict"))
+        if not consistent or not current_basis:
+            synchronization = "conflict"
+    elif last and last["status"] == "cancelled":
+        synchronization = "cancelled" if consistent and current_basis else "conflict"
     elif last:
         synchronization = "confirmed" if confirmed else "conflict"
     else:
-        synchronization = "historical_unverified" if github_state == "closed" else "not_recorded"
+        synchronization = ("conflict" if github_state == "closed" and active else
+                           ("historical_unverified" if github_state == "closed" else "not_recorded"))
     return {"issue": number, "version": row["version"] if row else None,
             "engineering_completion": engineering, "github_state": github_state,
             "github_state_reason": reason, "production_integrated": bool(row and row["state"] == "integrated"),
@@ -484,11 +524,58 @@ def closure_plan(api, state, number, policy, stage, *, owner_approved=False):
         return state["ledger"], state["handoff"]
     if (stage == "confirmed" and (last is None or last["status"] != "pending" or last["policy"] != policy)
             or stage == "pending" and last and
-            (last["status"] == "pending" or last["policy"]["archive_digest"] == policy["archive_digest"])):
+            (last["status"] == "pending" or
+             (last["status"] == "confirmed" and last["policy"]["archive_digest"] == policy["archive_digest"])
+             or any(record["policy"] == policy for record in records))):
         raise ValueError("Conflicting or missing durable closure intent")
     ledger, handoff = copy.deepcopy(state["ledger"]), copy.deepcopy(state["handoff"])
     handoff["history"].append({**archive, "decision": CLOSURE_DECISION + json.dumps(
         {"status": stage, "policy": policy}, sort_keys=True, separators=(",", ":"), allow_nan=False)})
+    validate_handoff(handoff, ledger)
+    return ledger, handoff
+
+
+def cancel_closure_plan(api, state, number, policy, decision, *, owner_approved=False):
+    """Retire the exact pending intent without asserting closure or replaying an issue write."""
+    if owner_approved is not True:
+        raise ValueError("Explicit owner-approved closure cancellation required")
+    text(decision, "closure cancellation owner decision")
+    ledger, handoff = state["ledger"], state["handoff"]
+    validate_handoff(handoff, ledger)
+    closure_policy(policy, ledger, number)
+    if state.get("closure_supported") is not True or active_rows(handoff):
+        raise ValueError("Cancellation requires a compatible installed package and empty lane")
+    if install.read_ref(api, state["prefix"], install.BRANCH) != state["ref"]:
+        raise ValueError("Installed state advanced before cancellation")
+    records = closure_records(handoff, number)
+    last = records[-1] if records else None
+    if last is None or last["policy"] != policy:
+        raise ValueError("Cancellation requires the exact durable pending intent")
+    if last["status"] == "cancelled":
+        if last["cancellation"]["owner_decision"] != decision:
+            raise ValueError("Cancellation was already recorded with a different owner decision")
+        return ledger, handoff
+    if last["status"] != "pending":
+        raise ValueError("Only a pending closure may be cancelled")
+    archive = closure_archive(handoff, number)
+    row = next(r for r in ledger["issues"] if r["issue"] == number)
+    if (archive is None or row["state"] != archive["disposition"]
+            or closure_digest(archive) != policy["archive_digest"]):
+        raise ValueError("Pending closure archive changed")
+    # A failed or superseded workflow proof is precisely why cancellation is
+    # needed. Do not reverify that proof or make any GitHub issue mutation.
+    item = get_issue(api, state, number)
+    observed = {"owner_decision": decision, "state": item.get("state"),
+                "state_reason": item.get("state_reason")}
+    if (observed["state"] not in ("open", "closed")
+            or (observed["state_reason"] is not None and not isinstance(observed["state_reason"], str))):
+        raise ValueError("Unverified issue state for cancellation")
+    if install.read_ref(api, state["prefix"], install.BRANCH) != state["ref"]:
+        raise ValueError("Installed state advanced during cancellation")
+    ledger, handoff = copy.deepcopy(ledger), copy.deepcopy(handoff)
+    handoff["history"].append({**archive, "decision": CLOSURE_DECISION + json.dumps(
+        {"status": "cancelled", "policy": policy, "cancellation": observed},
+        sort_keys=True, separators=(",", ":"), allow_nan=False)})
     validate_handoff(handoff, ledger)
     return ledger, handoff
 
@@ -511,8 +598,8 @@ def complete_closure(api, state, number, policy, *, owner_approved=False, apply=
     verify_closure_basis(api, state, number, policy)
     records = closure_records(state["handoff"], number)
     last = records[-1] if records else None
-    if last is None or last["policy"] != policy:
-        raise ValueError("Publish the exact closure intent first")
+    if last is None or last["policy"] != policy or last["status"] == "cancelled":
+        raise ValueError("Publish a new exact closure intent; cancelled intent cannot be replayed")
     item = get_issue(api, state, number)
     if last["status"] == "confirmed":
         if item.get("state") != "closed" or item.get("state_reason") != policy["reason"]:
@@ -754,7 +841,11 @@ def inspect(api, state, requested=None):
             engineering = engineering_receipt(prior, state["ledger"])
         if engineering is not None:
             status = "engineering_complete"
+    pending = pending_closure(handoff)
+    if pending is not None and requested is None:
+        status = "closure_reconciliation_required"
     return {"status": status, "installed_sha": state["ref"], "product_sha": state["product_sha"],
+            **({"pending_closure": pending} if pending is not None else {}),
             "repository": state["ledger"]["repository"], "baseline": state["manifest"]["baseline_version"],
             "target": state["manifest"]["target_version"], "issue": info, "active": active,
             "owner_merge_required": True, "evidence_verified": False,
@@ -1318,8 +1409,12 @@ def save(api, state, ledger, handoff, apply=False, *, issue=None, operation_id=N
             closure = closure_receipt(record)
             engineering = engineering_receipt(record, ledger)
             if closure is not None:
-                expected = closure_plan(api, state, active["issue"], closure["policy"], closure["status"],
-                                        owner_approved=closure_approved)
+                if closure["status"] == "cancelled":
+                    expected = cancel_closure_plan(api, state, active["issue"], closure["policy"],
+                        closure["cancellation"]["owner_decision"], owner_approved=closure_approved)
+                else:
+                    expected = closure_plan(api, state, active["issue"], closure["policy"], closure["status"],
+                                            owner_approved=closure_approved)
                 if expected != (ledger, handoff):
                     raise ValueError("Closure publication proof does not match reviewed intent")
             elif engineering is not None:
@@ -1694,8 +1789,9 @@ def main():
         command.add_argument("--policy", help="Owner-reviewed Standard post-merge policy JSON (required for integration)")
     cl = sub.add_parser("issue-closure", help="Prepare or complete one owner-reviewed issue closure")
     cl.add_argument("issue", type=int)
-    cl.add_argument("--stage", choices=("prepare", "complete"), required=True)
+    cl.add_argument("--stage", choices=("prepare", "complete", "cancel"), required=True)
     cl.add_argument("--policy", required=True)
+    cl.add_argument("--decision", help="Required owner cancellation decision; attest no concurrent closure execution")
     cl.add_argument("--owner-approved", action="store_true")
     for command in (c, a, f, i, e, cl):
         command.add_argument("--apply", action="store_true")
@@ -1712,10 +1808,17 @@ def main():
             if not args.owner_approved or (args.apply and (not token or not args.expected_sha)):
                 raise ValueError("Closure requires owner approval; apply also requires credential and exact lease")
             policy = checkpoint.parse_json(Path(args.policy).read_text(encoding="utf-8"))
-            if args.stage == "prepare":
+            if args.stage == "cancel":
+                ledger, handoff = cancel_closure_plan(api, state, args.issue, policy, args.decision, owner_approved=True)
+                result = save_closure(api, state, ledger, handoff, args.issue, apply=args.apply, owner_approved=True)
+            elif args.stage == "prepare":
+                if args.decision is not None:
+                    raise ValueError("Cancellation decision is only valid with --stage cancel")
                 ledger, handoff = closure_plan(api, state, args.issue, policy, "pending", owner_approved=True)
                 result = save_closure(api, state, ledger, handoff, args.issue, apply=args.apply, owner_approved=True)
             else:
+                if args.decision is not None:
+                    raise ValueError("Cancellation decision is only valid with --stage cancel")
                 result = complete_closure(api, state, args.issue, policy, owner_approved=True, apply=args.apply)
         elif args.command == "inspect-operation":
             from pathlib import Path

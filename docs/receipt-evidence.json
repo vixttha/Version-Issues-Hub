@@ -1324,6 +1324,10 @@
         {
           "path": "tools/session.py",
           "anchor": "def complete_closure(api, state, number, policy, *, owner_approved=False, apply=False):"
+        },
+        {
+          "path": "tools/session.py",
+          "anchor": "def cancel_closure_plan(api, state, number, policy, decision, *, owner_approved=False):"
         }
       ],
       "tested_by": [
@@ -1350,6 +1354,18 @@
         {
           "path": "tests/test_issue_closure.py",
           "anchor": "def test_legacy_closure_cannot_replace_archived_pins(self):"
+        },
+        {
+          "path": "tests/test_issue_closure.py",
+          "anchor": "def test_cancel_stale_intent_and_resume_work(self):"
+        },
+        {
+          "path": "tests/test_issue_closure.py",
+          "anchor": "def test_cancelled_intent_cannot_be_replayed(self):"
+        },
+        {
+          "path": "tests/test_issue_closure.py",
+          "anchor": "def test_reclaimed_issue_cannot_report_confirmed_closure(self):"
         }
       ]
     }

@@ -122,6 +122,12 @@ class ClosureTests(unittest.TestCase):
         self.assertFalse(self.api.writes)
 
     def test_full_fixture_apply_readback_and_idempotence(self):
+        self.exercise_publication(cancel=False)
+
+    def test_cancel_stale_intent_and_resume_work(self):
+        self.exercise_publication(cancel=True)
+
+    def exercise_publication(self, *, cancel):
         import base64
         import hashlib
         import json
@@ -191,6 +197,50 @@ class ClosureTests(unittest.TestCase):
             self.assertEqual(first["installed_sha"], pending_ref)
             self.assertEqual(current["state"], "open")
             pending = restored(pending_ref)
+            if cancel:
+                self.api.run["run_attempt"] = 2
+                with self.assertRaises(ValueError):
+                    session.complete_closure(self.api, pending, 247, self.policy,
+                                             owner_approved=True, apply=True)
+                self.assertEqual(session.inspect(self.api, pending)["pending_closure"]["issue"], 247)
+                self.assertEqual(session.inspect(self.api, pending)["status"], "closure_reconciliation_required")
+                with self.assertRaises(ValueError):
+                    session.claim(self.api, pending, 248, ["new"], "Next")
+                with self.assertRaises(ValueError):
+                    session.cancel_closure_plan(self.api, pending, 247, self.policy, "Cancel")
+                with self.assertRaises(ValueError):
+                    session.cancel_closure_plan(self.api, pending, 247, {**self.policy, "owner_decision": "Different"},
+                                                "Cancel", owner_approved=True)
+                current.update(state="closed", state_reason="not_planned")
+                decision = "Owner abandoned stale intent; no concurrent closure execution"
+                ledger, handoff = session.cancel_closure_plan(self.api, pending, 247, self.policy,
+                                                               decision, owner_approved=True)
+                second = session.save_closure(self.api, pending, ledger, handoff, 247,
+                                               apply=True, owner_approved=True)
+                self.assertEqual(second["installed_sha"], confirmed_ref)
+                final = restored(confirmed_ref)
+                self.assertEqual(final["ledger"], self.state["ledger"])
+                self.assertEqual(final["handoff"]["history"][:-1], pending["handoff"]["history"])
+                receipt = session.closure_records(final["handoff"], 247)[-1]
+                self.assertEqual(receipt["status"], "cancelled")
+                self.assertEqual(receipt["policy"], self.policy)
+                self.assertEqual(receipt["cancellation"], {"owner_decision": decision,
+                                 "state": "closed", "state_reason": "not_planned"})
+                self.assertEqual(session.closure_status(final, current)["closure_synchronization"], "cancelled")
+                self.assertIsNone(session.pending_closure(final["handoff"]))
+                self.assertFalse(session.closure_status(final, current)["production_integrated"])
+                before = copy.deepcopy(self.api.writes)
+                self.assertEqual(session.cancel_closure_plan(self.api, final, 247, self.policy, decision,
+                                     owner_approved=True), (final["ledger"], final["handoff"]))
+                with self.assertRaises(ValueError):
+                    session.complete_closure(self.api, final, 247, self.policy, owner_approved=True, apply=True)
+                self.assertEqual(self.api.writes, before)
+                self.assertFalse(any(method == "PATCH" and "/issues/" in path
+                                     for method, path, _ in self.api.writes))
+                new_ledger, new_handoff = session.claim(self.api, final, 248, ["new"], "Next")
+                self.assertEqual(new_handoff["active"]["issue"], 248)
+                self.assertEqual(new_ledger["issues"][0], final["ledger"]["issues"][0])
+                return
             second = session.complete_closure(self.api, pending, 247, self.policy,
                                                owner_approved=True, apply=True)
             self.assertEqual(second["installed_sha"], confirmed_ref)
@@ -246,4 +296,51 @@ class ClosureTests(unittest.TestCase):
                         with self.assertRaisesRegex(ValueError, "archived handoff pin: " + field):
                             session.verify_closure_basis(self.api, self.state, 247, policy)
                         verify.assert_not_called()
+        self.assertFalse(self.api.writes)
+
+    def test_cancelled_intent_cannot_be_replayed(self):
+        archive = self.state["handoff"]["history"][-1]
+        with patch.object(session, "verify_closure_basis", return_value=archive):
+            ledger, handoff = session.closure_plan(self.api, self.state, 247, self.policy,
+                                                    "pending", owner_approved=True)
+            self.state.update(ledger=ledger, handoff=handoff)
+            ledger, handoff = session.cancel_closure_plan(self.api, self.state, 247, self.policy,
+                                                           "Owner cancelled", owner_approved=True)
+            self.state.update(ledger=ledger, handoff=handoff)
+            with self.assertRaises(ValueError):
+                session.complete_closure(self.api, self.state, 247, self.policy, owner_approved=True, apply=True)
+            with self.assertRaises(ValueError):
+                session.closure_plan(self.api, self.state, 247, self.policy, "pending", owner_approved=True)
+            replacement = {**self.policy, "owner_decision": "New reviewed closure intent"}
+            ledger, handoff = session.closure_plan(self.api, self.state, 247, replacement,
+                                                    "pending", owner_approved=True)
+            self.assertEqual(handoff["history"][:-1], self.state["handoff"]["history"])
+            self.assertEqual(session.pending_closure(handoff)["policy_digest"], session.closure_digest(replacement))
+            self.state.update(ledger=ledger, handoff=handoff)
+            with self.assertRaises(ValueError):
+                session.cancel_closure_plan(self.api, self.state, 247, self.policy, "Old",
+                                            owner_approved=True)
+        self.assertFalse(self.api.writes)
+
+    def test_reclaimed_issue_cannot_report_confirmed_closure(self):
+        archive = self.state["handoff"]["history"][-1]
+        with patch.object(session, "verify_closure_basis", return_value=archive):
+            ledger, handoff = session.closure_plan(self.api, self.state, 247, self.policy,
+                                                    "pending", owner_approved=True)
+            self.state.update(ledger=ledger, handoff=handoff)
+            closed = {"number": 247, "state": "closed", "state_reason": "completed"}
+            with patch.object(session, "get_issue", return_value=closed):
+                ledger, handoff = session.closure_plan(self.api, self.state, 247, self.policy,
+                                                        "confirmed", owner_approved=True)
+            self.state.update(ledger=ledger, handoff=handoff)
+            self.assertEqual(session.closure_status(self.state, closed)["closure_synchronization"], "confirmed")
+            ledger, handoff = session.claim(self.api, self.state, 247, ["test"], "Reopened work")
+            self.state.update(ledger=ledger, handoff=handoff)
+            result = session.closure_status(self.state, closed)
+            self.assertEqual(result["closure_synchronization"], "conflict")
+            self.assertEqual(result["engineering_completion"], "unverified")
+            self.assertEqual(result["ledger_state"], "in_progress")
+            self.assertFalse(result["production_integrated"])
+            with patch.object(session, "get_issue", return_value=closed):
+                self.assertEqual(session.inspect(self.api, self.state, 247)["lifecycle"], result)
         self.assertFalse(self.api.writes)
