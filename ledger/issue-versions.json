@@ -392,6 +392,17 @@
       "issue": 84,
       "state": "deferred",
       "version": "v0.0.0.39"
+    },
+    {
+      "acceptance": [
+        "Report engineering completion, GitHub issue state and production integration independently, with exact issue/version and evidence; flag historical or contradictory states without inferring production acceptance.",
+        "Require explicit owner-approved, issue-scoped closure based on exact verified engineering or legitimate disposition evidence; bind repository, version, historical receipt, merge and run identity, and current mutation lease; refuse stale, ambiguous, experimental and release-held cases.",
+        "Preserve historical mappings, criteria and archives; record append-only closure evidence with safe idempotent readback and explicit partial-failure recovery; never imply atomic cross-API success or automatically close historical issues.",
+        "Use focused ordinary regression coverage, GitHub public Ubuntu/Windows runners, Graphify and CodeRabbit; preserve #53 experimental, #37/#40 holds, single lane and owner authority; no live migration, main merge, release, advanced campaigns or new dependencies."
+      ],
+      "issue": 86,
+      "state": "in_progress",
+      "version": "v0.0.0.40"
     }
   ],
   "repository": "vixttha/Version-Issues-Hub",

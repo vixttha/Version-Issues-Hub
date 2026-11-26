@@ -1,5 +1,14 @@
 {
-  "active": null,
+  "active": {
+    "candidate_sha": null,
+    "evidence": [],
+    "fix_sha": null,
+    "issue": 86,
+    "next_action": "Implement scoped .40 closure synchronization on plan/checkpoint-v0.0.0.40; exact engineering base 998c5f4113cd22a6fab1a833ef006acdb0da918d; preserve historical evidence, no live closure or production change.",
+    "phase": "Worker",
+    "pull_request": null,
+    "version": "v0.0.0.40"
+  },
   "history": [
     {
       "decision": "PR49 CodeRabbit finding 4682051116: rework exact product SHA comparisons and add regression checks; preserve previous evidence.",
