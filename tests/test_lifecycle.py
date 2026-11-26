@@ -239,6 +239,91 @@ class LifecycleTests(unittest.TestCase):
             lifecycle.upgrade(api,REPO,new,NEW)
         self.assertEqual(api.writes,[])
 
+    def staged_upgrade_fixture(self):
+        api = self.api
+        ledger = json.loads(api.ledger)
+        ledger["issues"][0]["state"] = "staged"
+        history = json.loads(api.handoff)
+        history["history"][0].update(disposition="staged", merged_sha=None)
+        self.change(session.LEDGER, install.render(ledger))
+        pin = self.change(session.HANDOFF, install.render(history))
+        head = api.commit(api.tree({"product.txt":"later engineering work\\n"}), [api.product])
+        pr = {"number":8, "state":"open", "merged":False,
+              "base":{"ref":"main", "sha":api.product, "repo":{"id":42}},
+              "head":{"sha":head, "repo":{"id":42}}}
+        request = api.request
+        def scoped(method, path, body=None):
+            if method == "GET" and path == PREFIX + "/pulls/8":
+                return copy.deepcopy(pr)
+            if method == "GET" and path.startswith(PREFIX + "/compare/"):
+                old, new = path.rsplit("/",1)[1].split("...")
+                merge_base = api.git("merge-base", old, new)
+                return {"status":"identical" if old == new else "ahead" if merge_base == old else "diverged",
+                        "merge_base_commit":{"sha":merge_base}}
+            return request(method, path, body)
+        patch.object(api, "request", side_effect=scoped).start()
+        actual_session = (Path(__file__).resolve().parents[1]/"tools/session.py").read_text(encoding="utf-8")
+        patch.object(install, "source_files", side_effect=lambda api,sha:
+                     dict({OLD:OLD_FILES, NEW:{**NEW_FILES,"tools/session.py":actual_session}}[sha])).start()
+        return pin, pr
+
+    def test_staged_preserving_upgrade_requires_exact_scope_and_preserves_bytes(self):
+        api = self.api
+        pin, pr = self.staged_upgrade_fixture()
+        with self.assertRaisesRegex(ValueError,"active work"):
+            lifecycle.upgrade(api,REPO,pin,NEW)
+        with self.assertRaisesRegex(ValueError,"active work"):
+            lifecycle.prepare_retirement(api,REPO,pin)
+        plan = lifecycle.upgrade(api,REPO,pin,NEW,preserve_staged=True)
+        self.assertFalse(plan["staged_integration_verified"])
+        self.assertEqual(plan["staged_scope"]["staged"][0]["candidate_sha"],api.product)
+        self.assertEqual(plan["staged_scope"]["staged"][0]["current_head"],pr["head"]["sha"])
+        self.assertEqual(api.writes,[])
+        digest = plan["staged_scope_sha256"]
+        for scope in (None,"0"*64):
+            with self.assertRaisesRegex(ValueError,"scope digest"):
+                lifecycle.upgrade(api,REPO,pin,NEW,apply=True,owner_approved=True,
+                                  preserve_staged=True,staged_scope_sha256=scope)
+        with self.assertRaisesRegex(ValueError,"owner approval"):
+            lifecycle.upgrade(api,REPO,pin,NEW,apply=True,preserve_staged=True,staged_scope_sha256=digest)
+        self.assertEqual(api.writes,[])
+        prepared = lifecycle.upgrade(api,REPO,pin,NEW,apply=True,owner_approved=True,
+                                     prepare_only=True,preserve_staged=True,staged_scope_sha256=digest)
+        self.assertEqual(api.ref(install.BRANCH),pin)
+        self.assertFalse(prepared["ref_moved"])
+        new = lifecycle.upgrade(api,REPO,pin,NEW,apply=True,owner_approved=True,
+                                preserve_staged=True,staged_scope_sha256=digest)["installed_sha"]
+        self.assertEqual(api.ref("main"),api.product)
+        for path in (session.LEDGER,session.HANDOFF,"notes/custom.md"):
+            self.assertEqual(api.git("rev-parse",pin+":"+path),api.git("rev-parse",new+":"+path))
+        state = session.load(api,REPO,new)
+        self.assertTrue(state["closure_supported"])
+        self.assertEqual(state["ledger"]["issues"][0]["state"],"staged")
+        self.assertEqual(state["handoff"]["schema_version"],1)
+
+    def test_staged_preserving_upgrade_refuses_changed_pr_or_missing_capability(self):
+        api = self.api
+        pin, pr = self.staged_upgrade_fixture()
+        plan = lifecycle.upgrade(api,REPO,pin,NEW,preserve_staged=True)
+        digest = plan["staged_scope_sha256"]
+        original = copy.deepcopy(pr)
+        for changes in ({"merged":True}, {"state":"closed"}, {"base":{**pr["base"],"ref":"other"}},
+                        {"head":{**pr["head"],"repo":{"id":43}}}):
+            pr.update(changes)
+            with self.assertRaisesRegex(ValueError,"PR identity"):
+                lifecycle.upgrade(api,REPO,pin,NEW,apply=True,owner_approved=True,
+                                  preserve_staged=True,staged_scope_sha256=digest)
+            pr.clear(); pr.update(copy.deepcopy(original))
+        pr["head"]["sha"] = api.commit(api.tree({"other":"unrelated"}), [])
+        with self.assertRaises((ValueError,subprocess.CalledProcessError)):
+            lifecycle.upgrade(api,REPO,pin,NEW,preserve_staged=True)
+        pr.clear(); pr.update(copy.deepcopy(original))
+        with patch.object(install,"source_files",side_effect=lambda api,sha:dict({OLD:OLD_FILES,NEW:NEW_FILES}[sha])):
+            with self.assertRaisesRegex(ValueError,"closure capability"):
+                lifecycle.upgrade(api,REPO,pin,NEW,preserve_staged=True)
+        self.assertEqual(api.writes,[])
+        self.assertEqual(api.ref(install.BRANCH),pin)
+
     def test_archive_preserves_exact_history_without_deletion(self):
         api=self.api
         plan=lifecycle.prepare_retirement(api,REPO,api.old)
