@@ -126,7 +126,7 @@ def verify_merged_destination(api, state, active, pr, policy, destination, read_
     meta = api.request("GET", prefix)
     if (meta.get("id") != policy["repository_id"] or meta.get("private") is not False
             or meta.get("full_name") != policy["repository"]
-            or meta.get("default_branch") != manifest["product_branch"]):
+            or install.product_target(meta, manifest) != manifest["product_branch"]):
         raise ValueError("Post-merge verification requires the matching public repository")
     row = next(r for r in ledger["issues"] if r["issue"] == active["issue"])
     scope = policy["issues"]

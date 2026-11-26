@@ -829,10 +829,9 @@ def load(api, target, expected_sha=None, *, _source_cache=None):
             or manifest.get("source_repository") != install.SOURCE
             or manifest.get("target_repository") != meta["full_name"]
             or manifest.get("target_repository_id") != meta["id"]
-            or manifest.get("install_branch") != install.BRANCH
-            or manifest.get("product_branch") != meta["default_branch"]
-            or meta["default_branch"] == install.BRANCH):
+            or manifest.get("install_branch") != install.BRANCH):
         raise ValueError("Installed manifest does not match target identity or product branch")
+    product_branch = install.product_target(meta, manifest)
     baseline = install.require(install.BASELINE, manifest["baseline_version"], "baseline")
     major, minor, patch = checkpoint.version_number(baseline)
     if manifest["target_version"] != f"v{major}.{minor}.{patch + 1}":
@@ -847,6 +846,8 @@ def load(api, target, expected_sha=None, *, _source_cache=None):
         expected_files = install.source_files(api, source)
         if _source_cache is not None:
             _source_cache[source] = dict(expected_files)
+    if manifest.get("product_target_approval") is not None and not install.supports_designated_target(expected_files):
+        raise ValueError("Installed package lacks designated-target support")
     digests = {p: hashlib.sha256(s.encode()).hexdigest() for p, s in expected_files.items()}
     if manifest["package_files_sha256"] != digests or any(read(p) != s for p, s in expected_files.items()):
         raise ValueError("Installed package does not match pinned source")
@@ -861,7 +862,7 @@ def load(api, target, expected_sha=None, *, _source_cache=None):
     parallel_supported = supports_parallel_package(expected_files)
     if handoff["schema_version"] == 2 and not parallel_supported:
         raise ValueError("Installed package lacks parallel handoff support")
-    product = install.read_ref(api, prefix, meta["default_branch"])
+    product = install.read_ref(api, prefix, product_branch)
     if product is None:
         raise ValueError("Product branch is missing")
     return {"prefix": prefix, "ref": ref, "manifest": manifest,
@@ -1220,7 +1221,7 @@ def check_deferral(api, state, record, next_issue=None):
     meta = install.response_object(api.request("GET", prefix), "target repository")
     if (meta.get("full_name") != policy["repository"]
             or not install.same_id(meta.get("id"), policy["repository_id"])
-            or meta.get("default_branch") != policy["product_branch"]
+            or install.product_target(meta, manifest) != policy["product_branch"]
             or policy["product_branch"] == install.BRANCH):
         raise ValueError("Integration debt target identity changed")
     target = install.require(install.SHA, policy["product_sha"], "deferral product revision")

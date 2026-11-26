@@ -151,3 +151,12 @@ class IntegrationIntegrityTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError,"exact integration archive"):
                 session.save(self.api,self.state,ledger,handoff,apply,issue=247)
         self.assertEqual(self.api.writes, [])
+
+    def test_default_target_mismatch_is_refused(self):
+        from tools import install
+        meta = {"id":42, "full_name":"example/existing", "default_branch":"trunk"}
+        with self.assertRaisesRegex(ValueError,"without owner designation"):
+            install.product_target(meta, {"product_branch":"release"})
+        self.assertEqual(install.product_target(meta, {"product_branch":"trunk"}),"trunk")
+        with self.assertRaisesRegex(ValueError,"collision"):
+            install.product_target(meta, {"product_branch":install.BRANCH})

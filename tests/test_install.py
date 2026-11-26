@@ -72,6 +72,31 @@ class InstallerTests(unittest.TestCase):
     def setUp(self):
         self.api = FakeGitHub()
 
+    def test_explicit_alternate_product_target_plan(self):
+        self.api.refs["release"] = PRODUCT
+        with patch.object(install, "source_files", return_value={
+                "tools/install.py": "DESIGNATED_PRODUCT_TARGET_V1 = True\n"}):
+            with self.assertRaisesRegex(ValueError, "owner approval"):
+                install.install(self.api, TARGET, PIN, "v1.0.6", product_branch="release",
+                                product_sha=PRODUCT)
+            plan = install.install(self.api, TARGET, PIN, "v1.0.6",
+                product_branch="release", product_sha=PRODUCT,
+                product_decision="Owner uses release branch for product integration", owner_approved=True)
+            manifest = plan["manifest"]
+            self.assertEqual(manifest["product_branch"], "release")
+            self.assertEqual(install.product_target(self.api.metadata, manifest), "release")
+            with self.assertRaisesRegex(ValueError, "changed"):
+                install.product_target({**self.api.metadata, "default_branch":"other"}, manifest)
+            with self.assertRaisesRegex(ValueError, "stale"):
+                install.install(self.api, TARGET, PIN, "v1.0.6",
+                    product_branch="release", product_sha="e"*40,
+                    product_decision="Owner selected release", owner_approved=True)
+        with self.assertRaisesRegex(ValueError, "lacks reviewed"):
+            install.install(self.api, TARGET, PIN, "v1.0.6",
+                product_branch="release", product_sha=PRODUCT,
+                product_decision="Owner selected release", owner_approved=True)
+        self.assertEqual(self.api.writes, [])
+
     def test_install_isolated_branch(self):
         result = install.install(self.api, TARGET, PIN, "v1.0.6", True)
         self.assertEqual(result["installed_sha"], INSTALLED)

@@ -52,7 +52,7 @@ def current(api, state):
     meta = api.request("GET", prefix)
     if (meta.get("id") != manifest["target_repository_id"]
             or meta.get("full_name") != manifest["target_repository"]
-            or meta.get("default_branch") != manifest["product_branch"]
+            or install.product_target(meta, manifest) != manifest["product_branch"]
             or meta.get("archived") or meta.get("disabled")):
         raise ValueError("Target identity or default branch changed")
     if (install.read_ref(api, prefix, install.BRANCH) != state["ref"]
@@ -123,6 +123,8 @@ def upgrade(api, target, expected_sha, source_sha, *, apply=False, owner_approve
     old_files = install.source_files(api, old_source)
     new_files = install.source_files(api, source_sha)
     session.require_closure_compatible_history(state["handoff"], session.supports_closure_execution(new_files))
+    if manifest.get("product_target_approval") is not None and not install.supports_designated_target(new_files):
+        raise ValueError("Upgrade target lacks designated product branch support")
     scope = None
     if preserve_staged:
         if not session.supports_closure_execution(new_files):
@@ -160,6 +162,12 @@ def upgrade(api, target, expected_sha, source_sha, *, apply=False, owner_approve
     plan = {"status":"planned", "operation":"upgrade", "repository":manifest["target_repository"],
             "from_source":old_source,"to_source":source_sha,"expected_sha":expected_sha,
             "changed_paths":sorted(changes),"product_sha":state["product_sha"]}
+    if session.unresolved_integration_debt(state):
+        plan["integration_debt"] = [{"issue": row["issue"], "version": row["version"], "state": row["state"]}
+                                    for row in session.unresolved_integration_debt(state)]
+        plan["integration_debt_resolved"] = False
+    if install.supports_designated_target(old_files) and not install.supports_designated_target(new_files):
+        raise ValueError("Upgrade cannot remove reviewed integration integrity capability")
     if scope is not None:
         plan.update(staged_scope=scope, staged_scope_sha256=digest,
                     staged_integration_verified=False)
