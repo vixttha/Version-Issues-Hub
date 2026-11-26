@@ -68,6 +68,41 @@ class ScopeControlTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "Unauthorized scope"):
                 scope.assert_scope_paths({**self.record, "allowed_paths": ["allowed"]}, paths)
 
+    def test_divergent_merge_excludes_baseline_only_and_retains_resolution(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            def git(*args):
+                return subprocess.check_output(["git", "-C", tmp, *args], text=True).strip()
+            git("init", "-q", "-b", "baseline")
+            git("config", "user.name", "VIB test")
+            git("config", "user.email", "test@example.invalid")
+            root = Path(tmp)
+            (root/"README.md").write_text("old", encoding="utf-8")
+            (root/"allowed").write_text("old", encoding="utf-8")
+            git("add", "."); git("commit", "-qm", "fork")
+            git("branch", "side")
+            (root/"README.md").write_text("approved baseline", encoding="utf-8")
+            git("commit", "-qam", "baseline change")
+            base = git("rev-parse", "HEAD")
+            git("switch", "side")
+            (root/"allowed").write_text("approved change", encoding="utf-8")
+            git("commit", "-qam", "allowed change")
+            git("switch", "baseline")
+            git("merge", "--no-ff", "-m", "ordinary merge", "side")
+            head = git("rev-parse", "HEAD")
+            record = {**self.record, "allowed_paths": ["allowed"]}
+            self.assertEqual(scope.scope_paths(base, head, cwd=tmp), {"allowed"})
+            scope.assert_scope_paths(record, scope.scope_paths(base, head, cwd=tmp))
+            git("reset", "--hard", base)
+            git("merge", "--no-ff", "--no-commit", "side")
+            (root/"resolution").write_text("unapproved merge-only edit", encoding="utf-8")
+            git("add", "resolution"); git("commit", "-qm", "merge resolution")
+            git("rm", "resolution"); git("commit", "-qm", "revert resolution")
+            head = git("rev-parse", "HEAD")
+            self.assertEqual(scope.changed_paths(base, head, cwd=tmp), {"allowed"})
+            self.assertEqual(scope.scope_paths(base, head, cwd=tmp), {"allowed", "resolution"})
+            with self.assertRaisesRegex(ValueError, "resolution"):
+                scope.assert_scope_paths(record, scope.scope_paths(base, head, cwd=tmp))
+
     def test_revision_bound_scope_amendment_and_stale_ref(self):
         pin, current, head, prior = "c"*40, "d"*40, "e"*40, "f"*40
         amended = {**self.record, "reviewed_sha": "b"*40, "previous_approval_sha": prior,

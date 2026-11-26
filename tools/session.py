@@ -108,7 +108,6 @@ def require_parallel_package(state):
         raise ValueError("Installed package lacks parallel handoff support; upgrade the pinned reader first")
     if state["manifest"].get("enforcement") != "disabled":
         raise ValueError("Parallel mode requires disabled optional enforcement")
-    require_experimental_parallel()
 
 
 def active_rows(handoff):
@@ -1059,6 +1058,7 @@ def claim(api, state, number, criteria, note, *, resume_prior_line=False, parall
     require_unheld_scope(state, [number])
     if parallel or state["handoff"]["schema_version"] == 2:
         require_parallel_package(state)
+        require_experimental_parallel()
     item = get_issue(api, state, number)
     if item.get("state") != "open":
         raise ValueError("Only an open GitHub issue can be claimed")
@@ -1474,7 +1474,8 @@ def inspect_operation(api, state, ticket):
         if (before["repository"] != state["ledger"]["repository"]
                 or after["repository"] != before["repository"]):
             raise ValueError("Recovery ledger repository mismatch")
-        check_issue_delta({**state, "ledger": before, "handoff": h0}, after, h1, number)
+        check_issue_delta({**state, "ledger": before, "handoff": h0}, after, h1, number,
+                          historical=True)
         if issue_view(before, h0, number) == issue_view(after, h1, number):
             raise ValueError("Recovery candidate has no issue-local change")
     except (AttributeError, KeyError, TypeError) as exc:
@@ -1491,13 +1492,15 @@ class HandoffUnconfirmed(ValueError):
         delay = f"; wait at least {retry_after} seconds before inspecting" if retry_after is not None else ""
         super().__init__("Handoff outcome unconfirmed; inspect candidate " + candidate + " before retrying" + delay)
 
-def check_issue_delta(state, ledger, handoff, number=None):
+def check_issue_delta(state, ledger, handoff, number=None, *, historical=False):
     """Only one explicitly scoped issue may change in a session transaction.
 
     Preserve unrelated rows and active work, immutable existing criteria, and
     the exact historical archive prefix. Legacy callers may omit the issue
     only when the current/new active slot or a single append identifies it.
     This is a cooperative data-integrity guard, not an authorization boundary.
+    Only read-only historical inspection may bypass current activation/hold rules;
+    all save and recovery publication paths use the default mutation guard.
     """
     before_ledger, before_handoff = state["ledger"], state["handoff"]
     validate_handoff(before_handoff, before_ledger)
@@ -1525,7 +1528,8 @@ def check_issue_delta(state, ledger, handoff, number=None):
         else:
             raise ValueError("Issue scope required for state mutation")
     number = issue_number(number)
-    require_unheld_scope(state, [number])
+    if not historical:
+        require_unheld_scope(state, [number])
     old_rows = {r["issue"]: r for r in before_ledger["issues"]}
     new_rows = {r["issue"]: r for r in ledger["issues"]}
     if {n:r for n,r in old_rows.items() if n != number} != {
@@ -1546,6 +1550,8 @@ def check_issue_delta(state, ledger, handoff, number=None):
         raise ValueError("Parallel migration requires a new owner-approved active claim")
     if handoff["schema_version"] == 2:
         require_parallel_package(state)
+        if not historical:
+            require_experimental_parallel()
     if any(r["handoff"]["issue"] != number for r in appended):
         raise ValueError("Issue scope violation: unrelated history appended")
     if number not in new_rows:

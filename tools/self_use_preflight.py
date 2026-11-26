@@ -118,7 +118,16 @@ def scope_paths(base, head, cwd=None):
         raw = subprocess.check_output(["git", "diff-tree", "--root", "--no-commit-id",
                                        "-r", "-m", "--no-renames", "--name-only", "-z",
                                        revision], cwd=cwd)
-        paths.update(p.decode("utf-8") for p in raw.split(b"\0") if p)
+        touched = {p.decode("utf-8") for p in raw.split(b"\0") if p}
+        parents = subprocess.check_output(["git", "show", "-s", "--format=%P", revision],
+                                          cwd=cwd, text=True).split()
+        if len(parents) > 1:
+            # A merge of an older side branch can report baseline-only files
+            # against that parent. Keep paths whose merged entries differ from
+            # the approved baseline; introduced parent commits are separately
+            # inspected, including any later reverted change.
+            touched.intersection_update(changed_paths(base, revision, cwd))
+        paths.update(touched)
     return paths
 
 
