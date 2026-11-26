@@ -1,0 +1,38 @@
+name: Live read-only adoption acceptance
+on:
+  push:
+    branches: ['plan/v0.0.0.1', 'plan/live-acceptance-isolation', 'plan/v0.0.1-licensing-review']
+  pull_request:
+    branches: [main, 'plan/v0.0.0.1']
+permissions:
+  contents: read
+jobs:
+  live:
+    strategy:
+      fail-fast: false
+      max-parallel: 1
+      matrix:
+        scope: [core, external]
+    if: github.event.repository.private == false
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    env:
+      GH_TOKEN: ${{ github.token }}
+      VIB_TEST_SOURCE: ${{ github.event.pull_request.head.sha || github.sha }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
+        with:
+          python-version: '3.12'
+      - name: Live public read-only install planning and adopter recovery
+        run: |
+          set -o pipefail
+          python -m tools.live_acceptance --scope "${{ matrix.scope }}" | tee "$RUNNER_TEMP/live-acceptance.json"
+      - if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: live-acceptance-${{ matrix.scope }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/live-acceptance.json
+          if-no-files-found: error

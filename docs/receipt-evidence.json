@@ -1,0 +1,1621 @@
+{
+  "title": "Version-Issues-Hub checkpoint evidence",
+  "features": [
+    {
+      "id": "v0-0-0-1",
+      "label": "Issue #1 · issue-version ledger",
+      "documented_in": [
+        {
+          "path": "docs/v0.0.0.1.md",
+          "anchor": "## Version and evidence record"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "ledger/issue-versions.json",
+          "anchor": "\"issue\": 1,"
+        }
+      ],
+      "implemented_in": [
+        {
+          "path": "tools/checkpoint.py",
+          "anchor": "def register(ledger, issue, line, criteria):"
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tests/test_checkpoint.py",
+          "anchor": "def test_first_live_issue_is_stable_on_registration_retry(self):"
+        }
+      ]
+    },
+    {
+      "id": "v0-0-0-2",
+      "label": "Issue #7 · stable per-issue receipts",
+      "documented_in": [
+        {
+          "path": "docs/v0.0.0.2.md",
+          "anchor": "## Batch receipts"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "ledger/issue-versions.json",
+          "anchor": "\"issue\": 7,"
+        }
+      ],
+      "implemented_in": [
+        {
+          "path": ".github/workflows/verify-checkpoint.yml",
+          "anchor": "- name: Write the selected issue verification receipts"
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tests/test_checkpoint.py",
+          "anchor": "def test_batch_keeps_both_issue_fix_pairs_when_the_candidate_changes(self, check_ancestry):"
+        }
+      ]
+    },
+    {
+      "id": "v0-0-0-3",
+      "label": "Issue #9 · standalone installer",
+      "documented_in": [
+        {
+          "path": "docs/v0.0.0.3.md",
+          "anchor": "## Installation contract"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "ledger/issue-versions.json",
+          "anchor": "\"issue\": 9,"
+        }
+      ],
+      "implemented_in": [
+        {
+          "path": "tools/install.py",
+          "anchor": "def install(api, target, source_sha, baseline, apply=False):"
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tests/test_install.py",
+          "anchor": "def test_install_isolated_branch(self):"
+        }
+      ]
+    },
+    {
+      "id": "v0-0-0-4",
+      "label": "Issue #10 · agent bootstrap and handoffs",
+      "documented_in": [
+        {
+          "path": "docs/v0.0.0.4.md",
+          "anchor": "## Bootstrap and handoffs"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "ledger/issue-versions.json",
+          "anchor": "\"issue\": 10,"
+        }
+      ],
+      "implemented_in": [
+        {
+          "path": "tools/session.py",
+          "anchor": "def load(api, target, expected_sha=None, *, _source_cache=None):"
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tests/test_session.py",
+          "anchor": "def test_fresh_session_recovers_active_issue(self):"
+        }
+      ]
+    },
+    {
+      "id": "v0-0-0-5",
+      "label": "Issue #11 · batched staged handoffs",
+      "documented_in": [
+        {
+          "path": "install/branch/WORKFLOW.md",
+          "anchor": "## Batched PRs"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "ledger/issue-versions.json",
+          "anchor": "\"issue\": 11,"
+        }
+      ],
+      "implemented_in": [
+        {
+          "path": "tools/session.py",
+          "anchor": "def reconcile(api, state, number, decision, *, policy=None):"
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tests/test_session.py",
+          "anchor": "def test_stage_two_issues_and_reconcile_only_after_merge(self):"
+        }
+      ]
+    },
+    {
+      "id": "v0-0-0-6",
+      "label": "Issue #12 · trusted merge gate candidate",
+      "documented_in": [
+        {
+          "path": "install/branch/GATE.md",
+          "anchor": "## Trust boundary"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "ledger/issue-versions.json",
+          "anchor": "\"issue\": 12,"
+        }
+      ],
+      "implemented_in": [
+        {
+          "path": "tools/gate.py",
+          "anchor": "def evaluate(api, target, policy):"
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tests/test_gate.py",
+          "anchor": "def test_two_issue_gate_and_opt_in_publish(self):"
+        }
+      ]
+    },
+    {
+      "id": "v0-0-0-7",
+      "label": "Issue #13 · scope-correct receipt criteria",
+      "documented_in": [
+        {
+          "path": "docs/v0.0.0.2.md",
+          "anchor": "## Historical two-checkpoint pilot"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "ledger/issue-versions.json",
+          "anchor": "\"issue\": 13,"
+        }
+      ],
+      "implemented_in": [
+        {
+          "path": "tools/checkpoint.py",
+          "anchor": "def receipts(ledger, scope, checkout, env, event, parents=(), *, versions=None, previous=None):"
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tests/test_checkpoint.py",
+          "anchor": "def test_live_scope_has_one_receipt_per_selected_version(self, check_ancestry):"
+        }
+      ]
+    },
+    {
+      "id": "v0-0-0-8",
+      "label": "Issue #14 · trusted gate publication and revocation",
+      "documented_in": [
+        {
+          "path": "install/branch/GATE.md",
+          "anchor": "## Sealed verdict and revocation"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "ledger/issue-versions.json",
+          "anchor": "\"issue\": 14,"
+        }
+      ],
+      "implemented_in": [
+        {
+          "path": "tools/gate.py",
+          "anchor": "def revoke(api, publisher, target, policy, check_id):"
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tests/test_gate.py",
+          "anchor": "def test_revoke_previous_green_even_after_state_changed(self):"
+        }
+      ]
+    },
+    {
+      "id": "v0-0-0-9",
+      "label": "Issue #22 · standard advisory validation",
+      "documented_in": [
+        {
+          "path": "install/branch/STANDARD.md",
+          "anchor": "## Standard validation contract"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "ledger/issue-versions.json",
+          "anchor": "\"issue\": 22,"
+        }
+      ],
+      "implemented_in": [
+        {
+          "path": "tools/standard.py",
+          "anchor": "def evaluate(api, target, policy):"
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tests/test_standard.py",
+          "anchor": "def test_standard_needs_no_app_and_never_publishes(self):"
+        }
+      ]
+    },
+    {
+      "id": "v0-0-0-10",
+      "label": "Issue #23 · historical package pin recovery",
+      "documented_in": [
+        {
+          "path": "docs/v0.0.0.10.md",
+          "anchor": "## Historical package compatibility"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "ledger/issue-versions.json",
+          "anchor": "\"issue\": 23,"
+        }
+      ],
+      "implemented_in": [
+        {
+          "path": "tools/install.py",
+          "anchor": "def pinned_package(source_text):"
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tests/test_install.py",
+          "anchor": "def test_historical_package_pin_does_not_require_future_files(self):"
+        }
+      ]
+    },
+    {
+      "id": "v0-0-0-11",
+      "label": "Issue #24 · live multi-project adoption",
+      "documented_in": [
+        {
+          "path": "docs/v0.0.0.11.md",
+          "anchor": "## Live cross-project adoption"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "ledger/issue-versions.json",
+          "anchor": "\"issue\": 24,"
+        }
+      ],
+      "implemented_in": [
+        {
+          "path": "tools/live_acceptance.py",
+          "anchor": "def verify_aldervale_install(api):"
+        }
+      ],
+      "tested_by": [
+        {
+          "path": ".github/workflows/live-acceptance.yml",
+          "anchor": "- name: Live public read-only install planning and adopter recovery"
+        }
+      ]
+    },
+    {
+      "id": "v0-0-0-12",
+      "label": "Issue #25 · safe installation lifecycle",
+      "documented_in": [
+        {
+          "path": "install/branch/LIFECYCLE.md",
+          "anchor": "## Upgrade and retirement contract"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "ledger/issue-versions.json",
+          "anchor": "\"issue\": 25,"
+        }
+      ],
+      "implemented_in": [
+        {
+          "path": "tools/lifecycle.py",
+          "anchor": "if source_sha == old_source:"
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tests/test_lifecycle.py",
+          "anchor": "def test_upgrade_preserves_real_git_state_and_product(self):"
+        }
+      ]
+    },
+    {
+      "id": "v0-0-0-13",
+      "label": "Issue #26 · CLI lifecycle and recovery",
+      "documented_in": [
+        {
+          "path": "docs/v0.0.0.13.md",
+          "anchor": "## Fresh CLI lifecycle acceptance"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "ledger/issue-versions.json",
+          "anchor": "\"issue\": 26,"
+        }
+      ],
+      "implemented_in": [
+        {
+          "path": "tools/live_acceptance.py",
+          "anchor": "def verify_live_cli_plan(api, source):"
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tests/test_lifecycle.py",
+          "anchor": "def test_fresh_cli_install_upgrade_archive_remove_restore(self):"
+        }
+      ]
+    },
+    {
+      "id": "v0-0-0-14",
+      "label": "Issue #29 · live remote CLI lifecycle",
+      "documented_in": [
+        {
+          "path": "docs/v0.0.0.14.md",
+          "anchor": "## Real GitHub lifecycle pilot"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "ledger/issue-versions.json",
+          "anchor": "\"issue\": 29,"
+        }
+      ],
+      "implemented_in": [
+        {
+          "path": "tools/live_lifecycle.py",
+          "anchor": "def main():"
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tools/live_lifecycle.py",
+          "anchor": "assert \"advanced\" in stale"
+        }
+      ]
+    },
+    {
+      "id": "v0-0-0-15",
+      "label": "Issue #30 · bounded ref readback",
+      "documented_in": [
+        {
+          "path": "docs/v0.0.0.15.md",
+          "anchor": "## Recovering a confirmed remote installation"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "ledger/issue-versions.json",
+          "anchor": "\"issue\": 30,"
+        }
+      ],
+      "implemented_in": [
+        {
+          "path": "tools/install.py",
+          "anchor": "def wait_ref(api, prefix, branch, expected, previous=None):"
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tests/test_install.py",
+          "anchor": "def test_wait_ref_tolerates_only_expected_previous_state(self):"
+        }
+      ]
+    },
+    {
+      "id": "v0-0-0-16",
+      "label": "Issue #31 · safe GitHub API diagnostics",
+      "documented_in": [
+        {
+          "path": "docs/v0.0.0.16.md",
+          "anchor": "## Diagnose without repeating mutations"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "ledger/issue-versions.json",
+          "anchor": "\"issue\": 31,"
+        }
+      ],
+      "implemented_in": [
+        {
+          "path": "tools/install.py",
+          "anchor": "def api_operation(path):"
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tests/test_install.py",
+          "anchor": "def test_api_mutating_request_never_retried(self):"
+        }
+      ]
+    },
+    {
+      "id": "v0-0-0-17",
+      "label": "Issue #33 · bounded read-only timeout recovery",
+      "documented_in": [
+        {
+          "path": "docs/v0.0.0.17.md",
+          "anchor": "## Bounded transport recovery"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "ledger/issue-versions.json",
+          "anchor": "\"issue\": 33,"
+        }
+      ],
+      "implemented_in": [
+        {
+          "path": "tools/install.py",
+          "anchor": "class ApiTransportError(OSError):"
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tests/test_install.py",
+          "anchor": "def test_api_get_timeout_retries_direct_and_wrapped(self):"
+        }
+      ]
+    },
+    {
+      "id": "v0-0-0-18",
+      "label": "Issue #35 · verified alternative upgrade transport",
+      "documented_in": [
+        {
+          "path": "install/branch/LIFECYCLE.md",
+          "anchor": "### Alternative transport after a ref-update failure"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "ledger/issue-versions.json",
+          "anchor": "\"issue\": 35,"
+        }
+      ],
+      "implemented_in": [
+        {
+          "path": "tools/lifecycle.py",
+          "anchor": "def upgrade(api, target, expected_sha, source_sha, *, apply=False, owner_approved=False, prepare_only=False,"
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tests/test_lifecycle.py",
+          "anchor": "def test_prepared_upgrade_moves_no_ref_and_can_be_confirmed_after_external_advance(self):"
+        }
+      ]
+    },
+    {
+      "id": "v0-0-0-19",
+      "label": "Issue #36 · stable read-only recovery acceptance",
+      "documented_in": [
+        {
+          "path": "docs/v0.0.0.19.md",
+          "anchor": "## Concurrent adopter recovery"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "ledger/issue-versions.json",
+          "anchor": "\"issue\": 36,"
+        }
+      ],
+      "implemented_in": [
+        {
+          "path": "tools/acceptance_snapshot.py",
+          "anchor": "def recover_stable(api, target, requested=None, attempts=3):"
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tests/test_acceptance_snapshot.py",
+          "anchor": "def test_reload_only_after_demonstrated_ref_advance(self):"
+        }
+      ]
+    },
+    {
+      "id": "v0-0-0-20",
+      "label": "Issue #41 · merged and closed handoff recovery",
+      "documented_in": [
+        {
+          "path": "docs/v0.0.0.20-to-22.md",
+          "anchor": "## v0.0.0.20 — merged and closed handoff recovery"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "ledger/issue-versions.json",
+          "anchor": "\"issue\": 41,"
+        }
+      ],
+      "implemented_in": [
+        {
+          "path": "tools/session.py",
+          "anchor": "def require_open_pr(api, state, active):"
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tests/test_session.py",
+          "anchor": "def test_inspect_distinguishes_closed_and_merged_pr(self):"
+        }
+      ]
+    },
+    {
+      "id": "v0-0-0-21",
+      "label": "Issue #42 · single active ledger invariant",
+      "documented_in": [
+        {
+          "path": "docs/v0.0.0.20-to-22.md",
+          "anchor": "## v0.0.0.21 — single active ledger invariant"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "ledger/issue-versions.json",
+          "anchor": "\"issue\": 42,"
+        }
+      ],
+      "implemented_in": [
+        {
+          "path": "tools/session.py",
+          "anchor": "def validate_handoff(handoff, ledger):"
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tests/test_session.py",
+          "anchor": "def test_orphan_in_progress_rows_fail_closed(self):"
+        }
+      ]
+    },
+    {
+      "id": "v0-0-0-22",
+      "label": "Issue #43 · prior release-line checkpoint recovery",
+      "documented_in": [
+        {
+          "path": "docs/v0.0.0.20-to-22.md",
+          "anchor": "## v0.0.0.22 — prior release-line checkpoint recovery"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "ledger/issue-versions.json",
+          "anchor": "\"issue\": 43,"
+        }
+      ],
+      "implemented_in": [
+        {
+          "path": "tools/session.py",
+          "anchor": "def claim(api, state, number, criteria, note, *, resume_prior_line=False, parallel=False,"
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tests/test_session.py",
+          "anchor": "def test_explicit_prior_line_recovery_preserves_assignment(self):"
+        }
+      ]
+    },
+    {
+      "id": "v0-0-0-24",
+      "label": "Issue #39 · recovery ref and self-install review repair",
+      "documented_in": [
+        {
+          "path": "docs/v0.0.0.24-25.md",
+          "anchor": "## v0.0.0.24 — recovery reference and self-install reconciliation"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "ledger/issue-versions.json",
+          "anchor": "\"issue\": 39,"
+        }
+      ],
+      "implemented_in": [
+        {
+          "path": "tools/pilot_refs.py",
+          "anchor": "def ensure_recovery_ref(api, prefix, final):"
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tests/test_pilot_refs.py",
+          "anchor": "def test_exact_recovery_reused_without_writes(self):"
+        }
+      ]
+    },
+    {
+      "id": "v0-0-0-25",
+      "label": "Issue #51 · separate core and external live acceptance",
+      "documented_in": [
+        {
+          "path": "docs/v0.0.0.24-25.md",
+          "anchor": "## v0.0.0.25 — isolate mutable external acceptance evidence"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "ledger/issue-versions.json",
+          "anchor": "\"issue\": 51,"
+        }
+      ],
+      "implemented_in": [
+        {
+          "path": "tools/live_acceptance.py",
+          "anchor": "class ReadOnlyGitHub(install.GitHub):"
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tests/test_live_acceptance.py",
+          "anchor": "def test_failed_external_does_not_suppress_other_evidence(self):"
+        }
+      ]
+    },
+    {
+      "id": "v0-0-0-26",
+      "label": "Issue #56 · PR merge metadata (recovered assignment)",
+      "documented_in": [
+        {
+          "path": "docs/v0.0.0.31-self-use-recovery.md",
+          "anchor": "## v0.0.0.26 — #56"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "ledger/issue-versions.json",
+          "anchor": "\"issue\": 56,"
+        }
+      ],
+      "implemented_in": [
+        {
+          "path": "tools/gate.py",
+          "anchor": "def assert_current_pr(api, prefix, policy):"
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tests/test_session.py",
+          "anchor": "def test_finish_and_reconcile_require_coherent_closed_merged_pr(self):"
+        }
+      ]
+    },
+    {
+      "id": "v0-0-0-27",
+      "label": "Issue #57 · Boolean evidence count (recovered assignment)",
+      "documented_in": [
+        {
+          "path": "docs/v0.0.0.31-self-use-recovery.md",
+          "anchor": "## v0.0.0.27 — #57"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "ledger/issue-versions.json",
+          "anchor": "\"issue\": 57,"
+        }
+      ],
+      "implemented_in": [
+        {
+          "path": "tools/gate.py",
+          "anchor": "def exact_collection(api, path, key):"
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tests/test_gate.py",
+          "anchor": "def test_collection_count_requires_nonnegative_exact_integer(self):"
+        }
+      ]
+    },
+    {
+      "id": "v0-0-0-28",
+      "label": "Issue #54 · Windows exact fixture bytes (recovered assignment)",
+      "documented_in": [
+        {
+          "path": "docs/v0.0.0.31-self-use-recovery.md",
+          "anchor": "## v0.0.0.28 — #54"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "ledger/issue-versions.json",
+          "anchor": "\"issue\": 54,"
+        }
+      ],
+      "implemented_in": [
+        {
+          "path": "tests/test_lifecycle.py",
+          "anchor": "def git(self,*args,data=None):"
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tests/test_lifecycle.py",
+          "anchor": "def test_fixture_preserves_exact_utf8_and_line_endings(self):"
+        }
+      ]
+    },
+    {
+      "id": "v0-0-0-29",
+      "label": "Issue #61 · Strict wire JSON (recovered assignment)",
+      "documented_in": [
+        {
+          "path": "docs/v0.0.0.31-self-use-recovery.md",
+          "anchor": "## v0.0.0.29 — #61"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "ledger/issue-versions.json",
+          "anchor": "\"issue\": 61,"
+        }
+      ],
+      "implemented_in": [
+        {
+          "path": "tools/install.py",
+          "anchor": "def request(self, method, path, body=None):"
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tests/test_install.py",
+          "anchor": "def test_api_rejects_duplicate_and_malformed_wire_json(self):"
+        }
+      ]
+    },
+    {
+      "id": "v0-0-0-30",
+      "label": "Issue #60 · Finite JSON persistence (recovered assignment)",
+      "documented_in": [
+        {
+          "path": "docs/v0.0.0.31-self-use-recovery.md",
+          "anchor": "## v0.0.0.30 — #60"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "ledger/issue-versions.json",
+          "anchor": "\"issue\": 60,"
+        }
+      ],
+      "implemented_in": [
+        {
+          "path": "tools/checkpoint.py",
+          "anchor": "def parse_json(raw):"
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tests/test_checkpoint.py",
+          "anchor": "def test_nonfinite_persistence_preserves_existing_bytes(self):"
+        }
+      ]
+    },
+    {
+      "id": "v0-0-0-31",
+      "label": "Issue #65 · self-use workflow recovery",
+      "documented_in": [
+        {
+          "path": "docs/v0.0.0.31-self-use-recovery.md",
+          "anchor": "## Self-use preflight"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "ledger/issue-versions.json",
+          "anchor": "\"issue\": 65,"
+        }
+      ],
+      "implemented_in": [
+        {
+          "path": "tools/self_use_preflight.py",
+          "anchor": "def validate_projection(installed, projection, handoff, issue):"
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tests/test_self_use_preflight.py",
+          "anchor": "def test_missing_mapping_and_changed_criteria_fail(self):"
+        }
+      ]
+    },
+    {
+      "id": "v0-0-0-32",
+      "label": "Issue #34 · Optional post-publication evidence confirmation",
+      "documented_in": [
+        {
+          "path": "install/branch/GATE.md",
+          "anchor": "### Post-publication evidence confirmation (#34)"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "ledger/issue-versions.json",
+          "anchor": "\"issue\": 34,"
+        }
+      ],
+      "implemented_in": [
+        {
+          "path": "tools/gate.py",
+          "anchor": "def publish(api, publisher, target, policy):"
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tests/test_gate.py",
+          "anchor": "def test_post_success_rerun_revokes_exact_check(self):"
+        }
+      ]
+    },
+    {
+      "id": "v0-0-0-33",
+      "label": "Issue #68 · generic canonical Worker preflight",
+      "documented_in": [
+        {
+          "path": "docs/v0.0.0.33.md",
+          "anchor": "## Forward checkpoint protocol"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "ledger/issue-versions.json",
+          "anchor": "\"issue\": 68,"
+        }
+      ],
+      "implemented_in": [
+        {
+          "path": "tools/self_use_preflight.py",
+          "anchor": "def verify_checkpoint_branch(branch):"
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tests/test_self_use_preflight.py",
+          "anchor": "def test_generic_worker_record_is_exact(self):"
+        }
+      ]
+    },
+    {
+      "id": "v0-0-0-34",
+      "label": "Issue #70 · historical acceptance criteria integrity",
+      "documented_in": [
+        {
+          "path": "docs/v0.0.0.34.md",
+          "anchor": "## Immutable acceptance criteria"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "ledger/issue-versions.json",
+          "anchor": "\"issue\": 70,"
+        }
+      ],
+      "implemented_in": [
+        {
+          "path": "tools/checkpoint.py",
+          "anchor": "def check_history(ledger, previous):"
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tests/test_checkpoint.py",
+          "anchor": "def test_history_preserves_ordered_acceptance_criteria(self):"
+        }
+      ]
+    },
+    {
+      "id": "v0-0-0-35",
+      "label": "Issue #71 · archived verification integrity",
+      "documented_in": [
+        {
+          "path": "docs/v0.0.0.35.md",
+          "anchor": "## Complete archived success evidence"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "ledger/issue-versions.json",
+          "anchor": "\"issue\": 71,"
+        }
+      ],
+      "implemented_in": [
+        {
+          "path": "tools/session.py",
+          "anchor": "def validate_handoff(handoff, ledger):"
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tests/test_session.py",
+          "anchor": "def test_archived_success_requires_candidate_and_evidence(self):"
+        }
+      ]
+    },
+    {
+      "id": "v0-0-0-36",
+      "label": "Issue #72 · explicit receipt selection integrity",
+      "documented_in": [
+        {
+          "path": "docs/v0.0.0.36.md",
+          "anchor": "## Validate the complete selection before generating receipts"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "ledger/issue-versions.json",
+          "anchor": "\"issue\": 72,"
+        }
+      ],
+      "implemented_in": [
+        {
+          "path": "tools/checkpoint.py",
+          "anchor": "def receipts(ledger, scope, checkout, env, event, parents=(), *, versions=None, previous=None):"
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tests/test_checkpoint.py",
+          "anchor": "def test_explicit_receipt_selection_rejects_invalid_before_generation(self, ancestry, make_receipt):"
+        }
+      ]
+    },
+    {
+      "id": "v0-0-0-37",
+      "label": "Issue #53 · independent issue-scoped VIB handoff",
+      "documented_in": [
+        {
+          "path": "docs/v0.0.0.37.md",
+          "anchor": "## Current-baseline reconciliation"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "ledger/issue-versions.json",
+          "anchor": "\"issue\": 53,"
+        }
+      ],
+      "implemented_in": [
+        {
+          "path": "tools/session.py",
+          "anchor": "def recover_save(api, target, state, plan, issue, *, attempts=4, rounds=1, request=None,"
+        },
+        {
+          "path": "tools/session.py",
+          "anchor": "def inspect_operation(api, state, ticket):"
+        },
+        {
+          "path": "tools/session.py",
+          "anchor": "def persist_recovery_ticket(directory, ticket):"
+        },
+        {
+          "path": "tools/session.py",
+          "anchor": "def inspect_pending(api, state, path):"
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tests/test_vib53_qualification.py",
+          "anchor": "def test_bounded_concurrent_workloads(self):"
+        },
+        {
+          "path": "tests/test_transaction_confirmation.py",
+          "anchor": "def test_malformed_post_write_readback_retains_candidate(self):"
+        },
+        {
+          "path": "tests/test_contention_recovery.py",
+          "anchor": "def test_prepublication_ticket_confirms_exact_candidate_read_only(self):"
+        },
+        {
+          "path": "tests/test_vib53_qualification.py",
+          "anchor": "def test_full_lifecycle_with_one_hundred_distinct_issue_lanes(self):"
+        },
+        {
+          "path": "tests/test_contention_recovery.py",
+          "anchor": "def test_durable_ticket_survives_fresh_process_and_refuses_overwrite(self):"
+        },
+        {
+          "path": "tests/test_contention_recovery.py",
+          "anchor": "def test_retry_source_cache_never_caches_installed_bytes(self):"
+        },
+        {
+          "path": "tests/test_vib53_qualification.py",
+          "anchor": "def test_matched_serial_and_parallel_protocol_cost(self):"
+        },
+        {
+          "path": "tests/test_contention_recovery.py",
+          "anchor": "def test_pending_identity_persisted_before_first_candidate_even_on_deferral(self):"
+        },
+        {
+          "path": "tests/test_contention_recovery.py",
+          "anchor": "def test_pending_inventory_recovers_published_candidate_without_mutation(self):"
+        }
+      ]
+    },
+    {
+      "id": "v0-0-0-37-review-recovery",
+      "label": "Issue #53 · v0.0.0.37 review and recovery safeguards (same checkpoint)",
+      "documented_in": [
+        {
+          "path": "docs/v0.0.0.37.md",
+          "anchor": "### Matched protocol benchmark and recovery boundary"
+        },
+        {
+          "path": "docs/v0.0.0.37.md",
+          "anchor": "### Consistent confirmation and bounded immutable caching"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "ledger/issue-versions.json",
+          "anchor": "\"issue\": 53,"
+        }
+      ],
+      "implemented_in": [
+        {
+          "path": "tools/session.py",
+          "anchor": "def evidence_run(repo, link):"
+        },
+        {
+          "path": "tools/session.py",
+          "anchor": "def claim(api, state, number, criteria, note, *, resume_prior_line=False, parallel=False,"
+        },
+        {
+          "path": "tools/session.py",
+          "anchor": "def save(api, state, ledger, handoff, apply=False, *, issue=None, operation_id=None,"
+        },
+        {
+          "path": "tools/session.py",
+          "anchor": "def recover_save(api, target, state, plan, issue, *, attempts=4, rounds=1, request=None,"
+        },
+        {
+          "path": "tools/session.py",
+          "anchor": "def validate_retry_history(api, previous, fresh, number, path, confirmed=None, *, _history_cache=None):"
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tests/test_session.py",
+          "anchor": "def test_case_insensitive_run_urls_and_duplicate_identity(self):"
+        },
+        {
+          "path": "tests/test_session.py",
+          "anchor": "def test_staged_closed_unmerged_rework_preserves_history(self):"
+        },
+        {
+          "path": "tests/test_session.py",
+          "anchor": "def test_integrated_publication_rechecks_policy_and_rejects_rerun(self):"
+        },
+        {
+          "path": "tests/test_contention_recovery.py",
+          "anchor": "def test_idempotent_claim_does_not_create_pending_journal_or_ticket(self):"
+        },
+        {
+          "path": "tests/test_contention_recovery.py",
+          "anchor": "def test_malformed_rejected_write_recovery_retains_candidate(self):"
+        },
+        {
+          "path": "tests/test_session.py",
+          "anchor": "def test_staged_publication_rechecks_after_recovery_ticket_sink(self):"
+        },
+        {
+          "path": "tests/test_contention_recovery.py",
+          "anchor": "def test_published_candidate_with_valid_same_issue_descendant_is_confirmed(self):"
+        },
+        {
+          "path": "tests/test_contention_recovery.py",
+          "anchor": "def test_published_candidate_does_not_bypass_intervening_integrity(self):"
+        },
+        {
+          "path": "tests/test_contention_recovery.py",
+          "anchor": "def test_confirmed_candidate_cannot_change_unrelated_tree(self):"
+        },
+        {
+          "path": "tests/test_contention_recovery.py",
+          "anchor": "def test_reconstructed_history_must_match_fresh_endpoint(self):"
+        },
+        {
+          "path": "tests/test_contention_recovery.py",
+          "anchor": "def test_qualified_history_cache_avoids_two_duplicate_immutable_reads(self):"
+        }
+      ]
+    },
+    {
+      "id": "v0-0-0-37-api-boundaries",
+      "label": "Issue #53 · independent API-boundary repair (same checkpoint)",
+      "documented_in": [
+        {
+          "path": "docs/v0.0.0.37.md",
+          "anchor": "### Independent audit boundary repairs"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "ledger/issue-versions.json",
+          "anchor": "\"issue\": 53,"
+        }
+      ],
+      "implemented_in": [
+        {
+          "path": "tools/session.py",
+          "anchor": "def inspect_pending(api, state, path):"
+        },
+        {
+          "path": "tools/install.py",
+          "anchor": "def read_ref(api, prefix, branch):"
+        },
+        {
+          "path": "tools/install.py",
+          "anchor": "def read_text(api, prefix, path, ref):"
+        },
+        {
+          "path": "tools/lifecycle.py",
+          "anchor": "def tree_entries(api, prefix, sha, *, commit=None):"
+        },
+        {
+          "path": "tools/gate.py",
+          "anchor": "def exact_collection(api, path, key):"
+        },
+        {
+          "path": "tools/standard.py",
+          "anchor": "def check_pr_run(item, policy, run, attempt):"
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tests/test_contention_recovery.py",
+          "anchor": "def test_pending_origin_tampering_does_not_certify_publication(self):"
+        },
+        {
+          "path": "tests/test_api_boundaries.py",
+          "anchor": "def test_malformed_ref_responses_are_controlled(self):"
+        },
+        {
+          "path": "tests/test_api_boundaries.py",
+          "anchor": "def test_malformed_file_content_is_controlled(self):"
+        },
+        {
+          "path": "tests/test_api_boundaries.py",
+          "anchor": "def test_malformed_tree_rows_are_controlled(self):"
+        },
+        {
+          "path": "tests/test_api_boundaries.py",
+          "anchor": "def test_boolean_ids_do_not_match_integer_identity(self):"
+        },
+        {
+          "path": "tests/test_api_boundaries.py",
+          "anchor": "def test_invalid_collection_rows_fail_closed(self):"
+        },
+        {
+          "path": "tests/test_api_boundaries.py",
+          "anchor": "def test_malformed_nested_pr_compare_and_run_fail_closed(self):"
+        },
+        {
+          "path": "tests/test_contention_recovery.py",
+          "anchor": "def test_pending_origin_valid_after_competing_publication(self):"
+        }
+      ]
+    },
+    {
+      "id": "v0-0-0-38",
+      "label": "Issue #82 · owner-controlled qualification boundary",
+      "documented_in": [
+        {
+          "path": "docs/v0.0.0.38.md",
+          "anchor": "## Qualification boundary"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "ledger/issue-versions.json",
+          "anchor": "\"issue\": 82,"
+        }
+      ],
+      "implemented_in": [
+        {
+          "path": "tests/test_vib53_qualification.py",
+          "anchor": "def test_bounded_concurrent_workloads(self):"
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tests/test_qualification_policy.py",
+          "anchor": "def test_advanced_methods_are_unconditionally_skipped(self):"
+        },
+        {
+          "path": "tests/test_qualification_policy.py",
+          "anchor": "def test_historical_experiment_is_not_an_active_workflow(self):"
+        }
+      ]
+    },
+    {
+      "id": "v0-0-0-39",
+      "label": "Issue #84 · distinct engineering completion and production integration",
+      "documented_in": [
+        {
+          "path": "docs/v0.0.0.39.md",
+          "anchor": "## Distinct outcomes"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "ledger/issue-versions.json",
+          "anchor": "\"issue\": 84,"
+        }
+      ],
+      "implemented_in": [
+        {
+          "path": "tools/session.py",
+          "anchor": "def finish_engineering(api, state, decision, *, policy, owner_approved=False, issue=None):"
+        },
+        {
+          "path": "tools/session.py",
+          "anchor": "def engineering_receipt(record, ledger):"
+        },
+        {
+          "path": "tools/standard.py",
+          "anchor": "def verify_merged_destination(api, state, active, pr, policy, destination, read_pr):"
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tests/test_engineering_completion.py",
+          "anchor": "def test_engineering_completion_keeps_production_deferred(self):"
+        },
+        {
+          "path": "tests/test_engineering_completion.py",
+          "anchor": "def test_contradictory_evidence_refused_before_publication(self):"
+        },
+        {
+          "path": "tests/test_engineering_completion.py",
+          "anchor": "def test_ordinary_production_path_cannot_accept_engineering_pr(self):"
+        },
+        {
+          "path": "tests/test_engineering_completion.py",
+          "anchor": "def test_engineering_completion_apply_and_readback(self):"
+        }
+      ]
+    },
+    {
+      "id": "v0-0-0-40",
+      "label": "Issue #86 · independent closure and ledger synchronization",
+      "documented_in": [
+        {
+          "path": "docs/v0.0.0.40.md",
+          "anchor": "## Independent lifecycle states"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "ledger/issue-versions.json",
+          "anchor": "\"issue\": 86,"
+        }
+      ],
+      "implemented_in": [
+        {
+          "path": "tools/session.py",
+          "anchor": "def closure_status(state, item):"
+        },
+        {
+          "path": "tools/session.py",
+          "anchor": "def verify_closure_basis(api, state, number, policy):"
+        },
+        {
+          "path": "tools/session.py",
+          "anchor": "def complete_closure(api, state, number, policy, *, owner_approved=False, apply=False):"
+        },
+        {
+          "path": "tools/session.py",
+          "anchor": "def cancel_closure_plan(api, state, number, policy, decision, *, owner_approved=False, recovery_execution=None):"
+        },
+        {
+          "path": "tools/lifecycle.py",
+          "anchor": "def idle_state(api, target, expected_sha, *, preserve_staged=False):"
+        },
+        {
+          "path": "tools/session.py",
+          "anchor": "def require_closure_compatible_history(handoff, supported):"
+        },
+        {
+          "path": "tools/session.py",
+          "anchor": "def closure_archive_index(handoff, number):"
+        },
+        {
+          "path": "tools/session.py",
+          "anchor": "def legacy_approval_statement(review):"
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tests/test_issue_closure.py",
+          "anchor": "def test_closure_status_independent(self):"
+        },
+        {
+          "path": "tests/test_issue_closure.py",
+          "anchor": "def test_owner_and_exact_archive_required(self):"
+        },
+        {
+          "path": "tests/test_issue_closure.py",
+          "anchor": "def test_intent_is_append_only_and_idempotent(self):"
+        },
+        {
+          "path": "tests/test_issue_closure.py",
+          "anchor": "def test_confirmation_requires_matching_readback(self):"
+        },
+        {
+          "path": "tests/test_issue_closure.py",
+          "anchor": "def test_exact_evidence_and_historical_identity(self):"
+        },
+        {
+          "path": "tests/test_issue_closure.py",
+          "anchor": "def test_legacy_closure_cannot_replace_archived_pins(self):"
+        },
+        {
+          "path": "tests/test_issue_closure.py",
+          "anchor": "def test_reclaimed_issue_cannot_report_confirmed_closure(self):"
+        },
+        {
+          "path": "tests/test_issue_closure.py",
+          "anchor": "def test_reserved_prefix_compatibility_fails_closed(self):"
+        },
+        {
+          "path": "tests/test_issue_closure.py",
+          "anchor": "def test_malformed_history_prefix_guard_fails_with_validation_error(self):"
+        },
+        {
+          "path": "tests/test_issue_closure.py",
+          "anchor": "def test_legacy_approval_rejects_mixed_or_negative_decisions(self):"
+        },
+        {
+          "path": "tests/test_issue_closure.py",
+          "anchor": "def test_identical_archive_occurrences_are_distinct_and_old_policy_refused(self):"
+        },
+        {
+          "path": "tests/test_issue_closure.py",
+          "anchor": "def test_unbound_closure_policy_rejects_null_version_before_api_access(self):"
+        }
+      ]
+    },
+    {
+      "id": "v0-0-0-40-execution",
+      "label": "Issue #86 · closure execution serialization and recovery (same checkpoint)",
+      "documented_in": [
+        {
+          "path": "docs/v0.0.0.40.md",
+          "anchor": "## Orange Team / Purple Team retest matrix"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "ledger/issue-versions.json",
+          "anchor": "\"issue\": 86,"
+        }
+      ],
+      "implemented_in": [
+        {
+          "path": "tools/session.py",
+          "anchor": "def complete_closure(api, state, number, policy, *, owner_approved=False, apply=False):"
+        },
+        {
+          "path": "tools/session.py",
+          "anchor": "def cancel_closure_plan(api, state, number, policy, decision, *, owner_approved=False, recovery_execution=None):"
+        },
+        {
+          "path": "tools/lifecycle.py",
+          "anchor": "def idle_state(api, target, expected_sha, *, preserve_staged=False):"
+        },
+        {
+          "path": "tools/session.py",
+          "anchor": "def reconcile(api, state, number, decision, *, policy=None):"
+        },
+        {
+          "path": "tools/session.py",
+          "anchor": "def validate_closure_approval(archive, ledger, number, policy):"
+        },
+        {
+          "path": "tools/session.py",
+          "anchor": "def validate_closure_history(handoff, ledger):"
+        },
+        {
+          "path": "tools/session.py",
+          "anchor": "def archive_has_engineering_approval(archive, ledger):"
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tests/test_issue_closure.py",
+          "anchor": "def test_partial_failure_retains_pending_intent(self):"
+        },
+        {
+          "path": "tests/test_issue_closure.py",
+          "anchor": "def test_full_fixture_apply_readback_and_idempotence(self):"
+        },
+        {
+          "path": "tests/test_issue_closure.py",
+          "anchor": "def test_cancel_stale_intent_and_resume_work(self):"
+        },
+        {
+          "path": "tests/test_issue_closure.py",
+          "anchor": "def test_competing_cancel_wins_execution_cas(self):"
+        },
+        {
+          "path": "tests/test_issue_closure.py",
+          "anchor": "def test_competing_completion_wins_cancel_cas(self):"
+        },
+        {
+          "path": "tests/test_issue_closure.py",
+          "anchor": "def test_restart_after_lost_issue_response_requires_recovery(self):"
+        },
+        {
+          "path": "tests/test_issue_closure.py",
+          "anchor": "def test_cancelled_intent_cannot_be_replayed(self):"
+        },
+        {
+          "path": "tests/test_issue_closure.py",
+          "anchor": "def test_execution_claim_blocks_replay_cancel_and_lifecycle(self):"
+        },
+        {
+          "path": "tests/test_issue_closure.py",
+          "anchor": "def test_ambiguous_or_lost_execution_acquisition_never_patches_issue(self):"
+        },
+        {
+          "path": "tests/test_issue_closure.py",
+          "anchor": "def test_history_loader_validates_archived_approval_for_every_receipt(self):"
+        },
+        {
+          "path": "tests/test_issue_closure.py",
+          "anchor": "def test_history_loader_rejects_overlapping_closures_even_when_resolved(self):"
+        },
+        {
+          "path": "tests/test_issue_closure.py",
+          "anchor": "def test_not_planned_reconciliation_rejects_engineering_approval(self):"
+        }
+      ]
+    },
+    {
+      "id": "v0-0-0-40-installed-compatibility",
+      "label": "Issue #86 · staged-preserving closure capability upgrade (same checkpoint)",
+      "documented_in": [
+        {
+          "path": "install/branch/LIFECYCLE.md",
+          "anchor": "### Staged-preserving closure capability upgrade (reviewed opt-in)"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "tools/lifecycle.py",
+          "anchor": "def staged_upgrade_scope(api, state, source_sha):"
+        }
+      ],
+      "implemented_in": [
+        {
+          "path": "tools/lifecycle.py",
+          "anchor": "def staged_upgrade_scope(api, state, source_sha):"
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tests/test_lifecycle.py",
+          "anchor": "def test_staged_preserving_upgrade_requires_exact_scope_and_preserves_bytes(self):"
+        },
+        {
+          "path": "tests/test_lifecycle.py",
+          "anchor": "def test_staged_preserving_upgrade_refuses_changed_pr_or_missing_capability(self):"
+        }
+      ]
+    },
+    {
+      "id": "v0-0-0-41",
+      "label": "Issue #92 · owner scope and experimental disposition",
+      "documented_in": [
+        {
+          "path": "docs/v0.0.0.41.md",
+          "anchor": "# v0.0.0.41 — Scope control and experimental disposition (#92)"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "tools/self_use_preflight.py",
+          "anchor": "def verify_scope(pin, issue, version, head, current, pr_base=None):"
+        },
+        {
+          "path": "tools/session.py",
+          "anchor": "def require_experimental_parallel():"
+        }
+      ],
+      "implemented_in": [
+        {
+          "path": "tools/self_use_preflight.py",
+          "anchor": "def validate_scope(record, ledger, issue, version):"
+        },
+        {
+          "path": "tools/session.py",
+          "anchor": "def require_unheld_scope(state, numbers):"
+        },
+        {
+          "path": "tools/gate.py",
+          "anchor": "session.require_unheld_scope(state, [row[\"issue\"] for row in policy[\"issues\"]])"
+        },
+        {
+          "path": "tools/standard.py",
+          "anchor": "session.require_unheld_scope(state, [active[\"issue\"]])"
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tests/test_scope_control.py",
+          "anchor": "def test_exact_scope_and_criteria_refuse_unauthorized_expansion(self):"
+        },
+        {
+          "path": "tests/test_scope_control.py",
+          "anchor": "def test_revision_bound_scope_amendment_and_stale_ref(self):"
+        },
+        {
+          "path": "tests/test_scope_control.py",
+          "anchor": "def test_parallel_activation_and_forged_publication_refused(self):"
+        },
+        {
+          "path": "tests/test_scope_control.py",
+          "anchor": "def test_held_issues_and_experimental_gate_refused(self):"
+        }
+      ]
+    },
+    {
+      "id": "v0-0-0-42",
+      "label": "Issue #94 · read-only recovery and exact evidence reuse",
+      "documented_in": [
+        {
+          "path": "docs/v0.0.0.42.md",
+          "anchor": "# v0.0.0.42 — Simplified recovery, handoffs and evidence reuse (#94)"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "tools/session.py",
+          "anchor": "def recovery_plan(api, state, requested=None):"
+        }
+      ],
+      "implemented_in": [
+        {
+          "path": "tools/session.py",
+          "anchor": "def recovery_plan(api, state, requested=None):"
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tests/test_recovery_plan.py",
+          "anchor": "def test_same_issue_exact_run_revalidated_without_advancing(self):"
+        },
+        {
+          "path": "tests/test_recovery_plan.py",
+          "anchor": "def test_changed_run_and_candidate_never_reused(self):"
+        },
+        {
+          "path": "tests/test_recovery_plan.py",
+          "anchor": "def test_lease_advance_during_validation_refuses_advisory(self):"
+        }
+      ]
+    }
+  ]
+}

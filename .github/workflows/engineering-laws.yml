@@ -1,0 +1,33 @@
+name: Engineering law contract
+on:
+  pull_request:
+  push:
+    branches: ['policy/six-engineering-laws']
+permissions:
+  contents: read
+jobs:
+  contract:
+    if: github.event.repository.private == false
+    runs-on: ubuntu-24.04
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Verify exact six laws in source and portable entry points
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib
+          paths = ["ENGINEERING-LAWS.md","install/branch/AGENTS.md","install/branch/README.md"]
+          start, end = '<!-- engineering-laws:start -->', '<!-- engineering-laws:end -->'
+          expected = "<!-- engineering-laws:start -->\n1. **Independence:** Every tool must remain independently installable, usable, versioned and maintained.\n2. **Composability:** Installing additional tools expands the agent's capabilities without creating mandatory dependencies.\n3. **Portability:** No mandatory AI provider, model, agent harness or paid execution service.\n4. **Persistence:** Project knowledge, decisions, progress and evidence survive the termination of an AI session.\n5. **Verification:** Development claims must be supported by reproducible, revision-bound evidence.\n6. **Owner authority:** The human retains control over scope, architectural decisions, integration and releases.\n<!-- engineering-laws:end -->"
+          for name in paths:
+              text = Path(name).read_text(encoding='utf-8')
+              assert text.count(start) == text.count(end) == 1, name
+              actual = text[text.index(start):text.index(end)+len(end)]
+              assert actual == expected, name
+          assert '(ENGINEERING-LAWS.md)' in Path('README.md').read_text(encoding='utf-8')
+          print('Exact six-law parity:', hashlib.sha256(expected.encode()).hexdigest())
+          print('Documentation parity only; not runtime behavior certification.')
+          PY
