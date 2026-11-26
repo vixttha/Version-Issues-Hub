@@ -1440,10 +1440,6 @@
         {
           "path": "tools/session.py",
           "anchor": "def archive_has_engineering_approval(archive, ledger):"
-        },
-        {
-          "path": "tools/lifecycle.py",
-          "anchor": "def staged_upgrade_scope(api, state, source_sha):"
         }
       ],
       "tested_by": [
@@ -1494,7 +1490,31 @@
         {
           "path": "tests/test_issue_closure.py",
           "anchor": "def test_not_planned_reconciliation_rejects_engineering_approval(self):"
-        },
+        }
+      ]
+    },
+    {
+      "id": "v0-0-0-40-installed-compatibility",
+      "label": "Issue #86 · staged-preserving closure capability upgrade (same checkpoint)",
+      "documented_in": [
+        {
+          "path": "install/branch/LIFECYCLE.md",
+          "anchor": "### Staged-preserving closure capability upgrade (reviewed opt-in)"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "tools/lifecycle.py",
+          "anchor": "def staged_upgrade_scope(api, state, source_sha):"
+        }
+      ],
+      "implemented_in": [
+        {
+          "path": "tools/lifecycle.py",
+          "anchor": "def staged_upgrade_scope(api, state, source_sha):"
+        }
+      ],
+      "tested_by": [
         {
           "path": "tests/test_lifecycle.py",
           "anchor": "def test_staged_preserving_upgrade_requires_exact_scope_and_preserves_bytes(self):"
