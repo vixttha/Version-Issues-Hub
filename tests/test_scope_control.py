@@ -56,6 +56,15 @@ class ScopeControlTests(unittest.TestCase):
             git("add", "."); git("commit", "-qm", "candidate")
             paths = scope.changed_paths(base, git("rev-parse", "HEAD"), cwd=tmp)
             self.assertEqual(paths, {"allowed", "renamed", "remove", "space name"})
+            (root/"transient").write_text("unapproved", encoding="utf-8")
+            git("add", "."); git("commit", "-qm", "unapproved intermediate path")
+            git("rm", "transient"); git("commit", "-qm", "revert intermediate path")
+            head = git("rev-parse", "HEAD")
+            self.assertNotIn("transient", scope.changed_paths(base, head, cwd=tmp))
+            history = scope.scope_paths(base, head, cwd=tmp)
+            self.assertEqual(history, paths | {"transient"})
+            with self.assertRaisesRegex(ValueError, "transient"):
+                scope.assert_scope_paths({**self.record, "allowed_paths": sorted(paths)}, history)
             with self.assertRaisesRegex(ValueError, "Unauthorized scope"):
                 scope.assert_scope_paths({**self.record, "allowed_paths": ["allowed"]}, paths)
 
@@ -73,7 +82,7 @@ class ScopeControlTests(unittest.TestCase):
              patch.object(scope, "ancestor") as ancestry, \
              patch.object(scope, "approval_change", side_effect=lambda rev, path: prior if rev == prior else pin) as latest, \
              patch.object(scope, "approval_parent", side_effect=lambda rev, path: prior if rev == pin else None) as parent, \
-             patch.object(scope, "changed_paths", side_effect=lambda base, rev: {"tools/session.py"} if rev == "b"*40 else {"tools/extra.py"}):
+             patch.object(scope, "scope_paths", side_effect=lambda base, rev: {"tools/session.py"} if rev == "b"*40 else {"tools/extra.py"}):
             self.assertEqual(scope.verify_scope(pin, 92, "v0.0.0.41", head, current), amended)
             ancestry.assert_any_call(prior, pin)
             ancestry.assert_any_call("b"*40, head)

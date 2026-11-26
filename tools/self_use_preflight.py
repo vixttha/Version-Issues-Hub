@@ -106,6 +106,22 @@ def changed_paths(base, head, cwd=None):
     return {p.decode("utf-8") for p in raw.split(b"\0") if p}
 
 
+def scope_paths(base, head, cwd=None):
+    """Include all introduced commits, even a path added and then reverted."""
+    paths = changed_paths(base, head, cwd)
+    revisions = subprocess.check_output(["git", "rev-list", "--max-count=129",
+                                         base + ".." + head], cwd=cwd, text=True).splitlines()
+    if len(revisions) > 128:
+        raise ValueError("Scope history exceeds bounded checkpoint review; return to Head")
+    for revision in revisions:
+        checkpoint.require(checkpoint.SHA, revision, "introduced revision")
+        raw = subprocess.check_output(["git", "diff-tree", "--root", "--no-commit-id",
+                                       "-r", "-m", "--no-renames", "--name-only", "-z",
+                                       revision], cwd=cwd)
+        paths.update(p.decode("utf-8") for p in raw.split(b"\0") if p)
+    return paths
+
+
 def ancestor(old, new):
     if subprocess.run(["git", "merge-base", "--is-ancestor", old, new],
                       check=False).returncode != 0:
@@ -153,11 +169,11 @@ def verify_scope(pin, issue, version, head, current, pr_base=None):
                 or parent["reviewed_sha"] == child["reviewed_sha"]):
             raise ValueError("Amendment must bind a new reviewed revision and unchanged baseline")
         ancestor(parent["reviewed_sha"], child["reviewed_sha"])
-        assert_scope_paths(parent, changed_paths(parent["base_sha"], child["reviewed_sha"]))
+        assert_scope_paths(parent, scope_paths(parent["base_sha"], child["reviewed_sha"]))
         cursor, child = prior, parent
     else:
         raise ValueError("Scope amendment chain exceeds bound")
-    assert_scope_paths(approval, changed_paths(approval["base_sha"], head))
+    assert_scope_paths(approval, scope_paths(approval["base_sha"], head))
     print(f"VIB owner scope verified: #{issue} {version} at {pin}; engineering-only ordinary qualification")
     return approval
 
