@@ -1,0 +1,40 @@
+[
+  {
+    "version": "v0.0.0.37",
+    "issue": 53,
+    "source": "4ebeb16ed99ed2697309343b9ae5b1f54c341ff2",
+    "tree": "cb800cdd46108293de31c70ccdb3a72d4945acdd",
+    "disposition": "experimental_engineering_merge",
+    "original_fix_source": null,
+    "pr": 79
+  },
+  {
+    "version": "v0.0.0.38",
+    "issue": 82,
+    "source": "26243de4d616598989bdbc15ac74966241bd9a6c",
+    "tree": "97d98cd75e3a0a337e084573675f3c5e16640cbb",
+    "disposition": "engineering_complete_production_deferred",
+    "original_fix_source": "cecc32ab1a65a21d1f8e42af453b190a9f8b2d45",
+    "pr": 83
+  },
+  {
+    "version": "v0.0.0.39",
+    "issue": 84,
+    "source": "998c5f4113cd22a6fab1a833ef006acdb0da918d",
+    "tree": "32b3f941d1446faaeb7f93f6053533b1dbe5dc16",
+    "disposition": "engineering_complete_production_deferred",
+    "original_fix_source": "a121f3004072eb820b999b8128ac8aa22498b29d",
+    "pr": 85
+  },
+  {
+    "version": "v0.0.0.40",
+    "issue": 86,
+    "source": "8cbb4562fb2e2425eaae52b9145513e2f5927ba2",
+    "tree": "5cecb2d4566ec9ec4841fee107ac96985e0969f8",
+    "disposition": "engineering_complete_production_deferred",
+    "original_fix_source": "024046556bf00b649b2428c112f5456210036dfb",
+    "pr": 88,
+    "original_merge": "d57771313191eb4ab5a5d20db8a5f2da9bda55a9",
+    "corrective_fix": "6ce3ea5c576e7ddefb47bccc00661d7ae9d9670c"
+  }
+]

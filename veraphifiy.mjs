@@ -190,7 +190,7 @@ function readVersion(command, { archive, project, version, feature, source, "arc
 const usage = "Usage: node veraphifiy.mjs <import|verify|lookup> --archive DIR --project OWNER/REPO --version vX.Y.Z\n"
   + "  import requires --source SHA --checkout DIR --evidence DIR\n"
   + "  lookup requires --feature feature:ID\n"
-  + "  code-verify/code-graph --archive archives --project OWNER/REPO --version VERSION --scope fix|cumulative|candidate --source SHA --graph-sha256 HASH\n"
+  + "  code-verify/code-graph --archive archives --project OWNER/REPO --version VERSION --scope fix|cumulative|candidate|engineering --source SHA --graph-sha256 HASH\n"
   + "  specify each option at most once\n"
   + "  project casing is ignored for selection; results keep the receipt spelling\n"
   + "  verify and lookup accept --source SHA and --archive-sha256 HASH to check independently recorded pins";

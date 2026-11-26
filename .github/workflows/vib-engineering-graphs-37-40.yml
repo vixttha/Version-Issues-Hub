@@ -1,0 +1,72 @@
+name: VIB .37-.40 engineering graph archive
+on:
+  push:
+    branches: [review/vib-80-engineering-graphs-37-40]
+permissions:
+  contents: read
+jobs:
+  generate:
+    if: github.repository == 'vixttha/Version-Issues-Hub' && github.event.repository.private == false
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      GRAPHIFY_QUERY_LOG_DISABLE: '1'
+      PYTHONHASHSEED: '0'
+      GH_TOKEN: ''
+      GITHUB_TOKEN: ''
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          path: vault
+          persist-credentials: false
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: '8cbb4562fb2e2425eaae52b9145513e2f5927ba2'
+          path: source
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          repository: vixttha/Blender-Agent-Refinement-Toolkit
+          ref: 6af3c2025be3f51e02dca4e4502088c526aae6d1
+          path: producer
+          persist-credentials: false
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
+        with:
+          python-version: '3.12'
+      - run: |
+          python -m pip install --require-hashes --no-deps --only-binary=:all: -r producer/versions/v0.0.8/requirements.txt
+          python -m pip check
+      - run: python tools/engineering-graphs-37-40.py build
+        working-directory: vault
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: engineering-graphs-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/engineering-code-graphs
+          if-no-files-found: error
+  retain:
+    needs: generate
+    if: github.repository == 'vixttha/Version-Issues-Hub' && github.event.repository.private == false && github.ref == 'refs/heads/review/vib-80-engineering-graphs-37-40'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    permissions:
+      contents: write
+      actions: read
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: '24.22.3'
+          package-manager-cache: false
+      - name: Download and verify exact graph bytes
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh run download "$GITHUB_RUN_ID" --name "engineering-graphs-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" --dir "$RUNNER_TEMP/engineering-code-graphs"
+      - name: Validate and retain graphs on isolated review branch
+        run: |
+          python3 tools/engineering-graphs-37-40.py retain
+          git add archives/engineering-code-graphs
+          git -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' commit -m "Retain verified .37-.40 engineering merge graphs"
+          git push origin HEAD:refs/heads/review/vib-80-engineering-graphs-37-40
