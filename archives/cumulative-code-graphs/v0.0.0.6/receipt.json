@@ -1,0 +1,37 @@
+{
+  "version": "v0.0.0.6",
+  "issue": 12,
+  "source": "cc5de51d5ca2e03622ac18d2c3bf0933f33e252e",
+  "source_kind": "reconstructed_cumulative_engineering_prefix",
+  "original_fix_source": "cc5de51d5ca2e03622ac18d2c3bf0933f33e252e",
+  "covered_fix_sources": [
+    "f767cc133f8dba5ebb68b6530e8601dc66879e81",
+    "fee90e84d981740938989c1a53f70a9570ae2293",
+    "fbb76a77f896fb39290a1b862e7dde1a74ae3a8a",
+    "1a53dc83cd578faa26b8253e0699646ea58e2dbb",
+    "87930df3c14b277cb4ab092ca672df7b0623b763",
+    "cc5de51d5ca2e03622ac18d2c3bf0933f33e252e"
+  ],
+  "operational_exclusion": false,
+  "not_historical_release": true,
+  "tree": "33bc8e8e68dee61c812e5ffd5675d159149f01f2",
+  "graphify_version": "0.9.109",
+  "mode": "code-only AST",
+  "reconstructed": true,
+  "historical_test_claim": false,
+  "nodes": 188,
+  "edges": 442,
+  "tracked_code_files": [
+    "tests/test_checkpoint.py",
+    "tests/test_gate.py",
+    "tests/test_install.py",
+    "tests/test_session.py",
+    "tools/checkpoint.py",
+    "tools/gate.py",
+    "tools/install.py",
+    "tools/session.py"
+  ],
+  "graph_sha256": "9055b740abb6b03b426c89ca948bff37964b8d635e828b5a69e9fcffa5637ae8",
+  "run": "45726566316",
+  "attempt": "1"
+}
