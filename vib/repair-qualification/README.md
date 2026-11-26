@@ -1,5 +1,5 @@
 # ITQS independent qualification, batch 1
-Product pins: failing baseline b68796db12681fe4d43b562c8647deca38fa819c; repair candidate 064fd9b51659b077adf3cafc1b5e843b64bb5884. Parent audit 3ba37ceaaf518123d00b238a0c2767e2b12e3d15.
+Product pins: failing baseline b68796db12681fe4d43b562c8647deca38fa819c; repair candidate ab03646daf4fee23e9857bd2ccbb4fd759891611. Parent audit 3ba37ceaaf518123d00b238a0c2767e2b12e3d15.
 No change to product, install, canonical ledger or checkpoint ownership. This is a strict test of the repair; baseline must exhibit specific failures. A PASS of the baseline step is not a product PASS. No live mutation. Origin ancestry is not origin authentication. API mocks, local Git objects, and native simulated workloads are not actual agent trials.
 
 ## Scope reconciliation

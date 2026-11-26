@@ -2,7 +2,7 @@ param([string]$Before,[string]$After,[string]$Out)
 $ErrorActionPreference='Stop'
 $a=Get-Content -Raw -LiteralPath $Before | ConvertFrom-Json
 $b=Get-Content -Raw -LiteralPath $After | ConvertFrom-Json
-if ($a.source -ne 'b68796db12681fe4d43b562c8647deca38fa819c' -or $b.source -ne '064fd9b51659b077adf3cafc1b5e843b64bb5884') {throw 'wrong source'}
+if ($a.source -ne 'b68796db12681fe4d43b562c8647deca38fa819c' -or $b.source -ne 'ab03646daf4fee23e9857bd2ccbb4fd759891611') {throw 'wrong source'}
 $beforeKeys=@($a.cases | ForEach-Object {"$($_.boundary)/$($_.case)"})
 $afterKeys=@($b.cases | ForEach-Object {"$($_.boundary)/$($_.case)"})
 if (Compare-Object $beforeKeys $afterKeys) {throw 'different case inventories'}
