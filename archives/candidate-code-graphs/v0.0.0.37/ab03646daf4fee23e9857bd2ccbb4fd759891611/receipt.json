@@ -1,0 +1,17 @@
+{
+  "repository": "vixttha/Version-Issues-Hub",
+  "version": "v0.0.0.37",
+  "issue": 53,
+  "source": "ab03646daf4fee23e9857bd2ccbb4fd759891611",
+  "tree": "b00517189eeba791aba1e959b7be25763e9c5a95",
+  "source_kind": "unmerged_engineering_candidate",
+  "historical_test_claim": false,
+  "graphify_version": "0.9.109",
+  "mode": "code-only AST",
+  "nodes": 846,
+  "edges": 2511,
+  "graph_sha256": "09b77feab4b3d79960c53c9804644783faf1ee3a7c14294941cca52f82f44d8e",
+  "query_sha256": "ca86b0f787e869b692530cf0537dd6b2298d153ccd10473d1c3bb34b0fe9ab3e",
+  "run": "45784031129",
+  "attempt": "1"
+}

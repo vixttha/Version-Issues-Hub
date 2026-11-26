@@ -1,0 +1,837 @@
+{
+  "schema_version": 2,
+  "status": "candidate_only",
+  "source": "ab03646daf4fee23e9857bd2ccbb4fd759891611",
+  "version": "v0.0.0.37",
+  "runner_id": "45784031129",
+  "runner_attempt": "1",
+  "veraphify_source": "9574a543079501f07833d8ff5f90ad5e8080eff8",
+  "versions": [
+    "v0.0.0.1",
+    "v0.0.0.2",
+    "v0.0.0.3",
+    "v0.0.0.4",
+    "v0.0.0.5",
+    "v0.0.0.6",
+    "v0.0.0.7",
+    "v0.0.0.8",
+    "v0.0.0.9",
+    "v0.0.0.10",
+    "v0.0.0.11",
+    "v0.0.0.12",
+    "v0.0.0.13",
+    "v0.0.0.14",
+    "v0.0.0.15",
+    "v0.0.0.16",
+    "v0.0.0.17",
+    "v0.0.0.18",
+    "v0.0.0.19",
+    "v0.0.0.20",
+    "v0.0.0.21",
+    "v0.0.0.22",
+    "v0.0.0.23",
+    "v0.0.0.24",
+    "v0.0.0.25",
+    "v0.0.0.26",
+    "v0.0.0.27",
+    "v0.0.0.28",
+    "v0.0.0.29",
+    "v0.0.0.30",
+    "v0.0.0.31",
+    "v0.0.0.32",
+    "v0.0.0.33",
+    "v0.0.0.34",
+    "v0.0.0.35",
+    "v0.0.0.36",
+    "v0.0.0.37"
+  ],
+  "operational_exclusions": [
+    "v0.0.0.23"
+  ],
+  "shards": [
+    {
+      "directory": "shard-0001",
+      "features": [
+        "v0-0-0-1",
+        "v0-0-0-2",
+        "v0-0-0-3",
+        "v0-0-0-4",
+        "v0-0-0-5",
+        "v0-0-0-6",
+        "v0-0-0-7",
+        "v0-0-0-8",
+        "v0-0-0-9",
+        "v0-0-0-10",
+        "v0-0-0-11",
+        "v0-0-0-12",
+        "v0-0-0-13",
+        "v0-0-0-14",
+        "v0-0-0-15",
+        "v0-0-0-16",
+        "v0-0-0-17",
+        "v0-0-0-18",
+        "v0-0-0-19",
+        "v0-0-0-20",
+        "v0-0-0-21",
+        "v0-0-0-22",
+        "v0-0-0-24",
+        "v0-0-0-25",
+        "v0-0-0-26",
+        "v0-0-0-27",
+        "v0-0-0-28",
+        "v0-0-0-29",
+        "v0-0-0-30",
+        "v0-0-0-31",
+        "v0-0-0-32",
+        "v0-0-0-33"
+      ],
+      "archive_sha256": "fbb2e7068f68922e1929506ff944282b9f4db81c84f376ce1e10425a1ca4ab4a"
+    },
+    {
+      "directory": "shard-0002",
+      "features": [
+        "v0-0-0-34",
+        "v0-0-0-35",
+        "v0-0-0-36",
+        "v0-0-0-37",
+        "v0-0-0-37-review-recovery",
+        "v0-0-0-37-api-boundaries"
+      ],
+      "archive_sha256": "f6762d4e0d3c9d76a7a83174c6b927b812dde08540ae16c3fe86cbf2020a2f3d"
+    }
+  ],
+  "lookups": {
+    "v0-0-0-1": {
+      "project": "vixttha/Version-Issues-Hub",
+      "version": "v0.0.0.37",
+      "source": "ab03646daf4fee23e9857bd2ccbb4fd759891611",
+      "format": 1,
+      "veraphifiy_version": "v0.0.9",
+      "producer": "0.9.109",
+      "graph_sha256": "aec50b4639da0a0135228ef00742c4443c0246bcde7ead6661ddd4bb729400ce",
+      "receipt_sha256": "e6071f571d089caa77396f85680f2c4fd5bd138403e1dd094877499b4df6ef9d",
+      "archive_sha256": "fbb2e7068f68922e1929506ff944282b9f4db81c84f376ce1e10425a1ca4ab4a",
+      "feature": "feature:v0-0-0-1",
+      "citations": [
+        {
+          "path": "tools/checkpoint.py",
+          "line": 104
+        }
+      ]
+    },
+    "v0-0-0-2": {
+      "project": "vixttha/Version-Issues-Hub",
+      "version": "v0.0.0.37",
+      "source": "ab03646daf4fee23e9857bd2ccbb4fd759891611",
+      "format": 1,
+      "veraphifiy_version": "v0.0.9",
+      "producer": "0.9.109",
+      "graph_sha256": "aec50b4639da0a0135228ef00742c4443c0246bcde7ead6661ddd4bb729400ce",
+      "receipt_sha256": "e6071f571d089caa77396f85680f2c4fd5bd138403e1dd094877499b4df6ef9d",
+      "archive_sha256": "fbb2e7068f68922e1929506ff944282b9f4db81c84f376ce1e10425a1ca4ab4a",
+      "feature": "feature:v0-0-0-2",
+      "citations": [
+        {
+          "path": ".github/workflows/verify-checkpoint.yml",
+          "line": 45
+        }
+      ]
+    },
+    "v0-0-0-3": {
+      "project": "vixttha/Version-Issues-Hub",
+      "version": "v0.0.0.37",
+      "source": "ab03646daf4fee23e9857bd2ccbb4fd759891611",
+      "format": 1,
+      "veraphifiy_version": "v0.0.9",
+      "producer": "0.9.109",
+      "graph_sha256": "aec50b4639da0a0135228ef00742c4443c0246bcde7ead6661ddd4bb729400ce",
+      "receipt_sha256": "e6071f571d089caa77396f85680f2c4fd5bd138403e1dd094877499b4df6ef9d",
+      "archive_sha256": "fbb2e7068f68922e1929506ff944282b9f4db81c84f376ce1e10425a1ca4ab4a",
+      "feature": "feature:v0-0-0-3",
+      "citations": [
+        {
+          "path": "tools/install.py",
+          "line": 319
+        }
+      ]
+    },
+    "v0-0-0-4": {
+      "project": "vixttha/Version-Issues-Hub",
+      "version": "v0.0.0.37",
+      "source": "ab03646daf4fee23e9857bd2ccbb4fd759891611",
+      "format": 1,
+      "veraphifiy_version": "v0.0.9",
+      "producer": "0.9.109",
+      "graph_sha256": "aec50b4639da0a0135228ef00742c4443c0246bcde7ead6661ddd4bb729400ce",
+      "receipt_sha256": "e6071f571d089caa77396f85680f2c4fd5bd138403e1dd094877499b4df6ef9d",
+      "archive_sha256": "fbb2e7068f68922e1929506ff944282b9f4db81c84f376ce1e10425a1ca4ab4a",
+      "feature": "feature:v0-0-0-4",
+      "citations": [
+        {
+          "path": "tools/session.py",
+          "line": 172
+        }
+      ]
+    },
+    "v0-0-0-5": {
+      "project": "vixttha/Version-Issues-Hub",
+      "version": "v0.0.0.37",
+      "source": "ab03646daf4fee23e9857bd2ccbb4fd759891611",
+      "format": 1,
+      "veraphifiy_version": "v0.0.9",
+      "producer": "0.9.109",
+      "graph_sha256": "aec50b4639da0a0135228ef00742c4443c0246bcde7ead6661ddd4bb729400ce",
+      "receipt_sha256": "e6071f571d089caa77396f85680f2c4fd5bd138403e1dd094877499b4df6ef9d",
+      "archive_sha256": "fbb2e7068f68922e1929506ff944282b9f4db81c84f376ce1e10425a1ca4ab4a",
+      "feature": "feature:v0-0-0-5",
+      "citations": [
+        {
+          "path": "tools/session.py",
+          "line": 563
+        }
+      ]
+    },
+    "v0-0-0-6": {
+      "project": "vixttha/Version-Issues-Hub",
+      "version": "v0.0.0.37",
+      "source": "ab03646daf4fee23e9857bd2ccbb4fd759891611",
+      "format": 1,
+      "veraphifiy_version": "v0.0.9",
+      "producer": "0.9.109",
+      "graph_sha256": "aec50b4639da0a0135228ef00742c4443c0246bcde7ead6661ddd4bb729400ce",
+      "receipt_sha256": "e6071f571d089caa77396f85680f2c4fd5bd138403e1dd094877499b4df6ef9d",
+      "archive_sha256": "fbb2e7068f68922e1929506ff944282b9f4db81c84f376ce1e10425a1ca4ab4a",
+      "feature": "feature:v0-0-0-6",
+      "citations": [
+        {
+          "path": "tools/gate.py",
+          "line": 137
+        }
+      ]
+    },
+    "v0-0-0-7": {
+      "project": "vixttha/Version-Issues-Hub",
+      "version": "v0.0.0.37",
+      "source": "ab03646daf4fee23e9857bd2ccbb4fd759891611",
+      "format": 1,
+      "veraphifiy_version": "v0.0.9",
+      "producer": "0.9.109",
+      "graph_sha256": "aec50b4639da0a0135228ef00742c4443c0246bcde7ead6661ddd4bb729400ce",
+      "receipt_sha256": "e6071f571d089caa77396f85680f2c4fd5bd138403e1dd094877499b4df6ef9d",
+      "archive_sha256": "fbb2e7068f68922e1929506ff944282b9f4db81c84f376ce1e10425a1ca4ab4a",
+      "feature": "feature:v0-0-0-7",
+      "citations": [
+        {
+          "path": "tools/checkpoint.py",
+          "line": 239
+        }
+      ]
+    },
+    "v0-0-0-8": {
+      "project": "vixttha/Version-Issues-Hub",
+      "version": "v0.0.0.37",
+      "source": "ab03646daf4fee23e9857bd2ccbb4fd759891611",
+      "format": 1,
+      "veraphifiy_version": "v0.0.9",
+      "producer": "0.9.109",
+      "graph_sha256": "aec50b4639da0a0135228ef00742c4443c0246bcde7ead6661ddd4bb729400ce",
+      "receipt_sha256": "e6071f571d089caa77396f85680f2c4fd5bd138403e1dd094877499b4df6ef9d",
+      "archive_sha256": "fbb2e7068f68922e1929506ff944282b9f4db81c84f376ce1e10425a1ca4ab4a",
+      "feature": "feature:v0-0-0-8",
+      "citations": [
+        {
+          "path": "tools/gate.py",
+          "line": 285
+        }
+      ]
+    },
+    "v0-0-0-9": {
+      "project": "vixttha/Version-Issues-Hub",
+      "version": "v0.0.0.37",
+      "source": "ab03646daf4fee23e9857bd2ccbb4fd759891611",
+      "format": 1,
+      "veraphifiy_version": "v0.0.9",
+      "producer": "0.9.109",
+      "graph_sha256": "aec50b4639da0a0135228ef00742c4443c0246bcde7ead6661ddd4bb729400ce",
+      "receipt_sha256": "e6071f571d089caa77396f85680f2c4fd5bd138403e1dd094877499b4df6ef9d",
+      "archive_sha256": "fbb2e7068f68922e1929506ff944282b9f4db81c84f376ce1e10425a1ca4ab4a",
+      "feature": "feature:v0-0-0-9",
+      "citations": [
+        {
+          "path": "tools/standard.py",
+          "line": 166
+        }
+      ]
+    },
+    "v0-0-0-10": {
+      "project": "vixttha/Version-Issues-Hub",
+      "version": "v0.0.0.37",
+      "source": "ab03646daf4fee23e9857bd2ccbb4fd759891611",
+      "format": 1,
+      "veraphifiy_version": "v0.0.9",
+      "producer": "0.9.109",
+      "graph_sha256": "aec50b4639da0a0135228ef00742c4443c0246bcde7ead6661ddd4bb729400ce",
+      "receipt_sha256": "e6071f571d089caa77396f85680f2c4fd5bd138403e1dd094877499b4df6ef9d",
+      "archive_sha256": "fbb2e7068f68922e1929506ff944282b9f4db81c84f376ce1e10425a1ca4ab4a",
+      "feature": "feature:v0-0-0-10",
+      "citations": [
+        {
+          "path": "tools/install.py",
+          "line": 263
+        }
+      ]
+    },
+    "v0-0-0-11": {
+      "project": "vixttha/Version-Issues-Hub",
+      "version": "v0.0.0.37",
+      "source": "ab03646daf4fee23e9857bd2ccbb4fd759891611",
+      "format": 1,
+      "veraphifiy_version": "v0.0.9",
+      "producer": "0.9.109",
+      "graph_sha256": "aec50b4639da0a0135228ef00742c4443c0246bcde7ead6661ddd4bb729400ce",
+      "receipt_sha256": "e6071f571d089caa77396f85680f2c4fd5bd138403e1dd094877499b4df6ef9d",
+      "archive_sha256": "fbb2e7068f68922e1929506ff944282b9f4db81c84f376ce1e10425a1ca4ab4a",
+      "feature": "feature:v0-0-0-11",
+      "citations": [
+        {
+          "path": "tools/live_acceptance.py",
+          "line": 29
+        }
+      ]
+    },
+    "v0-0-0-12": {
+      "project": "vixttha/Version-Issues-Hub",
+      "version": "v0.0.0.37",
+      "source": "ab03646daf4fee23e9857bd2ccbb4fd759891611",
+      "format": 1,
+      "veraphifiy_version": "v0.0.9",
+      "producer": "0.9.109",
+      "graph_sha256": "aec50b4639da0a0135228ef00742c4443c0246bcde7ead6661ddd4bb729400ce",
+      "receipt_sha256": "e6071f571d089caa77396f85680f2c4fd5bd138403e1dd094877499b4df6ef9d",
+      "archive_sha256": "fbb2e7068f68922e1929506ff944282b9f4db81c84f376ce1e10425a1ca4ab4a",
+      "feature": "feature:v0-0-0-12",
+      "citations": [
+        {
+          "path": "tools/lifecycle.py",
+          "line": 66
+        }
+      ]
+    },
+    "v0-0-0-13": {
+      "project": "vixttha/Version-Issues-Hub",
+      "version": "v0.0.0.37",
+      "source": "ab03646daf4fee23e9857bd2ccbb4fd759891611",
+      "format": 1,
+      "veraphifiy_version": "v0.0.9",
+      "producer": "0.9.109",
+      "graph_sha256": "aec50b4639da0a0135228ef00742c4443c0246bcde7ead6661ddd4bb729400ce",
+      "receipt_sha256": "e6071f571d089caa77396f85680f2c4fd5bd138403e1dd094877499b4df6ef9d",
+      "archive_sha256": "fbb2e7068f68922e1929506ff944282b9f4db81c84f376ce1e10425a1ca4ab4a",
+      "feature": "feature:v0-0-0-13",
+      "citations": [
+        {
+          "path": "tools/live_acceptance.py",
+          "line": 71
+        }
+      ]
+    },
+    "v0-0-0-14": {
+      "project": "vixttha/Version-Issues-Hub",
+      "version": "v0.0.0.37",
+      "source": "ab03646daf4fee23e9857bd2ccbb4fd759891611",
+      "format": 1,
+      "veraphifiy_version": "v0.0.9",
+      "producer": "0.9.109",
+      "graph_sha256": "aec50b4639da0a0135228ef00742c4443c0246bcde7ead6661ddd4bb729400ce",
+      "receipt_sha256": "e6071f571d089caa77396f85680f2c4fd5bd138403e1dd094877499b4df6ef9d",
+      "archive_sha256": "fbb2e7068f68922e1929506ff944282b9f4db81c84f376ce1e10425a1ca4ab4a",
+      "feature": "feature:v0-0-0-14",
+      "citations": [
+        {
+          "path": "tools/live_lifecycle.py",
+          "line": 16
+        }
+      ]
+    },
+    "v0-0-0-15": {
+      "project": "vixttha/Version-Issues-Hub",
+      "version": "v0.0.0.37",
+      "source": "ab03646daf4fee23e9857bd2ccbb4fd759891611",
+      "format": 1,
+      "veraphifiy_version": "v0.0.9",
+      "producer": "0.9.109",
+      "graph_sha256": "aec50b4639da0a0135228ef00742c4443c0246bcde7ead6661ddd4bb729400ce",
+      "receipt_sha256": "e6071f571d089caa77396f85680f2c4fd5bd138403e1dd094877499b4df6ef9d",
+      "archive_sha256": "fbb2e7068f68922e1929506ff944282b9f4db81c84f376ce1e10425a1ca4ab4a",
+      "feature": "feature:v0-0-0-15",
+      "citations": [
+        {
+          "path": "tools/install.py",
+          "line": 234
+        }
+      ]
+    },
+    "v0-0-0-16": {
+      "project": "vixttha/Version-Issues-Hub",
+      "version": "v0.0.0.37",
+      "source": "ab03646daf4fee23e9857bd2ccbb4fd759891611",
+      "format": 1,
+      "veraphifiy_version": "v0.0.9",
+      "producer": "0.9.109",
+      "graph_sha256": "aec50b4639da0a0135228ef00742c4443c0246bcde7ead6661ddd4bb729400ce",
+      "receipt_sha256": "e6071f571d089caa77396f85680f2c4fd5bd138403e1dd094877499b4df6ef9d",
+      "archive_sha256": "fbb2e7068f68922e1929506ff944282b9f4db81c84f376ce1e10425a1ca4ab4a",
+      "feature": "feature:v0-0-0-16",
+      "citations": [
+        {
+          "path": "tools/install.py",
+          "line": 124
+        }
+      ]
+    },
+    "v0-0-0-17": {
+      "project": "vixttha/Version-Issues-Hub",
+      "version": "v0.0.0.37",
+      "source": "ab03646daf4fee23e9857bd2ccbb4fd759891611",
+      "format": 1,
+      "veraphifiy_version": "v0.0.9",
+      "producer": "0.9.109",
+      "graph_sha256": "aec50b4639da0a0135228ef00742c4443c0246bcde7ead6661ddd4bb729400ce",
+      "receipt_sha256": "e6071f571d089caa77396f85680f2c4fd5bd138403e1dd094877499b4df6ef9d",
+      "archive_sha256": "fbb2e7068f68922e1929506ff944282b9f4db81c84f376ce1e10425a1ca4ab4a",
+      "feature": "feature:v0-0-0-17",
+      "citations": [
+        {
+          "path": "tools/install.py",
+          "line": 115
+        }
+      ]
+    },
+    "v0-0-0-18": {
+      "project": "vixttha/Version-Issues-Hub",
+      "version": "v0.0.0.37",
+      "source": "ab03646daf4fee23e9857bd2ccbb4fd759891611",
+      "format": 1,
+      "veraphifiy_version": "v0.0.9",
+      "producer": "0.9.109",
+      "graph_sha256": "aec50b4639da0a0135228ef00742c4443c0246bcde7ead6661ddd4bb729400ce",
+      "receipt_sha256": "e6071f571d089caa77396f85680f2c4fd5bd138403e1dd094877499b4df6ef9d",
+      "archive_sha256": "fbb2e7068f68922e1929506ff944282b9f4db81c84f376ce1e10425a1ca4ab4a",
+      "feature": "feature:v0-0-0-18",
+      "citations": [
+        {
+          "path": "tools/lifecycle.py",
+          "line": 59
+        }
+      ]
+    },
+    "v0-0-0-19": {
+      "project": "vixttha/Version-Issues-Hub",
+      "version": "v0.0.0.37",
+      "source": "ab03646daf4fee23e9857bd2ccbb4fd759891611",
+      "format": 1,
+      "veraphifiy_version": "v0.0.9",
+      "producer": "0.9.109",
+      "graph_sha256": "aec50b4639da0a0135228ef00742c4443c0246bcde7ead6661ddd4bb729400ce",
+      "receipt_sha256": "e6071f571d089caa77396f85680f2c4fd5bd138403e1dd094877499b4df6ef9d",
+      "archive_sha256": "fbb2e7068f68922e1929506ff944282b9f4db81c84f376ce1e10425a1ca4ab4a",
+      "feature": "feature:v0-0-0-19",
+      "citations": [
+        {
+          "path": "tools/acceptance_snapshot.py",
+          "line": 23
+        }
+      ]
+    },
+    "v0-0-0-20": {
+      "project": "vixttha/Version-Issues-Hub",
+      "version": "v0.0.0.37",
+      "source": "ab03646daf4fee23e9857bd2ccbb4fd759891611",
+      "format": 1,
+      "veraphifiy_version": "v0.0.9",
+      "producer": "0.9.109",
+      "graph_sha256": "aec50b4639da0a0135228ef00742c4443c0246bcde7ead6661ddd4bb729400ce",
+      "receipt_sha256": "e6071f571d089caa77396f85680f2c4fd5bd138403e1dd094877499b4df6ef9d",
+      "archive_sha256": "fbb2e7068f68922e1929506ff944282b9f4db81c84f376ce1e10425a1ca4ab4a",
+      "feature": "feature:v0-0-0-20",
+      "citations": [
+        {
+          "path": "tools/session.py",
+          "line": 252
+        }
+      ]
+    },
+    "v0-0-0-21": {
+      "project": "vixttha/Version-Issues-Hub",
+      "version": "v0.0.0.37",
+      "source": "ab03646daf4fee23e9857bd2ccbb4fd759891611",
+      "format": 1,
+      "veraphifiy_version": "v0.0.9",
+      "producer": "0.9.109",
+      "graph_sha256": "aec50b4639da0a0135228ef00742c4443c0246bcde7ead6661ddd4bb729400ce",
+      "receipt_sha256": "e6071f571d089caa77396f85680f2c4fd5bd138403e1dd094877499b4df6ef9d",
+      "archive_sha256": "fbb2e7068f68922e1929506ff944282b9f4db81c84f376ce1e10425a1ca4ab4a",
+      "feature": "feature:v0-0-0-21",
+      "citations": [
+        {
+          "path": "tools/session.py",
+          "line": 137
+        }
+      ]
+    },
+    "v0-0-0-22": {
+      "project": "vixttha/Version-Issues-Hub",
+      "version": "v0.0.0.37",
+      "source": "ab03646daf4fee23e9857bd2ccbb4fd759891611",
+      "format": 1,
+      "veraphifiy_version": "v0.0.9",
+      "producer": "0.9.109",
+      "graph_sha256": "aec50b4639da0a0135228ef00742c4443c0246bcde7ead6661ddd4bb729400ce",
+      "receipt_sha256": "e6071f571d089caa77396f85680f2c4fd5bd138403e1dd094877499b4df6ef9d",
+      "archive_sha256": "fbb2e7068f68922e1929506ff944282b9f4db81c84f376ce1e10425a1ca4ab4a",
+      "feature": "feature:v0-0-0-22",
+      "citations": [
+        {
+          "path": "tools/session.py",
+          "line": 383
+        }
+      ]
+    },
+    "v0-0-0-24": {
+      "project": "vixttha/Version-Issues-Hub",
+      "version": "v0.0.0.37",
+      "source": "ab03646daf4fee23e9857bd2ccbb4fd759891611",
+      "format": 1,
+      "veraphifiy_version": "v0.0.9",
+      "producer": "0.9.109",
+      "graph_sha256": "aec50b4639da0a0135228ef00742c4443c0246bcde7ead6661ddd4bb729400ce",
+      "receipt_sha256": "e6071f571d089caa77396f85680f2c4fd5bd138403e1dd094877499b4df6ef9d",
+      "archive_sha256": "fbb2e7068f68922e1929506ff944282b9f4db81c84f376ce1e10425a1ca4ab4a",
+      "feature": "feature:v0-0-0-24",
+      "citations": [
+        {
+          "path": "tools/pilot_refs.py",
+          "line": 6
+        }
+      ]
+    },
+    "v0-0-0-25": {
+      "project": "vixttha/Version-Issues-Hub",
+      "version": "v0.0.0.37",
+      "source": "ab03646daf4fee23e9857bd2ccbb4fd759891611",
+      "format": 1,
+      "veraphifiy_version": "v0.0.9",
+      "producer": "0.9.109",
+      "graph_sha256": "aec50b4639da0a0135228ef00742c4443c0246bcde7ead6661ddd4bb729400ce",
+      "receipt_sha256": "e6071f571d089caa77396f85680f2c4fd5bd138403e1dd094877499b4df6ef9d",
+      "archive_sha256": "fbb2e7068f68922e1929506ff944282b9f4db81c84f376ce1e10425a1ca4ab4a",
+      "feature": "feature:v0-0-0-25",
+      "citations": [
+        {
+          "path": "tools/live_acceptance.py",
+          "line": 14
+        }
+      ]
+    },
+    "v0-0-0-26": {
+      "project": "vixttha/Version-Issues-Hub",
+      "version": "v0.0.0.37",
+      "source": "ab03646daf4fee23e9857bd2ccbb4fd759891611",
+      "format": 1,
+      "veraphifiy_version": "v0.0.9",
+      "producer": "0.9.109",
+      "graph_sha256": "aec50b4639da0a0135228ef00742c4443c0246bcde7ead6661ddd4bb729400ce",
+      "receipt_sha256": "e6071f571d089caa77396f85680f2c4fd5bd138403e1dd094877499b4df6ef9d",
+      "archive_sha256": "fbb2e7068f68922e1929506ff944282b9f4db81c84f376ce1e10425a1ca4ab4a",
+      "feature": "feature:v0-0-0-26",
+      "citations": [
+        {
+          "path": "tools/gate.py",
+          "line": 72
+        }
+      ]
+    },
+    "v0-0-0-27": {
+      "project": "vixttha/Version-Issues-Hub",
+      "version": "v0.0.0.37",
+      "source": "ab03646daf4fee23e9857bd2ccbb4fd759891611",
+      "format": 1,
+      "veraphifiy_version": "v0.0.9",
+      "producer": "0.9.109",
+      "graph_sha256": "aec50b4639da0a0135228ef00742c4443c0246bcde7ead6661ddd4bb729400ce",
+      "receipt_sha256": "e6071f571d089caa77396f85680f2c4fd5bd138403e1dd094877499b4df6ef9d",
+      "archive_sha256": "fbb2e7068f68922e1929506ff944282b9f4db81c84f376ce1e10425a1ca4ab4a",
+      "feature": "feature:v0-0-0-27",
+      "citations": [
+        {
+          "path": "tools/gate.py",
+          "line": 62
+        }
+      ]
+    },
+    "v0-0-0-28": {
+      "project": "vixttha/Version-Issues-Hub",
+      "version": "v0.0.0.37",
+      "source": "ab03646daf4fee23e9857bd2ccbb4fd759891611",
+      "format": 1,
+      "veraphifiy_version": "v0.0.9",
+      "producer": "0.9.109",
+      "graph_sha256": "aec50b4639da0a0135228ef00742c4443c0246bcde7ead6661ddd4bb729400ce",
+      "receipt_sha256": "e6071f571d089caa77396f85680f2c4fd5bd138403e1dd094877499b4df6ef9d",
+      "archive_sha256": "fbb2e7068f68922e1929506ff944282b9f4db81c84f376ce1e10425a1ca4ab4a",
+      "feature": "feature:v0-0-0-28",
+      "citations": [
+        {
+          "path": "tests/test_lifecycle.py",
+          "line": 44
+        }
+      ]
+    },
+    "v0-0-0-29": {
+      "project": "vixttha/Version-Issues-Hub",
+      "version": "v0.0.0.37",
+      "source": "ab03646daf4fee23e9857bd2ccbb4fd759891611",
+      "format": 1,
+      "veraphifiy_version": "v0.0.9",
+      "producer": "0.9.109",
+      "graph_sha256": "aec50b4639da0a0135228ef00742c4443c0246bcde7ead6661ddd4bb729400ce",
+      "receipt_sha256": "e6071f571d089caa77396f85680f2c4fd5bd138403e1dd094877499b4df6ef9d",
+      "archive_sha256": "fbb2e7068f68922e1929506ff944282b9f4db81c84f376ce1e10425a1ca4ab4a",
+      "feature": "feature:v0-0-0-29",
+      "citations": [
+        {
+          "path": "tools/install.py",
+          "line": 145
+        }
+      ]
+    },
+    "v0-0-0-30": {
+      "project": "vixttha/Version-Issues-Hub",
+      "version": "v0.0.0.37",
+      "source": "ab03646daf4fee23e9857bd2ccbb4fd759891611",
+      "format": 1,
+      "veraphifiy_version": "v0.0.9",
+      "producer": "0.9.109",
+      "graph_sha256": "aec50b4639da0a0135228ef00742c4443c0246bcde7ead6661ddd4bb729400ce",
+      "receipt_sha256": "e6071f571d089caa77396f85680f2c4fd5bd138403e1dd094877499b4df6ef9d",
+      "archive_sha256": "fbb2e7068f68922e1929506ff944282b9f4db81c84f376ce1e10425a1ca4ab4a",
+      "feature": "feature:v0-0-0-30",
+      "citations": [
+        {
+          "path": "tools/checkpoint.py",
+          "line": 42
+        }
+      ]
+    },
+    "v0-0-0-31": {
+      "project": "vixttha/Version-Issues-Hub",
+      "version": "v0.0.0.37",
+      "source": "ab03646daf4fee23e9857bd2ccbb4fd759891611",
+      "format": 1,
+      "veraphifiy_version": "v0.0.9",
+      "producer": "0.9.109",
+      "graph_sha256": "aec50b4639da0a0135228ef00742c4443c0246bcde7ead6661ddd4bb729400ce",
+      "receipt_sha256": "e6071f571d089caa77396f85680f2c4fd5bd138403e1dd094877499b4df6ef9d",
+      "archive_sha256": "fbb2e7068f68922e1929506ff944282b9f4db81c84f376ce1e10425a1ca4ab4a",
+      "feature": "feature:v0-0-0-31",
+      "citations": [
+        {
+          "path": "tools/self_use_preflight.py",
+          "line": 9
+        }
+      ]
+    },
+    "v0-0-0-32": {
+      "project": "vixttha/Version-Issues-Hub",
+      "version": "v0.0.0.37",
+      "source": "ab03646daf4fee23e9857bd2ccbb4fd759891611",
+      "format": 1,
+      "veraphifiy_version": "v0.0.9",
+      "producer": "0.9.109",
+      "graph_sha256": "aec50b4639da0a0135228ef00742c4443c0246bcde7ead6661ddd4bb729400ce",
+      "receipt_sha256": "e6071f571d089caa77396f85680f2c4fd5bd138403e1dd094877499b4df6ef9d",
+      "archive_sha256": "fbb2e7068f68922e1929506ff944282b9f4db81c84f376ce1e10425a1ca4ab4a",
+      "feature": "feature:v0-0-0-32",
+      "citations": [
+        {
+          "path": "tools/gate.py",
+          "line": 225
+        }
+      ]
+    },
+    "v0-0-0-33": {
+      "project": "vixttha/Version-Issues-Hub",
+      "version": "v0.0.0.37",
+      "source": "ab03646daf4fee23e9857bd2ccbb4fd759891611",
+      "format": 1,
+      "veraphifiy_version": "v0.0.9",
+      "producer": "0.9.109",
+      "graph_sha256": "aec50b4639da0a0135228ef00742c4443c0246bcde7ead6661ddd4bb729400ce",
+      "receipt_sha256": "e6071f571d089caa77396f85680f2c4fd5bd138403e1dd094877499b4df6ef9d",
+      "archive_sha256": "fbb2e7068f68922e1929506ff944282b9f4db81c84f376ce1e10425a1ca4ab4a",
+      "feature": "feature:v0-0-0-33",
+      "citations": [
+        {
+          "path": "tools/self_use_preflight.py",
+          "line": 56
+        }
+      ]
+    },
+    "v0-0-0-34": {
+      "project": "vixttha/Version-Issues-Hub",
+      "version": "v0.0.0.37",
+      "source": "ab03646daf4fee23e9857bd2ccbb4fd759891611",
+      "format": 1,
+      "veraphifiy_version": "v0.0.9",
+      "producer": "0.9.109",
+      "graph_sha256": "b332b5ae9ded00bed99293974d8e1241864534ea1e2940c44515d9086eb1ce18",
+      "receipt_sha256": "e57793569c9d04e4949bf77bcd463ae6a9ce7dc4204178cffb18a3961f1d1203",
+      "archive_sha256": "f6762d4e0d3c9d76a7a83174c6b927b812dde08540ae16c3fe86cbf2020a2f3d",
+      "feature": "feature:v0-0-0-34",
+      "citations": [
+        {
+          "path": "tools/checkpoint.py",
+          "line": 88
+        }
+      ]
+    },
+    "v0-0-0-35": {
+      "project": "vixttha/Version-Issues-Hub",
+      "version": "v0.0.0.37",
+      "source": "ab03646daf4fee23e9857bd2ccbb4fd759891611",
+      "format": 1,
+      "veraphifiy_version": "v0.0.9",
+      "producer": "0.9.109",
+      "graph_sha256": "b332b5ae9ded00bed99293974d8e1241864534ea1e2940c44515d9086eb1ce18",
+      "receipt_sha256": "e57793569c9d04e4949bf77bcd463ae6a9ce7dc4204178cffb18a3961f1d1203",
+      "archive_sha256": "f6762d4e0d3c9d76a7a83174c6b927b812dde08540ae16c3fe86cbf2020a2f3d",
+      "feature": "feature:v0-0-0-35",
+      "citations": [
+        {
+          "path": "tools/session.py",
+          "line": 137
+        }
+      ]
+    },
+    "v0-0-0-36": {
+      "project": "vixttha/Version-Issues-Hub",
+      "version": "v0.0.0.37",
+      "source": "ab03646daf4fee23e9857bd2ccbb4fd759891611",
+      "format": 1,
+      "veraphifiy_version": "v0.0.9",
+      "producer": "0.9.109",
+      "graph_sha256": "b332b5ae9ded00bed99293974d8e1241864534ea1e2940c44515d9086eb1ce18",
+      "receipt_sha256": "e57793569c9d04e4949bf77bcd463ae6a9ce7dc4204178cffb18a3961f1d1203",
+      "archive_sha256": "f6762d4e0d3c9d76a7a83174c6b927b812dde08540ae16c3fe86cbf2020a2f3d",
+      "feature": "feature:v0-0-0-36",
+      "citations": [
+        {
+          "path": "tools/checkpoint.py",
+          "line": 239
+        }
+      ]
+    },
+    "v0-0-0-37": {
+      "project": "vixttha/Version-Issues-Hub",
+      "version": "v0.0.0.37",
+      "source": "ab03646daf4fee23e9857bd2ccbb4fd759891611",
+      "format": 1,
+      "veraphifiy_version": "v0.0.9",
+      "producer": "0.9.109",
+      "graph_sha256": "b332b5ae9ded00bed99293974d8e1241864534ea1e2940c44515d9086eb1ce18",
+      "receipt_sha256": "e57793569c9d04e4949bf77bcd463ae6a9ce7dc4204178cffb18a3961f1d1203",
+      "archive_sha256": "f6762d4e0d3c9d76a7a83174c6b927b812dde08540ae16c3fe86cbf2020a2f3d",
+      "feature": "feature:v0-0-0-37",
+      "citations": [
+        {
+          "path": "tools/session.py",
+          "line": 1152
+        },
+        {
+          "path": "tools/session.py",
+          "line": 633
+        },
+        {
+          "path": "tools/session.py",
+          "line": 692
+        },
+        {
+          "path": "tools/session.py",
+          "line": 754
+        }
+      ]
+    },
+    "v0-0-0-37-review-recovery": {
+      "project": "vixttha/Version-Issues-Hub",
+      "version": "v0.0.0.37",
+      "source": "ab03646daf4fee23e9857bd2ccbb4fd759891611",
+      "format": 1,
+      "veraphifiy_version": "v0.0.9",
+      "producer": "0.9.109",
+      "graph_sha256": "b332b5ae9ded00bed99293974d8e1241864534ea1e2940c44515d9086eb1ce18",
+      "receipt_sha256": "e57793569c9d04e4949bf77bcd463ae6a9ce7dc4204178cffb18a3961f1d1203",
+      "archive_sha256": "f6762d4e0d3c9d76a7a83174c6b927b812dde08540ae16c3fe86cbf2020a2f3d",
+      "feature": "feature:v0-0-0-37-review-recovery",
+      "citations": [
+        {
+          "path": "tools/session.py",
+          "line": 1036
+        },
+        {
+          "path": "tools/session.py",
+          "line": 1152
+        },
+        {
+          "path": "tools/session.py",
+          "line": 31
+        },
+        {
+          "path": "tools/session.py",
+          "line": 383
+        },
+        {
+          "path": "tools/session.py",
+          "line": 886
+        }
+      ]
+    },
+    "v0-0-0-37-api-boundaries": {
+      "project": "vixttha/Version-Issues-Hub",
+      "version": "v0.0.0.37",
+      "source": "ab03646daf4fee23e9857bd2ccbb4fd759891611",
+      "format": 1,
+      "veraphifiy_version": "v0.0.9",
+      "producer": "0.9.109",
+      "graph_sha256": "b332b5ae9ded00bed99293974d8e1241864534ea1e2940c44515d9086eb1ce18",
+      "receipt_sha256": "e57793569c9d04e4949bf77bcd463ae6a9ce7dc4204178cffb18a3961f1d1203",
+      "archive_sha256": "f6762d4e0d3c9d76a7a83174c6b927b812dde08540ae16c3fe86cbf2020a2f3d",
+      "feature": "feature:v0-0-0-37-api-boundaries",
+      "citations": [
+        {
+          "path": "tools/gate.py",
+          "line": 62
+        },
+        {
+          "path": "tools/install.py",
+          "line": 218
+        },
+        {
+          "path": "tools/install.py",
+          "line": 249
+        },
+        {
+          "path": "tools/lifecycle.py",
+          "line": 7
+        },
+        {
+          "path": "tools/session.py",
+          "line": 692
+        },
+        {
+          "path": "tools/standard.py",
+          "line": 43
+        }
+      ]
+    }
+  }
+}
