@@ -21,8 +21,8 @@ class ScopeTests(unittest.TestCase):
     def test_checkpoint_37_supplemental_node_is_not_an_extra_version(self):
         versions = self.versions + ["v0.0.0.37"]
         selected = self.selected + ["v0.0.0.37"]
-        features = self.features + [{"id":"v0-0-0-37"}, {"id":"v0-0-0-37-review-recovery"}]
-        self.assertEqual([32,5], list(map(len,scope(versions,selected,features))))
+        features = self.features + [{"id":"v0-0-0-37"}, {"id":"v0-0-0-37-review-recovery"}, {"id":"v0-0-0-37-api-boundaries"}]
+        self.assertEqual([32,6], list(map(len,scope(versions,selected,features))))
         with self.assertRaises(ValueError): scope(versions,selected,features[:-1])
         with self.assertRaises(ValueError): scope(versions,selected,features+[{"id":"v0-0-0-37-unknown"}])
 if __name__ == "__main__": unittest.main()

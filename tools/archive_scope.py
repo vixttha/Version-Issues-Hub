@@ -7,7 +7,7 @@ OPERATIONAL = {"v0.0.0.23"}
 def feature_ids(selected):
     result = {v.replace(".", "-") for v in selected}
     if "v0.0.0.37" in selected:
-        result.add("v0-0-0-37-review-recovery")
+        result.update({"v0-0-0-37-review-recovery", "v0-0-0-37-api-boundaries"})
     return result
 
 def scope(versions, selected, features):

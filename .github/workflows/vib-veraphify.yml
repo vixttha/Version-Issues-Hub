@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     env:
-      VIB_SOURCE: 'a4684c3fd61e5d7a8472b1fa23831bec26341b80'
+      VIB_SOURCE: 'ab03646daf4fee23e9857bd2ccbb4fd759891611'
       PRODUCER_SHA: '6af3c2025be3f51e02dca4e4502088c526aae6d1'
       GRAPHIFY_QUERY_LOG_DISABLE: '1'
       PYTHONHASHSEED: '0'
@@ -24,7 +24,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           repository: vixttha/Version-Issues-Hub
-          ref: 'a4684c3fd61e5d7a8472b1fa23831bec26341b80'
+          ref: 'ab03646daf4fee23e9857bd2ccbb4fd759891611'
           path: vib
           persist-credentials: false
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
@@ -59,7 +59,7 @@ jobs:
 
   preserve:
     env:
-      VIB_SOURCE: 'a4684c3fd61e5d7a8472b1fa23831bec26341b80'
+      VIB_SOURCE: 'ab03646daf4fee23e9857bd2ccbb4fd759891611'
     needs: archive
     if: github.event_name == 'push' && github.ref == 'refs/heads/Veraphify' && github.event.repository.private == false
     runs-on: ubuntu-24.04
