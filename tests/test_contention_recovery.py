@@ -498,3 +498,39 @@ class RecoveryTests(unittest.TestCase):
                     self.recover(lambda s: self.claim(s, B), B,
                                  on_recovery_ticket=lambda ticket: session.persist_recovery_ticket(directory, ticket))
         self.assertEqual(api.ref(install.BRANCH), previous)
+
+    def test_pending_identity_persisted_before_first_candidate_even_on_deferral(self):
+        api = self.api
+        with tempfile.TemporaryDirectory() as directory:
+            paths = []
+            def pending(intent):
+                paths.append(session.persist_pending_intent(directory, intent))
+            with patch.object(session, "save", side_effect=session.HandoffStale("advanced")) as save, \
+                 patch.object(session, "load", return_value=self.s), \
+                 patch.object(session, "retry_scope", return_value=None):
+                with self.assertRaises(session.HandoffDeferred) as error:
+                    self.recover(lambda s: self.claim(s, B), B, attempts=1, on_pending_intent=pending)
+            self.assertEqual(save.call_count, 1)
+            self.assertEqual(len(paths), 1)
+            before = list(api.writes)
+            inspected = session.inspect_pending(api, self.s, paths[0])
+            self.assertEqual(inspected["operation_id"], error.exception.operation_id)
+            self.assertEqual(inspected["candidates"], [])
+            self.assertFalse(inspected["automatic_replay"])
+            self.assertEqual(api.writes, before)
+
+    def test_pending_inventory_recovers_published_candidate_without_mutation(self):
+        api = self.api
+        with tempfile.TemporaryDirectory() as directory:
+            paths = []
+            result = self.recover(lambda s: self.claim(s, B), B,
+                on_pending_intent=lambda intent: paths.append(session.persist_pending_intent(directory, intent)),
+                on_recovery_ticket=lambda ticket: session.persist_recovery_ticket(directory, ticket))
+            fresh = session.load(api, REPO)
+            before = list(api.writes)
+            inspected = session.inspect_pending(api, fresh, paths[0])
+            self.assertEqual(inspected["operation_id"], result["operation_id"])
+            self.assertEqual(len(inspected["candidates"]), 1)
+            self.assertEqual(inspected["candidates"][0]["installed_sha"], result["installed_sha"])
+            self.assertEqual(inspected["candidates"][0]["status"], "published")
+            self.assertEqual(api.writes, before)

@@ -1008,6 +1008,10 @@
         {
           "path": "tools/session.py",
           "anchor": "def persist_recovery_ticket(directory, ticket):"
+        },
+        {
+          "path": "tools/session.py",
+          "anchor": "def inspect_pending(api, state, path):"
         }
       ],
       "tested_by": [
@@ -1038,6 +1042,14 @@
         {
           "path": "tests/test_vib53_qualification.py",
           "anchor": "def test_matched_serial_and_parallel_protocol_cost(self):"
+        },
+        {
+          "path": "tests/test_contention_recovery.py",
+          "anchor": "def test_pending_identity_persisted_before_first_candidate_even_on_deferral(self):"
+        },
+        {
+          "path": "tests/test_contention_recovery.py",
+          "anchor": "def test_pending_inventory_recovers_published_candidate_without_mutation(self):"
         }
       ]
     }

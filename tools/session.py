@@ -603,8 +603,12 @@ def persist_recovery_ticket(directory, ticket):
     if not isinstance(op, str) or not re.fullmatch(r"[0-9a-f]{64}", op):
         raise ValueError("Invalid recovery operation identity")
     install.require(install.SHA, candidate, "recovery candidate")
-    path = root / (op + "-" + candidate + ".json")
-    data = install.render(ticket).encode("utf-8")
+    return persist_journal_record(root, op + "-" + candidate + ".json", ticket)
+
+
+def persist_journal_record(root, filename, record):
+    path = root / filename
+    data = install.render(record).encode("utf-8")
     flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL | getattr(os, "O_BINARY", 0)
     # Never overwrite a prior receipt (including a partial or corrupt receipt).
     # A failed write leaves a visible file and stops publication.
@@ -620,6 +624,59 @@ def persist_recovery_ticket(directory, ticket):
         finally:
             os.close(dfd)
     return path
+
+
+def validate_pending_intent(intent, prefix=None):
+    keys = {"schema_version", "repository", "issue", "initial_sha", "operation_id"}
+    if (not isinstance(intent, dict) or set(intent) != keys
+            or type(intent["schema_version"]) is not int or intent["schema_version"] != 1
+            or not isinstance(intent["repository"], str)
+            or not intent["repository"].startswith("/repos/")
+            or (prefix is not None and intent["repository"] != prefix)):
+        raise ValueError("Invalid pending intent or repository mismatch")
+    issue_number(intent["issue"])
+    install.require(install.SHA, intent["initial_sha"], "initial installed SHA")
+    op = intent["operation_id"]
+    if not isinstance(op, str) or not re.fullmatch(r"[0-9a-f]{64}", op):
+        raise ValueError("Invalid pending operation identity")
+    return op
+
+
+def persist_pending_intent(directory, intent):
+    from pathlib import Path
+    root = Path(directory)
+    if not root.is_dir():
+        raise ValueError("Recovery directory must already exist")
+    op = validate_pending_intent(intent)
+    return persist_journal_record(root, op + ".pending.json", intent)
+
+
+def inspect_pending(api, state, path):
+    """Read-only inventory; missing/unconfirmed evidence never authorizes replay."""
+    from pathlib import Path
+    path = Path(path)
+    intent = checkpoint.parse_json(path.read_text(encoding="utf-8"))
+    op = validate_pending_intent(intent, state["prefix"])
+    if path.name != op + ".pending.json":
+        raise ValueError("Pending journal filename does not match operation identity")
+    outcomes = []
+    for candidate in sorted(path.parent.glob(op + "-*.json")):
+        ticket = checkpoint.parse_json(candidate.read_text(encoding="utf-8"))
+        if (not isinstance(ticket, dict) or ticket.get("operation_id") != op
+                or ticket.get("issue") != intent["issue"]
+                or ticket.get("repository") != intent["repository"]
+                or candidate.name != op + "-" + str(ticket.get("candidate_sha")) + ".json"):
+            raise ValueError("Pending candidate does not match journal identity")
+        try:
+            result = inspect_operation(api, state, ticket)
+        except (ValueError, install.ApiError):
+            # An absent, rejected, malformed or inaccessible candidate is not
+            # proof of nonpublication. Report uncertainty, not a retry signal.
+            result = {"status": "unconfirmed", "candidate_sha": ticket["candidate_sha"]}
+        outcomes.append(result)
+    return {"status": "inspection_only", "operation_id": op, "issue": intent["issue"],
+            "initial_sha": intent["initial_sha"], "candidates": outcomes,
+            "read_only": True, "automatic_replay": False}
 
 
 def inspect_operation(api, state, ticket):
@@ -985,7 +1042,7 @@ class HandoffDeferred(ValueError):
 
 
 def recover_save(api, target, state, plan, issue, *, attempts=4, rounds=1, request=None,
-                 on_recovery_ticket=None):
+                 on_recovery_ticket=None, on_pending_intent=None):
     """Replan only a proved unrelated, definitive conflict; never replay a PATCH."""
     if type(attempts) is not int or not 1 <= attempts <= 4:
         raise ValueError("Contention attempts must be between 1 and 4")
@@ -1000,6 +1057,10 @@ def recover_save(api, target, state, plan, issue, *, attempts=4, rounds=1, reque
     intended = planned_issue_view(ledger, handoff, issue, new_issue)
     initial_sha = state["ref"]
     operation_id = operation_identity(state, issue, intended, request)
+    if on_pending_intent is not None:
+        on_pending_intent({"schema_version": 1, "repository": state["prefix"],
+                           "issue": issue, "initial_sha": initial_sha,
+                           "operation_id": operation_id})
     budget = attempts * rounds
     source_cache = {}
     for attempt in range(budget):
@@ -1052,6 +1113,8 @@ def main():
     ticket_input = recovery.add_mutually_exclusive_group(required=True)
     ticket_input.add_argument("--ticket-json")
     ticket_input.add_argument("--ticket-file")
+    pending = sub.add_parser("inspect-pending", help="Read-only inventory of retained operation tickets")
+    pending.add_argument("--intent-file", required=True)
     c = sub.add_parser("claim")
     c.add_argument("issue", type=int)
     c.add_argument("--acceptance", action="append", default=[])
@@ -1094,6 +1157,8 @@ def main():
             raw = (Path(args.ticket_file).read_text(encoding="utf-8")
                    if args.ticket_file is not None else args.ticket_json)
             result = inspect_operation(api, state, checkpoint.parse_json(raw))
+        elif args.command == "inspect-pending":
+            result = inspect_pending(api, state, args.intent_file)
         else:
             if args.apply and (not token or not args.expected_sha):
                 raise ValueError("Apply requires a credential and exact expected installed SHA")
@@ -1128,8 +1193,11 @@ def main():
                     if args.recovery_dir is not None:
                         persist_recovery_ticket(args.recovery_dir, ticket)
                     print("VIB-RECOVERY " + json.dumps(ticket, sort_keys=True), file=sys.stderr, flush=True)
+                def emit_pending(intent):
+                    persist_pending_intent(args.recovery_dir, intent)
                 result = recover_save(api, args.target, state, plan, scope, rounds=2, request=request,
-                                      on_recovery_ticket=emit_ticket)
+                                      on_recovery_ticket=emit_ticket,
+                                      on_pending_intent=emit_pending if args.recovery_dir is not None else None)
             else:
                 ledger, handoff = plan(state)
                 result = save(api, state, ledger, handoff, args.apply, issue=scope)
