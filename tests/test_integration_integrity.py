@@ -176,6 +176,19 @@ class IntegrationIntegrityTests(unittest.TestCase):
             session.claim(self.api,self.state,247,["test"],"New work")
         self.assertEqual(self.api.writes,[])
 
+    def test_stale_ordinary_claim_and_direct_save_fail_before_writes(self):
+        from test_session import BASE
+        self.state["manifest"]["product_baseline_sha"] = BASE
+        self.state["product_sha"] = BASE
+        ledger, handoff = session.claim(self.api, self.state, 247, ["test"], "New work")
+        self.api.ref = NEXT
+        with self.assertRaisesRegex(session.HandoffStale, "Installed state advanced"):
+            session.claim(self.api, self.state, 247, ["test"], "New work")
+        for apply in (False, True):
+            with self.assertRaisesRegex(session.HandoffStale, "Installed state advanced"):
+                session.save(self.api, self.state, ledger, handoff, apply, issue=247)
+        self.assertEqual(self.api.writes, [])
+
     def test_historical_engineering_reconciliation_preserves_original_archive(self):
         from test_session import BASE, PROPOSED, post_policy
         from unittest.mock import patch

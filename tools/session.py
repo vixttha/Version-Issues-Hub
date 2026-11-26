@@ -1264,7 +1264,7 @@ def unresolved_integration_debt(state):
             if r["state"] in ("staged", "deferred") or r["issue"] in outstanding]
 
 
-def require_product_lineage(api, state):
+def require_product_lineage(api, state, *, allow_stale_plan=False):
     """Check baseline and recorded product merges, never infer content from closure."""
     from tools import gate
     manifest, prefix = state["manifest"], state["prefix"]
@@ -1281,10 +1281,17 @@ def require_product_lineage(api, state):
     current = install.require(install.SHA, state["product_sha"], "observed product revision")
     def lease():
         if install.read_ref(api, prefix, install.BRANCH) != state["ref"]:
-            raise ValueError("Installed state advanced; reload product lineage")
+            # Only an already-active experimental parallel planner may retain
+            # an immutable stale intent. Publication still requires a fresh
+            # lease and the existing bounded retry_scope ancestry proof.
+            if allow_stale_plan and state["handoff"]["schema_version"] == 2:
+                return False
+            raise HandoffStale("Installed state advanced; reload product lineage")
         if install.read_ref(api, prefix, branch) != current:
             raise ValueError("Product lineage target advanced; reload")
-    lease()
+        return True
+    if not lease():
+        return
     revisions = {baseline}
     archives = {}
     for record in state["handoff"]["history"]:
@@ -1352,7 +1359,8 @@ def claim(api, state, number, criteria, note, *, resume_prior_line=False, parall
         handoff["active"] = rows
     if handoff["schema_version"] == 1 and rows:
         raise ValueError("Another issue owns the active handoff")
-    require_product_lineage(api, state)
+    require_product_lineage(api, state,
+                            allow_stale_plan=state["handoff"]["schema_version"] == 2)
     require_integration_debt_clear(api, state, number)
     if handoff["schema_version"] == 2:
         require_parallel_package(state)
