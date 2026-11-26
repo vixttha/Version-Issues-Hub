@@ -2,8 +2,8 @@
   "active": {
     "issue": 82,
     "version": "v0.0.0.38",
-    "phase": "Worker",
-    "next_action": "Implement VIB-LAW-OWNER-QUALIFICATION-001 as scoped engineering workflow guard on base 4ebeb16ed99ed2697309343b9ae5b1f54c341ff2. Separate advanced campaigns from routine regression; no advanced tests, no main merge, no migration, no release, no schedule restart. #53 deferred, #37 and #40 holds preserved.",
+    "phase": "Head",
+    "next_action": "Owner-authorized return to Head for engineering-only disposition. Owner-approved .38 technical completion and engineering-only merge PR #83 at 26243de4d616598989bdbc15ac74966241bd9a6c; source 05716f8f14e7aa33c2f95d4c867fddd83e082c9c; fix cecc32ab1a65a21d1f8e42af453b190a9f8b2d45; exact tested tree 97d98cd75e3a0a337e084573675f3c5e16640cbb. Ten premerge checks passed; 1136 ordinary test executions passed, 16 intentional skips; Graphify 39/39; CodeRabbit zero actionable findings. Final technical receipt https://github.com/vixttha/Version-Issues-Hub/issues/82#issuecomment-7189391718 and review https://github.com/vixttha/Version-Issues-Hub/pull/83#pullrequestreview-6072418465. Actual merge parents/tree verified; automatic actual-SHA CI not yet complete. Main integration remains deferred, not experimental failure or production acceptance. Existing main-bound package cannot represent the engineering PR as canonical candidate; structured fields remain null rather than bypass target validation. Owner approved advance to .39, the engineering/production separation repair. Preserve prior criteria, history, #53/.37 and #37/#40 holds, law VIB-LAW-OWNER-QUALIFICATION-001. No migration, main merge, release, advanced qualification.",
     "fix_sha": null,
     "candidate_sha": null,
     "pull_request": null,
