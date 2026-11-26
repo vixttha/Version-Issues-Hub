@@ -1,0 +1,32 @@
+{
+  "version": "v0.0.0.16",
+  "issue": 31,
+  "source": "f2b2620b4f34744f8422a509994547b471cdfc6b",
+  "source_kind": "historical_engineering_fix",
+  "tree": "d4ec1905ee10a431a39ac72cd59aadee18d94f53",
+  "graphify_version": "0.9.109",
+  "mode": "code-only AST",
+  "reconstructed": true,
+  "historical_test_claim": false,
+  "nodes": 307,
+  "edges": 761,
+  "tracked_code_files": [
+    "tests/test_checkpoint.py",
+    "tests/test_gate.py",
+    "tests/test_install.py",
+    "tests/test_lifecycle.py",
+    "tests/test_session.py",
+    "tests/test_standard.py",
+    "tools/checkpoint.py",
+    "tools/gate.py",
+    "tools/install.py",
+    "tools/lifecycle.py",
+    "tools/live_acceptance.py",
+    "tools/live_lifecycle.py",
+    "tools/session.py",
+    "tools/standard.py"
+  ],
+  "graph_sha256": "e73646abf3869b318fc88dc2beb72924119921cbc134211aa34755ac67bbc223",
+  "run": "45725059483",
+  "attempt": "1"
+}

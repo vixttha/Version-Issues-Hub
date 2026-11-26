@@ -7,6 +7,8 @@ import {
   parseEvidenceObject, readBytes, repositoryPath, sha256,
 } from "./lib/inspect-evidence.mjs";
 
+import { codeGraph } from "./lib/code-graph.mjs";
+
 const ARCHIVE_FORMAT = 1;
 const TOOL_VERSION = "v0.0.9";
 const SOURCE_BYTES = 8 * 1024 * 1024;
@@ -188,6 +190,7 @@ function readVersion(command, { archive, project, version, feature, source, "arc
 const usage = "Usage: node veraphifiy.mjs <import|verify|lookup> --archive DIR --project OWNER/REPO --version vX.Y.Z\n"
   + "  import requires --source SHA --checkout DIR --evidence DIR\n"
   + "  lookup requires --feature feature:ID\n"
+  + "  code-verify/code-graph --archive archives --project OWNER/REPO --version VERSION --scope fix|cumulative --source SHA --graph-sha256 HASH\n"
   + "  specify each option at most once\n"
   + "  project casing is ignored for selection; results keep the receipt spelling\n"
   + "  verify and lookup accept --source SHA and --archive-sha256 HASH to check independently recorded pins";
@@ -199,13 +202,14 @@ try {
   } else if (command === "--version") {
     console.log(TOOL_VERSION);
   } else {
-    if (!["import", "verify", "lookup"].includes(command)) throw new Error(usage);
+    if (!["import", "verify", "lookup", "code-verify", "code-graph"].includes(command)) throw new Error(usage);
     const validOptions = {
       archive: { type: "string" }, project: { type: "string" }, version: { type: "string" },
       source: { type: "string" },
       ...(command === "import" ? { checkout: { type: "string" }, evidence: { type: "string" } } : {}),
       ...(command !== "import" ? { "archive-sha256": { type: "string" } } : {}),
       ...(command === "lookup" ? { feature: { type: "string" } } : {}),
+      ...(command.startsWith("code-") ? { scope: { type: "string" }, "graph-sha256": { type: "string" } } : {}),
     };
     const { values, tokens } = parseArgs({ args, options: validOptions, tokens: true });
     const seen = new Set();
@@ -216,7 +220,7 @@ try {
     }
     if (!values.archive) throw new Error("Specify an archive directory");
     requireIdentity(values.project, values.version);
-    const result = command === "import" ? importVersion(values) : readVersion(command, values);
+    const result = command.startsWith("code-") ? codeGraph(command, values) : command === "import" ? importVersion(values) : readVersion(command, values);
     console.log(JSON.stringify(result));
   }
 } catch (error) {

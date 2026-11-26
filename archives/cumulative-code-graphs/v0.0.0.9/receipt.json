@@ -1,0 +1,43 @@
+{
+  "version": "v0.0.0.9",
+  "issue": 22,
+  "source": "0bb2cae91c1673231645e6301c95d333a4a35afd",
+  "source_kind": "reconstructed_cumulative_engineering_prefix",
+  "original_fix_source": "0bb2cae91c1673231645e6301c95d333a4a35afd",
+  "covered_fix_sources": [
+    "f767cc133f8dba5ebb68b6530e8601dc66879e81",
+    "fee90e84d981740938989c1a53f70a9570ae2293",
+    "fbb76a77f896fb39290a1b862e7dde1a74ae3a8a",
+    "1a53dc83cd578faa26b8253e0699646ea58e2dbb",
+    "87930df3c14b277cb4ab092ca672df7b0623b763",
+    "cc5de51d5ca2e03622ac18d2c3bf0933f33e252e",
+    "d6df358c67c4fecaefaa725dd7b4687a2f3b89cd",
+    "d5272dbfbe63f721820d01316d0e932503b53062",
+    "0bb2cae91c1673231645e6301c95d333a4a35afd"
+  ],
+  "operational_exclusion": false,
+  "not_historical_release": true,
+  "tree": "5be3be7710da14c21a3945a435c8a398785bfefd",
+  "graphify_version": "0.9.109",
+  "mode": "code-only AST",
+  "reconstructed": true,
+  "historical_test_claim": false,
+  "nodes": 251,
+  "edges": 575,
+  "tracked_code_files": [
+    "tests/test_checkpoint.py",
+    "tests/test_gate.py",
+    "tests/test_install.py",
+    "tests/test_session.py",
+    "tests/test_standard.py",
+    "tools/checkpoint.py",
+    "tools/gate.py",
+    "tools/install.py",
+    "tools/live_acceptance.py",
+    "tools/session.py",
+    "tools/standard.py"
+  ],
+  "graph_sha256": "b7d41518c2eed4d223e7b13bd3a3b7ca26956acfe9fb98e0b6f9612ea2df94b0",
+  "run": "45726566316",
+  "attempt": "1"
+}

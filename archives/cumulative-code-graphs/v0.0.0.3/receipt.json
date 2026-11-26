@@ -1,0 +1,30 @@
+{
+  "version": "v0.0.0.3",
+  "issue": 9,
+  "source": "fbb76a77f896fb39290a1b862e7dde1a74ae3a8a",
+  "source_kind": "reconstructed_cumulative_engineering_prefix",
+  "original_fix_source": "fbb76a77f896fb39290a1b862e7dde1a74ae3a8a",
+  "covered_fix_sources": [
+    "f767cc133f8dba5ebb68b6530e8601dc66879e81",
+    "fee90e84d981740938989c1a53f70a9570ae2293",
+    "fbb76a77f896fb39290a1b862e7dde1a74ae3a8a"
+  ],
+  "operational_exclusion": false,
+  "not_historical_release": true,
+  "tree": "f36994d00d7d9896ad7653d457bd98400c2ef600",
+  "graphify_version": "0.9.109",
+  "mode": "code-only AST",
+  "reconstructed": true,
+  "historical_test_claim": false,
+  "nodes": 118,
+  "edges": 213,
+  "tracked_code_files": [
+    "tests/test_checkpoint.py",
+    "tests/test_install.py",
+    "tools/checkpoint.py",
+    "tools/install.py"
+  ],
+  "graph_sha256": "d9b1737d85e6cdcda59da2e805c7edf09fd9ce6947239e7dcbf981ec1453f72a",
+  "run": "45726566316",
+  "attempt": "1"
+}
