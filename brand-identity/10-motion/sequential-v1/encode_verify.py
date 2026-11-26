@@ -24,10 +24,16 @@ def verify(theme):
         with Image.open(p) as im:
             check(im.size==(W,H) and "A" in im.getbands(),f"not RGBA: {p}")
             frames.append(canonical(im))
-    base=frames[0]
+    refs=sorted((BUILD/(theme+"-reference")/"frames").glob("frame_*.png"))
+    check(len(refs)==24,f"{theme}: missing independent static reference")
+    with Image.open(refs[0]) as im:
+        base=canonical(im)
+    for p in refs:
+        with Image.open(p) as im:
+            check(equal(base,canonical(im)),f"{theme}: independent static reference drift: {p.name}")
     alpha=base.getchannel("A")
     check(alpha.getextrema()==(0,255),"missing true transparency")
-    for i in [0,1,83,100,143]:
+    for i in list(range(12))+list(range(84,N)):
         diff = ImageChops.difference(base,frames[i])
         check(equal(base,frames[i]),f"{theme}: rest state drift frame {i}, channel bounds {[b.getbbox() for b in diff.split()]}")
     boxes=[(344,508,448,612),(700,428,804,532),(1104,508,1208,612)]
@@ -41,6 +47,13 @@ def verify(theme):
         diff=ImageChops.difference(base,frame)
         for band in diff.split():
             check(ImageChops.multiply(band,ImageChops.invert(mask)).getbbox() is None,f"outside checkpoint region {i}")
+    # Each frame may change only the rim active at its scheduled time.
+    for i,frame in enumerate(frames):
+        t=i/FPS
+        active=next((j for j,start in enumerate((0.5,1.4,2.3)) if start<t<start+0.9),None)
+        for j,box in enumerate(boxes):
+            if j!=active:
+                check(equal(base.crop(box),frame.crop(box)),f"{theme}: unscheduled checkpoint {j+1} at frame {i}")
     for i,t in enumerate([0.9,1.8,2.7]):
         frame=frames[round(t*FPS)]
         check(not equal(base,frame),f"checkpoint {i+1} not activated")

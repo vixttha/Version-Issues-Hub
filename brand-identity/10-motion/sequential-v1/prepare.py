@@ -44,14 +44,22 @@ def prepare():
         rings = []
         for i,(x,y) in enumerate([(344,508),(700,428),(1104,508)]):
             d = f"M{x+3} {y+3}h98v98h-98Z M{x+17} {y+17}h70v70h-70Z"
-            rings.append(f'<path id="activation-{i}" d="{d}" fill="{accent}" fill-rule="evenodd" style="opacity:0"/>')
-        overlay = '<g id="experimental-activation" aria-hidden="true">'+"".join(rings)+"</g>"
+            rings.append(f'<svg xmlns="http://www.w3.org/2000/svg" class="activation-layer" id="activation-{i}" viewBox="0 0 1448 1086" aria-hidden="true" style="opacity:0"><path d="{d}" fill="{accent}" fill-rule="evenodd"/></svg>')
         if svg.count("</svg>") != 1: raise ValueError("unexpected SVG root")
-        derived = svg.replace("</svg>",overlay+"</svg>")
+        derived = svg + "\n".join(rings)
         target = out/theme
         target.mkdir(exist_ok=True)
         shutil.copyfile(gsap,target/"gsap.min.js")
         (target/"index.html").write_text(template.replace("<!-- APPROVED SVG -->",derived))
+        reference = out/(theme+"-reference")
+        reference.mkdir(exist_ok=True)
+        shutil.copyfile(gsap,reference/"gsap.min.js")
+        # Reference is the unchanged transparent original SVG with no animation layer.
+        baseline = template.replace("<!-- APPROVED SVG -->",svg).replace('data-duration="6"','data-duration="1"')
+        start = baseline.index("[0.5,1.4,2.3].forEach")
+        end = baseline.index("window.__timelines.sequential = tl;",start)
+        baseline = baseline[:start] + 'tl.to({}, {duration:1}, 0);\n' + baseline[end:]
+        (reference/"index.html").write_text(baseline)
         records.append({"theme":theme,"source":path,"source_sha256":sha(raw),"composition_sha256":sha((target/"index.html").read_bytes())})
     (out/"source-manifest.json").write_text(json.dumps({"source_commit":BASE,"brand_lock":lock["decision_id"],"variants":records},indent=2)+"\n")
 if __name__ == "__main__": prepare()

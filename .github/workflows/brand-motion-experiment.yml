@@ -41,12 +41,12 @@ jobs:
       - name: Lint, inspect and render RGBA frames
         run: |
           export HF_STATIC_DEDUP=false
-          for theme in light dark; do
+          for theme in light dark light-reference dark-reference; do
             (
               cd "build/$theme"
               ../../node_modules/.bin/hyperframes lint
               ../../node_modules/.bin/hyperframes inspect
-              ../../node_modules/.bin/hyperframes render --format png-sequence --output frames --fps 24 --workers 1
+              ../../node_modules/.bin/hyperframes render --format png-sequence --output frames --fps 24 --workers 1 --no-browser-gpu
             )
           done
       - name: Encode and verify exact visible pixels and loop
