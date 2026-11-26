@@ -1050,7 +1050,43 @@
         {
           "path": "tests/test_contention_recovery.py",
           "anchor": "def test_pending_inventory_recovers_published_candidate_without_mutation(self):"
+        }
+      ]
+    },
+    {
+      "id": "v0-0-0-37-review-recovery",
+      "label": "Issue #53 · v0.0.0.37 review and recovery safeguards (same checkpoint)",
+      "documented_in": [
+        {
+          "path": "docs/v0.0.0.37.md",
+          "anchor": "### Matched protocol benchmark and recovery boundary"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "ledger/issue-versions.json",
+          "anchor": "\"issue\": 53,"
+        }
+      ],
+      "implemented_in": [
+        {
+          "path": "tools/session.py",
+          "anchor": "def evidence_run(repo, link):"
         },
+        {
+          "path": "tools/session.py",
+          "anchor": "def claim(api, state, number, criteria, note, *, resume_prior_line=False, parallel=False,"
+        },
+        {
+          "path": "tools/session.py",
+          "anchor": "def save(api, state, ledger, handoff, apply=False, *, issue=None, operation_id=None,"
+        },
+        {
+          "path": "tools/session.py",
+          "anchor": "def recover_save(api, target, state, plan, issue, *, attempts=4, rounds=1, request=None,"
+        }
+      ],
+      "tested_by": [
         {
           "path": "tests/test_session.py",
           "anchor": "def test_case_insensitive_run_urls_and_duplicate_identity(self):"
