@@ -36,7 +36,7 @@ jobs:
       - name: Qualify exact source and prepare compositions
         run: |
           python3 ../../08-review/verify_lock.py
-          python3 -m unittest test_prepare -v
+          python3 -m unittest test_prepare test_frames -v
           python3 prepare.py
       - name: Lint, inspect and render RGBA frames
         run: |
@@ -56,5 +56,8 @@ jobs:
           printf '%s\n' "$GITHUB_SHA" > build/exports/render-commit.txt
           cat build/exports/verification.json >> "$GITHUB_STEP_SUMMARY"
       # Generated images remain ephemeral until the owner explicitly approves review storage.
-      - name: Record retention gate
-        run: echo "Generated images not uploaded; owner storage approval pending." >> "$GITHUB_STEP_SUMMARY"
+      - name: Record retention gate and remove ephemeral media
+        if: always()
+        run: |
+          rm -rf -- build
+          echo "Generated images not uploaded; owner storage approval pending." >> "$GITHUB_STEP_SUMMARY"
