@@ -16,6 +16,9 @@ ACTIVE_KEYS = {"issue", "version", "phase", "next_action", "fix_sha",
                "candidate_sha", "pull_request", "evidence"}
 PIN_KEYS = {"integration_base_sha", "integration_merge_sha"}
 PARALLEL_HANDOFF_SCHEMA = 2
+# Historical reader capability is not production activation authority.
+EXPERIMENTAL_PARALLEL_ENABLED = False
+SELF_USE_HELD_ISSUES = (37, 40, 53)
 HANDOFF = "ledger/handoff.json"
 LEDGER = "ledger/issue-versions.json"
 
@@ -87,6 +90,17 @@ def supports_parallel_package(files):
     return (len(declarations) == 1 and isinstance(declarations[0].value, ast.Constant)
             and type(declarations[0].value.value) is int
             and declarations[0].value.value == PARALLEL_HANDOFF_SCHEMA)
+
+
+def require_experimental_parallel():
+    if EXPERIMENTAL_PARALLEL_ENABLED is not True:
+        raise ValueError("Experimental parallel mode suspended; separate owner-reviewed source authorization required")
+
+
+def require_unheld_scope(state, numbers):
+    if (state["ledger"]["repository"].lower() == install.SOURCE.lower()
+            and set(numbers).intersection(SELF_USE_HELD_ISSUES)):
+        raise ValueError("Owner-held or experimental self-use issue requires separate reviewed authorization")
 
 
 def require_parallel_package(state):
@@ -225,6 +239,9 @@ def finish_engineering(api, state, decision, *, policy, owner_approved=False, is
         raise ValueError("Explicit owner approval is required")
     validate_handoff(state["handoff"], state["ledger"])
     active = select_active(state["handoff"], issue)
+    require_unheld_scope(state, [active["issue"]])
+    if state["handoff"]["schema_version"] == 2:
+        require_experimental_parallel()
     if (active["phase"] != "Head" or any(active[k] is not None for k in
             ("fix_sha", "candidate_sha", "pull_request")) or active["evidence"] or PIN_KEYS & set(active)):
         raise ValueError("Engineering completion requires Head without production candidate pins")
@@ -1038,6 +1055,10 @@ def claim(api, state, number, criteria, note, *, resume_prior_line=False, parall
     validate_handoff(state["handoff"], state["ledger"])
     if pending_closure(state["handoff"]) is not None:
         raise ValueError("Reconcile pending closure before claiming work")
+    require_unheld_scope(state, [number])
+    if parallel or state["handoff"]["schema_version"] == 2:
+        require_parallel_package(state)
+        require_experimental_parallel()
     item = get_issue(api, state, number)
     if item.get("state") != "open":
         raise ValueError("Only an open GitHub issue can be claimed")
@@ -1453,7 +1474,8 @@ def inspect_operation(api, state, ticket):
         if (before["repository"] != state["ledger"]["repository"]
                 or after["repository"] != before["repository"]):
             raise ValueError("Recovery ledger repository mismatch")
-        check_issue_delta({**state, "ledger": before, "handoff": h0}, after, h1, number)
+        check_issue_delta({**state, "ledger": before, "handoff": h0}, after, h1, number,
+                          historical=True)
         if issue_view(before, h0, number) == issue_view(after, h1, number):
             raise ValueError("Recovery candidate has no issue-local change")
     except (AttributeError, KeyError, TypeError) as exc:
@@ -1470,13 +1492,15 @@ class HandoffUnconfirmed(ValueError):
         delay = f"; wait at least {retry_after} seconds before inspecting" if retry_after is not None else ""
         super().__init__("Handoff outcome unconfirmed; inspect candidate " + candidate + " before retrying" + delay)
 
-def check_issue_delta(state, ledger, handoff, number=None):
+def check_issue_delta(state, ledger, handoff, number=None, *, historical=False):
     """Only one explicitly scoped issue may change in a session transaction.
 
     Preserve unrelated rows and active work, immutable existing criteria, and
     the exact historical archive prefix. Legacy callers may omit the issue
     only when the current/new active slot or a single append identifies it.
     This is a cooperative data-integrity guard, not an authorization boundary.
+    Only read-only historical inspection may bypass current activation/hold rules;
+    all save and recovery publication paths use the default mutation guard.
     """
     before_ledger, before_handoff = state["ledger"], state["handoff"]
     validate_handoff(before_handoff, before_ledger)
@@ -1504,6 +1528,8 @@ def check_issue_delta(state, ledger, handoff, number=None):
         else:
             raise ValueError("Issue scope required for state mutation")
     number = issue_number(number)
+    if not historical:
+        require_unheld_scope(state, [number])
     old_rows = {r["issue"]: r for r in before_ledger["issues"]}
     new_rows = {r["issue"]: r for r in ledger["issues"]}
     if {n:r for n,r in old_rows.items() if n != number} != {
@@ -1524,6 +1550,8 @@ def check_issue_delta(state, ledger, handoff, number=None):
         raise ValueError("Parallel migration requires a new owner-approved active claim")
     if handoff["schema_version"] == 2:
         require_parallel_package(state)
+        if not historical:
+            require_experimental_parallel()
     if any(r["handoff"]["issue"] != number for r in appended):
         raise ValueError("Issue scope violation: unrelated history appended")
     if number not in new_rows:

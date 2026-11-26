@@ -99,6 +99,9 @@ def check_test(api, prefix, policy, evidence, test, *, post_merge=False):
 
 def verify_integration(api, state, active, pr, policy):
     """Reuse Standard mappings for one issue's actual merged revision; read-only."""
+    session.require_unheld_scope(state, [active["issue"]])
+    if state["handoff"]["schema_version"] == 2:
+        session.require_experimental_parallel()
     return verify_merged_destination(api, state, active, pr, policy,
                                      state["manifest"]["product_branch"],
                                      lambda: session.get_pr(api, state, active))

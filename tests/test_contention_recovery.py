@@ -30,6 +30,9 @@ class Remote(GitApi):
 
 class RecoveryTests(unittest.TestCase):
     def setUp(self):
+        experiment = patch.object(session, "EXPERIMENTAL_PARALLEL_ENABLED", True)
+        experiment.start()
+        self.addCleanup(experiment.stop)
         tmp = tempfile.TemporaryDirectory()
         self.addCleanup(tmp.cleanup)
         self.api = Remote(tmp.name)
@@ -405,7 +408,10 @@ class RecoveryTests(unittest.TestCase):
         fresh = session.load(api, REPO)
         before = list(api.writes)
         ticket = tickets[0]
-        confirmed = session.inspect_operation(api, fresh, ticket)
+        with patch.object(session, "EXPERIMENTAL_PARALLEL_ENABLED", False):
+            confirmed = session.inspect_operation(api, fresh, ticket)
+            with self.assertRaisesRegex(ValueError, "Experimental parallel"):
+                session.save(api, self.s, fresh["ledger"], fresh["handoff"], True, issue=B)
         self.assertEqual(confirmed["status"], "published")
         self.assertEqual(confirmed["installed_sha"], result["installed_sha"])
         self.assertEqual(confirmed["operation_id"], result["operation_id"])
@@ -538,7 +544,8 @@ class RecoveryTests(unittest.TestCase):
                 on_recovery_ticket=lambda ticket: session.persist_recovery_ticket(directory, ticket))
             fresh = session.load(api, REPO)
             before = list(api.writes)
-            inspected = session.inspect_pending(api, fresh, paths[0])
+            with patch.object(session, "EXPERIMENTAL_PARALLEL_ENABLED", False):
+                inspected = session.inspect_pending(api, fresh, paths[0])
             self.assertEqual(inspected["operation_id"], result["operation_id"])
             self.assertEqual(len(inspected["candidates"]), 1)
             self.assertEqual(inspected["candidates"][0]["installed_sha"], result["installed_sha"])

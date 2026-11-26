@@ -1524,6 +1524,62 @@
           "anchor": "def test_staged_preserving_upgrade_refuses_changed_pr_or_missing_capability(self):"
         }
       ]
+    },
+    {
+      "id": "v0-0-0-41",
+      "label": "Issue #92 · owner scope and experimental disposition",
+      "documented_in": [
+        {
+          "path": "docs/v0.0.0.41.md",
+          "anchor": "# v0.0.0.41 — Scope control and experimental disposition (#92)"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "tools/self_use_preflight.py",
+          "anchor": "def verify_scope(pin, issue, version, head, current, pr_base=None):"
+        },
+        {
+          "path": "tools/session.py",
+          "anchor": "def require_experimental_parallel():"
+        }
+      ],
+      "implemented_in": [
+        {
+          "path": "tools/self_use_preflight.py",
+          "anchor": "def validate_scope(record, ledger, issue, version):"
+        },
+        {
+          "path": "tools/session.py",
+          "anchor": "def require_unheld_scope(state, numbers):"
+        },
+        {
+          "path": "tools/gate.py",
+          "anchor": "session.require_unheld_scope(state, [row[\"issue\"] for row in policy[\"issues\"]])"
+        },
+        {
+          "path": "tools/standard.py",
+          "anchor": "session.require_unheld_scope(state, [active[\"issue\"]])"
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tests/test_scope_control.py",
+          "anchor": "def test_exact_scope_and_criteria_refuse_unauthorized_expansion(self):"
+        },
+        {
+          "path": "tests/test_scope_control.py",
+          "anchor": "def test_revision_bound_scope_amendment_and_stale_ref(self):"
+        },
+        {
+          "path": "tests/test_scope_control.py",
+          "anchor": "def test_parallel_activation_and_forged_publication_refused(self):"
+        },
+        {
+          "path": "tests/test_scope_control.py",
+          "anchor": "def test_held_issues_and_experimental_gate_refused(self):"
+        }
+      ]
     }
   ]
 }

@@ -338,6 +338,7 @@ class QualificationTests(unittest.TestCase):
                                  session.issue_view(final["ledger"],final["handoff"],number))
             print("VIB53_STARVATION bounded refusal after eight competing wins; explicit fresh claim succeeds after competition stops; no automatic durable resumption",flush=True)
 
+    @patch.object(session, "EXPERIMENTAL_PARALLEL_ENABLED", True)
     def test_fresh_process_claim_replay_has_no_durable_pending_identity(self):
         api=MemoryGit()
         with patch.object(install,"source_files",return_value=PACKAGE), \
@@ -349,6 +350,8 @@ class QualificationTests(unittest.TestCase):
         script = """
 import json, sys
 from tools import session
+# Isolated historical replay fixture; no live GitHub transport.
+session.EXPERIMENTAL_PARALLEL_ENABLED = True
 class IssueAPI:
     def request(self, method, path, body=None):
         assert method == 'GET' and '/issues/' in path
@@ -368,6 +371,7 @@ for note in ('original','different intent'):
         self.assertEqual(receipts[0]["installed_sha"],committed["ref"])
         print("VIB53_RESTART replay does not duplicate claim; different note is also unchanged; durable pending identity not established",flush=True)
 
+    @patch.object(session, "EXPERIMENTAL_PARALLEL_ENABLED", True)
     def test_real_git_legacy_upgrade_and_parallel_opt_in(self):
         class Remote(GitApi):
             def request(self, method, path, body=None):

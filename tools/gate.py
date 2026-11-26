@@ -152,6 +152,9 @@ def evaluate_scope(api, target, policy, validate, verify_test):
     active_rows = session.active_rows(handoff)
     if "publisher_app_id" in policy and handoff["schema_version"] == 2:
         raise ValueError("Optional enforcement is not qualified for parallel mode")
+    if handoff["schema_version"] == 2:
+        session.require_experimental_parallel()
+    session.require_unheld_scope(state, [row["issue"] for row in policy["issues"]])
     if active_rows and (handoff["schema_version"] == 1 or
             any(a["pull_request"] == policy["pull_request"] for a in active_rows)):
         raise ValueError("Return relevant active handoffs to Head before gate evaluation")
