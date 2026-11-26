@@ -60,10 +60,10 @@ class RefBoundary(unittest.TestCase):
         with self.assertRaises(install.ApiError):install.read_ref(api,"/repos/example/test","main")
     def test_session_cli_raw_attribute_error(self):
         # Mock only the external API transport; real CLI, load and read_ref paths.
-        api=Mock();api.request.return_value=None
+        api=Mock();api.request.side_effect=[{"full_name":"example/test","id":1},None]
         with patch.object(install,"GitHub",return_value=api),patch.object(sys,"argv",["session","--target","example/test","inspect"]):
             with self.assertRaises(AttributeError):session.main()
-        self.assertTrue(all(call.args[0]=="GET" for call in api.request.call_args_list))
+        self.assertEqual([call.args for call in api.request.call_args_list],[("GET","/repos/example/test"),("GET","/repos/example/test/git/ref/heads/"+install.BRANCH)])
 if __name__=="__main__":
     suite=unittest.TestSuite([Pending("test_rd002_current"),*unittest.defaultTestLoader.loadTestsFromTestCase(RefBoundary)])
     result=unittest.TextTestRunner(verbosity=2).run(suite)
