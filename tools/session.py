@@ -264,6 +264,7 @@ def finish_engineering(api, state, decision, *, policy, owner_approved=False, is
 
 CLOSURE_DECISION = "VIB-ISSUE-CLOSURE-1: "
 CLOSURE_EXECUTION_V1 = True
+CLOSURE_ARCHIVE_OCCURRENCE_V2 = True
 CLOSURE_UNRESOLVED = ("pending", "executing")
 
 
@@ -318,13 +319,20 @@ def supports_closure_execution(files):
     except (SyntaxError, TypeError, ValueError):
         return False
     return any(isinstance(node, ast.Assign)
-               and any(isinstance(target, ast.Name) and target.id == "CLOSURE_EXECUTION_V1"
+               and any(isinstance(target, ast.Name) and target.id == "CLOSURE_ARCHIVE_OCCURRENCE_V2"
                        for target in node.targets)
                and isinstance(node.value, ast.Constant) and node.value.value is True
                for node in module.body) and CLOSURE_DECISION in code
 
 
 def require_closure_compatible_history(handoff, supported):
+    # This guard runs before the full handoff validator during load.
+    if not isinstance(handoff, dict) or not isinstance(handoff.get("history"), list):
+        raise ValueError("Invalid handoff history")
+    for record in handoff["history"]:
+        if not isinstance(record, dict):
+            raise ValueError("Invalid archived handoff")
+        text(record.get("decision"), "owner decision")
     if not supported and any(record["decision"].startswith(CLOSURE_DECISION)
                              for record in handoff["history"]):
         raise ValueError("Reserved closure receipt prefix requires explicit history compatibility review")
@@ -335,21 +343,43 @@ def closure_records(handoff, number):
             if r["handoff"]["issue"] == number and closure_receipt(r) is not None]
 
 
+def closure_archive_index(handoff, number):
+    """Zero-based absolute occurrence in the immutable append-only history."""
+    return next((i for i in range(len(handoff["history"]) - 1, -1, -1)
+                 if handoff["history"][i]["handoff"]["issue"] == number
+                 and closure_receipt(handoff["history"][i]) is None), None)
+
+
 def closure_archive(handoff, number):
-    return next((r for r in reversed(handoff["history"])
-                 if r["handoff"]["issue"] == number and closure_receipt(r) is None), None)
+    index = closure_archive_index(handoff, number)
+    return handoff["history"][index] if index is not None else None
+
+
+def matches_closure_archive(handoff, number, policy):
+    index = closure_archive_index(handoff, number)
+    return (index is not None and index == policy["archive_index"]
+            and closure_digest(handoff["history"][index]) == policy["archive_digest"])
+
+
+def legacy_approval_statement(review):
+    # Whole-string grammar, not keyword searching or natural-language inference.
+    return (f"Owner-approved engineering completion: PR #{review['pull_request']}; "
+            f"fix {review['issues'][0]['fix_sha']}; candidate {review['head_sha']}; "
+            f"merge {review['merge_sha']}.")
 
 
 def closure_policy(policy, ledger, number):
     if (not isinstance(policy, dict) or set(policy) != {
             "schema_version", "repository", "issue", "version", "archive_ref",
-            "archive_digest", "reason", "owner_decision", "engineering"}
-            or type(policy["schema_version"]) is not int or policy["schema_version"] != 1
+            "archive_digest", "archive_index", "reason", "owner_decision", "engineering"}
+            or type(policy["schema_version"]) is not int or policy["schema_version"] != 2
             or policy["repository"] != ledger["repository"]
             or issue_number(policy["issue"]) != number
             or checkpoint.bindings(ledger).get(number) != policy["version"]):
         raise ValueError("Issue closure policy identity mismatch")
     install.require(install.SHA, policy["archive_ref"], "historical archive revision")
+    if type(policy["archive_index"]) is not int or policy["archive_index"] < 0:
+        raise ValueError("Invalid closure archive occurrence")
     if not isinstance(policy["archive_digest"], str) or not re.fullmatch(r"[0-9a-f]{64}", policy["archive_digest"]):
         raise ValueError("Invalid closure archive digest")
     text(policy["owner_decision"], "issue-specific owner decision")
@@ -367,17 +397,20 @@ def validate_closure_history(handoff, ledger):
     pending = {}
     used = set()
     executions = set()
-    for record in handoff["history"]:
+    confirmed_occurrences = set()
+    for index, record in enumerate(handoff["history"]):
         number = record["handoff"]["issue"]
         receipt = closure_receipt(record)
         if receipt is None:
             if number in pending:
                 raise ValueError("Issue history changed during pending closure")
-            prior[number] = record
+            prior[number] = index
             continue
         policy = closure_policy(receipt["policy"], ledger, number)
-        basis = prior.get(number)
-        if (basis is None or closure_digest(basis) != policy["archive_digest"]
+        basis_index = prior.get(number)
+        basis = handoff["history"][basis_index] if basis_index is not None else None
+        if (basis is None or basis_index != policy["archive_index"]
+                or closure_digest(basis) != policy["archive_digest"]
                 or record["handoff"] != basis["handoff"]
                 or record["disposition"] != basis["disposition"]
                 or record["merged_sha"] != basis["merged_sha"]
@@ -387,8 +420,8 @@ def validate_closure_history(handoff, ledger):
             raise ValueError("Closure receipt changed its historical disposition")
         if receipt["status"] == "pending":
             identity = closure_digest(policy)
-            if number in pending or identity in used:
-                raise ValueError("Duplicate pending issue closure")
+            if number in pending or identity in used or basis_index in confirmed_occurrences:
+                raise ValueError("Duplicate pending issue closure for confirmed archive occurrence")
             used.add(identity)
             pending[number] = receipt
         elif receipt["status"] == "executing":
@@ -401,18 +434,19 @@ def validate_closure_history(handoff, ledger):
             pending[number] = receipt
         else:
             earlier = pending.pop(number, None)
-            # Legacy pending/terminal records remain readable; new execution
-            # receipts require the exact acquired execution identity.
             if (earlier is None or earlier["policy"] != policy
-                    or earlier.get("execution_id") != receipt.get("execution_id")):
+                    or earlier.get("execution_id") != receipt.get("execution_id")
+                    or (receipt["status"] == "confirmed" and earlier["status"] != "executing")):
                 raise ValueError("Unmatched closure terminal receipt")
+            if receipt["status"] == "confirmed":
+                confirmed_occurrences.add(basis_index)
     if len(pending) > 1:
         raise ValueError("Only one pending issue closure is permitted")
     if pending and active_rows(handoff):
         raise ValueError("Pending closure must be reconciled before claiming work")
     for number in pending:
         row = next(r for r in ledger["issues"] if r["issue"] == number)
-        if row["state"] != prior[number]["disposition"]:
+        if row["state"] != handoff["history"][prior[number]]["disposition"]:
             raise ValueError("Pending closure disposition changed")
 
 
@@ -429,7 +463,8 @@ def pending_closure(handoff):
                         "status": last["status"],
                         "execution_id": last.get("execution_id"),
                         "policy_digest": closure_digest(last["policy"]),
-                        "archive_digest": last["policy"]["archive_digest"]}
+                        "archive_digest": last["policy"]["archive_digest"],
+                        "archive_index": last["policy"]["archive_index"]}
     return None
 
 
@@ -437,14 +472,16 @@ def closure_status(state, item):
     number = issue_number(item["number"])
     row = next((r for r in state["ledger"]["issues"] if r["issue"] == number), None)
     archive = closure_archive(state["handoff"], number)
-    records = closure_records(state["handoff"], number)
+    archive_index = closure_archive_index(state["handoff"], number)
+    all_records = closure_records(state["handoff"], number)
+    records = [r for r in all_records if r["policy"]["archive_index"] == archive_index]
     last = records[-1] if records else None
     reason = item.get("state_reason")
     github_state = item.get("state")
     if github_state not in ("open", "closed"):
         raise ValueError("Unverified GitHub issue state")
     matching = last and github_state == "closed" and reason == last["policy"]["reason"]
-    current_basis = last and archive and closure_digest(archive) == last["policy"]["archive_digest"]
+    current_basis = last and matches_closure_archive(state["handoff"], number, last["policy"])
     active = any(a["issue"] == number for a in active_rows(state["handoff"]))
     consistent = bool(row and archive and not active and row["state"] == archive["disposition"]
                       and row["state"] in ("deferred", "blocked"))
@@ -473,8 +510,11 @@ def closure_status(state, item):
             "github_state_reason": reason, "production_integrated": bool(row and row["state"] == "integrated"),
             "ledger_state": row["state"] if row else None, "closure_synchronization": synchronization,
             "archive_digest": closure_digest(archive) if archive else None,
+            "archive_index": archive_index,
             "closure_receipt": last, "closure_event_verified": False,
             "historical_confirmation_recorded": bool(last and last["status"] == "confirmed"),
+            "prior_archive_confirmation_recorded": any(r["status"] == "confirmed"
+                and r["policy"]["archive_index"] != archive_index for r in all_records),
             "live_evidence_verified": False}
 
 
@@ -494,8 +534,8 @@ def verify_closure_basis(api, state, number, policy):
     row = next(r for r in ledger["issues"] if r["issue"] == number)
     if (archive is None or row["state"] != archive["disposition"]
             or row["state"] not in ("blocked", "deferred")
-            or closure_digest(archive) != policy["archive_digest"]):
-        raise ValueError("Closure requires the current exact inactive archived disposition")
+            or not matches_closure_archive(handoff, number, policy)):
+        raise ValueError("Closure requires the current exact inactive archived disposition occurrence")
     prefix, historical = state["prefix"], policy["archive_ref"]
     if install.read_ref(api, prefix, install.BRANCH) != state["ref"]:
         raise ValueError("Installed state advanced; reload")
@@ -505,7 +545,8 @@ def verify_closure_basis(api, state, number, policy):
     old_manifest = checkpoint.parse_json(install.read_text(api, prefix, "vib-install.json", historical))
     validate_handoff(old_handoff, old_ledger)
     checkpoint.check_history(ledger, old_ledger)
-    if (closure_archive(old_handoff, number) != archive
+    if (not matches_closure_archive(old_handoff, number, policy)
+            or closure_archive(old_handoff, number) != archive
             or old_ledger["repository"] != ledger["repository"]
             or old_manifest["target_repository"] != ledger["repository"]
             or old_manifest["target_repository_id"] != state["manifest"]["target_repository_id"]
@@ -535,15 +576,10 @@ def verify_closure_basis(api, state, number, policy):
         if recorded is not None and recorded != expected:
             raise ValueError("Closure evidence conflicts with archived handoff pin: " + key)
     if stored is None:
-        # Legacy prose alone is not proof. Require all exact historical pins
-        # to be present in the immutable owner decision, then verify live
-        # Standard evidence. A different green PR cannot substitute for it.
-        decision = archive["decision"]
-        pins = (review["head_sha"], review["merge_sha"], review["issues"][0]["fix_sha"])
-        if (not all(re.search(r"(?<![0-9a-f])" + re.escape(pin) + r"(?![0-9a-f])", decision)
-                    for pin in pins)
-                or not re.search(r"\bPR\s*#?\s*" + str(review["pull_request"]) + r"\b", decision, re.I)):
-            raise ValueError("Legacy closure requires exact archived PR, fix, candidate and merge pins")
+        # No inference from arbitrary historical prose. Only an entire,
+        # unambiguous positive statement for this exact tuple is eligible.
+        if archive["decision"] != legacy_approval_statement(review):
+            raise ValueError("Legacy closure requires an unambiguous approved archived PR/fix/candidate/merge tuple; owner reconciliation required")
     gate.check_ancestry(api, prefix, review["installed_sha"], historical)
     # Keep the reviewed historical policy immutable. Only the transient proof
     # view binds Standard's freshness check to the current mutation lease.
@@ -590,10 +626,12 @@ def closure_plan(api, state, number, policy, stage, *, owner_approved=False, exe
     if (stage == "executing" and (last is None or last["status"] != "pending" or last["policy"] != policy)
             or stage == "confirmed" and (last is None or last["status"] != "executing"
                 or last["policy"] != policy or last.get("execution_id") != execution_id)
-            or stage == "pending" and last and
-            (last["status"] in CLOSURE_UNRESOLVED or
-             (last["status"] == "confirmed" and last["policy"]["archive_digest"] == policy["archive_digest"])
-             or any(record["policy"] == policy for record in records))):
+            or (stage == "pending" and last and
+                (last["status"] in CLOSURE_UNRESOLVED or any(
+                    record["policy"] == policy or
+                    (record["status"] == "confirmed" and
+                     record["policy"]["archive_index"] == policy["archive_index"])
+                    for record in records)))):
         raise ValueError("Conflicting or missing durable closure intent or execution")
     ledger, handoff = copy.deepcopy(state["ledger"]), copy.deepcopy(state["handoff"])
     receipt = {"status": stage, "policy": policy}
@@ -634,8 +672,8 @@ def cancel_closure_plan(api, state, number, policy, decision, *, owner_approved=
     archive = closure_archive(handoff, number)
     row = next(r for r in ledger["issues"] if r["issue"] == number)
     if (archive is None or row["state"] != archive["disposition"]
-            or closure_digest(archive) != policy["archive_digest"]):
-        raise ValueError("Pending closure archive changed")
+            or not matches_closure_archive(handoff, number, policy)):
+        raise ValueError("Pending closure archive occurrence changed")
     # A failed or superseded workflow proof is precisely why cancellation is
     # needed. Do not reverify that proof or make any GitHub issue mutation.
     item = get_issue(api, state, number)

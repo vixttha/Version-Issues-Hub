@@ -14,8 +14,9 @@ class ClosureTests(unittest.TestCase):
         self.state = fixture.state
         ledger, handoff = fixture.finish()
         self.state.update(ledger=ledger, handoff=handoff, closure_supported=True)
-        self.policy = {"schema_version": 1, "repository": ledger["repository"], "issue": 247,
+        self.policy = {"schema_version": 2, "repository": ledger["repository"], "issue": 247,
                        "version": ledger["issues"][0]["version"], "archive_ref": self.state["ref"],
+                       "archive_index": len(handoff["history"]) - 1,
                        "archive_digest": session.closure_digest(handoff["history"][-1]),
                        "reason": "completed", "owner_decision": "Owner reviewed exact evidence",
                        "engineering": fixture.policy}
@@ -366,9 +367,7 @@ class ClosureTests(unittest.TestCase):
             with self.subTest(field=field):
                 self.state = copy.deepcopy(original)
                 archive = self.state["handoff"]["history"][-1]
-                archive["decision"] = ("Owner reviewed PR #" + str(review["pull_request"])
-                    + " fix " + expected["fix_sha"] + " candidate " + expected["candidate_sha"]
-                    + " merge " + review["merge_sha"])
+                archive["decision"] = session.legacy_approval_statement(review)
                 archive["handoff"].update(expected)
                 if field == "empty":
                     archive["handoff"].update({key: None for key in expected})
@@ -530,4 +529,111 @@ class ClosureTests(unittest.TestCase):
                 with self.assertRaisesRegex(ValueError, "partial"):
                     session.complete_closure(self.api, self.state, 247, self.policy,
                                              owner_approved=True, apply=True)
+        self.assertFalse(self.api.writes)
+
+    def test_malformed_history_prefix_guard_fails_with_validation_error(self):
+        for supported in (False, True):
+            for value in (42, None, "", [], {}):
+                with self.subTest(supported=supported, decision=value), \
+                        self.assertRaisesRegex(ValueError, "Missing owner decision"):
+                    session.require_closure_compatible_history({"history": [{"decision": value}]}, supported)
+            for record in (None, 42, []):
+                with self.assertRaisesRegex(ValueError, "Invalid archived handoff"):
+                    session.require_closure_compatible_history({"history": [record]}, supported)
+        with self.assertRaisesRegex(ValueError, "prefix"):
+            session.require_closure_compatible_history({"history": [
+                {"decision": session.CLOSURE_DECISION + "{}"}]}, False)
+
+    def test_legacy_approval_rejects_mixed_or_negative_decisions(self):
+        review = self.policy["engineering"]["review"]
+        target = session.legacy_approval_statement(review)
+        other_review = {**review, "pull_request": review["pull_request"] + 1}
+        other = session.legacy_approval_statement(other_review)
+        original = copy.deepcopy(self.state)
+        for decision, allowed in ((target, True), (other, False),
+                (other + " Rejected: " + target, False),
+                (target + " Superseded; rejected.", False),
+                ("Not " + target, False), (target + "\n" + other, False)):
+            with self.subTest(decision=decision):
+                self.state = copy.deepcopy(original)
+                archive = self.state["handoff"]["history"][-1]
+                archive["decision"] = decision
+                policy = {**self.policy, "archive_digest": session.closure_digest(archive)}
+                historical = {session.HANDOFF: self.state["handoff"],
+                              session.LEDGER: self.state["ledger"],
+                              "vib-install.json": {**self.state["manifest"],
+                                 "target_repository": self.state["ledger"]["repository"]}}
+                with patch.object(install, "read_text", side_effect=lambda api, prefix, path, ref:
+                                  install.render(historical[path])), \
+                        patch.object(gate, "check_ancestry"), \
+                        patch("tools.standard.verify_merged_destination") as verify:
+                    if allowed:
+                        self.assertEqual(session.verify_closure_basis(self.api, self.state, 247, policy), archive)
+                        verify.assert_called_once()
+                    else:
+                        with self.assertRaisesRegex(ValueError, "unambiguous approved"):
+                            session.verify_closure_basis(self.api, self.state, 247, policy)
+                        verify.assert_not_called()
+        self.assertFalse(self.api.writes)
+
+    def test_identical_archive_occurrences_are_distinct_and_old_policy_refused(self):
+        archive = self.state["handoff"]["history"][-1]
+        archive["decision"] = "Owner blocked issue"
+        archive["disposition"] = "blocked"
+        self.state["ledger"]["issues"][0]["state"] = "blocked"
+        first = {**self.policy, "archive_digest": session.closure_digest(archive),
+                 "reason": "not_planned", "engineering": None}
+        historical = {session.HANDOFF: copy.deepcopy(self.state["handoff"]),
+                      session.LEDGER: copy.deepcopy(self.state["ledger"]),
+                      "vib-install.json": {**self.state["manifest"],
+                         "target_repository": self.state["ledger"]["repository"]}}
+        closed = {"number": 247, "state": "closed", "state_reason": "not_planned"}
+        current_ref = "8" * 40
+        snapshots = {first["archive_ref"]: historical}
+        def read_text(api, prefix, path, ref):
+            return install.render(snapshots[ref][path])
+        with patch.object(install, "read_text", side_effect=read_text), \
+                patch.object(gate, "check_ancestry"), \
+                patch.object(session, "get_issue", return_value=closed):
+            for stage in ("pending", "executing", "confirmed"):
+                kwargs = {} if stage == "pending" else {"execution_id": "1" * 32}
+                ledger, handoff = session.closure_plan(self.api, self.state, 247, first, stage,
+                                                        owner_approved=True, **kwargs)
+                self.state.update(ledger=ledger, handoff=handoff)
+            self.assertEqual(session.closure_status(self.state, closed)["closure_synchronization"],
+                             "state_matches_historical_receipt")
+            duplicate = {**first, "owner_decision": "Different decision, same occurrence"}
+            with self.assertRaises(ValueError):
+                session.closure_plan(self.api, self.state, 247, duplicate, "pending", owner_approved=True)
+            # Replay a distinct identical disposition after reopen/reclaim.
+            self.state["handoff"]["history"].append(copy.deepcopy(archive))
+            self.state["ref"] = current_ref
+            self.api.ref = current_ref
+            session.validate_handoff(self.state["handoff"], self.state["ledger"])
+            index = len(self.state["handoff"]["history"]) - 1
+            snapshots[current_ref] = {**historical,
+                 session.HANDOFF: copy.deepcopy(self.state["handoff"])}
+            result = session.closure_status(self.state, closed)
+            self.assertEqual(result["closure_synchronization"], "historical_unverified")
+            self.assertFalse(result["historical_confirmation_recorded"])
+            self.assertTrue(result["prior_archive_confirmation_recorded"])
+            self.assertEqual(result["archive_index"], index)
+            for wrong in (first, {**first, "archive_index": index},
+                          {**first, "archive_ref": current_ref},
+                          {**first, "archive_index": True},
+                          {**first, "schema_version": 1}):
+                with self.assertRaises(ValueError):
+                    session.verify_closure_basis(self.api, self.state, 247, wrong)
+            second = {**first, "archive_index": index, "archive_ref": current_ref}
+            self.assertEqual(session.verify_closure_basis(self.api, self.state, 247, second), archive)
+            for stage in ("pending", "executing", "confirmed"):
+                kwargs = {} if stage == "pending" else {"execution_id": "2" * 32}
+                ledger, handoff = session.closure_plan(self.api, self.state, 247, second, stage,
+                                                        owner_approved=True, **kwargs)
+                self.state.update(ledger=ledger, handoff=handoff)
+            self.assertTrue(session.closure_status(self.state, closed)["historical_confirmation_recorded"])
+            self.assertEqual(session.closure_records(self.state["handoff"], 247)[-1]["policy"]["archive_index"], index)
+            with self.assertRaises(ValueError):
+                session.closure_plan(self.api, self.state, 247, {**second, "owner_decision": "Replay"},
+                                     "pending", owner_approved=True)
         self.assertFalse(self.api.writes)

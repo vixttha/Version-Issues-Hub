@@ -1336,6 +1336,14 @@
         {
           "path": "tools/session.py",
           "anchor": "def require_closure_compatible_history(handoff, supported):"
+        },
+        {
+          "path": "tools/session.py",
+          "anchor": "def closure_archive_index(handoff, number):"
+        },
+        {
+          "path": "tools/session.py",
+          "anchor": "def legacy_approval_statement(review):"
         }
       ],
       "tested_by": [
@@ -1370,6 +1378,18 @@
         {
           "path": "tests/test_issue_closure.py",
           "anchor": "def test_reserved_prefix_compatibility_fails_closed(self):"
+        },
+        {
+          "path": "tests/test_issue_closure.py",
+          "anchor": "def test_malformed_history_prefix_guard_fails_with_validation_error(self):"
+        },
+        {
+          "path": "tests/test_issue_closure.py",
+          "anchor": "def test_legacy_approval_rejects_mixed_or_negative_decisions(self):"
+        },
+        {
+          "path": "tests/test_issue_closure.py",
+          "anchor": "def test_identical_archive_occurrences_are_distinct_and_old_policy_refused(self):"
         }
       ]
     },

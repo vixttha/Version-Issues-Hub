@@ -112,3 +112,5 @@ If a pending closure cannot be safely completed, inspect exposes its issue and p
 Applying issue closure acquires a unique durable execution receipt at the exact current ref before issue PATCH. An executing receipt blocks all claims, upgrades and retirement; never replay it. Only explicit owner recovery of the exact execution ID, after the original executor has stopped and live state has been reconciled, can cancel it. Current state matching a historical confirmation does not establish the original closure event. No cross-API atomicity or direct-writer enforcement is claimed.
 
 Pending or executing closure also blocks unrelated integration reconciliation and state publication; resolve the exact closure first.
+
+Closure policy schema 2 requires archive_index and digest for the exact historical occurrence. Only a complete exact positive legacy approval statement or a structured engineering receipt is eligible; ambiguous prose remains blocked for separate owner reconciliation. Older unreleased closure policy schemas are not silently upgraded.
