@@ -29,7 +29,7 @@ jobs:
           persist-credentials: false
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
-          ref: '3841de9bb17a10a9ce579fc2cf2ac7111e524fac'
+          ref: '9c743093dc641dc85e006858f14f7f0a1c73f8a3'
           path: archive
           fetch-depth: 0
           persist-credentials: false
@@ -38,32 +38,24 @@ jobs:
           python-version: '3.12'
       - name: Fetch exact historical Git objects
         run: git -C archive fetch --no-tags origin 26e9fe8c019a33c5f84f77a37da70925505204e3 a472e04f4c2cc781c654000d6c0567e703f32791
-      - name: Reproduce pending origin and malformed API boundary
+      - name: Audit API boundaries
+        run: python vault/vib/independent-audit/api_boundaries.py
+      - name: Historical and inferred relationship audit
+        run: python vault/vib/independent-audit/deep_history.py
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: '24.22.3'
+          package-manager-cache: false
+      - name: Verify exact candidate Graphify archive
+        run: python vault/vib/independent-audit/candidate_graph.py
+      - name: Bash independent Git and artifact checks
+        shell: bash
+        run: bash vault/vib/independent-audit/audit.sh
+      - name: PowerShell independent evidence controls
+        shell: pwsh
+        run: ./vault/vib/independent-audit/audit.ps1
+      - name: Confirm outstanding RD-002 and RD-003 on pinned candidate
         run: python vault/vib/independent-audit/followup.py
-      - name: Reconcile historical .8 to .9 Graphify relationships
-        if: always()
-        run: python vault/vib/independent-audit/audit_09.py
-      - name: Checkout exact .8 for historical gate tests
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
-        with:
-          ref: 'd5272dbfbe63f721820d01316d0e932503b53062'
-          path: historical08
-          persist-credentials: false
-      - name: Run .8 gate regression tests
-        working-directory: historical08
-        run: python -m unittest discover -s tests -p test_gate.py -v
-      - name: Checkout exact .9 for historical gate and Standard tests
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
-        with:
-          ref: '0bb2cae91c1673231645e6301c95d333a4a35afd'
-          path: historical09
-          persist-credentials: false
-      - name: Run .9 gate regression tests
-        working-directory: historical09
-        run: python -m unittest discover -s tests -p test_gate.py -v
-      - name: Run .9 Standard regression tests
-        working-directory: historical09
-        run: python -m unittest discover -s tests -p test_standard.py -v
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         if: always()
         with:
