@@ -8,9 +8,16 @@ import os
 import re
 import sys
 import time
+from email.utils import parsedate_to_datetime
+from http.client import IncompleteRead
 from urllib.error import HTTPError, URLError
 from urllib.parse import quote
 from urllib.request import Request, build_opener, HTTPRedirectHandler
+
+if __package__:
+    from . import checkpoint
+else:  # Preserve direct script invocation.
+    import checkpoint
 
 SOURCE = "vixttha/Version-Issues-Hub"
 BRANCH = "Version-Issues-Hub"
@@ -30,13 +37,80 @@ PACKAGE = {
     "install/branch/STANDARD.md": "STANDARD.md",
     "install/branch/GATE.md": "GATE.md",
     "install/branch/AGENTS.md": "AGENTS.md",
+    "LICENSE": "VIB-LICENSE.md",
+    "VIB-NOTICE.md": "VIB-NOTICE.md",
+}
+
+HISTORICAL_LEGAL_PATHS = {
+    "docs/licensing/reference/PolyForm-Strict-1.0.0.md": "VIB-LICENSE.md",
+    "docs/licensing/VIB-NOTICE-REVIEW.md": "VIB-NOTICE.md",
 }
 
 class ApiError(RuntimeError):
-    def __init__(self, status, method=None, operation=None):
+    def __init__(self, status, method=None, operation=None, retry_after=None):
         context = f" ({method} {operation})" if method and operation else ""
-        super().__init__(f"GitHub API returned HTTP {status}{context}")
+        delay = f"; retry no earlier than {retry_after} seconds (inspect before any write)" if retry_after is not None else ""
+        super().__init__(f"GitHub API returned HTTP {status}{context}{delay}")
         self.status = status
+        self.retry_after = retry_after
+        self.method = method
+        self.operation = operation
+
+
+def cli_error(parser, label, exc):
+    # Preserve the human-readable diagnostic and a strictly typed machine receipt.
+    message = f"{label}: {exc}\n"
+    if isinstance(exc, ApiError) and exc.retry_after is not None:
+        message += json.dumps({"kind": "vib_api_delay", "status": exc.status,
+                               "retry_after": exc.retry_after}, sort_keys=True) + "\n"
+    parser.exit(1, message)
+
+
+def raise_cli_delay(stderr):
+    """Propagate only the numeric receipt from a failed read-only child CLI."""
+    if not isinstance(stderr, str) or not stderr.strip():
+        return
+    try:
+        record = checkpoint.parse_json(stderr.strip().splitlines()[-1])
+    except ValueError:
+        return
+    if (isinstance(record, dict) and set(record) == {"kind", "status", "retry_after"}
+            and record["kind"] == "vib_api_delay"
+            and type(record["status"]) is int and 400 <= record["status"] <= 599
+            and type(record["retry_after"]) is int and 0 <= record["retry_after"] <= 10**12):
+        raise ApiError(record["status"], "GET", retry_after=record["retry_after"])
+
+
+def retry_delay(status, headers, now):
+    """Retain numeric throttle timing only; never retain arbitrary header values."""
+    import math
+    headers = headers or {}
+    retry = headers.get("Retry-After")
+    exhausted = headers.get("X-RateLimit-Remaining") == "0"
+    if retry is None and not exhausted and status != 429:
+        return None
+    delays = [60] if status in (403, 429) or exhausted else [0]
+    try:
+        if retry is not None:
+            if re.fullmatch(r"[0-9]{1,12}", retry):
+                delays.append(int(retry))
+            else:
+                date = parsedate_to_datetime(retry)
+                if date.tzinfo is None:
+                    delays.append(60)
+                else:
+                    delays.append(math.ceil(date.timestamp() - now))
+    except (TypeError, ValueError, OverflowError, OSError):
+        # A malformed Retry-After must not discard the independent reset bound.
+        delays.append(60)
+    if exhausted:
+        try:
+            reset = headers.get("X-RateLimit-Reset")
+            if reset is not None and re.fullmatch(r"[0-9]{1,12}", reset):
+                delays.append(math.ceil(int(reset) - now))
+        except (TypeError, ValueError, OverflowError, OSError):
+            delays.append(60)
+    return max(delays)
 
 class ApiTransportError(OSError):
     """Transport failure with only safe operation context, never request details."""
@@ -72,7 +146,7 @@ class GitHub:
         headers = {"Accept": "application/vnd.github+json", "X-GitHub-Api-Version": "2022-11-28"}
         if self.token:
             headers["Authorization"] = "Bearer " + self.token
-        data = None if body is None else json.dumps(body).encode()
+        data = None if body is None else json.dumps(body, allow_nan=False).encode()
         if data is not None:
             headers["Content-Type"] = "application/json"
         req = Request("https://api.github.com" + path, data=data, headers=headers, method=method)
@@ -82,12 +156,22 @@ class GitHub:
                 time.sleep(delay)
             try:
                 with self.opener.open(req, timeout=30) as response:
-                    return json.load(response)
+                    try:
+                        return checkpoint.parse_json(response.read().decode("utf-8"))
+                    except ValueError:
+                        # A malformed write response is uncertain; never replay the write.
+                        caution = "; inspect before retrying any write" if method != "GET" else ""
+                        raise ResponseDecodeError(f"Invalid GitHub JSON response ({method} {api_operation(path)}){caution}") from None
             except HTTPError as exc:
                 code = exc.code
+                delay_hint = retry_delay(code, exc.headers, time.time())
                 exc.close()
-                if code not in (500, 502, 503, 504) or attempt == len(delays) - 1:
-                    raise ApiError(code, method, api_operation(path)) from None
+                if delay_hint is not None or code not in (500, 502, 503, 504) or attempt == len(delays) - 1:
+                    raise ApiError(code, method, api_operation(path), delay_hint) from None
+            except IncompleteRead:
+                # Response may be truncated after the server applied a write.
+                # Never repeat that write or expose partial response bytes.
+                raise ApiTransportError(method, api_operation(path), False) from None
             except (TimeoutError, URLError) as exc:
                 timed_out = isinstance(exc, TimeoutError) or (
                     isinstance(exc, URLError) and isinstance(exc.reason, TimeoutError))
@@ -107,6 +191,30 @@ def repo_path(name):
         raise ValueError("Invalid repository name")
     return "/repos/" + quote(name, safe="/")
 
+class MalformedResponse(ValueError):
+    """Invalid remote response shape, not a transport failure or retry signal."""
+
+
+class ResponseDecodeError(MalformedResponse):
+    """Invalid response encoding or JSON; a write may already have succeeded."""
+
+
+def response_object(value, label):
+    if not isinstance(value, dict):
+        raise MalformedResponse("Malformed GitHub " + label)
+    return value
+
+
+def response_rows(value, label):
+    if not isinstance(value, list) or any(not isinstance(row, dict) for row in value):
+        raise MalformedResponse("Malformed GitHub " + label)
+    return value
+
+
+def same_id(value, expected):
+    return type(value) is int and value > 0 and value == expected
+
+
 def read_ref(api, prefix, branch):
     try:
         data = api.request("GET", prefix + "/git/ref/heads/" + quote(branch, safe="/"))
@@ -114,9 +222,14 @@ def read_ref(api, prefix, branch):
         if exc.status == 404:
             return None
         raise
-    if data.get("ref") != "refs/heads/" + branch or data["object"]["type"] != "commit":
-        raise ValueError("Unexpected GitHub ref response")
-    return require(SHA, data["object"]["sha"], "ref revision")
+    data = response_object(data, "ref response")
+    obj = response_object(data.get("object"), "ref object")
+    if data.get("ref") != "refs/heads/" + branch or obj.get("type") != "commit":
+        raise MalformedResponse("Unexpected GitHub ref response")
+    try:
+        return require(SHA, obj.get("sha"), "ref revision")
+    except ValueError as exc:
+        raise MalformedResponse(str(exc)) from exc
 
 def wait_ref(api, prefix, branch, expected, previous=None):
     """After a successful write, tolerate only absent/known-old readback, never repeat the write."""
@@ -136,8 +249,11 @@ def wait_ref(api, prefix, branch, expected, previous=None):
 def read_text(api, prefix, path, ref):
     require(SHA, ref, "file revision")
     item = api.request("GET", prefix + "/contents/" + quote(path, safe="/") + "?ref=" + ref)
+    item = response_object(item, "file response")
     if item.get("type") != "file" or item.get("encoding") != "base64" or item.get("path") != path:
         raise ValueError("Package source is not a regular file")
+    if not isinstance(item.get("content"), str):
+        raise MalformedResponse("Malformed GitHub file content")
     raw = base64.b64decode("".join(item["content"].split()), validate=True)
     blob = hashlib.sha1(b"blob " + str(len(raw)).encode() + b"\0" + raw).hexdigest()
     if blob != item.get("sha"):
@@ -162,7 +278,7 @@ def pinned_package(source_text):
         raise ValueError("Invalid pinned package declaration") from exc
     required = {"install/branch/README.md", "install/branch/WORKFLOW.md", "tools/checkpoint.py"}
     if (not required.issubset(package) or
-            any(not isinstance(k, str) or not isinstance(v, str) or PACKAGE.get(k) != v
+            any(not isinstance(k, str) or not isinstance(v, str) or {**PACKAGE, **HISTORICAL_LEGAL_PATHS}.get(k) != v
                 for k, v in package.items()) or len(set(package.values())) != len(package)):
         raise ValueError("Pinned package has unsupported or missing paths")
     return package
@@ -179,7 +295,26 @@ def source_files(api, source_sha):
     return files
 
 def render(data):
-    return json.dumps(data, indent=2, sort_keys=True) + "\n"
+    return json.dumps(data, indent=2, sort_keys=True, allow_nan=False) + "\n"
+
+def require_publishable_package(files):
+    """Reject incomplete or review-only legal packages; not a license enforcement service."""
+    names = {"VIB-LICENSE.md", "VIB-NOTICE.md"}
+    if not names.intersection(files):
+        return  # Historical pins remain readable and compatible.
+    if not names.issubset(files):
+        raise ValueError("Incomplete legal package is not authorized for installation or upgrade")
+    raw = files["VIB-LICENSE.md"].encode("utf-8")
+    blob = hashlib.sha1(b"blob " + str(len(raw)).encode() + b"\0" + raw).hexdigest()
+    notice = files["VIB-NOTICE.md"]
+    notice_raw = notice.encode("utf-8")
+    notice_blob = hashlib.sha1(b"blob " + str(len(notice_raw)).encode() + b"\0" + notice_raw).hexdigest()
+    if (blob != "90abd0e6c64a135f42451762337a397bf27f4862"
+            or notice_blob != "70dd8710828a38118965be3ca8be32457d106789"
+            or "VIB_LICENSE_TERMS_APPROVED" not in notice.splitlines()
+            or "REVIEW_ONLY_NOT_A_GRANT" in notice):
+        raise ValueError("Legal review package is not authorized for installation or upgrade")
+
 
 def install(api, target, source_sha, baseline, apply=False):
     require(SHA, source_sha, "full source commit")
@@ -220,6 +355,7 @@ def install(api, target, source_sha, baseline, apply=False):
     plan = {"status": "planned", "manifest": manifest, "paths": sorted(files)}
     if not apply:
         return plan
+    require_publishable_package(files)
     # Recheck identity and refs before creating unreachable objects. Never update a ref.
     latest = api.request("GET", prefix)
     if latest.get("id") != meta["id"] or latest.get("default_branch") != default:
@@ -256,7 +392,7 @@ def main():
     try:
         print(render(install(GitHub(token), args.target, args.source_sha, args.baseline, args.apply)), end="")
     except (ValueError, ApiError, KeyError, OSError) as exc:
-        p.exit(1, f"Install stopped: {exc}\n")
+        cli_error(p, "Install stopped", exc)
 
 if __name__ == "__main__":
     main()
