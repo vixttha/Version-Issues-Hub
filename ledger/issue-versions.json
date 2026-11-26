@@ -368,7 +368,7 @@
         "Verify legacy package compatibility, migration/upgrade and owner-controlled integration, no mandatory ecosystem dependency or paid runner; preserve release hold and installed singleton until separately approved migration."
       ],
       "issue": 53,
-      "state": "in_progress",
+      "state": "deferred",
       "version": "v0.0.0.37"
     }
   ],
