@@ -95,3 +95,38 @@ class RecoveryPlanTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "Installed state advanced"):
                 session.recovery_plan(self.api, self.state)
         self.assertEqual(self.api.writes, [])
+
+
+    def test_pr_changes_during_revalidation_refresh_guidance(self):
+        self.audited()
+        for merged, expected in (
+                (True, "merged_reconciliation_required"),
+                (False, "closed_pr_rework_required")):
+            with self.subTest(merged=merged):
+                self.api.pr.update(state="open", merged=False)
+                def changed(api, current, active, links):
+                    api.pr.update(state="closed", merged=merged)
+                    raise ValueError("PR changed during evidence revalidation")
+                with patch.object(session, "verify_candidate_runs", side_effect=changed):
+                    result = self.plan()
+                self.assertEqual(result["recovery_status"], expected)
+                self.assertIn("Return to Head", result["recommended_next_action"])
+                self.assertEqual(result["evidence_reuse"], {"status": "refused", "links": []})
+
+    def test_refused_run_does_not_recommend_advancing(self):
+        self.audited()
+        self.api.pre_run["run_attempt"] = 2
+        result = self.plan()
+        self.assertEqual(result["recovery_status"], "evidence_revalidation_required")
+        self.assertIn("do not advance", result["recommended_next_action"])
+
+    def test_pr_closes_after_successful_run_revalidation(self):
+        self.audited()
+        original = session.verify_candidate_runs
+        def changed(api, current, active, links):
+            original(api, current, active, links)
+            api.pr.update(state="closed", merged=True)
+        with patch.object(session, "verify_candidate_runs", side_effect=changed):
+            result = self.plan()
+        self.assertEqual(result["recovery_status"], "merged_reconciliation_required")
+        self.assertEqual(result["evidence_reuse"]["links"], [])

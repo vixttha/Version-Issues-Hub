@@ -1117,6 +1117,23 @@ def recovery_plan(api, state, requested=None):
                          "issue": number, "fix_sha": active["fix_sha"],
                          "candidate_sha": active["candidate_sha"], "pull_request": active["pull_request"],
                          **{key: active[key] for key in sorted(PIN_KEYS)}}
+            # Evidence checks may observe a PR or issue change after the initial
+            # inspection. Never return the earlier phase action on that basis.
+            try:
+                latest = inspect(api, state, requested)
+            except (ValueError, KeyError, TypeError, install.ApiError, OSError):
+                status = "pr_state_unverified"
+                action = actions[status]
+                reuse = {"status": "refused", "links": []}
+            else:
+                observed = latest
+                status = latest["status"]
+                if status not in ("resume", "staged"):
+                    action = actions.get(status, "Stop and reconcile unknown state with Head.")
+                    reuse = {"status": "refused", "links": []}
+                elif reuse["status"] == "refused":
+                    status = "evidence_revalidation_required"
+                    action = "Revalidate exact recorded evidence or return to Head; do not advance."
     require_lease()
     return {**observed, "recovery_status": status, "recommended_next_action": action,
             "evidence_reuse": reuse, "read_only": True,
