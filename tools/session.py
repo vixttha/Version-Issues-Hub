@@ -7,6 +7,7 @@ import json
 import os
 import re
 import random
+import sys
 from tools import checkpoint, install
 
 PHASES = ("Worker", "Validate", "Internal Auditor", "Head")
@@ -584,6 +585,42 @@ def confirm_handoff(api, prefix, old, new, tree, *, operation_id=None):
         return observed
     raise ValueError("Handoff commit not confirmed")
 
+def inspect_operation(api, state, ticket):
+    """Read-only proof of one published candidate; never resume or replay a write."""
+    keys = {"schema_version", "repository", "issue", "parent_sha", "candidate_sha",
+            "tree_sha", "operation_id"}
+    if (not isinstance(ticket, dict) or set(ticket) != keys
+            or type(ticket["schema_version"]) is not int or ticket["schema_version"] != 1
+            or ticket["repository"] != state["prefix"]):
+        raise ValueError("Invalid recovery ticket or repository mismatch")
+    number = issue_number(ticket["issue"])
+    old, new, tree = (install.require(install.SHA, ticket[k], k)
+                      for k in ("parent_sha", "candidate_sha", "tree_sha"))
+    operation_id = ticket["operation_id"]
+    if not isinstance(operation_id, str) or not re.fullmatch(r"[0-9a-f]{64}", operation_id):
+        raise ValueError("Invalid recovery operation identity")
+    if old == new:
+        raise ValueError("Invalid recovery candidate parent")
+    try:
+        observed = confirm_handoff(api, state["prefix"], old, new, tree,
+                                   operation_id=operation_id)
+        # Bind the issue label to the actual candidate delta, not only the ticket.
+        before, after = (checkpoint.parse_json(install.read_text(api, state["prefix"], LEDGER, ref))
+                         for ref in (old, new))
+        h0, h1 = (checkpoint.parse_json(install.read_text(api, state["prefix"], HANDOFF, ref))
+                  for ref in (old, new))
+        if (before["repository"] != state["ledger"]["repository"]
+                or after["repository"] != before["repository"]):
+            raise ValueError("Recovery ledger repository mismatch")
+        check_issue_delta({**state, "ledger": before, "handoff": h0}, after, h1, number)
+        if issue_view(before, h0, number) == issue_view(after, h1, number):
+            raise ValueError("Recovery candidate has no issue-local change")
+    except (AttributeError, KeyError, TypeError) as exc:
+        raise ValueError("Malformed recovery evidence; publication not confirmed") from exc
+    return {"status": "published", "installed_sha": new, "observed_sha": observed,
+            "issue": number, "operation_id": operation_id, "read_only": True}
+
+
 class HandoffUnconfirmed(ValueError):
     """An exact candidate is available for inspection, not blind resubmission."""
     def __init__(self, candidate, retry_after=None):
@@ -666,7 +703,8 @@ class HandoffRejected(install.ApiError):
         self.operation_id = operation_id
 
 
-def save(api, state, ledger, handoff, apply=False, *, issue=None, operation_id=None):
+def save(api, state, ledger, handoff, apply=False, *, issue=None, operation_id=None,
+         on_recovery_ticket=None):
     if operation_id is not None and (not isinstance(operation_id, str)
             or not re.fullmatch(r"[0-9a-f]{64}", operation_id)):
         raise ValueError("Invalid operation identity")
@@ -703,6 +741,12 @@ def save(api, state, ledger, handoff, apply=False, *, issue=None, operation_id=N
     # Recheck after creating the objects, immediately before publishing the ref.
     for active in staged:
         verify_candidate_runs(api, state, active, active["evidence"])
+    # Emit the exact recovery ticket before publication. If its sink fails,
+    # do not attempt the ref update. It contains no raw intent or credential.
+    if operation_id is not None and on_recovery_ticket is not None:
+        on_recovery_ticket({"schema_version": 1, "repository": prefix, "issue": issue_number(issue),
+                            "parent_sha": old, "candidate_sha": new, "tree_sha": tree,
+                            "operation_id": operation_id})
     # Fast-forward-only CAS: a divergent writer cannot overwrite a competing handoff.
     ambiguous = False
     try:
@@ -884,7 +928,8 @@ class HandoffDeferred(ValueError):
                          f"; operation {operation_id}; initial {initial_sha}; observed {observed_sha}")
 
 
-def recover_save(api, target, state, plan, issue, *, attempts=4, rounds=1, request=None):
+def recover_save(api, target, state, plan, issue, *, attempts=4, rounds=1, request=None,
+                 on_recovery_ticket=None):
     """Replan only a proved unrelated, definitive conflict; never replay a PATCH."""
     if type(attempts) is not int or not 1 <= attempts <= 4:
         raise ValueError("Contention attempts must be between 1 and 4")
@@ -902,7 +947,8 @@ def recover_save(api, target, state, plan, issue, *, attempts=4, rounds=1, reque
     budget = attempts * rounds
     for attempt in range(budget):
         try:
-            result = save(api, state, ledger, handoff, True, issue=issue, operation_id=operation_id)
+            result = save(api, state, ledger, handoff, True, issue=issue, operation_id=operation_id,
+                          on_recovery_ticket=on_recovery_ticket)
             if attempt:
                 result["contention_retries"] = attempt
             return result
@@ -944,6 +990,8 @@ def main():
     sub = p.add_subparsers(dest="command", required=True)
     status = sub.add_parser("inspect")
     status.add_argument("--issue", type=int)
+    recovery = sub.add_parser("inspect-operation", help="Read-only confirmation from a retained recovery ticket")
+    recovery.add_argument("--ticket-json", required=True)
     c = sub.add_parser("claim")
     c.add_argument("issue", type=int)
     c.add_argument("--acceptance", action="append", default=[])
@@ -981,6 +1029,8 @@ def main():
         state = load(api, args.target, args.expected_sha)
         if args.command == "inspect":
             result = inspect(api, state, args.issue)
+        elif args.command == "inspect-operation":
+            result = inspect_operation(api, state, checkpoint.parse_json(args.ticket_json))
         else:
             if args.apply and (not token or not args.expected_sha):
                 raise ValueError("Apply requires a credential and exact expected installed SHA")
@@ -1011,7 +1061,10 @@ def main():
                 # only the same verified intent in this execution.
                 request = {k: v for k, v in vars(args).items()
                            if k not in ("target", "expected_sha", "apply")}
-                result = recover_save(api, args.target, state, plan, scope, rounds=2, request=request)
+                def emit_ticket(ticket):
+                    print("VIB-RECOVERY " + json.dumps(ticket, sort_keys=True), file=sys.stderr, flush=True)
+                result = recover_save(api, args.target, state, plan, scope, rounds=2, request=request,
+                                      on_recovery_ticket=emit_ticket)
             else:
                 ledger, handoff = plan(state)
                 result = save(api, state, ledger, handoff, args.apply, issue=scope)

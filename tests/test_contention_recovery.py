@@ -382,3 +382,48 @@ class RecoveryTests(unittest.TestCase):
         script="from tools import session; import json,sys,subprocess; path,sha,op=sys.argv[1:]; message=subprocess.check_output(['git','-C',path,'show','-s','--format=%B',sha],text=True); session.verify_operation_commit({'message':message},op); print(op)"
         output=subprocess.check_output([sys.executable,"-B","-c",script,self.api.path,result["installed_sha"],result["operation_id"]],text=True)
         self.assertEqual(output.strip(),result["operation_id"])
+
+    def test_prepublication_ticket_confirms_exact_candidate_read_only(self):
+        api = self.api
+        tickets = []
+        original = api.request
+        def request(method, path, body=None):
+            if method == "PATCH":
+                self.assertEqual(len(tickets), 1)
+                self.assertEqual(tickets[0]["candidate_sha"], body["sha"])
+                original(method, path, body)
+                raise install.ApiTransportError("PATCH", "git/refs", True)
+            return original(method, path, body)
+        api.request = request
+        result = self.recover(lambda s: self.claim(s, B), B, on_recovery_ticket=tickets.append)
+        api.request = original
+        fresh = session.load(api, REPO)
+        before = list(api.writes)
+        ticket = tickets[0]
+        confirmed = session.inspect_operation(api, fresh, ticket)
+        self.assertEqual(confirmed["status"], "published")
+        self.assertEqual(confirmed["installed_sha"], result["installed_sha"])
+        self.assertEqual(confirmed["operation_id"], result["operation_id"])
+        self.assertTrue(confirmed["read_only"])
+        for changes in ({"issue": A}, {"repository": "/repos/other/repo"},
+                        {"tree_sha": "f"*40}, {"operation_id": "f"*64},
+                        {"parent_sha": "f"*40}, {"schema_version": True}):
+            with self.subTest(changes=changes), self.assertRaises(ValueError):
+                session.inspect_operation(api, fresh, {**ticket, **changes})
+        self.assertEqual(api.writes, before)
+
+    def test_ticket_sink_failure_does_not_publish(self):
+        tickets = []
+        before = self.api.ref(install.BRANCH)
+        def broken(ticket):
+            tickets.append(ticket)
+            raise OSError("receipt sink unavailable")
+        with self.assertRaisesRegex(OSError, "receipt sink"):
+            self.recover(lambda s: self.claim(s, B), B, on_recovery_ticket=broken)
+        self.assertEqual(len(tickets), 1)
+        self.assertEqual(self.api.ref(install.BRANCH), before)
+        fresh = session.load(self.api, REPO)
+        writes = list(self.api.writes)
+        with self.assertRaisesRegex(ValueError, "not confirmed"):
+            session.inspect_operation(self.api, fresh, tickets[0])
+        self.assertEqual(self.api.writes, writes)
