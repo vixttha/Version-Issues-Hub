@@ -407,7 +407,7 @@
     {
       "issue": 92,
       "version": "v0.0.0.41",
-      "state": "in_progress",
+      "state": "deferred",
       "acceptance": [
         "Enforce a bounded, explicit owner-approved issue scope for changes and qualification; bind any scope amendment to the issue/version and reviewed exact revision, refuse unauthorized expansion and preserve existing immutable acceptance criteria.",
         "Keep experimental capabilities and their evidence separate from accepted production capabilities; default to the singleton workflow and prevent unauthorized activation or promotion of experimental parallel behavior; preserve #53/.37 historical experimental disposition and deferred findings.",
