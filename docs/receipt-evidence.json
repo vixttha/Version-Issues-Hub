@@ -1050,6 +1050,18 @@
         {
           "path": "tests/test_contention_recovery.py",
           "anchor": "def test_pending_inventory_recovers_published_candidate_without_mutation(self):"
+        },
+        {
+          "path": "tests/test_session.py",
+          "anchor": "def test_case_insensitive_run_urls_and_duplicate_identity(self):"
+        },
+        {
+          "path": "tests/test_session.py",
+          "anchor": "def test_staged_closed_unmerged_rework_preserves_history(self):"
+        },
+        {
+          "path": "tests/test_session.py",
+          "anchor": "def test_integrated_publication_rechecks_policy_and_rejects_rerun(self):"
         }
       ]
     }
