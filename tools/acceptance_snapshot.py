@@ -32,6 +32,7 @@ def recover_stable(api, target, requested=None, attempts=3):
             args += ["--issue",str(requested)]
         result = subprocess.run(args,capture_output=True,text=True,check=False)
         if result.returncode:
+            install.raise_cli_delay(result.stderr)
             # Never suppress other failures or accept a stale snapshot.
             if ("Installed branch has advanced; reload before acting" in result.stderr
                     and install.read_ref(api,prefix,install.BRANCH) != state["ref"]):

@@ -57,7 +57,7 @@
         "Run positive/negative public-runner unit controls and document the separate live GitHub ruleset pilot; do not claim actual merge enforcement before live proof."
       ],
       "issue": 12,
-      "state": "assigned",
+      "state": "deferred",
       "version": "v0.0.0.6"
     },
     {
@@ -77,7 +77,7 @@
         "Test simulated controls using public GitHub runners; preserve the live ruleset pilot as a separate completion requirement."
       ],
       "issue": 14,
-      "state": "assigned",
+      "state": "deferred",
       "version": "v0.0.0.8"
     },
     {
@@ -127,7 +127,7 @@
         "Run real public GitHub read-only CLI planning in README HQ, without installation or repair-plan changes; public-runner tests and Graphify."
       ],
       "issue": 26,
-      "state": "assigned",
+      "state": "staged",
       "version": "v0.0.0.13"
     },
     {
@@ -137,7 +137,7 @@
         "Preserve live installation and archive; no automatic deletion or live adopter mutation; record exact public-runner evidence."
       ],
       "issue": 29,
-      "state": "assigned",
+      "state": "staged",
       "version": "v0.0.0.14"
     },
     {
@@ -147,7 +147,7 @@
         "Resume exact existing pilot installation and prove actual upgrade/archive without recreating or deleting live refs."
       ],
       "issue": 30,
-      "state": "assigned",
+      "state": "staged",
       "version": "v0.0.0.15"
     },
     {
@@ -157,7 +157,7 @@
         "Repeat exact isolated pilot recovery once and capture live upgrade/archive outcome, retaining original failures."
       ],
       "issue": 31,
-      "state": "assigned",
+      "state": "staged",
       "version": "v0.0.0.16"
     },
     {
@@ -167,7 +167,7 @@
         "Public runner regression and exact receipt/Graphify evidence; retain unresolved live remote upgrade separately."
       ],
       "issue": 33,
-      "state": "assigned",
+      "state": "staged",
       "version": "v0.0.0.17"
     },
     {
@@ -177,7 +177,7 @@
         "Verify live archival and separate recovery ref, preserving original installation and history; record public-runner evidence."
       ],
       "issue": 35,
-      "state": "assigned",
+      "state": "staged",
       "version": "v0.0.0.18"
     },
     {
@@ -187,7 +187,7 @@
         "Repair historical Graphify navigation without modifying fix pins; public-runner evidence."
       ],
       "issue": 36,
-      "state": "assigned",
+      "state": "staged",
       "version": "v0.0.0.19"
     },
     {
@@ -197,7 +197,7 @@
         "Public runner regression and revision-bound Graphify evidence."
       ],
       "issue": 41,
-      "state": "assigned",
+      "state": "staged",
       "version": "v0.0.0.20"
     },
     {
@@ -207,7 +207,7 @@
         "Public runner regression and revision-bound Graphify evidence."
       ],
       "issue": 42,
-      "state": "assigned",
+      "state": "staged",
       "version": "v0.0.0.21"
     },
     {
@@ -217,7 +217,7 @@
         "Public runner regression and revision-bound Graphify evidence."
       ],
       "issue": 43,
-      "state": "assigned",
+      "state": "staged",
       "version": "v0.0.0.22"
     },
     {
@@ -237,7 +237,7 @@
         "Preserve historical fix and recovery evidence; pass bounded public-runner regression and Graphify mapping without claiming release or live adopter writes."
       ],
       "issue": 39,
-      "state": "assigned",
+      "state": "staged",
       "version": "v0.0.0.24"
     },
     {
@@ -247,7 +247,7 @@
         "Reconcile changed live job names, matrix counts, and artifact contracts in release preflight before release; pass exact-revision public GitHub runner and Graphify checks."
       ],
       "issue": 51,
-      "state": "assigned",
+      "state": "staged",
       "version": "v0.0.0.25"
     },
     {
@@ -257,7 +257,7 @@
         "All eight negative probes reject without writes; positive controls and existing suites pass on public Ubuntu and Windows; exact SHA evidence and owner review."
       ],
       "issue": 56,
-      "state": "assigned",
+      "state": "staged",
       "version": "v0.0.0.26"
     },
     {
@@ -267,7 +267,7 @@
         "No release or live check publication until separately accepted."
       ],
       "issue": 57,
-      "state": "assigned",
+      "state": "staged",
       "version": "v0.0.0.27"
     },
     {
@@ -277,7 +277,7 @@
         "Record exact candidate and run/attempt receipts; no live writes."
       ],
       "issue": 54,
-      "state": "assigned",
+      "state": "staged",
       "version": "v0.0.0.28"
     },
     {
@@ -286,7 +286,7 @@
         "Do not retry ambiguous writes; redact errors; exact SHA Ubuntu/Windows receipts."
       ],
       "issue": 61,
-      "state": "assigned",
+      "state": "staged",
       "version": "v0.0.0.29"
     },
     {
@@ -295,7 +295,7 @@
         "Test strict parse/persistence and valid numeric round trips on Ubuntu and Windows; no unrelated changes."
       ],
       "issue": 60,
-      "state": "assigned",
+      "state": "staged",
       "version": "v0.0.0.30"
     },
     {
@@ -309,54 +309,67 @@
       "version": "v0.0.0.31"
     },
     {
-      "issue": 34,
-      "version": "v0.0.0.32",
-      "state": "staged",
       "acceptance": [
         "Re-evaluate bound run attempts and proof identities after success publication, revoke the exact check on changed or uncertain evidence, and do not retry success writes.",
         "Public regression tests demonstrate rerun, replacement proof, uncertain response, revocation failure and state drift during publication.",
         "Document residual non-atomic window and retain required live optional enforcement proof; Standard mode remains independent and disabled enforcement unchanged."
-      ]
+      ],
+      "issue": 34,
+      "state": "deferred",
+      "version": "v0.0.0.32"
     },
     {
-      "issue": 68,
-      "version": "v0.0.0.33",
-      "state": "staged",
       "acceptance": [
         "A generic checkpoint branch uses an exact, validated canonical Worker record; missing or mismatched record fails closed.",
         "Public push and PR preview validate the pinned Worker projection and preserve earlier checks.",
         "Correct stale recovery freeze guidance; preserve existing mappings and receipt pins; public Ubuntu, Windows, Graphify and CodeRabbit review."
-      ]
+      ],
+      "issue": 68,
+      "state": "staged",
+      "version": "v0.0.0.33"
     },
     {
-      "issue": 70,
-      "version": "v0.0.0.34",
-      "state": "staged",
       "acceptance": [
         "Reject changes, deletion, additions or reordering of historical acceptance criteria with identical issue-version bindings.",
         "Allow new issue assignments and legitimate state changes while preserving all historical mappings and criteria.",
         "Document immutable criteria and validate exact revisions with public Ubuntu/Windows, Graphify and CodeRabbit."
-      ]
+      ],
+      "issue": 70,
+      "state": "staged",
+      "version": "v0.0.0.34"
     },
     {
-      "issue": 71,
-      "version": "v0.0.0.35",
-      "state": "staged",
       "acceptance": [
         "Reject archived staged or integrated handoffs missing complete fix/candidate/PR fields or nonempty run-attempt evidence.",
         "Preserve legitimate blocked, deferred and rework archives and existing historical records.",
         "Test incomplete verification and valid dispositions; verify public Ubuntu/Windows, Graphify, CodeRabbit and exact engineering merge."
-      ]
+      ],
+      "issue": 71,
+      "state": "staged",
+      "version": "v0.0.0.35"
     },
     {
-      "issue": 72,
-      "version": "v0.0.0.36",
-      "state": "in_progress",
       "acceptance": [
         "Reject malformed, empty and duplicate explicit receipt selections before generating any receipt.",
         "Preserve valid default selection and historical singleton retrieval with original fix pins and ancestry checks.",
         "Test negative and positive cases; pass public Ubuntu/Windows, Graphify, CodeRabbit and exact engineering merge verification."
-      ]
+      ],
+      "issue": 72,
+      "state": "staged",
+      "version": "v0.0.0.36"
+    },
+    {
+      "acceptance": [
+        "Preserve existing Solo behavior, historical mappings, criteria, receipts and immutable fix pins; keep Standard advisory validation and optional enforcement separate.",
+        "Qualify independent issue selection, globally unique permanent version allocation, issue-scoped handoffs and stale/same-issue conflict rejection on public Ubuntu and Windows runners.",
+        "Qualify bounded contention and lost-response/restart recovery, exact operation intent and ancestry, no blind replay or lost records; identify any unresolved cross-process recovery limits.",
+        "Exercise simulated 1, 2, 5, 10, 25, 50 and 100 clients including blocked lanes, competing writes, crash/recovery and invalid evidence; distinguish simulation from real independent host acceptance.",
+        "Reconcile isolated #53 implementation with current .36 engineering head without dropping any accepted repair; preserve exact fix/candidate/tested/integrated SHA evidence.",
+        "Verify legacy package compatibility, migration/upgrade and owner-controlled integration, no mandatory ecosystem dependency or paid runner; preserve release hold and installed singleton until separately approved migration."
+      ],
+      "issue": 53,
+      "state": "in_progress",
+      "version": "v0.0.0.37"
     }
   ],
   "repository": "vixttha/Version-Issues-Hub",

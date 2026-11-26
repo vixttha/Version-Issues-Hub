@@ -55,3 +55,14 @@ class SnapshotTests(unittest.TestCase):
         with self.assertRaises(a.SnapshotDrift):
             a.retry_snapshot(check)
         self.assertEqual(check.call_count, 3)
+
+    def test_inspection_child_delay_propagates_without_ref_probe(self):
+        receipt=json.dumps({"kind":"vib_api_delay","status":429,"retry_after":90})
+        with patch.object(a.session,"load",return_value={"ref":OLD}), \
+             patch.object(a.session,"inspect",return_value={"installed_sha":OLD}), \
+             patch.object(a.subprocess,"run",return_value=subprocess.CompletedProcess([],1,"",receipt)), \
+             patch.object(a.install,"read_ref") as read:
+            with self.assertRaises(a.install.ApiError) as error:
+                a.recover_stable(object(),TARGET)
+        self.assertEqual(error.exception.retry_after,90)
+        read.assert_not_called()

@@ -13,3 +13,11 @@ The Internal Auditor must independently review the actual checkout SHA in logs o
 ## Phase 3 completion and Phase 4
 
 Standard Phase 3: read-only metadata validation, positive/negative tests on public runners, clear owner-review and no-enforcement behavior. Phase 4: live isolated installation, repository-specific mapping, real public-runner evidence, fresh independent agent resume, and upgrade/removal preservation. Optional hard enforcement remains a separate unproven capability until its own live pilot succeeds; it is not a standard release or adoption prerequisite. Do not change existing protection settings or install another template.
+
+## Post-merge use of Standard mappings
+
+`session finish integrated` and `session reconcile` reuse this policy format with one issue and the actual two-parent merge SHA/base, not the PR's synthetic merge. See WORKFLOW.md. The run must be a successful push or workflow_dispatch on the product branch at that exact SHA, with matching current attempt, job identity and successful mapped steps. The owner-reviewed decision must still establish actual checkout, commands, public hosted runner and criterion outcomes. Other merge methods/events are not yet qualified. Existing pre-merge Standard evaluation is unchanged.
+
+Standard evaluation also requires the staged handoff's proposed-merge/base pins to match the live policy. Legacy unpinned staged rows must be refreshed through the existing claim workflow. Head-only Actions metadata without the exact PR base/head association cannot establish integration freshness. Previous run receipts remain historical; review the actual checkout on the new candidate.
+
+In owner-enabled parallel schema v2, unrelated active issues do not block Standard advisory evaluation of the complete staged scope for a different PR. Active work associated with that PR must first be staged or reconciled. Optional hard enforcement remains unqualified for v2; do not enable it.
