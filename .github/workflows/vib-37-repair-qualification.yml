@@ -1,0 +1,60 @@
+name: VIB .37 strict independent repair qualification
+on:
+  push:
+    branches: [review/vib-37-repair-qualification]
+permissions:
+  contents: read
+jobs:
+  qualification:
+    if: github.repository == 'vixttha/Version-Issues-Hub' && github.event.repository.private == false
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [ubuntu-24.04, windows-latest]
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 25
+    env:
+      PYTHONUTF8: '1'
+      PYTHONDONTWRITEBYTECODE: '1'
+      GH_TOKEN: ''
+      GITHUB_TOKEN: ''
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          path: vault
+          persist-credentials: false
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          path: before
+          ref: 'b68796db12681fe4d43b562c8647deca38fa819c'
+          persist-credentials: false
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          path: after
+          ref: '064fd9b51659b077adf3cafc1b5e843b64bb5884'
+          persist-credentials: false
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
+        with:
+          python-version: '3.12'
+      - name: Reproduce original defects with strict expectations
+        shell: bash
+        run: python vault/vib/repair-qualification/qualify.py before "$RUNNER_TEMP/itqs/before" before
+      - name: Qualify repaired source, not diagnostic expectations
+        shell: bash
+        run: python vault/vib/repair-qualification/qualify.py after "$RUNNER_TEMP/itqs/after" after
+      - name: Bash exact-source and digest checks
+        shell: bash
+        run: bash vault/vib/repair-qualification/verify.sh
+      - name: PowerShell independent receipt reconciliation
+        shell: pwsh
+        run: ./vault/vib/repair-qualification/verify.ps1 "$env:RUNNER_TEMP/itqs/before/report.json" "$env:RUNNER_TEMP/itqs/after/report.json" "$env:RUNNER_TEMP/itqs/reconciliation.txt"
+      - name: Existing native workload, contention and compatibility suite
+        shell: bash
+        working-directory: after
+        run: python -m unittest discover -s tests -p 'test_vib53_qualification.py' -v
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        if: always()
+        with:
+          name: itqs-${{ matrix.runner }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/itqs
+          if-no-files-found: error
