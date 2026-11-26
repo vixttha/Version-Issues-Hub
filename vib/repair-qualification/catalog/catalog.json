@@ -1,0 +1,3606 @@
+{
+  "source": "064fd9b51659b077adf3cafc1b5e843b64bb5884",
+  "status": "400 mapped planning specifications, exact-text deduplicated; semantic reuse reconciliation remains open",
+  "rows": [
+    {
+      "id": "ITQS-01-001",
+      "group": "Origin",
+      "scenario": "Confirm candidate with original parent origin",
+      "fixture": "Disposable real Git DAG and retained pending journal",
+      "reuse_search": "test_contention_recovery.py;test_transaction_confirmation.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-01-002",
+      "group": "Origin",
+      "scenario": "Confirm valid strict ancestor after competing commit",
+      "fixture": "Disposable real Git DAG and retained pending journal",
+      "reuse_search": "test_contention_recovery.py;test_transaction_confirmation.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-01-003",
+      "group": "Origin",
+      "scenario": "Reject published descendant as origin",
+      "fixture": "Disposable real Git DAG and retained pending journal",
+      "reuse_search": "test_contention_recovery.py;test_transaction_confirmation.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-01-004",
+      "group": "Origin",
+      "scenario": "Reject unknown origin SHA",
+      "fixture": "Disposable real Git DAG and retained pending journal",
+      "reuse_search": "test_contention_recovery.py;test_transaction_confirmation.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-01-005",
+      "group": "Origin",
+      "scenario": "Reject diverged origin",
+      "fixture": "Disposable real Git DAG and retained pending journal",
+      "reuse_search": "test_contention_recovery.py;test_transaction_confirmation.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-01-006",
+      "group": "Origin",
+      "scenario": "Reject unrelated root",
+      "fixture": "Disposable real Git DAG and retained pending journal",
+      "reuse_search": "test_contention_recovery.py;test_transaction_confirmation.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-01-007",
+      "group": "Origin",
+      "scenario": "Reject wrong repository in journal",
+      "fixture": "Disposable real Git DAG and retained pending journal",
+      "reuse_search": "test_contention_recovery.py;test_transaction_confirmation.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-01-008",
+      "group": "Origin",
+      "scenario": "Reject invalid origin syntax",
+      "fixture": "Disposable real Git DAG and retained pending journal",
+      "reuse_search": "test_contention_recovery.py;test_transaction_confirmation.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-01-009",
+      "group": "Origin",
+      "scenario": "Reject altered journal filename",
+      "fixture": "Disposable real Git DAG and retained pending journal",
+      "reuse_search": "test_contention_recovery.py;test_transaction_confirmation.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-01-010",
+      "group": "Origin",
+      "scenario": "Reject mismatched operation identity",
+      "fixture": "Disposable real Git DAG and retained pending journal",
+      "reuse_search": "test_contention_recovery.py;test_transaction_confirmation.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-01-011",
+      "group": "Origin",
+      "scenario": "Reject mismatched issue identity",
+      "fixture": "Disposable real Git DAG and retained pending journal",
+      "reuse_search": "test_contention_recovery.py;test_transaction_confirmation.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-01-012",
+      "group": "Origin",
+      "scenario": "Reject mismatched ticket repository",
+      "fixture": "Disposable real Git DAG and retained pending journal",
+      "reuse_search": "test_contention_recovery.py;test_transaction_confirmation.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-01-013",
+      "group": "Origin",
+      "scenario": "Reject malformed candidate SHA",
+      "fixture": "Disposable real Git DAG and retained pending journal",
+      "reuse_search": "test_contention_recovery.py;test_transaction_confirmation.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-01-014",
+      "group": "Origin",
+      "scenario": "Reject malformed parent SHA",
+      "fixture": "Disposable real Git DAG and retained pending journal",
+      "reuse_search": "test_contention_recovery.py;test_transaction_confirmation.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-01-015",
+      "group": "Origin",
+      "scenario": "Reject wrong ticket filename",
+      "fixture": "Disposable real Git DAG and retained pending journal",
+      "reuse_search": "test_contention_recovery.py;test_transaction_confirmation.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-01-016",
+      "group": "Origin",
+      "scenario": "Reject false ahead comparison status",
+      "fixture": "Disposable real Git DAG and retained pending journal",
+      "reuse_search": "test_contention_recovery.py;test_transaction_confirmation.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-01-017",
+      "group": "Origin",
+      "scenario": "Reject Boolean ahead count",
+      "fixture": "Disposable real Git DAG and retained pending journal",
+      "reuse_search": "test_contention_recovery.py;test_transaction_confirmation.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-01-018",
+      "group": "Origin",
+      "scenario": "Reject Boolean behind count",
+      "fixture": "Disposable real Git DAG and retained pending journal",
+      "reuse_search": "test_contention_recovery.py;test_transaction_confirmation.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-01-019",
+      "group": "Origin",
+      "scenario": "Reject nonzero behind count",
+      "fixture": "Disposable real Git DAG and retained pending journal",
+      "reuse_search": "test_contention_recovery.py;test_transaction_confirmation.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-01-020",
+      "group": "Origin",
+      "scenario": "Reject zero ahead count for distinct origins",
+      "fixture": "Disposable real Git DAG and retained pending journal",
+      "reuse_search": "test_contention_recovery.py;test_transaction_confirmation.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-01-021",
+      "group": "Origin",
+      "scenario": "Reject mismatched merge base",
+      "fixture": "Disposable real Git DAG and retained pending journal",
+      "reuse_search": "test_contention_recovery.py;test_transaction_confirmation.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-01-022",
+      "group": "Origin",
+      "scenario": "Reject mismatched base commit",
+      "fixture": "Disposable real Git DAG and retained pending journal",
+      "reuse_search": "test_contention_recovery.py;test_transaction_confirmation.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-01-023",
+      "group": "Origin",
+      "scenario": "Propagate origin lookup throttle without polling",
+      "fixture": "Disposable real Git DAG and retained pending journal",
+      "reuse_search": "test_contention_recovery.py;test_transaction_confirmation.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-01-024",
+      "group": "Origin",
+      "scenario": "Report ancestry distinct from authentication",
+      "fixture": "Disposable real Git DAG and retained pending journal",
+      "reuse_search": "test_contention_recovery.py;test_transaction_confirmation.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-02-001",
+      "group": "API",
+      "scenario": "Reject non-object ref payload",
+      "fixture": "Mock GET transport with one malformed field and valid counterpart",
+      "reuse_search": "test_api_boundaries.py;test_install.py;test_gate.py;test_standard.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-02-002",
+      "group": "API",
+      "scenario": "Reject missing ref object",
+      "fixture": "Mock GET transport with one malformed field and valid counterpart",
+      "reuse_search": "test_api_boundaries.py;test_install.py;test_gate.py;test_standard.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-02-003",
+      "group": "API",
+      "scenario": "Reject invalid nested ref object",
+      "fixture": "Mock GET transport with one malformed field and valid counterpart",
+      "reuse_search": "test_api_boundaries.py;test_install.py;test_gate.py;test_standard.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-02-004",
+      "group": "API",
+      "scenario": "Reject missing ref type",
+      "fixture": "Mock GET transport with one malformed field and valid counterpart",
+      "reuse_search": "test_api_boundaries.py;test_install.py;test_gate.py;test_standard.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-02-005",
+      "group": "API",
+      "scenario": "Reject missing ref SHA",
+      "fixture": "Mock GET transport with one malformed field and valid counterpart",
+      "reuse_search": "test_api_boundaries.py;test_install.py;test_gate.py;test_standard.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-02-006",
+      "group": "API",
+      "scenario": "Reject wrong ref path",
+      "fixture": "Mock GET transport with one malformed field and valid counterpart",
+      "reuse_search": "test_api_boundaries.py;test_install.py;test_gate.py;test_standard.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-02-007",
+      "group": "API",
+      "scenario": "Reject noncommit ref type",
+      "fixture": "Mock GET transport with one malformed field and valid counterpart",
+      "reuse_search": "test_api_boundaries.py;test_install.py;test_gate.py;test_standard.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-02-008",
+      "group": "API",
+      "scenario": "Reject malformed ref SHA",
+      "fixture": "Mock GET transport with one malformed field and valid counterpart",
+      "reuse_search": "test_api_boundaries.py;test_install.py;test_gate.py;test_standard.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-02-009",
+      "group": "API",
+      "scenario": "Preserve valid missing-ref outcome",
+      "fixture": "Mock GET transport with one malformed field and valid counterpart",
+      "reuse_search": "test_api_boundaries.py;test_install.py;test_gate.py;test_standard.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-02-010",
+      "group": "API",
+      "scenario": "Preserve ref throttling outcome",
+      "fixture": "Mock GET transport with one malformed field and valid counterpart",
+      "reuse_search": "test_api_boundaries.py;test_install.py;test_gate.py;test_standard.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-02-011",
+      "group": "API",
+      "scenario": "Stop readback on malformed ref",
+      "fixture": "Mock GET transport with one malformed field and valid counterpart",
+      "reuse_search": "test_api_boundaries.py;test_install.py;test_gate.py;test_standard.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-02-012",
+      "group": "API",
+      "scenario": "Accept exact ref response",
+      "fixture": "Mock GET transport with one malformed field and valid counterpart",
+      "reuse_search": "test_api_boundaries.py;test_install.py;test_gate.py;test_standard.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-02-013",
+      "group": "API",
+      "scenario": "Reject non-object contents response",
+      "fixture": "Mock GET transport with one malformed field and valid counterpart",
+      "reuse_search": "test_api_boundaries.py;test_install.py;test_gate.py;test_standard.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-02-014",
+      "group": "API",
+      "scenario": "Reject absent or nonstring file content",
+      "fixture": "Mock GET transport with one malformed field and valid counterpart",
+      "reuse_search": "test_api_boundaries.py;test_install.py;test_gate.py;test_standard.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-02-015",
+      "group": "API",
+      "scenario": "Reject invalid Base64",
+      "fixture": "Mock GET transport with one malformed field and valid counterpart",
+      "reuse_search": "test_api_boundaries.py;test_install.py;test_gate.py;test_standard.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-02-016",
+      "group": "API",
+      "scenario": "Reject incorrect content digest",
+      "fixture": "Mock GET transport with one malformed field and valid counterpart",
+      "reuse_search": "test_api_boundaries.py;test_install.py;test_gate.py;test_standard.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-02-017",
+      "group": "API",
+      "scenario": "Reject invalid UTF-8",
+      "fixture": "Mock GET transport with one malformed field and valid counterpart",
+      "reuse_search": "test_api_boundaries.py;test_install.py;test_gate.py;test_standard.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-02-018",
+      "group": "API",
+      "scenario": "Reject incorrect file path",
+      "fixture": "Mock GET transport with one malformed field and valid counterpart",
+      "reuse_search": "test_api_boundaries.py;test_install.py;test_gate.py;test_standard.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-02-019",
+      "group": "API",
+      "scenario": "Reject wrong file type",
+      "fixture": "Mock GET transport with one malformed field and valid counterpart",
+      "reuse_search": "test_api_boundaries.py;test_install.py;test_gate.py;test_standard.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-02-020",
+      "group": "API",
+      "scenario": "Reject wrong encoding",
+      "fixture": "Mock GET transport with one malformed field and valid counterpart",
+      "reuse_search": "test_api_boundaries.py;test_install.py;test_gate.py;test_standard.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-02-021",
+      "group": "API",
+      "scenario": "Accept valid content bytes",
+      "fixture": "Mock GET transport with one malformed field and valid counterpart",
+      "reuse_search": "test_api_boundaries.py;test_install.py;test_gate.py;test_standard.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-02-022",
+      "group": "API",
+      "scenario": "Reject malformed commit envelope",
+      "fixture": "Mock GET transport with one malformed field and valid counterpart",
+      "reuse_search": "test_api_boundaries.py;test_install.py;test_gate.py;test_standard.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-02-023",
+      "group": "API",
+      "scenario": "Reject absent or null commit tree",
+      "fixture": "Mock GET transport with one malformed field and valid counterpart",
+      "reuse_search": "test_api_boundaries.py;test_install.py;test_gate.py;test_standard.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-02-024",
+      "group": "API",
+      "scenario": "Reject malformed recursive tree envelope",
+      "fixture": "Mock GET transport with one malformed field and valid counterpart",
+      "reuse_search": "test_api_boundaries.py;test_install.py;test_gate.py;test_standard.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-02-025",
+      "group": "API",
+      "scenario": "Reject absent or malformed tree row",
+      "fixture": "Mock GET transport with one malformed field and valid counterpart",
+      "reuse_search": "test_api_boundaries.py;test_install.py;test_gate.py;test_standard.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-02-026",
+      "group": "API",
+      "scenario": "Reject truncated tree",
+      "fixture": "Mock GET transport with one malformed field and valid counterpart",
+      "reuse_search": "test_api_boundaries.py;test_install.py;test_gate.py;test_standard.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-02-027",
+      "group": "API",
+      "scenario": "Reject duplicate tree path",
+      "fixture": "Mock GET transport with one malformed field and valid counterpart",
+      "reuse_search": "test_api_boundaries.py;test_install.py;test_gate.py;test_standard.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-02-028",
+      "group": "API",
+      "scenario": "Reject invalid leaf SHA",
+      "fixture": "Mock GET transport with one malformed field and valid counterpart",
+      "reuse_search": "test_api_boundaries.py;test_install.py;test_gate.py;test_standard.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-02-029",
+      "group": "API",
+      "scenario": "Reject invalid leaf kind",
+      "fixture": "Mock GET transport with one malformed field and valid counterpart",
+      "reuse_search": "test_api_boundaries.py;test_install.py;test_gate.py;test_standard.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-02-030",
+      "group": "API",
+      "scenario": "Reject invalid mode-kind pairing",
+      "fixture": "Mock GET transport with one malformed field and valid counterpart",
+      "reuse_search": "test_api_boundaries.py;test_install.py;test_gate.py;test_standard.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-02-031",
+      "group": "API",
+      "scenario": "Reject absolute or traversing tree path",
+      "fixture": "Mock GET transport with one malformed field and valid counterpart",
+      "reuse_search": "test_api_boundaries.py;test_install.py;test_gate.py;test_standard.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-02-032",
+      "group": "API",
+      "scenario": "Reject empty path",
+      "fixture": "Mock GET transport with one malformed field and valid counterpart",
+      "reuse_search": "test_api_boundaries.py;test_install.py;test_gate.py;test_standard.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-02-033",
+      "group": "API",
+      "scenario": "Accept valid complete tree",
+      "fixture": "Mock GET transport with one malformed field and valid counterpart",
+      "reuse_search": "test_api_boundaries.py;test_install.py;test_gate.py;test_standard.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-02-034",
+      "group": "API",
+      "scenario": "Reject malformed issue envelope",
+      "fixture": "Mock GET transport with one malformed field and valid counterpart",
+      "reuse_search": "test_api_boundaries.py;test_install.py;test_gate.py;test_standard.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-02-035",
+      "group": "API",
+      "scenario": "Reject Boolean issue identity",
+      "fixture": "Mock GET transport with one malformed field and valid counterpart",
+      "reuse_search": "test_api_boundaries.py;test_install.py;test_gate.py;test_standard.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-02-036",
+      "group": "API",
+      "scenario": "Reject noninteger issue identity",
+      "fixture": "Mock GET transport with one malformed field and valid counterpart",
+      "reuse_search": "test_api_boundaries.py;test_install.py;test_gate.py;test_standard.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-02-037",
+      "group": "API",
+      "scenario": "Reject PR masquerading as issue",
+      "fixture": "Mock GET transport with one malformed field and valid counterpart",
+      "reuse_search": "test_api_boundaries.py;test_install.py;test_gate.py;test_standard.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-02-038",
+      "group": "API",
+      "scenario": "Reject different issue number",
+      "fixture": "Mock GET transport with one malformed field and valid counterpart",
+      "reuse_search": "test_api_boundaries.py;test_install.py;test_gate.py;test_standard.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-02-039",
+      "group": "API",
+      "scenario": "Reject malformed PR base or repository",
+      "fixture": "Mock GET transport with one malformed field and valid counterpart",
+      "reuse_search": "test_api_boundaries.py;test_install.py;test_gate.py;test_standard.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-02-040",
+      "group": "API",
+      "scenario": "Reject Boolean PR repository identity",
+      "fixture": "Mock GET transport with one malformed field and valid counterpart",
+      "reuse_search": "test_api_boundaries.py;test_install.py;test_gate.py;test_standard.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-02-041",
+      "group": "API",
+      "scenario": "Reject non-open PR state",
+      "fixture": "Mock GET transport with one malformed field and valid counterpart",
+      "reuse_search": "test_api_boundaries.py;test_install.py;test_gate.py;test_standard.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-02-042",
+      "group": "API",
+      "scenario": "Reject malformed ancestry comparison",
+      "fixture": "Mock GET transport with one malformed field and valid counterpart",
+      "reuse_search": "test_api_boundaries.py;test_install.py;test_gate.py;test_standard.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-02-043",
+      "group": "API",
+      "scenario": "Reject non-ancestor comparison",
+      "fixture": "Mock GET transport with one malformed field and valid counterpart",
+      "reuse_search": "test_api_boundaries.py;test_install.py;test_gate.py;test_standard.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-02-044",
+      "group": "API",
+      "scenario": "Reject malformed collection envelope",
+      "fixture": "Mock GET transport with one malformed field and valid counterpart",
+      "reuse_search": "test_api_boundaries.py;test_install.py;test_gate.py;test_standard.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-02-045",
+      "group": "API",
+      "scenario": "Reject noninteger or negative collection count",
+      "fixture": "Mock GET transport with one malformed field and valid counterpart",
+      "reuse_search": "test_api_boundaries.py;test_install.py;test_gate.py;test_standard.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-02-046",
+      "group": "API",
+      "scenario": "Reject truncated collection or nonobject row",
+      "fixture": "Mock GET transport with one malformed field and valid counterpart",
+      "reuse_search": "test_api_boundaries.py;test_install.py;test_gate.py;test_standard.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-02-047",
+      "group": "API",
+      "scenario": "Reject invalid run identity or attempt type",
+      "fixture": "Mock GET transport with one malformed field and valid counterpart",
+      "reuse_search": "test_api_boundaries.py;test_install.py;test_gate.py;test_standard.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-02-048",
+      "group": "API",
+      "scenario": "Reject malformed run association or wrong event",
+      "fixture": "Mock GET transport with one malformed field and valid counterpart",
+      "reuse_search": "test_api_boundaries.py;test_install.py;test_gate.py;test_standard.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-03-001",
+      "group": "Isolation",
+      "scenario": "Claim disjoint issue without altering first lane",
+      "fixture": "Two or more logical lanes and before/after issue snapshots",
+      "reuse_search": "test_issue_isolation.py;test_parallel_handoff.py;test_session.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-03-002",
+      "group": "Isolation",
+      "scenario": "Advance lane A without altering lane B",
+      "fixture": "Two or more logical lanes and before/after issue snapshots",
+      "reuse_search": "test_issue_isolation.py;test_parallel_handoff.py;test_session.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-03-003",
+      "group": "Isolation",
+      "scenario": "Return lane B to Head without resetting lane A",
+      "fixture": "Two or more logical lanes and before/after issue snapshots",
+      "reuse_search": "test_issue_isolation.py;test_parallel_handoff.py;test_session.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-03-004",
+      "group": "Isolation",
+      "scenario": "Stage A while B remains Worker",
+      "fixture": "Two or more logical lanes and before/after issue snapshots",
+      "reuse_search": "test_issue_isolation.py;test_parallel_handoff.py;test_session.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-03-005",
+      "group": "Isolation",
+      "scenario": "Defer A while B remains active",
+      "fixture": "Two or more logical lanes and before/after issue snapshots",
+      "reuse_search": "test_issue_isolation.py;test_parallel_handoff.py;test_session.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-03-006",
+      "group": "Isolation",
+      "scenario": "Block B without marking A blocked",
+      "fixture": "Two or more logical lanes and before/after issue snapshots",
+      "reuse_search": "test_issue_isolation.py;test_parallel_handoff.py;test_session.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-03-007",
+      "group": "Isolation",
+      "scenario": "Reconcile integrated A without consuming B evidence",
+      "fixture": "Two or more logical lanes and before/after issue snapshots",
+      "reuse_search": "test_issue_isolation.py;test_parallel_handoff.py;test_session.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-03-008",
+      "group": "Isolation",
+      "scenario": "Reject cross-lane PR association",
+      "fixture": "Two or more logical lanes and before/after issue snapshots",
+      "reuse_search": "test_issue_isolation.py;test_parallel_handoff.py;test_session.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-03-009",
+      "group": "Isolation",
+      "scenario": "Reject cross-lane fix SHA",
+      "fixture": "Two or more logical lanes and before/after issue snapshots",
+      "reuse_search": "test_issue_isolation.py;test_parallel_handoff.py;test_session.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-03-010",
+      "group": "Isolation",
+      "scenario": "Reject cross-lane run evidence",
+      "fixture": "Two or more logical lanes and before/after issue snapshots",
+      "reuse_search": "test_issue_isolation.py;test_parallel_handoff.py;test_session.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-03-011",
+      "group": "Isolation",
+      "scenario": "Reject cross-lane owner decision",
+      "fixture": "Two or more logical lanes and before/after issue snapshots",
+      "reuse_search": "test_issue_isolation.py;test_parallel_handoff.py;test_session.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-03-012",
+      "group": "Isolation",
+      "scenario": "Reject implicit selection with multiple active lanes",
+      "fixture": "Two or more logical lanes and before/after issue snapshots",
+      "reuse_search": "test_issue_isolation.py;test_parallel_handoff.py;test_session.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-03-013",
+      "group": "Isolation",
+      "scenario": "Preserve lane selection by explicit issue",
+      "fixture": "Two or more logical lanes and before/after issue snapshots",
+      "reuse_search": "test_issue_isolation.py;test_parallel_handoff.py;test_session.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-03-014",
+      "group": "Isolation",
+      "scenario": "Prevent active issue from being claimed twice",
+      "fixture": "Two or more logical lanes and before/after issue snapshots",
+      "reuse_search": "test_issue_isolation.py;test_parallel_handoff.py;test_session.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-03-015",
+      "group": "Isolation",
+      "scenario": "Preserve archived lane after another claim",
+      "fixture": "Two or more logical lanes and before/after issue snapshots",
+      "reuse_search": "test_issue_isolation.py;test_parallel_handoff.py;test_session.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-03-016",
+      "group": "Isolation",
+      "scenario": "Preserve terminal state after unrelated advance",
+      "fixture": "Two or more logical lanes and before/after issue snapshots",
+      "reuse_search": "test_issue_isolation.py;test_parallel_handoff.py;test_session.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-03-017",
+      "group": "Isolation",
+      "scenario": "Keep pending journal scoped to issue",
+      "fixture": "Two or more logical lanes and before/after issue snapshots",
+      "reuse_search": "test_issue_isolation.py;test_parallel_handoff.py;test_session.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-03-018",
+      "group": "Isolation",
+      "scenario": "Keep ticket scoped to operation",
+      "fixture": "Two or more logical lanes and before/after issue snapshots",
+      "reuse_search": "test_issue_isolation.py;test_parallel_handoff.py;test_session.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-03-019",
+      "group": "Isolation",
+      "scenario": "Reject changed unrelated ledger row",
+      "fixture": "Two or more logical lanes and before/after issue snapshots",
+      "reuse_search": "test_issue_isolation.py;test_parallel_handoff.py;test_session.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-03-020",
+      "group": "Isolation",
+      "scenario": "Reject changed unrelated handoff entry",
+      "fixture": "Two or more logical lanes and before/after issue snapshots",
+      "reuse_search": "test_issue_isolation.py;test_parallel_handoff.py;test_session.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-03-021",
+      "group": "Isolation",
+      "scenario": "Reject unrelated archive append",
+      "fixture": "Two or more logical lanes and before/after issue snapshots",
+      "reuse_search": "test_issue_isolation.py;test_parallel_handoff.py;test_session.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-03-022",
+      "group": "Isolation",
+      "scenario": "Reject unrelated package change",
+      "fixture": "Two or more logical lanes and before/after issue snapshots",
+      "reuse_search": "test_issue_isolation.py;test_parallel_handoff.py;test_session.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-03-023",
+      "group": "Isolation",
+      "scenario": "Keep separate adopter repository identities",
+      "fixture": "Two or more logical lanes and before/after issue snapshots",
+      "reuse_search": "test_issue_isolation.py;test_parallel_handoff.py;test_session.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-03-024",
+      "group": "Isolation",
+      "scenario": "Keep old singleton behavior when no opt-in",
+      "fixture": "Two or more logical lanes and before/after issue snapshots",
+      "reuse_search": "test_issue_isolation.py;test_parallel_handoff.py;test_session.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-04-001",
+      "group": "Allocation",
+      "scenario": "Assign first version in empty release line",
+      "fixture": "Simulated atomic Git ref publication with claim schedules",
+      "reuse_search": "test_checkpoint.py;test_parallel_handoff.py;test_vib53_qualification.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-04-002",
+      "group": "Allocation",
+      "scenario": "Allocate next unused version",
+      "fixture": "Simulated atomic Git ref publication with claim schedules",
+      "reuse_search": "test_checkpoint.py;test_parallel_handoff.py;test_vib53_qualification.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-04-003",
+      "group": "Allocation",
+      "scenario": "Preserve issue version after retry",
+      "fixture": "Simulated atomic Git ref publication with claim schedules",
+      "reuse_search": "test_checkpoint.py;test_parallel_handoff.py;test_vib53_qualification.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-04-004",
+      "group": "Allocation",
+      "scenario": "Preserve existing version after staged rework",
+      "fixture": "Simulated atomic Git ref publication with claim schedules",
+      "reuse_search": "test_checkpoint.py;test_parallel_handoff.py;test_vib53_qualification.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-04-005",
+      "group": "Allocation",
+      "scenario": "Reject duplicate version across issues",
+      "fixture": "Simulated atomic Git ref publication with claim schedules",
+      "reuse_search": "test_checkpoint.py;test_parallel_handoff.py;test_vib53_qualification.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-04-006",
+      "group": "Allocation",
+      "scenario": "Reject duplicate issue with alternate version",
+      "fixture": "Simulated atomic Git ref publication with claim schedules",
+      "reuse_search": "test_checkpoint.py;test_parallel_handoff.py;test_vib53_qualification.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-04-007",
+      "group": "Allocation",
+      "scenario": "Reject malformed version identity",
+      "fixture": "Simulated atomic Git ref publication with claim schedules",
+      "reuse_search": "test_checkpoint.py;test_parallel_handoff.py;test_vib53_qualification.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-04-008",
+      "group": "Allocation",
+      "scenario": "Reject invalid issue number",
+      "fixture": "Simulated atomic Git ref publication with claim schedules",
+      "reuse_search": "test_checkpoint.py;test_parallel_handoff.py;test_vib53_qualification.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-04-009",
+      "group": "Allocation",
+      "scenario": "Reject Boolean issue number",
+      "fixture": "Simulated atomic Git ref publication with claim schedules",
+      "reuse_search": "test_checkpoint.py;test_parallel_handoff.py;test_vib53_qualification.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-04-010",
+      "group": "Allocation",
+      "scenario": "Reject inconsistent release line",
+      "fixture": "Simulated atomic Git ref publication with claim schedules",
+      "reuse_search": "test_checkpoint.py;test_parallel_handoff.py;test_vib53_qualification.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-04-011",
+      "group": "Allocation",
+      "scenario": "Retain reserved release slot",
+      "fixture": "Simulated atomic Git ref publication with claim schedules",
+      "reuse_search": "test_checkpoint.py;test_parallel_handoff.py;test_vib53_qualification.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-04-012",
+      "group": "Allocation",
+      "scenario": "Allocate after historical checkpoint without reuse",
+      "fixture": "Simulated atomic Git ref publication with claim schedules",
+      "reuse_search": "test_checkpoint.py;test_parallel_handoff.py;test_vib53_qualification.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-04-013",
+      "group": "Allocation",
+      "scenario": "Reserve distinct versions for distinct claims",
+      "fixture": "Simulated atomic Git ref publication with claim schedules",
+      "reuse_search": "test_checkpoint.py;test_parallel_handoff.py;test_vib53_qualification.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-04-014",
+      "group": "Allocation",
+      "scenario": "Resolve two simultaneous disjoint claim attempts",
+      "fixture": "Simulated atomic Git ref publication with claim schedules",
+      "reuse_search": "test_checkpoint.py;test_parallel_handoff.py;test_vib53_qualification.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-04-015",
+      "group": "Allocation",
+      "scenario": "Resolve five simultaneous disjoint claim attempts",
+      "fixture": "Simulated atomic Git ref publication with claim schedules",
+      "reuse_search": "test_checkpoint.py;test_parallel_handoff.py;test_vib53_qualification.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-04-016",
+      "group": "Allocation",
+      "scenario": "Resolve ten simultaneous disjoint claim attempts",
+      "fixture": "Simulated atomic Git ref publication with claim schedules",
+      "reuse_search": "test_checkpoint.py;test_parallel_handoff.py;test_vib53_qualification.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-04-017",
+      "group": "Allocation",
+      "scenario": "Resolve 25 simultaneous disjoint logical claims",
+      "fixture": "Simulated atomic Git ref publication with claim schedules",
+      "reuse_search": "test_checkpoint.py;test_parallel_handoff.py;test_vib53_qualification.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-04-018",
+      "group": "Allocation",
+      "scenario": "Resolve 50 simultaneous disjoint logical claims",
+      "fixture": "Simulated atomic Git ref publication with claim schedules",
+      "reuse_search": "test_checkpoint.py;test_parallel_handoff.py;test_vib53_qualification.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-04-019",
+      "group": "Allocation",
+      "scenario": "Resolve 100 simultaneous disjoint logical claims",
+      "fixture": "Simulated atomic Git ref publication with claim schedules",
+      "reuse_search": "test_checkpoint.py;test_parallel_handoff.py;test_vib53_qualification.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-04-020",
+      "group": "Allocation",
+      "scenario": "Reject same-issue competing criteria",
+      "fixture": "Simulated atomic Git ref publication with claim schedules",
+      "reuse_search": "test_checkpoint.py;test_parallel_handoff.py;test_vib53_qualification.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-04-021",
+      "group": "Allocation",
+      "scenario": "Reject same-issue competing note where relevant",
+      "fixture": "Simulated atomic Git ref publication with claim schedules",
+      "reuse_search": "test_checkpoint.py;test_parallel_handoff.py;test_vib53_qualification.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-04-022",
+      "group": "Allocation",
+      "scenario": "Treat unchanged authorized claim as no-op",
+      "fixture": "Simulated atomic Git ref publication with claim schedules",
+      "reuse_search": "test_checkpoint.py;test_parallel_handoff.py;test_vib53_qualification.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-04-023",
+      "group": "Allocation",
+      "scenario": "Allocate after stale read with unchanged intent",
+      "fixture": "Simulated atomic Git ref publication with claim schedules",
+      "reuse_search": "test_checkpoint.py;test_parallel_handoff.py;test_vib53_qualification.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-04-024",
+      "group": "Allocation",
+      "scenario": "Reject allocation from stale package",
+      "fixture": "Simulated atomic Git ref publication with claim schedules",
+      "reuse_search": "test_checkpoint.py;test_parallel_handoff.py;test_vib53_qualification.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-04-025",
+      "group": "Allocation",
+      "scenario": "Reject allocation on wrong install ref",
+      "fixture": "Simulated atomic Git ref publication with claim schedules",
+      "reuse_search": "test_checkpoint.py;test_parallel_handoff.py;test_vib53_qualification.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-04-026",
+      "group": "Allocation",
+      "scenario": "Reject unauthorized parallel opt-in",
+      "fixture": "Simulated atomic Git ref publication with claim schedules",
+      "reuse_search": "test_checkpoint.py;test_parallel_handoff.py;test_vib53_qualification.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-04-027",
+      "group": "Allocation",
+      "scenario": "Reject reassignment of retired row",
+      "fixture": "Simulated atomic Git ref publication with claim schedules",
+      "reuse_search": "test_checkpoint.py;test_parallel_handoff.py;test_vib53_qualification.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-04-028",
+      "group": "Allocation",
+      "scenario": "Reject reassignment of integrated row",
+      "fixture": "Simulated atomic Git ref publication with claim schedules",
+      "reuse_search": "test_checkpoint.py;test_parallel_handoff.py;test_vib53_qualification.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-04-029",
+      "group": "Allocation",
+      "scenario": "Preserve prior-line assignment on resume",
+      "fixture": "Simulated atomic Git ref publication with claim schedules",
+      "reuse_search": "test_checkpoint.py;test_parallel_handoff.py;test_vib53_qualification.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-04-030",
+      "group": "Allocation",
+      "scenario": "Preserve version after blocked disposition",
+      "fixture": "Simulated atomic Git ref publication with claim schedules",
+      "reuse_search": "test_checkpoint.py;test_parallel_handoff.py;test_vib53_qualification.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-04-031",
+      "group": "Allocation",
+      "scenario": "Preserve version after deferred disposition",
+      "fixture": "Simulated atomic Git ref publication with claim schedules",
+      "reuse_search": "test_checkpoint.py;test_parallel_handoff.py;test_vib53_qualification.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-04-032",
+      "group": "Allocation",
+      "scenario": "Verify unique bindings after shuffled issue order",
+      "fixture": "Simulated atomic Git ref publication with claim schedules",
+      "reuse_search": "test_checkpoint.py;test_parallel_handoff.py;test_vib53_qualification.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-05-001",
+      "group": "Atomicity",
+      "scenario": "Publish ledger and handoff together",
+      "fixture": "Mock ref operations and disposable Git before/after trees",
+      "reuse_search": "test_transaction_confirmation.py;test_contention_recovery.py;test_session.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-05-002",
+      "group": "Atomicity",
+      "scenario": "Reject tree missing ledger",
+      "fixture": "Mock ref operations and disposable Git before/after trees",
+      "reuse_search": "test_transaction_confirmation.py;test_contention_recovery.py;test_session.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-05-003",
+      "group": "Atomicity",
+      "scenario": "Reject tree missing handoff",
+      "fixture": "Mock ref operations and disposable Git before/after trees",
+      "reuse_search": "test_transaction_confirmation.py;test_contention_recovery.py;test_session.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-05-004",
+      "group": "Atomicity",
+      "scenario": "Reject mismatched ledger and handoff",
+      "fixture": "Mock ref operations and disposable Git before/after trees",
+      "reuse_search": "test_transaction_confirmation.py;test_contention_recovery.py;test_session.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-05-005",
+      "group": "Atomicity",
+      "scenario": "Reject unexpected third changed file",
+      "fixture": "Mock ref operations and disposable Git before/after trees",
+      "reuse_search": "test_transaction_confirmation.py;test_contention_recovery.py;test_session.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-05-006",
+      "group": "Atomicity",
+      "scenario": "Preserve unrelated notes blob",
+      "fixture": "Mock ref operations and disposable Git before/after trees",
+      "reuse_search": "test_transaction_confirmation.py;test_contention_recovery.py;test_session.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-05-007",
+      "group": "Atomicity",
+      "scenario": "Reject malformed candidate commit",
+      "fixture": "Mock ref operations and disposable Git before/after trees",
+      "reuse_search": "test_transaction_confirmation.py;test_contention_recovery.py;test_session.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-05-008",
+      "group": "Atomicity",
+      "scenario": "Reject wrong candidate parent",
+      "fixture": "Mock ref operations and disposable Git before/after trees",
+      "reuse_search": "test_transaction_confirmation.py;test_contention_recovery.py;test_session.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-05-009",
+      "group": "Atomicity",
+      "scenario": "Reject multiple unexpected parents",
+      "fixture": "Mock ref operations and disposable Git before/after trees",
+      "reuse_search": "test_transaction_confirmation.py;test_contention_recovery.py;test_session.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-05-010",
+      "group": "Atomicity",
+      "scenario": "Reject mismatched candidate tree",
+      "fixture": "Mock ref operations and disposable Git before/after trees",
+      "reuse_search": "test_transaction_confirmation.py;test_contention_recovery.py;test_session.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-05-011",
+      "group": "Atomicity",
+      "scenario": "Reject wrong operation marker",
+      "fixture": "Mock ref operations and disposable Git before/after trees",
+      "reuse_search": "test_transaction_confirmation.py;test_contention_recovery.py;test_session.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-05-012",
+      "group": "Atomicity",
+      "scenario": "Reject commit metadata mismatch",
+      "fixture": "Mock ref operations and disposable Git before/after trees",
+      "reuse_search": "test_transaction_confirmation.py;test_contention_recovery.py;test_session.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-05-013",
+      "group": "Atomicity",
+      "scenario": "Confirm lost PATCH response exactly once",
+      "fixture": "Mock ref operations and disposable Git before/after trees",
+      "reuse_search": "test_transaction_confirmation.py;test_contention_recovery.py;test_session.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-05-014",
+      "group": "Atomicity",
+      "scenario": "Confirm successful PATCH followed by valid descendant",
+      "fixture": "Mock ref operations and disposable Git before/after trees",
+      "reuse_search": "test_transaction_confirmation.py;test_contention_recovery.py;test_session.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-05-015",
+      "group": "Atomicity",
+      "scenario": "Preserve candidate after malformed readback",
+      "fixture": "Mock ref operations and disposable Git before/after trees",
+      "reuse_search": "test_transaction_confirmation.py;test_contention_recovery.py;test_session.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-05-016",
+      "group": "Atomicity",
+      "scenario": "Preserve candidate after throttled readback",
+      "fixture": "Mock ref operations and disposable Git before/after trees",
+      "reuse_search": "test_transaction_confirmation.py;test_contention_recovery.py;test_session.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-05-017",
+      "group": "Atomicity",
+      "scenario": "No PATCH when ticket persistence fails",
+      "fixture": "Mock ref operations and disposable Git before/after trees",
+      "reuse_search": "test_transaction_confirmation.py;test_contention_recovery.py;test_session.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-05-018",
+      "group": "Atomicity",
+      "scenario": "No PATCH when pending journal persistence fails",
+      "fixture": "Mock ref operations and disposable Git before/after trees",
+      "reuse_search": "test_transaction_confirmation.py;test_contention_recovery.py;test_session.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-05-019",
+      "group": "Atomicity",
+      "scenario": "No PATCH when pre-publication evidence changes",
+      "fixture": "Mock ref operations and disposable Git before/after trees",
+      "reuse_search": "test_transaction_confirmation.py;test_contention_recovery.py;test_session.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-05-020",
+      "group": "Atomicity",
+      "scenario": "No PATCH when pre-publication policy changes",
+      "fixture": "Mock ref operations and disposable Git before/after trees",
+      "reuse_search": "test_transaction_confirmation.py;test_contention_recovery.py;test_session.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-05-021",
+      "group": "Atomicity",
+      "scenario": "No PATCH when owner approval missing",
+      "fixture": "Mock ref operations and disposable Git before/after trees",
+      "reuse_search": "test_transaction_confirmation.py;test_contention_recovery.py;test_session.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-05-022",
+      "group": "Atomicity",
+      "scenario": "No repeated PATCH after ambiguous write",
+      "fixture": "Mock ref operations and disposable Git before/after trees",
+      "reuse_search": "test_transaction_confirmation.py;test_contention_recovery.py;test_session.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-05-023",
+      "group": "Atomicity",
+      "scenario": "Detect intermediate mutation then revert",
+      "fixture": "Mock ref operations and disposable Git before/after trees",
+      "reuse_search": "test_transaction_confirmation.py;test_contention_recovery.py;test_session.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-05-024",
+      "group": "Atomicity",
+      "scenario": "Verify product branch untouched",
+      "fixture": "Mock ref operations and disposable Git before/after trees",
+      "reuse_search": "test_transaction_confirmation.py;test_contention_recovery.py;test_session.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-06-001",
+      "group": "Restart",
+      "scenario": "Persist pending identity before first candidate",
+      "fixture": "Disposable host recovery directory and staged process termination simulations",
+      "reuse_search": "test_contention_recovery.py;test_transaction_confirmation.py;test_vib53_qualification.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-06-002",
+      "group": "Restart",
+      "scenario": "Persist recovery ticket before ref write",
+      "fixture": "Disposable host recovery directory and staged process termination simulations",
+      "reuse_search": "test_contention_recovery.py;test_transaction_confirmation.py;test_vib53_qualification.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-06-003",
+      "group": "Restart",
+      "scenario": "Read retained ticket from separate process",
+      "fixture": "Disposable host recovery directory and staged process termination simulations",
+      "reuse_search": "test_contention_recovery.py;test_transaction_confirmation.py;test_vib53_qualification.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-06-004",
+      "group": "Restart",
+      "scenario": "Read retained pending journal from separate process",
+      "fixture": "Disposable host recovery directory and staged process termination simulations",
+      "reuse_search": "test_contention_recovery.py;test_transaction_confirmation.py;test_vib53_qualification.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-06-005",
+      "group": "Restart",
+      "scenario": "Refuse overwrite of ticket file",
+      "fixture": "Disposable host recovery directory and staged process termination simulations",
+      "reuse_search": "test_contention_recovery.py;test_transaction_confirmation.py;test_vib53_qualification.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-06-006",
+      "group": "Restart",
+      "scenario": "Refuse overwrite of pending file",
+      "fixture": "Disposable host recovery directory and staged process termination simulations",
+      "reuse_search": "test_contention_recovery.py;test_transaction_confirmation.py;test_vib53_qualification.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-06-007",
+      "group": "Restart",
+      "scenario": "Reject corrupted pending JSON",
+      "fixture": "Disposable host recovery directory and staged process termination simulations",
+      "reuse_search": "test_contention_recovery.py;test_transaction_confirmation.py;test_vib53_qualification.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-06-008",
+      "group": "Restart",
+      "scenario": "Reject corrupted ticket JSON",
+      "fixture": "Disposable host recovery directory and staged process termination simulations",
+      "reuse_search": "test_contention_recovery.py;test_transaction_confirmation.py;test_vib53_qualification.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-06-009",
+      "group": "Restart",
+      "scenario": "Reject duplicate pending JSON keys",
+      "fixture": "Disposable host recovery directory and staged process termination simulations",
+      "reuse_search": "test_contention_recovery.py;test_transaction_confirmation.py;test_vib53_qualification.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-06-010",
+      "group": "Restart",
+      "scenario": "Reject missing pending journal",
+      "fixture": "Disposable host recovery directory and staged process termination simulations",
+      "reuse_search": "test_contention_recovery.py;test_transaction_confirmation.py;test_vib53_qualification.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-06-011",
+      "group": "Restart",
+      "scenario": "Reject missing candidate ticket",
+      "fixture": "Disposable host recovery directory and staged process termination simulations",
+      "reuse_search": "test_contention_recovery.py;test_transaction_confirmation.py;test_vib53_qualification.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-06-012",
+      "group": "Restart",
+      "scenario": "Inspect zero candidate tickets without replay",
+      "fixture": "Disposable host recovery directory and staged process termination simulations",
+      "reuse_search": "test_contention_recovery.py;test_transaction_confirmation.py;test_vib53_qualification.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-06-013",
+      "group": "Restart",
+      "scenario": "Inspect one published ticket",
+      "fixture": "Disposable host recovery directory and staged process termination simulations",
+      "reuse_search": "test_contention_recovery.py;test_transaction_confirmation.py;test_vib53_qualification.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-06-014",
+      "group": "Restart",
+      "scenario": "Inspect multiple tickets from bounded retries",
+      "fixture": "Disposable host recovery directory and staged process termination simulations",
+      "reuse_search": "test_contention_recovery.py;test_transaction_confirmation.py;test_vib53_qualification.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-06-015",
+      "group": "Restart",
+      "scenario": "Distinguish unconfirmed from unpublished",
+      "fixture": "Disposable host recovery directory and staged process termination simulations",
+      "reuse_search": "test_contention_recovery.py;test_transaction_confirmation.py;test_vib53_qualification.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-06-016",
+      "group": "Restart",
+      "scenario": "Recover exact published SHA after lost response",
+      "fixture": "Disposable host recovery directory and staged process termination simulations",
+      "reuse_search": "test_contention_recovery.py;test_transaction_confirmation.py;test_vib53_qualification.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-06-017",
+      "group": "Restart",
+      "scenario": "Preserve operation ID after definite rejection",
+      "fixture": "Disposable host recovery directory and staged process termination simulations",
+      "reuse_search": "test_contention_recovery.py;test_transaction_confirmation.py;test_vib53_qualification.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-06-018",
+      "group": "Restart",
+      "scenario": "Preserve exact candidate after readback failure",
+      "fixture": "Disposable host recovery directory and staged process termination simulations",
+      "reuse_search": "test_contention_recovery.py;test_transaction_confirmation.py;test_vib53_qualification.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-06-019",
+      "group": "Restart",
+      "scenario": "No automatic replay when ticket directory lost",
+      "fixture": "Disposable host recovery directory and staged process termination simulations",
+      "reuse_search": "test_contention_recovery.py;test_transaction_confirmation.py;test_vib53_qualification.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-06-020",
+      "group": "Restart",
+      "scenario": "No durability guarantee after host loss",
+      "fixture": "Disposable host recovery directory and staged process termination simulations",
+      "reuse_search": "test_contention_recovery.py;test_transaction_confirmation.py;test_vib53_qualification.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-06-021",
+      "group": "Restart",
+      "scenario": "Fail safely when disk is unavailable",
+      "fixture": "Disposable host recovery directory and staged process termination simulations",
+      "reuse_search": "test_contention_recovery.py;test_transaction_confirmation.py;test_vib53_qualification.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-06-022",
+      "group": "Restart",
+      "scenario": "Fail safely when directory is read-only",
+      "fixture": "Disposable host recovery directory and staged process termination simulations",
+      "reuse_search": "test_contention_recovery.py;test_transaction_confirmation.py;test_vib53_qualification.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-06-023",
+      "group": "Restart",
+      "scenario": "Fail safely when filename collides",
+      "fixture": "Disposable host recovery directory and staged process termination simulations",
+      "reuse_search": "test_contention_recovery.py;test_transaction_confirmation.py;test_vib53_qualification.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-06-024",
+      "group": "Restart",
+      "scenario": "Fail safely when candidate file is truncated",
+      "fixture": "Disposable host recovery directory and staged process termination simulations",
+      "reuse_search": "test_contention_recovery.py;test_transaction_confirmation.py;test_vib53_qualification.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-06-025",
+      "group": "Restart",
+      "scenario": "No write during restart inspection",
+      "fixture": "Disposable host recovery directory and staged process termination simulations",
+      "reuse_search": "test_contention_recovery.py;test_transaction_confirmation.py;test_vib53_qualification.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-06-026",
+      "group": "Restart",
+      "scenario": "Stop inspection on first throttling response",
+      "fixture": "Disposable host recovery directory and staged process termination simulations",
+      "reuse_search": "test_contention_recovery.py;test_transaction_confirmation.py;test_vib53_qualification.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-06-027",
+      "group": "Restart",
+      "scenario": "Reject ticket for another repository",
+      "fixture": "Disposable host recovery directory and staged process termination simulations",
+      "reuse_search": "test_contention_recovery.py;test_transaction_confirmation.py;test_vib53_qualification.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-06-028",
+      "group": "Restart",
+      "scenario": "Reject ticket for another issue",
+      "fixture": "Disposable host recovery directory and staged process termination simulations",
+      "reuse_search": "test_contention_recovery.py;test_transaction_confirmation.py;test_vib53_qualification.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-06-029",
+      "group": "Restart",
+      "scenario": "Reject ticket for another operation",
+      "fixture": "Disposable host recovery directory and staged process termination simulations",
+      "reuse_search": "test_contention_recovery.py;test_transaction_confirmation.py;test_vib53_qualification.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-06-030",
+      "group": "Restart",
+      "scenario": "Reject incompatible ticket schema",
+      "fixture": "Disposable host recovery directory and staged process termination simulations",
+      "reuse_search": "test_contention_recovery.py;test_transaction_confirmation.py;test_vib53_qualification.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-06-031",
+      "group": "Restart",
+      "scenario": "Reject unsupported pending schema",
+      "fixture": "Disposable host recovery directory and staged process termination simulations",
+      "reuse_search": "test_contention_recovery.py;test_transaction_confirmation.py;test_vib53_qualification.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-06-032",
+      "group": "Restart",
+      "scenario": "Report original intent authentication unavailable",
+      "fixture": "Disposable host recovery directory and staged process termination simulations",
+      "reuse_search": "test_contention_recovery.py;test_transaction_confirmation.py;test_vib53_qualification.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-07-001",
+      "group": "Replay",
+      "scenario": "Replay identical completed claim without new version",
+      "fixture": "Operation identity, repeated invocation and historical journal fixtures",
+      "reuse_search": "test_transaction_confirmation.py;test_contention_recovery.py;test_session.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-07-002",
+      "group": "Replay",
+      "scenario": "Repeat identical advance without duplicate phase event",
+      "fixture": "Operation identity, repeated invocation and historical journal fixtures",
+      "reuse_search": "test_transaction_confirmation.py;test_contention_recovery.py;test_session.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-07-003",
+      "group": "Replay",
+      "scenario": "Repeat identical finish without duplicate archive",
+      "fixture": "Operation identity, repeated invocation and historical journal fixtures",
+      "reuse_search": "test_transaction_confirmation.py;test_contention_recovery.py;test_session.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-07-004",
+      "group": "Replay",
+      "scenario": "Repeat identical reconcile without duplicate receipt",
+      "fixture": "Operation identity, repeated invocation and historical journal fixtures",
+      "reuse_search": "test_transaction_confirmation.py;test_contention_recovery.py;test_session.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-07-005",
+      "group": "Replay",
+      "scenario": "Reject altered intent under existing operation ID",
+      "fixture": "Operation identity, repeated invocation and historical journal fixtures",
+      "reuse_search": "test_transaction_confirmation.py;test_contention_recovery.py;test_session.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-07-006",
+      "group": "Replay",
+      "scenario": "Reject changed issue under same operation ID",
+      "fixture": "Operation identity, repeated invocation and historical journal fixtures",
+      "reuse_search": "test_transaction_confirmation.py;test_contention_recovery.py;test_session.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-07-007",
+      "group": "Replay",
+      "scenario": "Reject changed repository under same operation ID",
+      "fixture": "Operation identity, repeated invocation and historical journal fixtures",
+      "reuse_search": "test_transaction_confirmation.py;test_contention_recovery.py;test_session.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-07-008",
+      "group": "Replay",
+      "scenario": "Reject changed criteria during replan",
+      "fixture": "Operation identity, repeated invocation and historical journal fixtures",
+      "reuse_search": "test_transaction_confirmation.py;test_contention_recovery.py;test_session.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-07-009",
+      "group": "Replay",
+      "scenario": "Reject changed note during replan",
+      "fixture": "Operation identity, repeated invocation and historical journal fixtures",
+      "reuse_search": "test_transaction_confirmation.py;test_contention_recovery.py;test_session.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-07-010",
+      "group": "Replay",
+      "scenario": "Reject changed disposition during replan",
+      "fixture": "Operation identity, repeated invocation and historical journal fixtures",
+      "reuse_search": "test_transaction_confirmation.py;test_contention_recovery.py;test_session.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-07-011",
+      "group": "Replay",
+      "scenario": "Reject changed policy during replan",
+      "fixture": "Operation identity, repeated invocation and historical journal fixtures",
+      "reuse_search": "test_transaction_confirmation.py;test_contention_recovery.py;test_session.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-07-012",
+      "group": "Replay",
+      "scenario": "Reject candidate ticket reused with wrong tree",
+      "fixture": "Operation identity, repeated invocation and historical journal fixtures",
+      "reuse_search": "test_transaction_confirmation.py;test_contention_recovery.py;test_session.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-07-013",
+      "group": "Replay",
+      "scenario": "Reject candidate ticket reused with wrong parent",
+      "fixture": "Operation identity, repeated invocation and historical journal fixtures",
+      "reuse_search": "test_transaction_confirmation.py;test_contention_recovery.py;test_session.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-07-014",
+      "group": "Replay",
+      "scenario": "Reject candidate ticket reused after unrelated mutation",
+      "fixture": "Operation identity, repeated invocation and historical journal fixtures",
+      "reuse_search": "test_transaction_confirmation.py;test_contention_recovery.py;test_session.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-07-015",
+      "group": "Replay",
+      "scenario": "Confirm earlier published candidate in valid history",
+      "fixture": "Operation identity, repeated invocation and historical journal fixtures",
+      "reuse_search": "test_transaction_confirmation.py;test_contention_recovery.py;test_session.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-07-016",
+      "group": "Replay",
+      "scenario": "Reject earlier publication in invalid history",
+      "fixture": "Operation identity, repeated invocation and historical journal fixtures",
+      "reuse_search": "test_transaction_confirmation.py;test_contention_recovery.py;test_session.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-07-017",
+      "group": "Replay",
+      "scenario": "Do not replay uncertain transport response",
+      "fixture": "Operation identity, repeated invocation and historical journal fixtures",
+      "reuse_search": "test_transaction_confirmation.py;test_contention_recovery.py;test_session.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-07-018",
+      "group": "Replay",
+      "scenario": "Do not replay unclassified 422 rejection",
+      "fixture": "Operation identity, repeated invocation and historical journal fixtures",
+      "reuse_search": "test_transaction_confirmation.py;test_contention_recovery.py;test_session.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-07-019",
+      "group": "Replay",
+      "scenario": "Do not replay access denial",
+      "fixture": "Operation identity, repeated invocation and historical journal fixtures",
+      "reuse_search": "test_transaction_confirmation.py;test_contention_recovery.py;test_session.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-07-020",
+      "group": "Replay",
+      "scenario": "Do not replay throttled publication",
+      "fixture": "Operation identity, repeated invocation and historical journal fixtures",
+      "reuse_search": "test_transaction_confirmation.py;test_contention_recovery.py;test_session.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-07-021",
+      "group": "Replay",
+      "scenario": "Return no-op without pending file",
+      "fixture": "Operation identity, repeated invocation and historical journal fixtures",
+      "reuse_search": "test_transaction_confirmation.py;test_contention_recovery.py;test_session.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-07-022",
+      "group": "Replay",
+      "scenario": "Return no-op without candidate ticket",
+      "fixture": "Operation identity, repeated invocation and historical journal fixtures",
+      "reuse_search": "test_transaction_confirmation.py;test_contention_recovery.py;test_session.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-07-023",
+      "group": "Replay",
+      "scenario": "Keep prior archive entries on retried finish",
+      "fixture": "Operation identity, repeated invocation and historical journal fixtures",
+      "reuse_search": "test_transaction_confirmation.py;test_contention_recovery.py;test_session.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-07-024",
+      "group": "Replay",
+      "scenario": "Preserve unique operation marker per actual publication",
+      "fixture": "Operation identity, repeated invocation and historical journal fixtures",
+      "reuse_search": "test_transaction_confirmation.py;test_contention_recovery.py;test_session.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-08-001",
+      "group": "Contention",
+      "scenario": "Succeed after one definitive unrelated win",
+      "fixture": "Deterministic competing writers and finite retry budget",
+      "reuse_search": "test_contention_recovery.py;test_vib53_qualification.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-08-002",
+      "group": "Contention",
+      "scenario": "Succeed after two definitive unrelated wins",
+      "fixture": "Deterministic competing writers and finite retry budget",
+      "reuse_search": "test_contention_recovery.py;test_vib53_qualification.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-08-003",
+      "group": "Contention",
+      "scenario": "Succeed after three definitive unrelated wins",
+      "fixture": "Deterministic competing writers and finite retry budget",
+      "reuse_search": "test_contention_recovery.py;test_vib53_qualification.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-08-004",
+      "group": "Contention",
+      "scenario": "Continue safely in second bounded round",
+      "fixture": "Deterministic competing writers and finite retry budget",
+      "reuse_search": "test_contention_recovery.py;test_vib53_qualification.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-08-005",
+      "group": "Contention",
+      "scenario": "Refuse after eight definitive competing wins",
+      "fixture": "Deterministic competing writers and finite retry budget",
+      "reuse_search": "test_contention_recovery.py;test_vib53_qualification.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-08-006",
+      "group": "Contention",
+      "scenario": "Fresh explicit claim succeeds after competition ends",
+      "fixture": "Deterministic competing writers and finite retry budget",
+      "reuse_search": "test_contention_recovery.py;test_vib53_qualification.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-08-007",
+      "group": "Contention",
+      "scenario": "Reject unrelated state mutation during contention",
+      "fixture": "Deterministic competing writers and finite retry budget",
+      "reuse_search": "test_contention_recovery.py;test_vib53_qualification.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-08-008",
+      "group": "Contention",
+      "scenario": "Reject same-issue state mutation during contention",
+      "fixture": "Deterministic competing writers and finite retry budget",
+      "reuse_search": "test_contention_recovery.py;test_vib53_qualification.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-08-009",
+      "group": "Contention",
+      "scenario": "Reject stale package change during contention",
+      "fixture": "Deterministic competing writers and finite retry budget",
+      "reuse_search": "test_contention_recovery.py;test_vib53_qualification.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-08-010",
+      "group": "Contention",
+      "scenario": "Reject package change then restore",
+      "fixture": "Deterministic competing writers and finite retry budget",
+      "reuse_search": "test_contention_recovery.py;test_vib53_qualification.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-08-011",
+      "group": "Contention",
+      "scenario": "Reject retired-row reopening by competitor",
+      "fixture": "Deterministic competing writers and finite retry budget",
+      "reuse_search": "test_contention_recovery.py;test_vib53_qualification.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-08-012",
+      "group": "Contention",
+      "scenario": "Reject competing multi-issue transaction",
+      "fixture": "Deterministic competing writers and finite retry budget",
+      "reuse_search": "test_contention_recovery.py;test_vib53_qualification.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-08-013",
+      "group": "Contention",
+      "scenario": "Reject changed acceptance during retry",
+      "fixture": "Deterministic competing writers and finite retry budget",
+      "reuse_search": "test_contention_recovery.py;test_vib53_qualification.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-08-014",
+      "group": "Contention",
+      "scenario": "Reject competing terminal archive append",
+      "fixture": "Deterministic competing writers and finite retry budget",
+      "reuse_search": "test_contention_recovery.py;test_vib53_qualification.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-08-015",
+      "group": "Contention",
+      "scenario": "Confirm already-published candidate without replan",
+      "fixture": "Deterministic competing writers and finite retry budget",
+      "reuse_search": "test_contention_recovery.py;test_vib53_qualification.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-08-016",
+      "group": "Contention",
+      "scenario": "Reject unchanged ref after 422 as noncontention",
+      "fixture": "Deterministic competing writers and finite retry budget",
+      "reuse_search": "test_contention_recovery.py;test_vib53_qualification.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-08-017",
+      "group": "Contention",
+      "scenario": "Respect rate-limit delay bound",
+      "fixture": "Deterministic competing writers and finite retry budget",
+      "reuse_search": "test_contention_recovery.py;test_vib53_qualification.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-08-018",
+      "group": "Contention",
+      "scenario": "Respect transient 503 wait bound",
+      "fixture": "Deterministic competing writers and finite retry budget",
+      "reuse_search": "test_contention_recovery.py;test_vib53_qualification.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-08-019",
+      "group": "Contention",
+      "scenario": "Stop after long retry delay",
+      "fixture": "Deterministic competing writers and finite retry budget",
+      "reuse_search": "test_contention_recovery.py;test_vib53_qualification.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-08-020",
+      "group": "Contention",
+      "scenario": "Report deferred count independently",
+      "fixture": "Deterministic competing writers and finite retry budget",
+      "reuse_search": "test_contention_recovery.py;test_vib53_qualification.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-08-021",
+      "group": "Contention",
+      "scenario": "Report harness resubmissions separately",
+      "fixture": "Deterministic competing writers and finite retry budget",
+      "reuse_search": "test_contention_recovery.py;test_vib53_qualification.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-08-022",
+      "group": "Contention",
+      "scenario": "Measure one versus four worker matched task sets",
+      "fixture": "Deterministic competing writers and finite retry budget",
+      "reuse_search": "test_contention_recovery.py;test_vib53_qualification.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-08-023",
+      "group": "Contention",
+      "scenario": "Expose starvation counterexample",
+      "fixture": "Deterministic competing writers and finite retry budget",
+      "reuse_search": "test_contention_recovery.py;test_vib53_qualification.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-08-024",
+      "group": "Contention",
+      "scenario": "Avoid capacity guarantee from logical clients",
+      "fixture": "Deterministic competing writers and finite retry budget",
+      "reuse_search": "test_contention_recovery.py;test_vib53_qualification.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-09-001",
+      "group": "History",
+      "scenario": "Preserve .24 fix pin",
+      "fixture": "Immutable .32-.36 receipt and ledger snapshots",
+      "reuse_search": "test_merge_history.py;test_release_checkpoint_mapping.py;test_checkpoint.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-09-002",
+      "group": "History",
+      "scenario": "Preserve .25 fix pin",
+      "fixture": "Immutable .32-.36 receipt and ledger snapshots",
+      "reuse_search": "test_merge_history.py;test_release_checkpoint_mapping.py;test_checkpoint.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-09-003",
+      "group": "History",
+      "scenario": "Preserve .26 fix pin",
+      "fixture": "Immutable .32-.36 receipt and ledger snapshots",
+      "reuse_search": "test_merge_history.py;test_release_checkpoint_mapping.py;test_checkpoint.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-09-004",
+      "group": "History",
+      "scenario": "Preserve .27 fix pin",
+      "fixture": "Immutable .32-.36 receipt and ledger snapshots",
+      "reuse_search": "test_merge_history.py;test_release_checkpoint_mapping.py;test_checkpoint.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-09-005",
+      "group": "History",
+      "scenario": "Preserve .28 fix pin",
+      "fixture": "Immutable .32-.36 receipt and ledger snapshots",
+      "reuse_search": "test_merge_history.py;test_release_checkpoint_mapping.py;test_checkpoint.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-09-006",
+      "group": "History",
+      "scenario": "Preserve .29 fix pin",
+      "fixture": "Immutable .32-.36 receipt and ledger snapshots",
+      "reuse_search": "test_merge_history.py;test_release_checkpoint_mapping.py;test_checkpoint.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-09-007",
+      "group": "History",
+      "scenario": "Preserve .30 fix pin",
+      "fixture": "Immutable .32-.36 receipt and ledger snapshots",
+      "reuse_search": "test_merge_history.py;test_release_checkpoint_mapping.py;test_checkpoint.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-09-008",
+      "group": "History",
+      "scenario": "Preserve .31 fix pin",
+      "fixture": "Immutable .32-.36 receipt and ledger snapshots",
+      "reuse_search": "test_merge_history.py;test_release_checkpoint_mapping.py;test_checkpoint.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-09-009",
+      "group": "History",
+      "scenario": "Preserve .32 gate revocation behavior",
+      "fixture": "Immutable .32-.36 receipt and ledger snapshots",
+      "reuse_search": "test_merge_history.py;test_release_checkpoint_mapping.py;test_checkpoint.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-09-010",
+      "group": "History",
+      "scenario": "Preserve .34 historical acceptance criteria",
+      "fixture": "Immutable .32-.36 receipt and ledger snapshots",
+      "reuse_search": "test_merge_history.py;test_release_checkpoint_mapping.py;test_checkpoint.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-09-011",
+      "group": "History",
+      "scenario": "Preserve .35 archived success",
+      "fixture": "Immutable .32-.36 receipt and ledger snapshots",
+      "reuse_search": "test_merge_history.py;test_release_checkpoint_mapping.py;test_checkpoint.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-09-012",
+      "group": "History",
+      "scenario": "Preserve .36 receipt selection",
+      "fixture": "Immutable .32-.36 receipt and ledger snapshots",
+      "reuse_search": "test_merge_history.py;test_release_checkpoint_mapping.py;test_checkpoint.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-09-013",
+      "group": "History",
+      "scenario": "Preserve #40 reserved .23 assignment",
+      "fixture": "Immutable .32-.36 receipt and ledger snapshots",
+      "reuse_search": "test_merge_history.py;test_release_checkpoint_mapping.py;test_checkpoint.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-09-014",
+      "group": "History",
+      "scenario": "Preserve #53 .37 assignment",
+      "fixture": "Immutable .32-.36 receipt and ledger snapshots",
+      "reuse_search": "test_merge_history.py;test_release_checkpoint_mapping.py;test_checkpoint.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-09-015",
+      "group": "History",
+      "scenario": "Reject duplicate checkpoint version graph node",
+      "fixture": "Immutable .32-.36 receipt and ledger snapshots",
+      "reuse_search": "test_merge_history.py;test_release_checkpoint_mapping.py;test_checkpoint.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-09-016",
+      "group": "History",
+      "scenario": "Reject unexpected supplementary graph feature",
+      "fixture": "Immutable .32-.36 receipt and ledger snapshots",
+      "reuse_search": "test_merge_history.py;test_release_checkpoint_mapping.py;test_checkpoint.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-09-017",
+      "group": "History",
+      "scenario": "Validate explicit same-checkpoint graph relationship",
+      "fixture": "Immutable .32-.36 receipt and ledger snapshots",
+      "reuse_search": "test_merge_history.py;test_release_checkpoint_mapping.py;test_checkpoint.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-09-018",
+      "group": "History",
+      "scenario": "Preserve terminal archive contents",
+      "fixture": "Immutable .32-.36 receipt and ledger snapshots",
+      "reuse_search": "test_merge_history.py;test_release_checkpoint_mapping.py;test_checkpoint.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-09-019",
+      "group": "History",
+      "scenario": "Distinguish historical recovery from fabricated phase history",
+      "fixture": "Immutable .32-.36 receipt and ledger snapshots",
+      "reuse_search": "test_merge_history.py;test_release_checkpoint_mapping.py;test_checkpoint.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-09-020",
+      "group": "History",
+      "scenario": "Reject incorrect branch archive attribution",
+      "fixture": "Immutable .32-.36 receipt and ledger snapshots",
+      "reuse_search": "test_merge_history.py;test_release_checkpoint_mapping.py;test_checkpoint.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-10-001",
+      "group": "Evidence",
+      "scenario": "Accept exact successful PR run",
+      "fixture": "Synthetic PR/run/attempt and graph evidence records",
+      "reuse_search": "test_gate.py;test_standard.py;test_graphify_evidence.py;test_acceptance_snapshot.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-10-002",
+      "group": "Evidence",
+      "scenario": "Reject wrong repository ID",
+      "fixture": "Synthetic PR/run/attempt and graph evidence records",
+      "reuse_search": "test_gate.py;test_standard.py;test_graphify_evidence.py;test_acceptance_snapshot.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-10-003",
+      "group": "Evidence",
+      "scenario": "Reject wrong workflow identity",
+      "fixture": "Synthetic PR/run/attempt and graph evidence records",
+      "reuse_search": "test_gate.py;test_standard.py;test_graphify_evidence.py;test_acceptance_snapshot.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-10-004",
+      "group": "Evidence",
+      "scenario": "Reject wrong run ID",
+      "fixture": "Synthetic PR/run/attempt and graph evidence records",
+      "reuse_search": "test_gate.py;test_standard.py;test_graphify_evidence.py;test_acceptance_snapshot.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-10-005",
+      "group": "Evidence",
+      "scenario": "Reject wrong attempt number",
+      "fixture": "Synthetic PR/run/attempt and graph evidence records",
+      "reuse_search": "test_gate.py;test_standard.py;test_graphify_evidence.py;test_acceptance_snapshot.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-10-006",
+      "group": "Evidence",
+      "scenario": "Reject wrong tested SHA",
+      "fixture": "Synthetic PR/run/attempt and graph evidence records",
+      "reuse_search": "test_gate.py;test_standard.py;test_graphify_evidence.py;test_acceptance_snapshot.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-10-007",
+      "group": "Evidence",
+      "scenario": "Reject wrong PR head SHA",
+      "fixture": "Synthetic PR/run/attempt and graph evidence records",
+      "reuse_search": "test_gate.py;test_standard.py;test_graphify_evidence.py;test_acceptance_snapshot.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-10-008",
+      "group": "Evidence",
+      "scenario": "Reject wrong PR base SHA",
+      "fixture": "Synthetic PR/run/attempt and graph evidence records",
+      "reuse_search": "test_gate.py;test_standard.py;test_graphify_evidence.py;test_acceptance_snapshot.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-10-009",
+      "group": "Evidence",
+      "scenario": "Reject wrong merge SHA",
+      "fixture": "Synthetic PR/run/attempt and graph evidence records",
+      "reuse_search": "test_gate.py;test_standard.py;test_graphify_evidence.py;test_acceptance_snapshot.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-10-010",
+      "group": "Evidence",
+      "scenario": "Reject incomplete workflow status",
+      "fixture": "Synthetic PR/run/attempt and graph evidence records",
+      "reuse_search": "test_gate.py;test_standard.py;test_graphify_evidence.py;test_acceptance_snapshot.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-10-011",
+      "group": "Evidence",
+      "scenario": "Reject failed conclusion",
+      "fixture": "Synthetic PR/run/attempt and graph evidence records",
+      "reuse_search": "test_gate.py;test_standard.py;test_graphify_evidence.py;test_acceptance_snapshot.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-10-012",
+      "group": "Evidence",
+      "scenario": "Reject cancelled conclusion",
+      "fixture": "Synthetic PR/run/attempt and graph evidence records",
+      "reuse_search": "test_gate.py;test_standard.py;test_graphify_evidence.py;test_acceptance_snapshot.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-10-013",
+      "group": "Evidence",
+      "scenario": "Reject skipped required job",
+      "fixture": "Synthetic PR/run/attempt and graph evidence records",
+      "reuse_search": "test_gate.py;test_standard.py;test_graphify_evidence.py;test_acceptance_snapshot.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-10-014",
+      "group": "Evidence",
+      "scenario": "Reject missing required job",
+      "fixture": "Synthetic PR/run/attempt and graph evidence records",
+      "reuse_search": "test_gate.py;test_standard.py;test_graphify_evidence.py;test_acceptance_snapshot.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-10-015",
+      "group": "Evidence",
+      "scenario": "Reject duplicated required job",
+      "fixture": "Synthetic PR/run/attempt and graph evidence records",
+      "reuse_search": "test_gate.py;test_standard.py;test_graphify_evidence.py;test_acceptance_snapshot.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-10-016",
+      "group": "Evidence",
+      "scenario": "Reject conflicting job result",
+      "fixture": "Synthetic PR/run/attempt and graph evidence records",
+      "reuse_search": "test_gate.py;test_standard.py;test_graphify_evidence.py;test_acceptance_snapshot.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-10-017",
+      "group": "Evidence",
+      "scenario": "Reject stale rerun evidence",
+      "fixture": "Synthetic PR/run/attempt and graph evidence records",
+      "reuse_search": "test_gate.py;test_standard.py;test_graphify_evidence.py;test_acceptance_snapshot.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-10-018",
+      "group": "Evidence",
+      "scenario": "Reject unrelated push run",
+      "fixture": "Synthetic PR/run/attempt and graph evidence records",
+      "reuse_search": "test_gate.py;test_standard.py;test_graphify_evidence.py;test_acceptance_snapshot.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-10-019",
+      "group": "Evidence",
+      "scenario": "Reject evidence link to wrong repository",
+      "fixture": "Synthetic PR/run/attempt and graph evidence records",
+      "reuse_search": "test_gate.py;test_standard.py;test_graphify_evidence.py;test_acceptance_snapshot.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-10-020",
+      "group": "Evidence",
+      "scenario": "Reject duplicate evidence link identity",
+      "fixture": "Synthetic PR/run/attempt and graph evidence records",
+      "reuse_search": "test_gate.py;test_standard.py;test_graphify_evidence.py;test_acceptance_snapshot.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-10-021",
+      "group": "Evidence",
+      "scenario": "Reject malformed evidence URL",
+      "fixture": "Synthetic PR/run/attempt and graph evidence records",
+      "reuse_search": "test_gate.py;test_standard.py;test_graphify_evidence.py;test_acceptance_snapshot.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-10-022",
+      "group": "Evidence",
+      "scenario": "Reject mismatched receipt scope",
+      "fixture": "Synthetic PR/run/attempt and graph evidence records",
+      "reuse_search": "test_gate.py;test_standard.py;test_graphify_evidence.py;test_acceptance_snapshot.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-10-023",
+      "group": "Evidence",
+      "scenario": "Reject forged test outcome",
+      "fixture": "Synthetic PR/run/attempt and graph evidence records",
+      "reuse_search": "test_gate.py;test_standard.py;test_graphify_evidence.py;test_acceptance_snapshot.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-10-024",
+      "group": "Evidence",
+      "scenario": "Reject forged expected outcome",
+      "fixture": "Synthetic PR/run/attempt and graph evidence records",
+      "reuse_search": "test_gate.py;test_standard.py;test_graphify_evidence.py;test_acceptance_snapshot.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-10-025",
+      "group": "Evidence",
+      "scenario": "Reject omitted receipt row",
+      "fixture": "Synthetic PR/run/attempt and graph evidence records",
+      "reuse_search": "test_gate.py;test_standard.py;test_graphify_evidence.py;test_acceptance_snapshot.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-10-026",
+      "group": "Evidence",
+      "scenario": "Reject duplicate receipt row",
+      "fixture": "Synthetic PR/run/attempt and graph evidence records",
+      "reuse_search": "test_gate.py;test_standard.py;test_graphify_evidence.py;test_acceptance_snapshot.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-10-027",
+      "group": "Evidence",
+      "scenario": "Reject inconsistent receipt counts",
+      "fixture": "Synthetic PR/run/attempt and graph evidence records",
+      "reuse_search": "test_gate.py;test_standard.py;test_graphify_evidence.py;test_acceptance_snapshot.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-10-028",
+      "group": "Evidence",
+      "scenario": "Verify raw artifact digest and source pin",
+      "fixture": "Synthetic PR/run/attempt and graph evidence records",
+      "reuse_search": "test_gate.py;test_standard.py;test_graphify_evidence.py;test_acceptance_snapshot.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-11-001",
+      "group": "Authority",
+      "scenario": "Reject claim without owner approval",
+      "fixture": "CLI and simulated permissions, with explicit owner decision controls",
+      "reuse_search": "test_session.py;test_standard.py;test_gate.py;test_install.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-11-002",
+      "group": "Authority",
+      "scenario": "Reject finish without owner approval",
+      "fixture": "CLI and simulated permissions, with explicit owner decision controls",
+      "reuse_search": "test_session.py;test_standard.py;test_gate.py;test_install.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-11-003",
+      "group": "Authority",
+      "scenario": "Reject reconcile without owner approval",
+      "fixture": "CLI and simulated permissions, with explicit owner decision controls",
+      "reuse_search": "test_session.py;test_standard.py;test_gate.py;test_install.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-11-004",
+      "group": "Authority",
+      "scenario": "Reject parallel opt-in without owner approval",
+      "fixture": "CLI and simulated permissions, with explicit owner decision controls",
+      "reuse_search": "test_session.py;test_standard.py;test_gate.py;test_install.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-11-005",
+      "group": "Authority",
+      "scenario": "Reject staged rework without authorization",
+      "fixture": "CLI and simulated permissions, with explicit owner decision controls",
+      "reuse_search": "test_session.py;test_standard.py;test_gate.py;test_install.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-11-006",
+      "group": "Authority",
+      "scenario": "Reject prior-line resume without authorization",
+      "fixture": "CLI and simulated permissions, with explicit owner decision controls",
+      "reuse_search": "test_session.py;test_standard.py;test_gate.py;test_install.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-11-007",
+      "group": "Authority",
+      "scenario": "Reject apply without credential",
+      "fixture": "CLI and simulated permissions, with explicit owner decision controls",
+      "reuse_search": "test_session.py;test_standard.py;test_gate.py;test_install.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-11-008",
+      "group": "Authority",
+      "scenario": "Reject apply without expected SHA",
+      "fixture": "CLI and simulated permissions, with explicit owner decision controls",
+      "reuse_search": "test_session.py;test_standard.py;test_gate.py;test_install.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-11-009",
+      "group": "Authority",
+      "scenario": "Reject apply with wrong expected SHA",
+      "fixture": "CLI and simulated permissions, with explicit owner decision controls",
+      "reuse_search": "test_session.py;test_standard.py;test_gate.py;test_install.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-11-010",
+      "group": "Authority",
+      "scenario": "Reject target identity mismatch",
+      "fixture": "CLI and simulated permissions, with explicit owner decision controls",
+      "reuse_search": "test_session.py;test_standard.py;test_gate.py;test_install.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-11-011",
+      "group": "Authority",
+      "scenario": "Reject installation on product main",
+      "fixture": "CLI and simulated permissions, with explicit owner decision controls",
+      "reuse_search": "test_session.py;test_standard.py;test_gate.py;test_install.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-11-012",
+      "group": "Authority",
+      "scenario": "Reject retirement with unsafe active state",
+      "fixture": "CLI and simulated permissions, with explicit owner decision controls",
+      "reuse_search": "test_session.py;test_standard.py;test_gate.py;test_install.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-11-013",
+      "group": "Authority",
+      "scenario": "Reject upgrade with unsafe active state",
+      "fixture": "CLI and simulated permissions, with explicit owner decision controls",
+      "reuse_search": "test_session.py;test_standard.py;test_gate.py;test_install.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-11-014",
+      "group": "Authority",
+      "scenario": "Reject integration without policy",
+      "fixture": "CLI and simulated permissions, with explicit owner decision controls",
+      "reuse_search": "test_session.py;test_standard.py;test_gate.py;test_install.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-11-015",
+      "group": "Authority",
+      "scenario": "Reject unauthorized merge association",
+      "fixture": "CLI and simulated permissions, with explicit owner decision controls",
+      "reuse_search": "test_session.py;test_standard.py;test_gate.py;test_install.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-11-016",
+      "group": "Authority",
+      "scenario": "Keep Standard advisory without required external gate",
+      "fixture": "CLI and simulated permissions, with explicit owner decision controls",
+      "reuse_search": "test_session.py;test_standard.py;test_gate.py;test_install.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-11-017",
+      "group": "Authority",
+      "scenario": "Keep optional hard gate disabled unless configured",
+      "fixture": "CLI and simulated permissions, with explicit owner decision controls",
+      "reuse_search": "test_session.py;test_standard.py;test_gate.py;test_install.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-11-018",
+      "group": "Authority",
+      "scenario": "Reject wrong issue selection",
+      "fixture": "CLI and simulated permissions, with explicit owner decision controls",
+      "reuse_search": "test_session.py;test_standard.py;test_gate.py;test_install.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-11-019",
+      "group": "Authority",
+      "scenario": "Keep inspection read-only without write credentials",
+      "fixture": "CLI and simulated permissions, with explicit owner decision controls",
+      "reuse_search": "test_session.py;test_standard.py;test_gate.py;test_install.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-11-020",
+      "group": "Authority",
+      "scenario": "Do not claim external direct writes are prevented",
+      "fixture": "CLI and simulated permissions, with explicit owner decision controls",
+      "reuse_search": "test_session.py;test_standard.py;test_gate.py;test_install.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-12-001",
+      "group": "Legacy",
+      "scenario": "Read existing schema v1 singleton",
+      "fixture": "Schema v1 installed fixture and schema v2 opt-in",
+      "reuse_search": "test_lifecycle.py;test_install.py;test_session.py;test_vib53_qualification.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-12-002",
+      "group": "Legacy",
+      "scenario": "Claim in singleton without migration",
+      "fixture": "Schema v1 installed fixture and schema v2 opt-in",
+      "reuse_search": "test_lifecycle.py;test_install.py;test_session.py;test_vib53_qualification.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-12-003",
+      "group": "Legacy",
+      "scenario": "Advance legacy singleton",
+      "fixture": "Schema v1 installed fixture and schema v2 opt-in",
+      "reuse_search": "test_lifecycle.py;test_install.py;test_session.py;test_vib53_qualification.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-12-004",
+      "group": "Legacy",
+      "scenario": "Finish legacy singleton",
+      "fixture": "Schema v1 installed fixture and schema v2 opt-in",
+      "reuse_search": "test_lifecycle.py;test_install.py;test_session.py;test_vib53_qualification.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-12-005",
+      "group": "Legacy",
+      "scenario": "Preserve historical v1 receipt validation",
+      "fixture": "Schema v1 installed fixture and schema v2 opt-in",
+      "reuse_search": "test_lifecycle.py;test_install.py;test_session.py;test_vib53_qualification.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-12-006",
+      "group": "Legacy",
+      "scenario": "Upgrade exact legacy package safely",
+      "fixture": "Schema v1 installed fixture and schema v2 opt-in",
+      "reuse_search": "test_lifecycle.py;test_install.py;test_session.py;test_vib53_qualification.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-12-007",
+      "group": "Legacy",
+      "scenario": "Preserve custom files after upgrade",
+      "fixture": "Schema v1 installed fixture and schema v2 opt-in",
+      "reuse_search": "test_lifecycle.py;test_install.py;test_session.py;test_vib53_qualification.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-12-008",
+      "group": "Legacy",
+      "scenario": "Preserve old source pins",
+      "fixture": "Schema v1 installed fixture and schema v2 opt-in",
+      "reuse_search": "test_lifecycle.py;test_install.py;test_session.py;test_vib53_qualification.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-12-009",
+      "group": "Legacy",
+      "scenario": "Preserve archived acceptance criteria",
+      "fixture": "Schema v1 installed fixture and schema v2 opt-in",
+      "reuse_search": "test_lifecycle.py;test_install.py;test_session.py;test_vib53_qualification.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-12-010",
+      "group": "Legacy",
+      "scenario": "Reject unsupported schema version",
+      "fixture": "Schema v1 installed fixture and schema v2 opt-in",
+      "reuse_search": "test_lifecycle.py;test_install.py;test_session.py;test_vib53_qualification.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-12-011",
+      "group": "Legacy",
+      "scenario": "Reject malformed manifest",
+      "fixture": "Schema v1 installed fixture and schema v2 opt-in",
+      "reuse_search": "test_lifecycle.py;test_install.py;test_session.py;test_vib53_qualification.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-12-012",
+      "group": "Legacy",
+      "scenario": "Reject package digest mismatch",
+      "fixture": "Schema v1 installed fixture and schema v2 opt-in",
+      "reuse_search": "test_lifecycle.py;test_install.py;test_session.py;test_vib53_qualification.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-12-013",
+      "group": "Legacy",
+      "scenario": "Reject partial migration",
+      "fixture": "Schema v1 installed fixture and schema v2 opt-in",
+      "reuse_search": "test_lifecycle.py;test_install.py;test_session.py;test_vib53_qualification.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-12-014",
+      "group": "Legacy",
+      "scenario": "Reject upgrade while lane active",
+      "fixture": "Schema v1 installed fixture and schema v2 opt-in",
+      "reuse_search": "test_lifecycle.py;test_install.py;test_session.py;test_vib53_qualification.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-12-015",
+      "group": "Legacy",
+      "scenario": "Reject retirement while lane active",
+      "fixture": "Schema v1 installed fixture and schema v2 opt-in",
+      "reuse_search": "test_lifecycle.py;test_install.py;test_session.py;test_vib53_qualification.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-12-016",
+      "group": "Legacy",
+      "scenario": "Reject forced downgrade",
+      "fixture": "Schema v1 installed fixture and schema v2 opt-in",
+      "reuse_search": "test_lifecycle.py;test_install.py;test_session.py;test_vib53_qualification.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-12-017",
+      "group": "Legacy",
+      "scenario": "Require opt-in for schema v2",
+      "fixture": "Schema v1 installed fixture and schema v2 opt-in",
+      "reuse_search": "test_lifecycle.py;test_install.py;test_session.py;test_vib53_qualification.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-12-018",
+      "group": "Legacy",
+      "scenario": "Verify real Git legacy upgrade",
+      "fixture": "Schema v1 installed fixture and schema v2 opt-in",
+      "reuse_search": "test_lifecycle.py;test_install.py;test_session.py;test_vib53_qualification.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-12-019",
+      "group": "Legacy",
+      "scenario": "Verify parallel claim after explicit migration",
+      "fixture": "Schema v1 installed fixture and schema v2 opt-in",
+      "reuse_search": "test_lifecycle.py;test_install.py;test_session.py;test_vib53_qualification.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-12-020",
+      "group": "Legacy",
+      "scenario": "Keep live installed singleton unchanged in qualification",
+      "fixture": "Schema v1 installed fixture and schema v2 opt-in",
+      "reuse_search": "test_lifecycle.py;test_install.py;test_session.py;test_vib53_qualification.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-13-001",
+      "group": "Portability",
+      "scenario": "Run strict API cases on Ubuntu",
+      "fixture": "Ubuntu and Windows clean checkouts",
+      "reuse_search": "test_install.py;test_lifecycle.py;test_vib53_qualification.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-13-002",
+      "group": "Portability",
+      "scenario": "Run strict API cases on Windows",
+      "fixture": "Ubuntu and Windows clean checkouts",
+      "reuse_search": "test_install.py;test_lifecycle.py;test_vib53_qualification.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-13-003",
+      "group": "Portability",
+      "scenario": "Compare case identities across OSes",
+      "fixture": "Ubuntu and Windows clean checkouts",
+      "reuse_search": "test_install.py;test_lifecycle.py;test_vib53_qualification.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-13-004",
+      "group": "Portability",
+      "scenario": "Compare expected verdicts across OSes",
+      "fixture": "Ubuntu and Windows clean checkouts",
+      "reuse_search": "test_install.py;test_lifecycle.py;test_vib53_qualification.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-13-005",
+      "group": "Portability",
+      "scenario": "Compare original negative controls across OSes",
+      "fixture": "Ubuntu and Windows clean checkouts",
+      "reuse_search": "test_install.py;test_lifecycle.py;test_vib53_qualification.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-13-006",
+      "group": "Portability",
+      "scenario": "Verify UTF-8 content decode across OSes",
+      "fixture": "Ubuntu and Windows clean checkouts",
+      "reuse_search": "test_install.py;test_lifecycle.py;test_vib53_qualification.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-13-007",
+      "group": "Portability",
+      "scenario": "Verify Git digest with LF fixture",
+      "fixture": "Ubuntu and Windows clean checkouts",
+      "reuse_search": "test_install.py;test_lifecycle.py;test_vib53_qualification.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-13-008",
+      "group": "Portability",
+      "scenario": "Verify Git digest with CRLF fixture",
+      "fixture": "Ubuntu and Windows clean checkouts",
+      "reuse_search": "test_install.py;test_lifecycle.py;test_vib53_qualification.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-13-009",
+      "group": "Portability",
+      "scenario": "Verify non-ASCII filename handling",
+      "fixture": "Ubuntu and Windows clean checkouts",
+      "reuse_search": "test_install.py;test_lifecycle.py;test_vib53_qualification.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-13-010",
+      "group": "Portability",
+      "scenario": "Verify path with spaces",
+      "fixture": "Ubuntu and Windows clean checkouts",
+      "reuse_search": "test_install.py;test_lifecycle.py;test_vib53_qualification.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-13-011",
+      "group": "Portability",
+      "scenario": "Verify Windows recovery directory handling",
+      "fixture": "Ubuntu and Windows clean checkouts",
+      "reuse_search": "test_install.py;test_lifecycle.py;test_vib53_qualification.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-13-012",
+      "group": "Portability",
+      "scenario": "Verify POSIX recovery directory handling",
+      "fixture": "Ubuntu and Windows clean checkouts",
+      "reuse_search": "test_install.py;test_lifecycle.py;test_vib53_qualification.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-13-013",
+      "group": "Portability",
+      "scenario": "Verify no hidden platform-dependent receipt encoding",
+      "fixture": "Ubuntu and Windows clean checkouts",
+      "reuse_search": "test_install.py;test_lifecycle.py;test_vib53_qualification.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-13-014",
+      "group": "Portability",
+      "scenario": "Verify Bash digest validation on Windows",
+      "fixture": "Ubuntu and Windows clean checkouts",
+      "reuse_search": "test_install.py;test_lifecycle.py;test_vib53_qualification.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-13-015",
+      "group": "Portability",
+      "scenario": "Verify PowerShell independent reconciliation on Linux",
+      "fixture": "Ubuntu and Windows clean checkouts",
+      "reuse_search": "test_install.py;test_lifecycle.py;test_vib53_qualification.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-13-016",
+      "group": "Portability",
+      "scenario": "Verify report bytes before interpreting cross-OS differences",
+      "fixture": "Ubuntu and Windows clean checkouts",
+      "reuse_search": "test_install.py;test_lifecycle.py;test_vib53_qualification.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-14-001",
+      "group": "Efficiency",
+      "scenario": "Record one-worker protocol request count",
+      "fixture": "Matched finite workloads with request counts and bounded cache",
+      "reuse_search": "test_vib53_qualification.py;test_contention_recovery.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-14-002",
+      "group": "Efficiency",
+      "scenario": "Record four-worker matched request count",
+      "fixture": "Matched finite workloads with request counts and bounded cache",
+      "reuse_search": "test_vib53_qualification.py;test_contention_recovery.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-14-003",
+      "group": "Efficiency",
+      "scenario": "Record per-workload publication count",
+      "fixture": "Matched finite workloads with request counts and bounded cache",
+      "reuse_search": "test_vib53_qualification.py;test_contention_recovery.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-14-004",
+      "group": "Efficiency",
+      "scenario": "Record ref rejection count",
+      "fixture": "Matched finite workloads with request counts and bounded cache",
+      "reuse_search": "test_vib53_qualification.py;test_contention_recovery.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-14-005",
+      "group": "Efficiency",
+      "scenario": "Record explicit resubmission count",
+      "fixture": "Matched finite workloads with request counts and bounded cache",
+      "reuse_search": "test_vib53_qualification.py;test_contention_recovery.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-14-006",
+      "group": "Efficiency",
+      "scenario": "Record elapsed time with accelerated backoff disclosed",
+      "fixture": "Matched finite workloads with request counts and bounded cache",
+      "reuse_search": "test_vib53_qualification.py;test_contention_recovery.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-14-007",
+      "group": "Efficiency",
+      "scenario": "Measure 1 logical client workload",
+      "fixture": "Matched finite workloads with request counts and bounded cache",
+      "reuse_search": "test_vib53_qualification.py;test_contention_recovery.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-14-008",
+      "group": "Efficiency",
+      "scenario": "Measure 2 logical client workload",
+      "fixture": "Matched finite workloads with request counts and bounded cache",
+      "reuse_search": "test_vib53_qualification.py;test_contention_recovery.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-14-009",
+      "group": "Efficiency",
+      "scenario": "Measure 5 logical client workload",
+      "fixture": "Matched finite workloads with request counts and bounded cache",
+      "reuse_search": "test_vib53_qualification.py;test_contention_recovery.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-14-010",
+      "group": "Efficiency",
+      "scenario": "Measure 10 logical client workload",
+      "fixture": "Matched finite workloads with request counts and bounded cache",
+      "reuse_search": "test_vib53_qualification.py;test_contention_recovery.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-14-011",
+      "group": "Efficiency",
+      "scenario": "Measure 25 logical client workload",
+      "fixture": "Matched finite workloads with request counts and bounded cache",
+      "reuse_search": "test_vib53_qualification.py;test_contention_recovery.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-14-012",
+      "group": "Efficiency",
+      "scenario": "Measure 50 logical client workload",
+      "fixture": "Matched finite workloads with request counts and bounded cache",
+      "reuse_search": "test_vib53_qualification.py;test_contention_recovery.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-14-013",
+      "group": "Efficiency",
+      "scenario": "Measure 100 logical client workload",
+      "fixture": "Matched finite workloads with request counts and bounded cache",
+      "reuse_search": "test_vib53_qualification.py;test_contention_recovery.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-14-014",
+      "group": "Efficiency",
+      "scenario": "Cache only verified immutable source objects",
+      "fixture": "Matched finite workloads with request counts and bounded cache",
+      "reuse_search": "test_vib53_qualification.py;test_contention_recovery.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-14-015",
+      "group": "Efficiency",
+      "scenario": "Avoid caching live installed content",
+      "fixture": "Matched finite workloads with request counts and bounded cache",
+      "reuse_search": "test_vib53_qualification.py;test_contention_recovery.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-14-016",
+      "group": "Efficiency",
+      "scenario": "Do not claim improved AI productivity from protocol benchmark",
+      "fixture": "Matched finite workloads with request counts and bounded cache",
+      "reuse_search": "test_vib53_qualification.py;test_contention_recovery.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-15-001",
+      "group": "Adversarial",
+      "scenario": "Reject dropped claim transition",
+      "fixture": "Independent state model, mutated histories and evidence",
+      "reuse_search": "test_contention_recovery.py;test_transaction_confirmation.py;test_graphify_evidence.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-15-002",
+      "group": "Adversarial",
+      "scenario": "Reject duplicate claim transition",
+      "fixture": "Independent state model, mutated histories and evidence",
+      "reuse_search": "test_contention_recovery.py;test_transaction_confirmation.py;test_graphify_evidence.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-15-003",
+      "group": "Adversarial",
+      "scenario": "Reject swapped phase order",
+      "fixture": "Independent state model, mutated histories and evidence",
+      "reuse_search": "test_contention_recovery.py;test_transaction_confirmation.py;test_graphify_evidence.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-15-004",
+      "group": "Adversarial",
+      "scenario": "Reject phase regression without authorized rework",
+      "fixture": "Independent state model, mutated histories and evidence",
+      "reuse_search": "test_contention_recovery.py;test_transaction_confirmation.py;test_graphify_evidence.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-15-005",
+      "group": "Adversarial",
+      "scenario": "Reject missing predecessor commit",
+      "fixture": "Independent state model, mutated histories and evidence",
+      "reuse_search": "test_contention_recovery.py;test_transaction_confirmation.py;test_graphify_evidence.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-15-006",
+      "group": "Adversarial",
+      "scenario": "Reject forked parent chain",
+      "fixture": "Independent state model, mutated histories and evidence",
+      "reuse_search": "test_contention_recovery.py;test_transaction_confirmation.py;test_graphify_evidence.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-15-007",
+      "group": "Adversarial",
+      "scenario": "Reject omitted intermediate unrelated mutation",
+      "fixture": "Independent state model, mutated histories and evidence",
+      "reuse_search": "test_contention_recovery.py;test_transaction_confirmation.py;test_graphify_evidence.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-15-008",
+      "group": "Adversarial",
+      "scenario": "Reject changed then restored issue criteria",
+      "fixture": "Independent state model, mutated histories and evidence",
+      "reuse_search": "test_contention_recovery.py;test_transaction_confirmation.py;test_graphify_evidence.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-15-009",
+      "group": "Adversarial",
+      "scenario": "Reject changed then restored package",
+      "fixture": "Independent state model, mutated histories and evidence",
+      "reuse_search": "test_contention_recovery.py;test_transaction_confirmation.py;test_graphify_evidence.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-15-010",
+      "group": "Adversarial",
+      "scenario": "Reject changed then restored archive",
+      "fixture": "Independent state model, mutated histories and evidence",
+      "reuse_search": "test_contention_recovery.py;test_transaction_confirmation.py;test_graphify_evidence.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-15-011",
+      "group": "Adversarial",
+      "scenario": "Reject changed then restored unrelated notes",
+      "fixture": "Independent state model, mutated histories and evidence",
+      "reuse_search": "test_contention_recovery.py;test_transaction_confirmation.py;test_graphify_evidence.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-15-012",
+      "group": "Adversarial",
+      "scenario": "Reject fabricated operation marker",
+      "fixture": "Independent state model, mutated histories and evidence",
+      "reuse_search": "test_contention_recovery.py;test_transaction_confirmation.py;test_graphify_evidence.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-15-013",
+      "group": "Adversarial",
+      "scenario": "Reject wrong tree hash",
+      "fixture": "Independent state model, mutated histories and evidence",
+      "reuse_search": "test_contention_recovery.py;test_transaction_confirmation.py;test_graphify_evidence.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-15-014",
+      "group": "Adversarial",
+      "scenario": "Reject wrong parent hash",
+      "fixture": "Independent state model, mutated histories and evidence",
+      "reuse_search": "test_contention_recovery.py;test_transaction_confirmation.py;test_graphify_evidence.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-15-015",
+      "group": "Adversarial",
+      "scenario": "Reject wrong source digest",
+      "fixture": "Independent state model, mutated histories and evidence",
+      "reuse_search": "test_contention_recovery.py;test_transaction_confirmation.py;test_graphify_evidence.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-15-016",
+      "group": "Adversarial",
+      "scenario": "Reject wrong operation repository",
+      "fixture": "Independent state model, mutated histories and evidence",
+      "reuse_search": "test_contention_recovery.py;test_transaction_confirmation.py;test_graphify_evidence.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-15-017",
+      "group": "Adversarial",
+      "scenario": "Reject wrong operation issue",
+      "fixture": "Independent state model, mutated histories and evidence",
+      "reuse_search": "test_contention_recovery.py;test_transaction_confirmation.py;test_graphify_evidence.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-15-018",
+      "group": "Adversarial",
+      "scenario": "Reject forged successful publication",
+      "fixture": "Independent state model, mutated histories and evidence",
+      "reuse_search": "test_contention_recovery.py;test_transaction_confirmation.py;test_graphify_evidence.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-15-019",
+      "group": "Adversarial",
+      "scenario": "Reject incomplete state reconstructed from history",
+      "fixture": "Independent state model, mutated histories and evidence",
+      "reuse_search": "test_contention_recovery.py;test_transaction_confirmation.py;test_graphify_evidence.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-15-020",
+      "group": "Adversarial",
+      "scenario": "Reject fresh endpoint disagreement",
+      "fixture": "Independent state model, mutated histories and evidence",
+      "reuse_search": "test_contention_recovery.py;test_transaction_confirmation.py;test_graphify_evidence.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-15-021",
+      "group": "Adversarial",
+      "scenario": "Reject cache entry from failed validation",
+      "fixture": "Independent state model, mutated histories and evidence",
+      "reuse_search": "test_contention_recovery.py;test_transaction_confirmation.py;test_graphify_evidence.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-15-022",
+      "group": "Adversarial",
+      "scenario": "Reject malformed history collection",
+      "fixture": "Independent state model, mutated histories and evidence",
+      "reuse_search": "test_contention_recovery.py;test_transaction_confirmation.py;test_graphify_evidence.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-15-023",
+      "group": "Adversarial",
+      "scenario": "Reject truncated history listing",
+      "fixture": "Independent state model, mutated histories and evidence",
+      "reuse_search": "test_contention_recovery.py;test_transaction_confirmation.py;test_graphify_evidence.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-15-024",
+      "group": "Adversarial",
+      "scenario": "Reject malformed adjacent comparison",
+      "fixture": "Independent state model, mutated histories and evidence",
+      "reuse_search": "test_contention_recovery.py;test_transaction_confirmation.py;test_graphify_evidence.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-15-025",
+      "group": "Adversarial",
+      "scenario": "Reject contradictory ref ancestry",
+      "fixture": "Independent state model, mutated histories and evidence",
+      "reuse_search": "test_contention_recovery.py;test_transaction_confirmation.py;test_graphify_evidence.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-15-026",
+      "group": "Adversarial",
+      "scenario": "Reject unsupported merge in linear chain",
+      "fixture": "Independent state model, mutated histories and evidence",
+      "reuse_search": "test_contention_recovery.py;test_transaction_confirmation.py;test_graphify_evidence.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-15-027",
+      "group": "Adversarial",
+      "scenario": "Reject unrelated row deletion",
+      "fixture": "Independent state model, mutated histories and evidence",
+      "reuse_search": "test_contention_recovery.py;test_transaction_confirmation.py;test_graphify_evidence.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-15-028",
+      "group": "Adversarial",
+      "scenario": "Reject unrelated row addition",
+      "fixture": "Independent state model, mutated histories and evidence",
+      "reuse_search": "test_contention_recovery.py;test_transaction_confirmation.py;test_graphify_evidence.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-15-029",
+      "group": "Adversarial",
+      "scenario": "Reject historical receipt replacement",
+      "fixture": "Independent state model, mutated histories and evidence",
+      "reuse_search": "test_contention_recovery.py;test_transaction_confirmation.py;test_graphify_evidence.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-15-030",
+      "group": "Adversarial",
+      "scenario": "Reject graph anchor pointing at wrong method",
+      "fixture": "Independent state model, mutated histories and evidence",
+      "reuse_search": "test_contention_recovery.py;test_transaction_confirmation.py;test_graphify_evidence.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-15-031",
+      "group": "Adversarial",
+      "scenario": "Reject graph anchor pointing at wrong source path",
+      "fixture": "Independent state model, mutated histories and evidence",
+      "reuse_search": "test_contention_recovery.py;test_transaction_confirmation.py;test_graphify_evidence.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-15-032",
+      "group": "Adversarial",
+      "scenario": "Distinguish intentionally rejected mutant from crashed oracle",
+      "fixture": "Independent state model, mutated histories and evidence",
+      "reuse_search": "test_contention_recovery.py;test_transaction_confirmation.py;test_graphify_evidence.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-16-001",
+      "group": "Lifecycle",
+      "scenario": "Complete single issue Head to Worker",
+      "fixture": "Disposable complete issue lifecycle and exact PR/run metadata",
+      "reuse_search": "test_vib53_qualification.py;test_post_merge.py;test_live_acceptance.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-16-002",
+      "group": "Lifecycle",
+      "scenario": "Complete Worker to Validate",
+      "fixture": "Disposable complete issue lifecycle and exact PR/run metadata",
+      "reuse_search": "test_vib53_qualification.py;test_post_merge.py;test_live_acceptance.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-16-003",
+      "group": "Lifecycle",
+      "scenario": "Complete Validate to Internal Auditor",
+      "fixture": "Disposable complete issue lifecycle and exact PR/run metadata",
+      "reuse_search": "test_vib53_qualification.py;test_post_merge.py;test_live_acceptance.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-16-004",
+      "group": "Lifecycle",
+      "scenario": "Complete Internal Auditor to Head",
+      "fixture": "Disposable complete issue lifecycle and exact PR/run metadata",
+      "reuse_search": "test_vib53_qualification.py;test_post_merge.py;test_live_acceptance.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-16-005",
+      "group": "Lifecycle",
+      "scenario": "Stage completed issue with evidence",
+      "fixture": "Disposable complete issue lifecycle and exact PR/run metadata",
+      "reuse_search": "test_vib53_qualification.py;test_post_merge.py;test_live_acceptance.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-16-006",
+      "group": "Lifecycle",
+      "scenario": "Reconcile authorized actual merge",
+      "fixture": "Disposable complete issue lifecycle and exact PR/run metadata",
+      "reuse_search": "test_vib53_qualification.py;test_post_merge.py;test_live_acceptance.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-16-007",
+      "group": "Lifecycle",
+      "scenario": "Reject stale staged candidate after PR update",
+      "fixture": "Disposable complete issue lifecycle and exact PR/run metadata",
+      "reuse_search": "test_vib53_qualification.py;test_post_merge.py;test_live_acceptance.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-16-008",
+      "group": "Lifecycle",
+      "scenario": "Refresh candidate while preserving original fix",
+      "fixture": "Disposable complete issue lifecycle and exact PR/run metadata",
+      "reuse_search": "test_vib53_qualification.py;test_post_merge.py;test_live_acceptance.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-16-009",
+      "group": "Lifecycle",
+      "scenario": "Rework closed unmerged staged PR",
+      "fixture": "Disposable complete issue lifecycle and exact PR/run metadata",
+      "reuse_search": "test_vib53_qualification.py;test_post_merge.py;test_live_acceptance.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-16-010",
+      "group": "Lifecycle",
+      "scenario": "Defer blocked issue without losing version",
+      "fixture": "Disposable complete issue lifecycle and exact PR/run metadata",
+      "reuse_search": "test_vib53_qualification.py;test_post_merge.py;test_live_acceptance.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-16-011",
+      "group": "Lifecycle",
+      "scenario": "Complete 100 logical lane staging loop",
+      "fixture": "Disposable complete issue lifecycle and exact PR/run metadata",
+      "reuse_search": "test_vib53_qualification.py;test_post_merge.py;test_live_acceptance.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-16-012",
+      "group": "Lifecycle",
+      "scenario": "Reject cross-lane runs in full loop",
+      "fixture": "Disposable complete issue lifecycle and exact PR/run metadata",
+      "reuse_search": "test_vib53_qualification.py;test_post_merge.py;test_live_acceptance.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-16-013",
+      "group": "Lifecycle",
+      "scenario": "Validate exact post-merge push evidence",
+      "fixture": "Disposable complete issue lifecycle and exact PR/run metadata",
+      "reuse_search": "test_vib53_qualification.py;test_post_merge.py;test_live_acceptance.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-16-014",
+      "group": "Lifecycle",
+      "scenario": "Preserve actual merge SHA separately from candidate",
+      "fixture": "Disposable complete issue lifecycle and exact PR/run metadata",
+      "reuse_search": "test_vib53_qualification.py;test_post_merge.py;test_live_acceptance.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-16-015",
+      "group": "Lifecycle",
+      "scenario": "Distinguish simulated hosts from independent real hosts",
+      "fixture": "Disposable complete issue lifecycle and exact PR/run metadata",
+      "reuse_search": "test_vib53_qualification.py;test_post_merge.py;test_live_acceptance.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    },
+    {
+      "id": "ITQS-16-016",
+      "group": "Lifecycle",
+      "scenario": "Return blocked candidate to Head without merging",
+      "fixture": "Disposable complete issue lifecycle and exact PR/run metadata",
+      "reuse_search": "test_vib53_qualification.py;test_post_merge.py;test_live_acceptance.py",
+      "status": "planned/reconcile",
+      "required_evidence": "exact SHA; observed assertion or controlled rejection; OS; run/attempt; no skip credit"
+    }
+  ]
+}
