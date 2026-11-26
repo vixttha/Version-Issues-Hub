@@ -60,7 +60,7 @@ assert len(rejected)==16
 result={**cumulative,"links":[e for e in cumulative["links"] if not (e.get("confidence")=="INFERRED" and edge(e) in rejected)]}
 assert len(result["links"])==1212
 out=Path(os.environ["RUNNER_TEMP"])/"retained-graph-audit";out.mkdir(exist_ok=True)
-(out/"v0.0.0.36-reviewed-graph.json").write_text(json.dumps(result,indent=2)+"\n",encoding="utf-8")
+(out/"v0.0.0.36-reviewed-graph.json").write_bytes((json.dumps(result,indent=2)+"\n").encode("utf-8"))
 report={"status":"pass","historical_graphs":36,"cumulative_graphs":36,"native_positive":144,"native_negative":10,"inferred_reviewed":51,"false_inferred_removed":16,"reviewed_graph_edges":1212,"raw_graphs_preserved":True,"reviewed_source":cumulative["built_at_commit"],"reviewed_graph_sha256":sha(out/"v0.0.0.36-reviewed-graph.json"),"run":os.environ["GITHUB_RUN_ID"],"attempt":os.environ["GITHUB_RUN_ATTEMPT"],"checkout":git("rev-parse","HEAD")}
-(out/"report.json").write_text(json.dumps(report,indent=2)+"\n",encoding="utf-8")
+(out/"report.json").write_bytes((json.dumps(report,indent=2)+"\n").encode("utf-8"))
 print(json.dumps(report))
