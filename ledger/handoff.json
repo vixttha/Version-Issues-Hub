@@ -1,14 +1,5 @@
 {
-  "active": {
-    "candidate_sha": null,
-    "evidence": [],
-    "fix_sha": null,
-    "issue": 86,
-    "next_action": "Owner-authorized engineering-only completion following actual merged-revision qualification. PR #87; original fix 024046556bf00b649b2428c112f5456210036dfb; candidate c1a389c61710fa02a1d91d2abff4b15ec34359c5; engineering base 998c5f4113cd22a6fab1a833ef006acdb0da918d; merge d57771313191eb4ab5a5d20db8a5f2da9bda55a9; identical tested tree b885eba1fdfe5153d5ed29cc35fbd00d96612397. Premerge 10/10 including CodeRabbit 139959252361, zero unresolved threads; postmerge 11/11; each phase 1260 ordinary passing test executions, 16 intentional skips, all 23 closure methods passed in each of four public Ubuntu/Windows runs; Graphify 42/42 twice in each phase. Premerge attempts 45834306385,45834306125,45834306099,45834296193; postmerge attempts 45835745373,45835745534,45835745515,45835732313,45835732297 (all attempt 1). Review https://github.com/vixttha/Version-Issues-Hub/pull/87#issuecomment-7194293137 and merge receipt https://github.com/vixttha/Version-Issues-Hub/issues/86#issuecomment-7194317705. All four criteria reviewed and met in scoped engineering evaluation; independent certification not claimed. Existing installed schema-1 package targets main, so use return-to-Head and production-deferred disposition with null production pins; do not fabricate candidate for main. Issue #86 remains open, no closure or migration. Preserve #37/#40/#53 holds and all historical mappings. No .41 claim.",
-    "phase": "Head",
-    "pull_request": null,
-    "version": "v0.0.0.40"
-  },
+  "active": null,
   "history": [
     {
       "decision": "PR49 CodeRabbit finding 4682051116: rework exact product SHA comparisons and add regression checks; preserve previous evidence.",
@@ -1119,6 +1110,21 @@
         "pull_request": null,
         "version": "v0.0.0.39"
       },
+      "merged_sha": null
+    },
+    {
+      "handoff": {
+        "candidate_sha": null,
+        "evidence": [],
+        "fix_sha": null,
+        "issue": 86,
+        "next_action": "Owner-authorized engineering-only completion following actual merged-revision qualification. PR #87; original fix 024046556bf00b649b2428c112f5456210036dfb; candidate c1a389c61710fa02a1d91d2abff4b15ec34359c5; engineering base 998c5f4113cd22a6fab1a833ef006acdb0da918d; merge d57771313191eb4ab5a5d20db8a5f2da9bda55a9; identical tested tree b885eba1fdfe5153d5ed29cc35fbd00d96612397. Premerge 10/10 including CodeRabbit 139959252361, zero unresolved threads; postmerge 11/11; each phase 1260 ordinary passing test executions, 16 intentional skips, all 23 closure methods passed in each of four public Ubuntu/Windows runs; Graphify 42/42 twice in each phase. Premerge attempts 45834306385,45834306125,45834306099,45834296193; postmerge attempts 45835745373,45835745534,45835745515,45835732313,45835732297 (all attempt 1). Review https://github.com/vixttha/Version-Issues-Hub/pull/87#issuecomment-7194293137 and merge receipt https://github.com/vixttha/Version-Issues-Hub/issues/86#issuecomment-7194317705. All four criteria reviewed and met in scoped engineering evaluation; independent certification not claimed. Existing installed schema-1 package targets main, so use return-to-Head and production-deferred disposition with null production pins; do not fabricate candidate for main. Issue #86 remains open, no closure or migration. Preserve #37/#40/#53 holds and all historical mappings. No .41 claim.",
+        "phase": "Head",
+        "pull_request": null,
+        "version": "v0.0.0.40"
+      },
+      "disposition": "deferred",
+      "decision": "Owner-approved engineering completion: PR #87; fix 024046556bf00b649b2428c112f5456210036dfb; candidate c1a389c61710fa02a1d91d2abff4b15ec34359c5; merge d57771313191eb4ab5a5d20db8a5f2da9bda55a9.",
       "merged_sha": null
     }
   ],

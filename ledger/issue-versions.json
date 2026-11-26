@@ -401,7 +401,7 @@
         "Use focused ordinary regression coverage, GitHub public Ubuntu/Windows runners, Graphify and CodeRabbit; preserve #53 experimental, #37/#40 holds, single lane and owner authority; no live migration, main merge, release, advanced campaigns or new dependencies."
       ],
       "issue": 86,
-      "state": "in_progress",
+      "state": "deferred",
       "version": "v0.0.0.40"
     }
   ],
