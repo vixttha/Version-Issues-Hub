@@ -487,6 +487,18 @@ def closure_plan(api, state, number, policy, stage, *, owner_approved=False):
     return ledger, handoff
 
 
+def save_closure(api, state, ledger, handoff, number, *, apply=False, owner_approved=False):
+    """Publish via the existing issue-local lease and verify serialized state."""
+    result = save(api, state, ledger, handoff, apply, issue=number, closure_approved=owner_approved)
+    if apply:
+        pin = install.require(install.SHA, result["installed_sha"], "closure publication revision")
+        for path, expected in ((LEDGER, ledger), (HANDOFF, handoff)):
+            actual = checkpoint.parse_json(install.read_text(api, state["prefix"], path, pin))
+            if actual != expected:
+                raise ValueError("Closure ledger publication readback mismatch; reload before replay")
+    return result
+
+
 def complete_closure(api, state, number, policy, *, owner_approved=False, apply=False):
     if owner_approved is not True:
         raise ValueError("Explicit owner-approved issue closure required")
@@ -517,7 +529,7 @@ def complete_closure(api, state, number, policy, *, owner_approved=False, apply=
         elif item.get("state") != "closed" or item.get("state_reason") != policy["reason"]:
             raise ValueError("Issue changed before closure")
         ledger, handoff = closure_plan(api, state, number, policy, "confirmed", owner_approved=True)
-        return save(api, state, ledger, handoff, True, issue=number, closure_approved=True)
+        return save_closure(api, state, ledger, handoff, number, apply=True, owner_approved=True)
     except (ValueError, KeyError, TypeError, OSError, install.ApiError) as exc:
         raise ValueError("Closure outcome may be partial; durable intent retained. Reload exact ref and issue; "
                          "do not blindly replay the PATCH. " + str(exc)) from exc
@@ -1696,7 +1708,7 @@ def main():
             policy = checkpoint.parse_json(Path(args.policy).read_text(encoding="utf-8"))
             if args.stage == "prepare":
                 ledger, handoff = closure_plan(api, state, args.issue, policy, "pending", owner_approved=True)
-                result = save(api, state, ledger, handoff, args.apply, issue=args.issue, closure_approved=True)
+                result = save_closure(api, state, ledger, handoff, args.issue, apply=args.apply, owner_approved=True)
             else:
                 result = complete_closure(api, state, args.issue, policy, owner_approved=True, apply=args.apply)
         elif args.command == "inspect-operation":

@@ -89,7 +89,7 @@ class ClosureTests(unittest.TestCase):
                                              owner_approved=True, apply=True)
             self.assertEqual(self.state, before)
             with patch.object(session, "get_issue", return_value={"number": 247, "state": "closed", "state_reason": "completed"}), \
-                    patch.object(session, "save", return_value={"status": "saved"}) as save:
+                    patch.object(session, "save_closure", return_value={"status": "saved"}) as save:
                 self.assertEqual(session.complete_closure(self.api, self.state, 247, self.policy,
                                                           owner_approved=True, apply=True)["status"], "saved")
                 self.assertTrue(save.called)
@@ -120,3 +120,90 @@ class ClosureTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 session.verify_closure_basis(self.api, self.state, 247, wrong)
         self.assertFalse(self.api.writes)
+
+    def test_full_fixture_apply_readback_and_idempotence(self):
+        import base64
+        import hashlib
+        import json
+        from test_session import BASE, HEAD, NEXT, TREE
+        from test_engineering_completion import BRANCH
+
+        prefix = self.state["prefix"]
+        historical_ref = self.state["ref"]
+        pending_ref, confirmed_ref = "8" * 40, "9" * 40
+        current = {"number": 247, "state": "open", "state_reason": None}
+        contents = {historical_ref: {session.LEDGER: install.render(self.state["ledger"]),
+                    session.HANDOFF: install.render(self.state["handoff"]),
+                    "vib-install.json": install.render({**self.state["manifest"],
+                        "target_repository": self.state["ledger"]["repository"]})}}
+        staged = {}
+        original_request = self.api.request
+        def request(method, path, body=None):
+            if method == "GET" and path == prefix + "/issues/247":
+                return copy.deepcopy(current)
+            if method == "PATCH" and path == prefix + "/issues/247":
+                self.assertEqual(body, {"state": "closed", "state_reason": "completed"})
+                self.api.writes.append((method, path, copy.deepcopy(body)))
+                current.update(body)
+                return copy.deepcopy(current)
+            if method == "GET" and path == prefix + "/git/ref/heads/trunk":
+                return {"ref": "refs/heads/trunk", "object": {"type": "commit", "sha": BASE}}
+            if method == "GET" and "/compare/" in path:
+                first, last = path.rsplit("/", 1)[1].split("...")
+                if first == last or (first == historical_ref and last in (pending_ref, confirmed_ref)):
+                    return {"status": "identical" if first == last else "ahead",
+                            "merge_base_commit": {"sha": first}}
+            if method == "GET" and path.startswith(prefix + "/contents/"):
+                filename, ref = path[len(prefix + "/contents/"):].split("?ref=")
+                raw = contents[ref][filename].encode("utf-8")
+                return {"type": "file", "encoding": "base64", "path": filename,
+                        "content": base64.b64encode(raw).decode("ascii"),
+                        "sha": hashlib.sha1(b"blob " + str(len(raw)).encode() + b"\0" + raw).hexdigest()}
+            if method == "GET" and path in (prefix + "/git/commits/" + pending_ref,
+                                             prefix + "/git/commits/" + confirmed_ref):
+                return {"sha": path.rsplit("/", 1)[1], "tree": {"sha": TREE}}
+            if method == "POST" and path == prefix + "/git/trees":
+                self.assertEqual(body["base_tree"], TREE)
+                self.api.writes.append((method, path, copy.deepcopy(body)))
+                staged.update({entry["path"]: entry["content"] for entry in body["tree"]})
+                return {"sha": TREE}
+            if method == "POST" and path == prefix + "/git/commits":
+                self.assertEqual(body["parents"], [self.api.ref])
+                self.api.writes.append((method, path, copy.deepcopy(body)))
+                new = pending_ref if self.api.ref == HEAD else confirmed_ref
+                contents[new] = {**contents[self.api.ref], **staged}
+                return {"sha": new}
+            if method == "PATCH" and path == prefix + "/git/refs/heads/" + install.BRANCH:
+                self.assertFalse(body["force"])
+                self.api.writes.append((method, path, copy.deepcopy(body)))
+                self.api.ref = body["sha"]
+                return {}
+            return original_request(method, path, body)
+        def restored(pin):
+            return {**self.state, "ref": pin, "product_sha": BASE,
+                    "ledger": json.loads(install.read_text(self.api, prefix, session.LEDGER, pin)),
+                    "handoff": json.loads(install.read_text(self.api, prefix, session.HANDOFF, pin))}
+        with patch.object(self.api, "request", side_effect=request):
+            ledger, handoff = session.closure_plan(self.api, self.state, 247, self.policy,
+                                                    "pending", owner_approved=True)
+            first = session.save_closure(self.api, self.state, ledger, handoff, 247,
+                                          apply=True, owner_approved=True)
+            self.assertEqual(first["installed_sha"], pending_ref)
+            self.assertEqual(current["state"], "open")
+            pending = restored(pending_ref)
+            second = session.complete_closure(self.api, pending, 247, self.policy,
+                                               owner_approved=True, apply=True)
+            self.assertEqual(second["installed_sha"], confirmed_ref)
+            final = restored(confirmed_ref)
+            self.assertEqual(final["ledger"], self.state["ledger"])
+            self.assertEqual(final["handoff"]["history"][:-2], self.state["handoff"]["history"])
+            self.assertEqual(session.closure_status(final, current)["closure_synchronization"], "confirmed")
+            self.assertEqual(install.read_ref(self.api, prefix, "trunk"), BASE)
+            self.assertEqual(install.read_ref(self.api, prefix, BRANCH), NEXT)
+            self.assertFalse(session.closure_status(final, current)["production_integrated"])
+            before = copy.deepcopy(self.api.writes)
+            self.assertEqual(session.complete_closure(self.api, final, 247, self.policy,
+                                                       owner_approved=True, apply=True)["status"], "already_confirmed")
+            self.assertEqual(self.api.writes, before)
+            self.assertEqual(sum(method == "PATCH" and path.endswith("/issues/247")
+                                 for method, path, _ in self.api.writes), 1)

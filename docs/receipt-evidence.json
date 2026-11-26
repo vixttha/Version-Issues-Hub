@@ -1342,6 +1342,10 @@
         {
           "path": "tests/test_issue_closure.py",
           "anchor": "def test_exact_evidence_and_historical_identity(self):"
+        },
+        {
+          "path": "tests/test_issue_closure.py",
+          "anchor": "def test_full_fixture_apply_readback_and_idempotence(self):"
         }
       ]
     }
