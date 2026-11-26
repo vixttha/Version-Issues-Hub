@@ -1060,6 +1060,10 @@
         {
           "path": "docs/v0.0.0.37.md",
           "anchor": "### Matched protocol benchmark and recovery boundary"
+        },
+        {
+          "path": "docs/v0.0.0.37.md",
+          "anchor": "### Consistent confirmation and bounded immutable caching"
         }
       ],
       "changed_in": [
@@ -1084,6 +1088,10 @@
         {
           "path": "tools/session.py",
           "anchor": "def recover_save(api, target, state, plan, issue, *, attempts=4, rounds=1, request=None,"
+        },
+        {
+          "path": "tools/session.py",
+          "anchor": "def validate_retry_history(api, previous, fresh, number, path, confirmed=None, *, _history_cache=None):"
         }
       ],
       "tested_by": [
@@ -1110,6 +1118,26 @@
         {
           "path": "tests/test_session.py",
           "anchor": "def test_staged_publication_rechecks_after_recovery_ticket_sink(self):"
+        },
+        {
+          "path": "tests/test_contention_recovery.py",
+          "anchor": "def test_published_candidate_with_valid_same_issue_descendant_is_confirmed(self):"
+        },
+        {
+          "path": "tests/test_contention_recovery.py",
+          "anchor": "def test_published_candidate_does_not_bypass_intervening_integrity(self):"
+        },
+        {
+          "path": "tests/test_contention_recovery.py",
+          "anchor": "def test_confirmed_candidate_cannot_change_unrelated_tree(self):"
+        },
+        {
+          "path": "tests/test_contention_recovery.py",
+          "anchor": "def test_reconstructed_history_must_match_fresh_endpoint(self):"
+        },
+        {
+          "path": "tests/test_contention_recovery.py",
+          "anchor": "def test_qualified_history_cache_avoids_two_duplicate_immutable_reads(self):"
         }
       ]
     }

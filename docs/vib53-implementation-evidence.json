@@ -503,7 +503,7 @@
       "implemented_in": [
         {
           "path": "tools/session.py",
-          "anchor": "def retry_scope(api, previous, fresh, number, rejection):"
+          "anchor": "def retry_scope(api, previous, fresh, number, rejection, *, _history_cache=None):"
         },
         {
           "path": "tools/session.py",
@@ -571,7 +571,7 @@
       "implemented_in": [
         {
           "path": "tools/session.py",
-          "anchor": "def retry_scope(api, previous, fresh, number, rejection):"
+          "anchor": "def retry_scope(api, previous, fresh, number, rejection, *, _history_cache=None):"
         }
       ],
       "tested_by": [
@@ -601,7 +601,7 @@
       "changed_in": [
         {
           "path": "tools/session.py",
-          "anchor": "def retry_scope(api, previous, fresh, number, rejection):"
+          "anchor": "def retry_scope(api, previous, fresh, number, rejection, *, _history_cache=None):"
         }
       ],
       "implemented_in": [
