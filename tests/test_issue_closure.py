@@ -287,10 +287,11 @@ class ClosureTests(unittest.TestCase):
                 last = session.closure_records(final["handoff"], 247)[-1]
                 self.assertEqual(last["execution_id"], execution)
                 self.assertEqual(last["cancellation"]["state"], "closed")
+                self.assertEqual(last["cancellation"]["state_reason"], "completed")
                 status = session.closure_status(final, current)
-            self.assertEqual(status["closure_synchronization"], "cancelled")
-            self.assertTrue(status["disposition_conflict"])
-            self.assertFalse(status["production_integrated"])
+                self.assertEqual(status["closure_synchronization"], "cancelled")
+                self.assertFalse(status["disposition_conflict"])
+                self.assertFalse(status["production_integrated"])
                 self.assertEqual(sum(method == "PATCH" and "/issues/" in path
                                      for method, path, _ in self.api.writes), 1)
                 return
@@ -323,9 +324,11 @@ class ClosureTests(unittest.TestCase):
                 self.assertEqual(receipt["policy"], self.policy)
                 self.assertEqual(receipt["cancellation"], {"owner_decision": decision,
                                  "state": "closed", "state_reason": "not_planned"})
-                self.assertEqual(session.closure_status(final, current)["closure_synchronization"], "cancelled")
+                status = session.closure_status(final, current)
+                self.assertEqual(status["closure_synchronization"], "cancelled")
+                self.assertTrue(status["disposition_conflict"])
                 self.assertIsNone(session.pending_closure(final["handoff"]))
-                self.assertFalse(session.closure_status(final, current)["production_integrated"])
+                self.assertFalse(status["production_integrated"])
                 before = copy.deepcopy(self.api.writes)
                 self.assertEqual(session.cancel_closure_plan(self.api, final, 247, self.policy, decision,
                                      owner_approved=True), (final["ledger"], final["handoff"]))
