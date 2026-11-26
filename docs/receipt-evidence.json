@@ -1296,6 +1296,194 @@
           "anchor": "def test_engineering_completion_apply_and_readback(self):"
         }
       ]
+    },
+    {
+      "id": "v0-0-0-40",
+      "label": "Issue #86 · independent closure and ledger synchronization",
+      "documented_in": [
+        {
+          "path": "docs/v0.0.0.40.md",
+          "anchor": "## Independent lifecycle states"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "ledger/issue-versions.json",
+          "anchor": "\"issue\": 86,"
+        }
+      ],
+      "implemented_in": [
+        {
+          "path": "tools/session.py",
+          "anchor": "def closure_status(state, item):"
+        },
+        {
+          "path": "tools/session.py",
+          "anchor": "def verify_closure_basis(api, state, number, policy):"
+        },
+        {
+          "path": "tools/session.py",
+          "anchor": "def complete_closure(api, state, number, policy, *, owner_approved=False, apply=False):"
+        },
+        {
+          "path": "tools/session.py",
+          "anchor": "def cancel_closure_plan(api, state, number, policy, decision, *, owner_approved=False, recovery_execution=None):"
+        },
+        {
+          "path": "tools/lifecycle.py",
+          "anchor": "def idle_state(api, target, expected_sha):"
+        },
+        {
+          "path": "tools/session.py",
+          "anchor": "def require_closure_compatible_history(handoff, supported):"
+        },
+        {
+          "path": "tools/session.py",
+          "anchor": "def closure_archive_index(handoff, number):"
+        },
+        {
+          "path": "tools/session.py",
+          "anchor": "def legacy_approval_statement(review):"
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tests/test_issue_closure.py",
+          "anchor": "def test_closure_status_independent(self):"
+        },
+        {
+          "path": "tests/test_issue_closure.py",
+          "anchor": "def test_owner_and_exact_archive_required(self):"
+        },
+        {
+          "path": "tests/test_issue_closure.py",
+          "anchor": "def test_intent_is_append_only_and_idempotent(self):"
+        },
+        {
+          "path": "tests/test_issue_closure.py",
+          "anchor": "def test_confirmation_requires_matching_readback(self):"
+        },
+        {
+          "path": "tests/test_issue_closure.py",
+          "anchor": "def test_exact_evidence_and_historical_identity(self):"
+        },
+        {
+          "path": "tests/test_issue_closure.py",
+          "anchor": "def test_legacy_closure_cannot_replace_archived_pins(self):"
+        },
+        {
+          "path": "tests/test_issue_closure.py",
+          "anchor": "def test_reclaimed_issue_cannot_report_confirmed_closure(self):"
+        },
+        {
+          "path": "tests/test_issue_closure.py",
+          "anchor": "def test_reserved_prefix_compatibility_fails_closed(self):"
+        },
+        {
+          "path": "tests/test_issue_closure.py",
+          "anchor": "def test_malformed_history_prefix_guard_fails_with_validation_error(self):"
+        },
+        {
+          "path": "tests/test_issue_closure.py",
+          "anchor": "def test_legacy_approval_rejects_mixed_or_negative_decisions(self):"
+        },
+        {
+          "path": "tests/test_issue_closure.py",
+          "anchor": "def test_identical_archive_occurrences_are_distinct_and_old_policy_refused(self):"
+        },
+        {
+          "path": "tests/test_issue_closure.py",
+          "anchor": "def test_unbound_closure_policy_rejects_null_version_before_api_access(self):"
+        }
+      ]
+    },
+    {
+      "id": "v0-0-0-40-execution",
+      "label": "Issue #86 · closure execution serialization and recovery (same checkpoint)",
+      "documented_in": [
+        {
+          "path": "docs/v0.0.0.40.md",
+          "anchor": "## Orange Team / Purple Team retest matrix"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "ledger/issue-versions.json",
+          "anchor": "\"issue\": 86,"
+        }
+      ],
+      "implemented_in": [
+        {
+          "path": "tools/session.py",
+          "anchor": "def complete_closure(api, state, number, policy, *, owner_approved=False, apply=False):"
+        },
+        {
+          "path": "tools/session.py",
+          "anchor": "def cancel_closure_plan(api, state, number, policy, decision, *, owner_approved=False, recovery_execution=None):"
+        },
+        {
+          "path": "tools/lifecycle.py",
+          "anchor": "def idle_state(api, target, expected_sha):"
+        },
+        {
+          "path": "tools/session.py",
+          "anchor": "def reconcile(api, state, number, decision, *, policy=None):"
+        },
+        {
+          "path": "tools/session.py",
+          "anchor": "def validate_closure_approval(archive, ledger, number, policy):"
+        },
+        {
+          "path": "tools/session.py",
+          "anchor": "def validate_closure_history(handoff, ledger):"
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tests/test_issue_closure.py",
+          "anchor": "def test_partial_failure_retains_pending_intent(self):"
+        },
+        {
+          "path": "tests/test_issue_closure.py",
+          "anchor": "def test_full_fixture_apply_readback_and_idempotence(self):"
+        },
+        {
+          "path": "tests/test_issue_closure.py",
+          "anchor": "def test_cancel_stale_intent_and_resume_work(self):"
+        },
+        {
+          "path": "tests/test_issue_closure.py",
+          "anchor": "def test_competing_cancel_wins_execution_cas(self):"
+        },
+        {
+          "path": "tests/test_issue_closure.py",
+          "anchor": "def test_competing_completion_wins_cancel_cas(self):"
+        },
+        {
+          "path": "tests/test_issue_closure.py",
+          "anchor": "def test_restart_after_lost_issue_response_requires_recovery(self):"
+        },
+        {
+          "path": "tests/test_issue_closure.py",
+          "anchor": "def test_cancelled_intent_cannot_be_replayed(self):"
+        },
+        {
+          "path": "tests/test_issue_closure.py",
+          "anchor": "def test_execution_claim_blocks_replay_cancel_and_lifecycle(self):"
+        },
+        {
+          "path": "tests/test_issue_closure.py",
+          "anchor": "def test_ambiguous_or_lost_execution_acquisition_never_patches_issue(self):"
+        },
+        {
+          "path": "tests/test_issue_closure.py",
+          "anchor": "def test_history_loader_validates_archived_approval_for_every_receipt(self):"
+        },
+        {
+          "path": "tests/test_issue_closure.py",
+          "anchor": "def test_history_loader_rejects_overlapping_closures_even_when_resolved(self):"
+        }
+      ]
     }
   ]
 }

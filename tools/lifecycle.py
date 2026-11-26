@@ -39,6 +39,8 @@ def idle_state(api, target, expected_sha):
     state = session.load(api, target, expected_sha)
     if state["manifest"].get("enforcement") != "disabled":
         raise ValueError("Disable and independently revoke enforced mode before lifecycle changes")
+    if session.pending_closure(state["handoff"]) is not None:
+        raise ValueError("Reconcile unresolved closure before lifecycle changes")
     if session.active_rows(state["handoff"]) or any(
             row["state"] in ("in_progress", "staged") for row in state["ledger"]["issues"]):
         raise ValueError("Finish active work and reconcile staged issues before lifecycle changes")
@@ -70,6 +72,7 @@ def upgrade(api, target, expected_sha, source_sha, *, apply=False, owner_approve
         raise ValueError("Upgrade must advance the pinned source history")
     old_files = install.source_files(api, old_source)
     new_files = install.source_files(api, source_sha)
+    session.require_closure_compatible_history(state["handoff"], session.supports_closure_execution(new_files))
     if state["handoff"]["schema_version"] == 2 and not session.supports_parallel_package(new_files):
         raise ValueError("Upgrade target lacks parallel handoff support")
     if not set(old_files).issubset(new_files):
