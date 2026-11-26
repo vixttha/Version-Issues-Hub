@@ -52,3 +52,16 @@ class GraphifyEvidenceTests(unittest.TestCase):
         for group in manifest["features"]:
             for relation in ("documented_in", "changed_in", "implemented_in", "tested_by"):
                 self.assertTrue(1 <= len(group[relation]) <= 12, (group["id"], relation))
+
+    def test_integration_integrity_graph_anchors_match_exact_source(self):
+        import json
+        from pathlib import Path
+        root = Path(__file__).resolve().parents[1]
+        manifest = json.loads((root / "docs/receipt-evidence.json").read_text(encoding="utf-8"))
+        groups = [f for f in manifest["features"] if f["id"] == "v0-0-0-43"]
+        self.assertEqual(len(groups), 1)
+        for relation in ("documented_in", "changed_in", "implemented_in", "tested_by"):
+            for ref in groups[0][relation]:
+                lines = (root / ref["path"]).read_text(encoding="utf-8").splitlines()
+                with self.subTest(relation=relation, path=ref["path"], anchor=ref["anchor"]):
+                    self.assertEqual(sum(ref["anchor"] in line for line in lines), 1)

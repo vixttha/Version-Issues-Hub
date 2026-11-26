@@ -1643,7 +1643,7 @@
         },
         {
           "path": "tools/session.py",
-          "anchor": "def require_product_lineage(api, state):"
+          "anchor": "def require_product_lineage(api, state, *, allow_stale_plan=False):"
         },
         {
           "path": "tools/session.py",
@@ -1678,6 +1678,10 @@
         {
           "path": "tests/test_integration_integrity.py",
           "anchor": "def test_product_lineage_reset_blocks_claim_and_publication(self):"
+        },
+        {
+          "path": "tests/test_integration_integrity.py",
+          "anchor": "def test_stale_ordinary_claim_and_direct_save_fail_before_writes(self):"
         },
         {
           "path": "tests/test_integration_integrity.py",
