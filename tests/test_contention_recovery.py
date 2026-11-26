@@ -579,3 +579,36 @@ class RecoveryTests(unittest.TestCase):
                         self.recover(lambda s: self.claim(s, B), B)
                 self.assertEqual(caught.exception.candidate_sha, "a"*40)
                 self.assertEqual(save.call_count, 1)
+
+    def test_published_candidate_with_valid_same_issue_descendant_is_confirmed(self):
+        result = self.recover(lambda s: self.claim(s, B), B)
+        published = result["installed_sha"]
+        tree = self.api.git("rev-parse", published+"^{tree}")
+        current = session.load(self.api, REPO)
+        descendant = session.save(self.api, current,
+            *session.advance(self.api, current, "Head decision", issue=B, return_to_head=True),
+            True, issue=B)["installed_sha"]
+        rejection = session.HandoffRejected(install.ApiError(422), published, tree, result["operation_id"])
+        with patch.object(session, "save", side_effect=rejection) as save:
+            recovered = self.recover(lambda s: self.claim(s, B), B)
+        self.assertEqual(recovered["installed_sha"], published)
+        self.assertEqual(recovered["observed_sha"], descendant)
+        self.assertEqual(save.call_count, 1)
+
+    def test_published_candidate_does_not_bypass_intervening_integrity(self):
+        api = self.api
+        result = self.recover(lambda s: self.claim(s, B), B)
+        published = result["installed_sha"]
+        tree = api.git("rev-parse", published+"^{tree}")
+        altered = api.tree({"tools/session.py": "changed\\n"}, tree)
+        middle = api.commit(altered, [published])
+        restored = api.commit(tree, [middle])
+        api.ref(install.BRANCH, restored)
+        rejection = session.HandoffRejected(install.ApiError(422), published, tree, result["operation_id"])
+        before = list(api.writes)
+        with patch.object(session, "save", side_effect=rejection) as save:
+            with self.assertRaises(session.HandoffUnconfirmed) as caught:
+                self.recover(lambda s: self.claim(s, B), B)
+        self.assertEqual(caught.exception.candidate_sha, published)
+        self.assertEqual(save.call_count, 1)
+        self.assertEqual(api.writes, before)

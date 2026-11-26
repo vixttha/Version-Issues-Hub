@@ -970,6 +970,7 @@ def retry_scope(api, previous, fresh, number, rejection):
         cursor = parent
     if cursor != old:
         raise ValueError("Contention ancestry bound exceeded; inspect before retrying")
+    confirmed = None
     if isinstance(rejection, HandoffRejected):
         for sha, commit, parent in path:
             if sha == rejection.candidate_sha:
@@ -980,7 +981,22 @@ def retry_scope(api, previous, fresh, number, rejection):
                         verify_operation_commit(commit, rejection.operation_id)
                     except ValueError:
                         raise HandoffUnconfirmed(sha) from None
-                return sha
+                confirmed = sha
+                break
+    try:
+        validate_retry_history(api, previous, fresh, number, path, confirmed)
+    except ValueError as exc:
+        if confirmed is not None:
+            # The candidate exists, but the later chain has not qualified.
+            # Retain its identity for read-only inspection, never replay.
+            raise HandoffUnconfirmed(confirmed) from exc
+        raise
+    return confirmed
+
+
+def validate_retry_history(api, previous, fresh, number, path, confirmed=None):
+    """Check each adjacent transaction even when the candidate is already published."""
+    prefix, old = fresh["prefix"], previous["ref"]
     expected = issue_view(previous["ledger"], previous["handoff"], number)
     history = previous["handoff"]["history"]
     prior_ledger = previous["ledger"]
@@ -1022,7 +1038,7 @@ def retry_scope(api, previous, fresh, number, rejection):
         if handoff["schema_version"] < prior_schema:
             raise ValueError("Handoff schema regressed during contention")
         if (handoff["history"][:len(history)] != history
-                or issue_view(ledger, handoff, number) != expected):
+                or (confirmed is None and issue_view(ledger, handoff, number) != expected)):
             raise ValueError("Issue or archive changed during contention; inspect before retrying")
         # Validate every adjacent transaction under its own inferred issue scope,
         # not the issue being retried. This also protects terminal archive appends.
@@ -1036,6 +1052,8 @@ def retry_scope(api, previous, fresh, number, rejection):
         changed.update(record["handoff"]["issue"] for record in handoff["history"][len(history):])
         if len(changed) > 1:
             raise ValueError("Multiple issue scopes changed during contention")
+        if sha == confirmed and changed != {number}:
+            raise ValueError("Confirmed candidate does not change exactly its issue scope")
         historical = {**previous, "ledger": prior_ledger, "handoff": prior_handoff}
         check_issue_delta(historical, ledger, handoff, next(iter(changed), None))
         history = handoff["history"]
@@ -1043,7 +1061,6 @@ def retry_scope(api, previous, fresh, number, rejection):
         prior_handoff = handoff
         prior_entries = entries
         prior_schema = handoff["schema_version"]
-    return None
 
 
 def planned_issue_view(ledger, handoff, number, new_issue):
