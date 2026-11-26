@@ -1,0 +1,65 @@
+{
+  "decision_id": "VIB-MOTION-EXPERIMENT-001",
+  "date": "2026-11-26",
+  "status": "OWNER_APPROVED_EXPERIMENTAL_ASSET",
+  "scope": "Sequential Activation V1, light and dark variants; experimental acceptance only",
+  "owner_decision": "approve V1 as an experimental animated brand asset",
+  "reviewed_commit": "55c8cfa6a70f4f220a30d8d7bb5b172a5076b654",
+  "brand_lock": "VIB-BRAND-LOCK-001",
+  "approved_static_source_commit": "388c6ef968aa15edf3caa34e9de6819dcda24e7f",
+  "qualification": {
+    "run_id": 45890531274,
+    "conclusion": "success",
+    "artifact_id": 15150764537,
+    "artifact_digest": "sha256:cce5b64c47ca56e1904a195d52c2f037087ab39c0b768ba6a766e85e7c2595e9",
+    "artifact_expires_at": "2026-11-27T20:25:36Z",
+    "verification_json_sha256": "eca88d2783c696983e296558008dc13a9c30f9f3cc07b51cbf5f4b27c4948030",
+    "variants": [
+      {
+        "file": "vib-sequential-light.webp",
+        "bytes": 24744,
+        "sha256": "df85f40cce7f452d4485e80746ab70ac756acf5ecf4c9ef6b95b71159c18be8d"
+      },
+      {
+        "file": "vib-sequential-dark.webp",
+        "bytes": 24318,
+        "sha256": "65a905078cd892a08933459e948a24bdbd408f1cda55d7bd5e5f4f735cc4964f"
+      }
+    ],
+    "duration_ms": 6000,
+    "loop": 0,
+    "width": 960,
+    "height": 720,
+    "source_frames_per_variant": 144,
+    "encoded_frames_per_variant": 40,
+    "technical_checks": "passed",
+    "browser_checks": [
+      "chromium",
+      "firefox",
+      "webkit"
+    ],
+    "windows_verifier": "passed"
+  },
+  "audit": {
+    "engineering": "approved for experimental use",
+    "brand_fidelity": "approved",
+    "visual_review": "owner accepted after viewing; assistant audit based on decoded frames and CI playback evidence",
+    "open_findings": [
+      "MOT-001 subtle activation",
+      "MOT-002 dimmed-theme contrast",
+      "MOT-003 transparent margins",
+      "MOT-004 actual GitHub README playback unqualified",
+      "MOT-005 reduced-motion behavior unqualified"
+    ]
+  },
+  "limits": {
+    "main_readme_rollout": "not authorized",
+    "permanent_motion_lock": "not authorized",
+    "permanent_media_retention": "not authorized; temporary review artifact only",
+    "static_artwork_changes": "not authorized",
+    "future_variants": "not covered",
+    "github_readme_playback": "pending",
+    "reduced_motion": "pending"
+  },
+  "note": "This decision supersedes the pending owner acceptance field in the original immutable verification report only for experimental acceptance. It does not rewrite the report or extend artifact retention."
+}
