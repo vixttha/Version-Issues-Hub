@@ -131,7 +131,7 @@
       "implemented_in": [
         {
           "path": "tools/session.py",
-          "anchor": "def reconcile(api, state, number, decision):"
+          "anchor": "def reconcile(api, state, number, decision, *, policy=None):"
         }
       ],
       "tested_by": [
@@ -607,7 +607,7 @@
       "implemented_in": [
         {
           "path": "tools/session.py",
-          "anchor": "def claim(api, state, number, criteria, note, *, resume_prior_line=False):"
+          "anchor": "def claim(api, state, number, criteria, note, *, resume_prior_line=False, parallel=False):"
         }
       ],
       "tested_by": [
@@ -978,6 +978,38 @@
         {
           "path": "tests/test_checkpoint.py",
           "anchor": "def test_explicit_receipt_selection_rejects_invalid_before_generation(self, ancestry, make_receipt):"
+        }
+      ]
+    },
+    {
+      "id": "v0-0-0-37",
+      "label": "Issue #53 · independent issue-scoped VIB handoff",
+      "documented_in": [
+        {
+          "path": "docs/v0.0.0.37.md",
+          "anchor": "## Current-baseline reconciliation"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "ledger/issue-versions.json",
+          "anchor": "\"issue\": 53,"
+        }
+      ],
+      "implemented_in": [
+        {
+          "path": "tools/session.py",
+          "anchor": "def recover_save(api, target, state, plan, issue, *, attempts=4, rounds=1, request=None):"
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tests/test_vib53_qualification.py",
+          "anchor": "def test_bounded_concurrent_workloads(self):"
+        },
+        {
+          "path": "tests/test_transaction_confirmation.py",
+          "anchor": "def test_malformed_post_write_readback_retains_candidate(self):"
         }
       ]
     }
