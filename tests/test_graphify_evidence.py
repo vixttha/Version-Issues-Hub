@@ -72,4 +72,4 @@ class GraphifyEvidenceTests(unittest.TestCase):
                         key = (ref["path"], ref["anchor"])
                         self.assertNotIn(key, seen)
                         seen.add(key)
-                        self.assertEqual(sum(ref["anchor"] in line for line in lines), 1)
+                        self.assertEqual(sum(line.strip() == ref["anchor"] for line in lines), 1)

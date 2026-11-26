@@ -1713,21 +1713,21 @@
         },
         {
           "path": "tools/install.py",
-          "anchor": "Installed ref was created at"
+          "anchor": "raise ValueError(\"Installed ref was created at \" + commit +"
         }
       ],
       "implemented_in": [
         {
           "path": "tools/session.py",
-          "anchor": "Integration publication must preserve original handoff pins"
+          "anchor": "raise ValueError(\"Integration publication must preserve original handoff pins\")"
         },
         {
           "path": "tools/session.py",
-          "anchor": "Integration debt deferral expired before publication"
+          "anchor": "raise ValueError(\"Integration debt deferral expired before publication\")"
         },
         {
           "path": "tools/session.py",
-          "anchor": "Historical engineering approval conflicts with archived handoff pin"
+          "anchor": "raise ValueError(\"Historical engineering approval conflicts with archived handoff pin: \" + key)"
         }
       ],
       "tested_by": [
