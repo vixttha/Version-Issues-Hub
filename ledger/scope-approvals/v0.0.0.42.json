@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "repository": "vixttha/Version-Issues-Hub",
+  "issue": 94,
+  "version": "v0.0.0.42",
+  "base_sha": "c7a4995c99fed8d1e87970a744c4cde378ebed1e",
+  "reviewed_sha": "c7a4995c99fed8d1e87970a744c4cde378ebed1e",
+  "previous_approval_sha": null,
+  "criteria": [
+    "Provide a concise read-only recovery and next-handoff plan from canonical state, including active, staged, stale, merged, closed and pending-closure conditions; never automatically mutate state or infer authorization.",
+    "Permit reuse of recorded verification references only for the same issue, fix, candidate, PR, base and proposed merge after fresh exact-run validation and current installed-state lease checks; refuse stale, ambiguous, cross-issue or missing evidence.",
+    "Preserve the singleton workflow, immutable version mappings and historical receipts; keep production, issue closure, experimental activation and owner decisions separate; retain #37/#40/#53 holds.",
+    "Qualify bounded deterministic regressions on ordinary public Ubuntu/Windows runners, Graphify and CodeRabbit, preserving all six laws and prior evidence; no live migration, main integration, release, advanced qualification, new dependency or schedule restart."
+  ],
+  "allowed_paths": [
+    "docs/receipt-evidence.json",
+    "docs/v0.0.0.42.md",
+    "install/branch/WORKFLOW.md",
+    "ledger/issue-versions.json",
+    "ledger/receipt-scope.json",
+    "ledger/self-use-worker.json",
+    "tests/test_recovery_plan.py",
+    "tools/session.py"
+  ],
+  "qualification": "ordinary",
+  "disposition": "engineering_only",
+  "owner_decision": "Owner selected Option 1 and delegated implementation and ordinary qualification under locked roadmap .42. Bounded paths selected by Worker; no production integration, advanced trials, migration, release or expansion."
+}
