@@ -1,7 +1,7 @@
 name: VIB .40-.42 engineering graph archive
 on:
   push:
-    branches: [review/veraphify-sync-40-42]
+    branches: [review/veraphify-sync-40-42, Veraphify]
 permissions:
   contents: read
 jobs:
@@ -23,6 +23,7 @@ jobs:
           persist-credentials: false
       - id: archive-state
         run: |
+          if test "$GITHUB_REF" = refs/heads/Veraphify && ! test -d vault/archives/engineering-code-graphs-40-42; then exit 1; fi
           if test -e vault/archives/engineering-code-graphs-40-42; then
             echo "existing=true" >> "$GITHUB_OUTPUT"
           else
@@ -33,11 +34,13 @@ jobs:
         with:
           node-version: '24.22.3'
           package-manager-cache: false
-      - run: python3 tools/engineering-graphs-40-42.py validate-existing
+      - run: |
+          python3 tools/engineering-graphs-40-42.py validate-existing
+          python3 tools/engineering-graphs-37-40.py validate-existing
         if: steps.archive-state.outputs.existing == 'true'
         working-directory: vault
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
-        if: steps.archive-state.outputs.existing == 'false'
+        if: steps.archive-state.outputs.existing == 'false' && github.ref == 'refs/heads/review/veraphify-sync-40-42'
         with:
           ref: '3160df17f60b3eaa9a9e70e1ca13bffcfe2eb4e8'
           path: source

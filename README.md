@@ -94,3 +94,7 @@ node veraphifiy.mjs code-graph --archive archives --project vixttha/Version-Issu
 ### Source review v2
 
 The original .36 review overlay is historical and superseded. The public retained qualification now audits all 72 graphs against pinned source. Lexically resolved inferred references are supported, incorrect targets rejected, and dynamic receiver or symbol bindings remain explicitly unverified. Derived views omit both rejected and unresolved inferred edges; original graphs are never changed. This is not proof of runtime behavior. Repeated extraction verifies retained bytes rather than reimporting an existing archive.
+
+### Engineering archive continuation (.40 correction through .42)
+
+See [the exact-version synchronization intake](archives/SYNC-40-43.md) and [retained graph index](archives/engineering-code-graphs-40-42/index.json). The `engineering` scope accepts the original and corrected .40 sources using their respective independently recorded digest pins. .41 and .42 are engineering snapshots, not releases. .43 is active and not represented as finalized evidence.
