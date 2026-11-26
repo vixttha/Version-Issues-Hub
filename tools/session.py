@@ -1074,7 +1074,7 @@ def recovery_plan(api, state, requested=None):
         "closure_reconciliation_required": "Reconcile durable closure with owner; never replay issue mutation.",
         "experimental_history_only": "Inspect historical state only; experimental activation remains suspended.",
         "owner_hold": "Retain owner hold; do not claim or promote this issue.",
-        "closure_recorded": "Retain historical closure receipt; no new closure or integration.",
+        "closure_recorded": "Retain historical closure receipt; never replay closure. Later verified product reconciliation remains possible with exact evidence and owner approval.",
         "engineering_complete": "Retain engineering receipt; production and issue closure remain separate decisions.",
         "head_scope_required": "Head must select and authorize scope before claim.",
         "blocked_other_active_issue": "Resume the existing active issue or obtain a Head disposition.",
@@ -1144,7 +1144,9 @@ def recovery_plan(api, state, requested=None):
     if status == "head_scope_required":
         try:
             require_product_lineage(api, state)
-        except (ValueError, KeyError, TypeError, install.ApiError, OSError):
+        except (ValueError, KeyError, TypeError, install.ApiError, OSError) as exc:
+            if isinstance(exc, install.ApiError) and exc.retry_after is not None:
+                raise
             status = "product_lineage_reconciliation_required"
             action = "Verify target identity, baseline and historical product merge ancestry before claiming work."
     if status == "head_scope_required" and debt:
@@ -1152,7 +1154,9 @@ def recovery_plan(api, state, requested=None):
             if number is None:
                 raise ValueError("No exact proposed issue for deferral review")
             require_integration_debt_clear(api, state, number)
-        except (ValueError, KeyError, TypeError, install.ApiError, OSError):
+        except (ValueError, KeyError, TypeError, install.ApiError, OSError) as exc:
+            if isinstance(exc, install.ApiError) and exc.retry_after is not None:
+                raise
             status = "integration_debt_reconciliation_required"
             action = "Review outstanding production integration debt and exact bounded owner deferrals before unrelated claim."
         else:
@@ -1326,13 +1330,22 @@ def require_integration_debt_clear(api, state, number):
         return
     policies = []
     for row in debt:
-        prior = next((r for r in reversed(state["handoff"]["history"])
-                      if r["handoff"]["issue"] == row["issue"]
-                      and closure_receipt(r) is None), None)
-        if (prior is None or row["state"] not in ("staged", "deferred")
-                or prior["disposition"] != row["state"]):
+        outstanding = []
+        latest = None
+        for record in state["handoff"]["history"]:
+            if record["handoff"]["issue"] != row["issue"] or closure_receipt(record) is not None:
+                continue
+            latest = record
+            if record["disposition"] == "integrated":
+                outstanding.clear()
+            elif record["disposition"] in ("staged", "deferred"):
+                outstanding.append(record)
+        if (not outstanding or row["state"] not in ("staged", "deferred")
+                or latest is not outstanding[-1] or latest["disposition"] != row["state"]):
             raise ValueError("Missing current integration debt archive; owner reconciliation required")
-        policies.append(check_deferral(api, state, prior, number))
+        # A new pinless deferral cannot replace earlier outstanding authority.
+        for prior in outstanding:
+            policies.append(check_deferral(api, state, prior, number))
     return policies
 
 
@@ -1616,6 +1629,15 @@ def reconcile_historical_integration(api, state, number, decision, policy):
     merged, links = standard.verify_merged_destination(api, state, candidate, read_pr(), review,
         state["manifest"]["product_branch"], read_pr)
     check_preview()
+    # Final preview reads may outlast the earlier product ancestry check.
+    # GitHub cannot atomically compare both refs; later rollback is unsupported.
+    from tools import gate
+    branch = state["manifest"]["product_branch"]
+    current = install.require(install.SHA, install.read_ref(api, prefix, branch), "current product revision")
+    gate.check_ancestry(api, prefix, merged, current)
+    if (install.read_ref(api, prefix, branch) != current
+            or install.read_ref(api, prefix, install.BRANCH) != state["ref"]):
+        raise ValueError("Historical integration target or installed state changed")
     candidate["evidence"] = list(dict.fromkeys(candidate["evidence"] + links))
     ledger, handoff = copy.deepcopy(state["ledger"]), copy.deepcopy(state["handoff"])
     next(r for r in ledger["issues"] if r["issue"] == number)["state"] = "integrated"
@@ -2010,6 +2032,10 @@ def save(api, state, ledger, handoff, apply=False, *, issue=None, operation_id=N
                          and r["disposition"] == "integrated"]
                 if len(proof) != 1:
                     raise ValueError("Integration debt cannot clear without exact integration archive")
+                dispositions = [r for r in appended if r["handoff"]["issue"] == row["issue"]
+                                and closure_receipt(r) is None]
+                if dispositions[-1] != proof[0]:
+                    raise ValueError("Final archive disposition must match integrated row")
                 record = proof[0]
                 if record["decision"].startswith(HISTORICAL_INTEGRATION_DECISION):
                     receipt = checkpoint.parse_json(record["decision"][len(HISTORICAL_INTEGRATION_DECISION):])

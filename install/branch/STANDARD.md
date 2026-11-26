@@ -23,3 +23,5 @@ Standard evaluation also requires the staged handoff's proposed-merge/base pins 
 In owner-enabled parallel schema v2, unrelated active issues do not block Standard advisory evaluation of the complete staged scope for a different PR. Active work associated with that PR must first be staged or reconciled. Optional hard enforcement remains unqualified for v2; do not enable it.
 
 Integration integrity (corrective candidate): separate engineering completion, production integration, and issue closure; do not report integration from issue closure, staging or an engineering-branch merge. Reconcile exact target evidence and outstanding bounded deferrals before unrelated claims. Existing installations require a separately reviewed upgrade; this text is not a production-integration or release authorization.
+
+Ordinary pre-merge Standard accepts head-only run metadata for advisory review only when the exact commit objects establish identical head and preview trees and the PR association matches. Divergent or missing trees are refused; actual checkout and mapped steps still require independent review.

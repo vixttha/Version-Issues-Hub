@@ -312,3 +312,49 @@ class IntegrationIntegrityTests(unittest.TestCase):
                              deferral_approved=True,operation_id="a"*64,on_recovery_ticket=ticket)
         self.assertEqual([w[0] for w in self.api.writes], ["POST","POST"])
         self.assertEqual(self.api.ref, self.state["ref"])
+
+    def test_pinless_deferral_cannot_hide_earlier_pinned_debt(self):
+        self.reach_head()
+        self.state["ledger"], self.state["handoff"] = session.finish(
+            self.api, self.state, "deferred", "Earlier pinned debt")
+        self.state["ledger"], self.state["handoff"] = session.claim(
+            self.api, self.state, 247, ["test"], "Same issue recovery")
+        self.state["ledger"], self.state["handoff"] = session.advance(
+            self.api, self.state, "Head", return_to_head=True)
+        decision = bounded_deferral(self.state, self.api, 248)
+        self.state["ledger"], self.state["handoff"] = session.finish(
+            self.api, self.state, "deferred", decision, deferral_approved=True)
+        with self.assertRaisesRegex(ValueError, "Unbounded integration debt"):
+            session.claim(self.api, self.state, 248, ["next"], "Unrelated")
+        self.assertEqual(self.api.writes, [])
+
+    def test_deferred_archive_after_integration_refused(self):
+        from test_session import post_policy
+        self.reach_head()
+        self.state["ledger"], self.state["handoff"] = session.finish(
+            self.api, self.state, "staged", "Owner stages")
+        self.api.pr.update(state="closed", merged=True, merge_commit_sha=NEXT)
+        self.api.product = NEXT
+        policy = post_policy(self.state)
+        ledger, handoff = session.reconcile(self.api, self.state, 247, "Owner integrates", policy=policy)
+        handoff["history"].append({**copy.deepcopy(handoff["history"][-1]),
+                                   "disposition": "deferred", "merged_sha": None,
+                                   "decision": "Conflicting disposition"})
+        for apply in (False, True):
+            with self.assertRaisesRegex(ValueError, "Final archive disposition"):
+                session.save(self.api,self.state,ledger,handoff,apply,issue=247,policy=policy)
+        self.assertEqual(self.api.writes, [])
+
+    def test_recovery_propagates_lineage_and_deferral_throttle(self):
+        from tools import install
+        from unittest.mock import patch
+        self.reach_head()
+        self.state["ledger"], self.state["handoff"] = session.finish(
+            self.api, self.state, "deferred", "Legacy debt")
+        for name in ("require_product_lineage", "require_integration_debt_clear"):
+            error = install.ApiError(429, "GET", "compare", 17)
+            with patch.object(session, name, side_effect=error):
+                with self.assertRaises(install.ApiError) as caught:
+                    session.recovery_plan(self.api,self.state,248)
+                self.assertEqual(caught.exception.retry_after,17)
+        self.assertEqual(self.api.writes, [])
