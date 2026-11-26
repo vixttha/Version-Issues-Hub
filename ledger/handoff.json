@@ -2,8 +2,8 @@
   "active": {
     "issue": 84,
     "version": "v0.0.0.39",
-    "phase": "Worker",
-    "next_action": "Implement engineering completion vs production integration separation on engineering base 26243de4d616598989bdbc15ac74966241bd9a6c. Preserve .37/.38 historical dispositions; no live migration, main merge, release, advanced qualification, schedule restart or scope expansion into .40–.42. Use ordinary scoped regression only.",
+    "phase": "Head",
+    "next_action": "Owner-approved PR #85 merged engineering-only at 998c5f4113cd22a6fab1a833ef006acdb0da918d; exact parents and tested tree verified, 10/10 premerge checks including CodeRabbit, zero unresolved review threads. Actual merged-revision CI 1/11 successful at handoff; retain active slot until ordinary post-merge verification is complete. Then record engineering complete / production deferred using existing installed main-bound workflow; claim .40 only after disposition. No live package migration, main merge, release, issue closure or advanced qualification.",
     "fix_sha": null,
     "candidate_sha": null,
     "pull_request": null,
