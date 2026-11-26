@@ -44,6 +44,10 @@ class ReleaseCheckpointMappingTests(unittest.TestCase):
         ids = [f["id"] for f in self.graph["features"]]
         expected = {v.replace(".", "-") for v in self.scope["fixes"]}
         self.assertEqual(len(ids), len(set(ids)))
+        # Explicit supplementary relationship node, not another checkpoint.
+        supplemental = "v0-0-0-37-review-recovery"
+        if "v0-0-0-37" in expected:
+            expected.add(supplemental)
         self.assertEqual(set(ids), expected)
 
 

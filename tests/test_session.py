@@ -540,7 +540,7 @@ class SessionTests(unittest.TestCase):
         tickets = []
         def sink(ticket):
             tickets.append(ticket)
-            self.api.run["run_attempt"] = 2
+            self.api.pre_run["run_attempt"] = 2
         with self.assertRaises(ValueError):
             session.save(self.api, self.state, ledger, handoff, True, issue=247,
                          operation_id="a"*64, on_recovery_ticket=sink)
