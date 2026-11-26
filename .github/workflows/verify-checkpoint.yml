@@ -41,6 +41,7 @@ jobs:
         if: startsWith(github.head_ref, 'plan/checkpoint-') || startsWith(github.ref, 'refs/heads/plan/checkpoint-')
         env:
           CHECKPOINT_BRANCH: ${{ github.head_ref || github.ref_name }}
+          VIB_PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
         run: python -m tools.self_use_preflight --worker-branch "$CHECKPOINT_BRANCH"
       - name: Write the selected issue verification receipts
         run: python tools/checkpoint.py receipts "$RUNNER_TEMP/issue-receipts"
