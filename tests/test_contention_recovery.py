@@ -448,3 +448,53 @@ class RecoveryTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "unrelated tree entries"):
             session.inspect_operation(api, fresh, ticket)
         self.assertEqual(api.writes, before)
+
+    def test_retry_source_cache_never_caches_installed_bytes(self):
+        api = self.api
+        cache = {}
+        with patch.object(install, "source_files", wraps=install.source_files) as source, \
+             patch.object(install, "read_text", wraps=install.read_text) as read:
+            first = session.load(api, REPO, _source_cache=cache)
+            second = session.load(api, REPO, _source_cache=cache)
+            self.assertEqual(first, second)
+            self.assertEqual(source.call_count, 1)
+            for path in first["manifest"]["package_files_sha256"]:
+                self.assertEqual(sum(call.args[2] == path for call in read.call_args_list), 2)
+        with patch.object(install, "read_text", side_effect=lambda api, prefix, path, ref:
+                          "changed" if path == "tools/session.py" else api.read(ref, path)):
+            with self.assertRaisesRegex(ValueError, "pinned source"):
+                session.load(api, REPO, _source_cache=cache)
+
+    def test_durable_ticket_survives_fresh_process_and_refuses_overwrite(self):
+        import subprocess
+        import sys
+        api = self.api
+        with tempfile.TemporaryDirectory() as directory:
+            paths = []
+            def journal(ticket):
+                paths.append(session.persist_recovery_ticket(directory, ticket))
+            result = self.recover(lambda s: self.claim(s, B), B, on_recovery_ticket=journal)
+            self.assertEqual(len(paths), 1)
+            script = "import json,sys; from pathlib import Path; print(json.dumps(json.loads(Path(sys.argv[1]).read_text(encoding='utf-8'))))"
+            ticket = json.loads(subprocess.check_output(
+                [sys.executable, "-B", "-c", script, str(paths[0])], text=True))
+            self.assertEqual(ticket["candidate_sha"], result["installed_sha"])
+            self.assertEqual(ticket["operation_id"], result["operation_id"])
+            before = paths[0].read_bytes()
+            with self.assertRaises(FileExistsError):
+                session.persist_recovery_ticket(directory, ticket)
+            self.assertEqual(paths[0].read_bytes(), before)
+            fresh = session.load(api, REPO)
+            writes = list(api.writes)
+            self.assertEqual(session.inspect_operation(api, fresh, ticket)["status"], "published")
+            self.assertEqual(api.writes, writes)
+
+    def test_journal_failure_prevents_publication(self):
+        api = self.api
+        previous = api.ref(install.BRANCH)
+        with tempfile.TemporaryDirectory() as directory:
+            with patch.object(session.os, "fsync", side_effect=OSError("journal flush failed")):
+                with self.assertRaisesRegex(OSError, "journal flush failed"):
+                    self.recover(lambda s: self.claim(s, B), B,
+                                 on_recovery_ticket=lambda ticket: session.persist_recovery_ticket(directory, ticket))
+        self.assertEqual(api.ref(install.BRANCH), previous)

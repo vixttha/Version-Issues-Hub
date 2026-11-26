@@ -161,7 +161,7 @@ def validate_handoff(handoff, ledger):
         elif record["merged_sha"] is not None:
             raise ValueError("Non-integrated handoff has merged revision")
 
-def load(api, target, expected_sha=None):
+def load(api, target, expected_sha=None, *, _source_cache=None):
     prefix = install.repo_path(target)
     meta = api.request("GET", prefix)
     if meta.get("full_name", "").lower() != target.lower() or type(meta.get("id")) is not int:
@@ -188,7 +188,14 @@ def load(api, target, expected_sha=None):
         raise ValueError("Manifest target version does not match baseline")
     install.require(install.SHA, manifest["product_baseline_sha"], "starting product revision")
     source = install.require(install.SHA, manifest["source_sha"], "source revision")
-    expected_files = install.source_files(api, source)
+    # Reuse only immutable source content within one recovery invocation.
+    # Manifest, installed bytes, live refs and ledger are still read on every load.
+    if _source_cache is not None and source in _source_cache:
+        expected_files = _source_cache[source]
+    else:
+        expected_files = install.source_files(api, source)
+        if _source_cache is not None:
+            _source_cache[source] = dict(expected_files)
     digests = {p: hashlib.sha256(s.encode()).hexdigest() for p, s in expected_files.items()}
     if manifest["package_files_sha256"] != digests or any(read(p) != s for p, s in expected_files.items()):
         raise ValueError("Installed package does not match pinned source")
@@ -585,6 +592,36 @@ def confirm_handoff(api, prefix, old, new, tree, *, operation_id=None):
         return observed
     raise ValueError("Handoff commit not confirmed")
 
+def persist_recovery_ticket(directory, ticket):
+    """Opt-in host journal: immutable per-candidate file, flushed before PATCH."""
+    from pathlib import Path
+    root = Path(directory)
+    if not root.is_dir():
+        raise ValueError("Recovery directory must already exist")
+    op = ticket.get("operation_id")
+    candidate = ticket.get("candidate_sha")
+    if not isinstance(op, str) or not re.fullmatch(r"[0-9a-f]{64}", op):
+        raise ValueError("Invalid recovery operation identity")
+    install.require(install.SHA, candidate, "recovery candidate")
+    path = root / (op + "-" + candidate + ".json")
+    data = install.render(ticket).encode("utf-8")
+    flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL | getattr(os, "O_BINARY", 0)
+    # Never overwrite a prior receipt (including a partial or corrupt receipt).
+    # A failed write leaves a visible file and stops publication.
+    fd = os.open(path, flags, 0o600)
+    with os.fdopen(fd, "wb") as output:
+        output.write(data)
+        output.flush()
+        os.fsync(output.fileno())
+    if os.name == "posix":
+        dfd = os.open(root, os.O_RDONLY | getattr(os, "O_DIRECTORY", 0))
+        try:
+            os.fsync(dfd)
+        finally:
+            os.close(dfd)
+    return path
+
+
 def inspect_operation(api, state, ticket):
     """Read-only proof of one published candidate; never resume or replay a write."""
     keys = {"schema_version", "repository", "issue", "parent_sha", "candidate_sha",
@@ -964,6 +1001,7 @@ def recover_save(api, target, state, plan, issue, *, attempts=4, rounds=1, reque
     initial_sha = state["ref"]
     operation_id = operation_identity(state, issue, intended, request)
     budget = attempts * rounds
+    source_cache = {}
     for attempt in range(budget):
         try:
             result = save(api, state, ledger, handoff, True, issue=issue, operation_id=operation_id,
@@ -979,7 +1017,7 @@ def recover_save(api, target, state, plan, issue, *, attempts=4, rounds=1, reque
             # might have been published by a competing invocation.
             install.time.sleep(random.uniform(1, min(8, 2 ** (attempt + 1))))
             try:
-                fresh = load(api, target)
+                fresh = load(api, target, _source_cache=source_cache)
                 confirmed = retry_scope(api, state, fresh, issue, error)
             except install.ApiError as read_error:
                 if isinstance(error, HandoffRejected) and read_error is not error:
@@ -1006,11 +1044,14 @@ def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("--target", required=True)
     p.add_argument("--expected-sha")
+    p.add_argument("--recovery-dir", help="Optional existing durable host directory for parallel publication tickets")
     sub = p.add_subparsers(dest="command", required=True)
     status = sub.add_parser("inspect")
     status.add_argument("--issue", type=int)
     recovery = sub.add_parser("inspect-operation", help="Read-only confirmation from a retained recovery ticket")
-    recovery.add_argument("--ticket-json", required=True)
+    ticket_input = recovery.add_mutually_exclusive_group(required=True)
+    ticket_input.add_argument("--ticket-json")
+    ticket_input.add_argument("--ticket-file")
     c = sub.add_parser("claim")
     c.add_argument("issue", type=int)
     c.add_argument("--acceptance", action="append", default=[])
@@ -1049,7 +1090,10 @@ def main():
         if args.command == "inspect":
             result = inspect(api, state, args.issue)
         elif args.command == "inspect-operation":
-            result = inspect_operation(api, state, checkpoint.parse_json(args.ticket_json))
+            from pathlib import Path
+            raw = (Path(args.ticket_file).read_text(encoding="utf-8")
+                   if args.ticket_file is not None else args.ticket_json)
+            result = inspect_operation(api, state, checkpoint.parse_json(raw))
         else:
             if args.apply and (not token or not args.expected_sha):
                 raise ValueError("Apply requires a credential and exact expected installed SHA")
@@ -1079,8 +1123,10 @@ def main():
                 # Preserve the CLI interface. A second bounded round continues
                 # only the same verified intent in this execution.
                 request = {k: v for k, v in vars(args).items()
-                           if k not in ("target", "expected_sha", "apply")}
+                           if k not in ("target", "expected_sha", "apply", "recovery_dir")}
                 def emit_ticket(ticket):
+                    if args.recovery_dir is not None:
+                        persist_recovery_ticket(args.recovery_dir, ticket)
                     print("VIB-RECOVERY " + json.dumps(ticket, sort_keys=True), file=sys.stderr, flush=True)
                 result = recover_save(api, args.target, state, plan, scope, rounds=2, request=request,
                                       on_recovery_ticket=emit_ticket)
