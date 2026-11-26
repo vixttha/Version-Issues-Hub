@@ -311,14 +311,28 @@ class QualificationTests(unittest.TestCase):
                         api.request=race
                 return original(method,path,body)
             api.request=race
-            with self.assertRaisesRegex(ValueError,"budget exhausted"):
+            with self.assertRaises(session.HandoffDeferred) as deferred:
                 session.recover_save(api,REPO,state,lambda s:session.claim(api,s,1000,["proof"],"loser"),1000,rounds=2)
             final=session.load(api,REPO)
             self.assertEqual([a["issue"] for a in final["handoff"]["active"]],list(range(2000,2008)))
             self.assertEqual(len(api.published),8)
             self.assertEqual(api.rejected,8)
             self.assertIsNone(session.issue_view(final["ledger"],final["handoff"],1000)[0])
-            print("VIB53_STARVATION bounded refusal after eight competing wins; no automatic durable resumption",flush=True)
+            # The fixture knows every attempted write was definitively rejected.
+            # Model an explicit new owner-authorized operation, not replay of an
+            # uncertain write. Keep all eight unrelated lanes untouched.
+            api.request=original
+            resumed=session.recover_save(api,REPO,final,
+                lambda s:session.claim(api,s,1000,["proof"],"loser"),1000,rounds=2)
+            observed=session.load(api,REPO,resumed["installed_sha"])
+            self.assertNotEqual(resumed["operation_id"],deferred.exception.operation_id)
+            self.assertEqual(len(api.published),9)
+            self.assertEqual(api.rejected,8)
+            self.assertEqual(session.select_active(observed["handoff"],1000)["phase"],"Worker")
+            for number in range(2000,2008):
+                self.assertEqual(session.issue_view(observed["ledger"],observed["handoff"],number),
+                                 session.issue_view(final["ledger"],final["handoff"],number))
+            print("VIB53_STARVATION bounded refusal after eight competing wins; explicit fresh claim succeeds after competition stops; no automatic durable resumption",flush=True)
 
     def test_fresh_process_claim_replay_has_no_durable_pending_identity(self):
         api=MemoryGit()
