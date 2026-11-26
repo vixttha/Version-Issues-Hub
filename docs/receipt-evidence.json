@@ -1382,6 +1382,10 @@
         {
           "path": "tests/test_issue_closure.py",
           "anchor": "def test_reserved_prefix_compatibility_fails_closed(self):"
+        },
+        {
+          "path": "tests/test_issue_closure.py",
+          "anchor": "def test_ambiguous_or_lost_execution_acquisition_never_patches_issue(self):"
         }
       ]
     }

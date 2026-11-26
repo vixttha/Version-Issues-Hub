@@ -348,6 +348,12 @@ class ClosureTests(unittest.TestCase):
                                                         "confirmed", owner_approved=True, execution_id="1" * 32)
             self.state.update(ledger=ledger, handoff=handoff)
             self.assertEqual(session.closure_status(self.state, closed)["closure_synchronization"], "state_matches_historical_receipt")
+            # External reopen and reclose with no ledger transition is not event proof.
+            reopened = {**closed, "state": "open", "state_reason": "reopened"}
+            self.assertEqual(session.closure_status(self.state, reopened)["closure_synchronization"], "conflict")
+            reclosed = session.closure_status(self.state, closed)
+            self.assertFalse(reclosed["closure_event_verified"])
+            self.assertTrue(reclosed["historical_confirmation_recorded"])
             ledger, handoff = session.claim(self.api, self.state, 247, ["test"], "Reopened work")
             self.state.update(ledger=ledger, handoff=handoff)
             result = session.closure_status(self.state, closed)
@@ -361,6 +367,7 @@ class ClosureTests(unittest.TestCase):
 
     def test_execution_claim_blocks_replay_cancel_and_lifecycle(self):
         from tools import lifecycle
+        self.state["manifest"]["enforcement"] = "disabled"
         archive = self.state["handoff"]["history"][-1]
         with patch.object(session, "verify_closure_basis", return_value=archive):
             ledger, handoff = session.closure_plan(self.api, self.state, 247, self.policy,
@@ -410,4 +417,24 @@ class ClosureTests(unittest.TestCase):
         session.require_closure_compatible_history(handoff, True)
         session.require_closure_compatible_history(self.state["handoff"], False)
         self.assertFalse(session.supports_closure_execution({"tools/session.py": session.CLOSURE_DECISION}))
+        self.assertFalse(self.api.writes)
+
+    def test_ambiguous_or_lost_execution_acquisition_never_patches_issue(self):
+        archive = self.state["handoff"]["history"][-1]
+        with patch.object(session, "verify_closure_basis", return_value=archive):
+            ledger, handoff = session.closure_plan(self.api, self.state, 247, self.policy,
+                                                    "pending", owner_approved=True)
+            self.state.update(ledger=ledger, handoff=handoff)
+            for result in ({"status": "saved", "installed_sha": self.state["ref"],
+                            "recovered_response": True},
+                           {"status": "saved", "installed_sha": "8" * 40}):
+                with self.subTest(result=result), \
+                        patch.object(session, "save_closure", return_value=result):
+                    with self.assertRaisesRegex(ValueError, "partial"):
+                        session.complete_closure(self.api, self.state, 247, self.policy,
+                                                 owner_approved=True, apply=True)
+            with patch.object(session, "save_closure", side_effect=session.HandoffStale("competing writer")):
+                with self.assertRaisesRegex(ValueError, "partial"):
+                    session.complete_closure(self.api, self.state, 247, self.policy,
+                                             owner_approved=True, apply=True)
         self.assertFalse(self.api.writes)

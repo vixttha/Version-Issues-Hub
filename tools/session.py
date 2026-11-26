@@ -313,7 +313,15 @@ def supports_closure_execution(files):
     # Pin a reviewed capability marker; this is a compatibility check, not
     # an independent authorization or code-trust guarantee.
     code = files.get("tools/session.py", "")
-    return "CLOSURE_EXECUTION_V1 = True" in code and CLOSURE_DECISION in code
+    try:
+        module = ast.parse(code)
+    except (SyntaxError, TypeError, ValueError):
+        return False
+    return any(isinstance(node, ast.Assign)
+               and any(isinstance(target, ast.Name) and target.id == "CLOSURE_EXECUTION_V1"
+                       for target in node.targets)
+               and isinstance(node.value, ast.Constant) and node.value.value is True
+               for node in module.body) and CLOSURE_DECISION in code
 
 
 def require_closure_compatible_history(handoff, supported):
@@ -690,9 +698,9 @@ def complete_closure(api, state, number, policy, *, owner_approved=False, apply=
     try:
         acquired = save_closure(api, state, ledger, handoff, number, apply=True, owner_approved=True)
         pin = install.require(install.SHA, acquired["installed_sha"], "closure execution revision")
-        if (acquired.get("status") != "saved"
+        if (acquired.get("status") != "saved" or acquired.get("recovered_response") is True
                 or install.read_ref(api, state["prefix"], install.BRANCH) != pin):
-            raise ValueError("Closure execution acquisition not current")
+            raise ValueError("Closure execution acquisition ambiguous or not current")
         state = {**state, "ref": pin, "ledger": ledger, "handoff": handoff}
         verify_closure_basis(api, state, number, policy)
         item = get_issue(api, state, number)
