@@ -252,8 +252,11 @@ class QualificationTests(unittest.TestCase):
                  patch.object(install, "read_text", side_effect=lambda api, prefix, path, ref: api.read(ref, path)), \
                  patch.object(install.time, "sleep", side_effect=lambda delay: real_sleep(delay/1000)):
                 for phase in ("claim", "head", "finish"):
-                    def execute(number):
+                    barrier = threading.Barrier(workers)
+                    def execute(number, synchronize=False):
                         state = session.load(api, REPO)
+                        if synchronize:
+                            barrier.wait(timeout=30)
                         def plan(current):
                             if phase == "claim":
                                 return session.claim(api, current, number, ["proof"], "claim")
@@ -267,7 +270,9 @@ class QualificationTests(unittest.TestCase):
                         self.assertEqual(result["status"], "saved")
                         return True
                     with ThreadPoolExecutor(max_workers=workers) as pool:
-                        results = list(pool.map(execute, numbers))
+                        # Force matched initial snapshots for the first worker group.
+                        # The serial control uses one worker and the same tasks.
+                        results = list(pool.map(lambda n: execute(n, n < numbers[0] + workers), numbers))
                     for number, success in zip(numbers, results):
                         if not success:
                             deferred.append(number)
@@ -278,10 +283,14 @@ class QualificationTests(unittest.TestCase):
             self.assertEqual(len(final["handoff"]["history"]), 8)
             self.assertEqual({r["issue"] for r in final["ledger"]["issues"]}, {7, *numbers})
             self.assertEqual(len(set(checkpoint.bindings(final["ledger"]).values())), 9)
+            self.assertEqual(api.read(api.head, "notes/custom.md"), "keep me")
+            self.assertEqual(api.read(api.product, "product.txt"), "unchanged")
             measurements.append({"workers": workers, "publications": len(api.published),
                                  "requests": api.requests, "rejections": api.rejected,
                                  "resubmissions": len(deferred),
                                  "seconds": round(time.perf_counter()-started, 3)})
+        self.assertEqual(measurements[0]["resubmissions"], 0)
+        self.assertGreater(measurements[1]["requests"], measurements[0]["requests"])
         print("VIB53_MATCHED_PROTOCOL " + json.dumps(measurements, sort_keys=True), flush=True)
 
     def test_starvation_counterexample_with_real_production_retry(self):
