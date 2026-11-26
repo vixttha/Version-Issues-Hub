@@ -1248,6 +1248,50 @@
           "anchor": "def test_historical_experiment_is_not_an_active_workflow(self):"
         }
       ]
+    },
+    {
+      "id": "v0-0-0-39",
+      "label": "Issue #84 · distinct engineering completion and production integration",
+      "documented_in": [
+        {
+          "path": "docs/v0.0.0.39.md",
+          "anchor": "## Distinct outcomes"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "ledger/issue-versions.json",
+          "anchor": "\"issue\": 84,"
+        }
+      ],
+      "implemented_in": [
+        {
+          "path": "tools/session.py",
+          "anchor": "def finish_engineering(api, state, decision, *, policy, owner_approved=False, issue=None):"
+        },
+        {
+          "path": "tools/session.py",
+          "anchor": "def engineering_receipt(record, ledger):"
+        },
+        {
+          "path": "tools/standard.py",
+          "anchor": "def verify_merged_destination(api, state, active, pr, policy, destination, read_pr):"
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tests/test_engineering_completion.py",
+          "anchor": "def test_engineering_completion_keeps_production_deferred(self):"
+        },
+        {
+          "path": "tests/test_engineering_completion.py",
+          "anchor": "def test_contradictory_evidence_refused_before_publication(self):"
+        },
+        {
+          "path": "tests/test_engineering_completion.py",
+          "anchor": "def test_ordinary_production_path_cannot_accept_engineering_pr(self):"
+        }
+      ]
     }
   ]
 }
