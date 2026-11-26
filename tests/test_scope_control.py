@@ -71,15 +71,33 @@ class ScopeControlTests(unittest.TestCase):
             raise AssertionError(args)
         with patch.object(scope.checkpoint, "git", side_effect=read), \
              patch.object(scope, "ancestor") as ancestry, \
-             patch.object(scope, "changed_paths", return_value={"tools/extra.py"}):
+             patch.object(scope, "approval_change", side_effect=lambda rev, path: prior if rev == prior else pin) as latest, \
+             patch.object(scope, "approval_parent", side_effect=lambda rev, path: prior if rev == pin else None) as parent, \
+             patch.object(scope, "changed_paths", side_effect=lambda base, rev: {"tools/session.py"} if rev == "b"*40 else {"tools/extra.py"}):
             self.assertEqual(scope.verify_scope(pin, 92, "v0.0.0.41", head, current), amended)
             ancestry.assert_any_call(prior, pin)
             ancestry.assert_any_call("b"*40, head)
             with self.assertRaisesRegex(ValueError, "Stale scope"):
                 scope.verify_scope(pin, 92, "v0.0.0.41", head, prior)
+            latest.return_value = None
+            latest.side_effect = lambda rev, path: "9"*40
+            with self.assertRaisesRegex(ValueError, "Stale scope"):
+                scope.verify_scope(pin, 92, "v0.0.0.41", head, current)
+            latest.side_effect = lambda rev, path: pin
+            parent.side_effect = lambda rev, path: None
+            with self.assertRaisesRegex(ValueError, "predecessor"):
+                scope.verify_scope(pin, 92, "v0.0.0.41", head, current)
+            parent.side_effect = lambda rev, path: prior if rev == pin else None
             ancestry.side_effect = ValueError("not an ancestor")
             with self.assertRaisesRegex(ValueError, "not an ancestor"):
                 scope.verify_scope(pin, 92, "v0.0.0.41", head, current)
+
+    def test_legacy_explicit_preflight_cannot_bypass_scope(self):
+        with patch("sys.argv", ["preflight", "--installed-ref", "a"*40, "--issue", "92"]), \
+             patch.object(scope, "read_projection", return_value="v0.0.0.41"), \
+             self.assertRaises(SystemExit) as result:
+            scope.main()
+        self.assertEqual(result.exception.code, 1)
 
     def test_parallel_activation_and_forged_publication_refused(self):
         api, s = Fake(), state()

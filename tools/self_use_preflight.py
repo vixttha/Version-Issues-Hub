@@ -112,13 +112,25 @@ def ancestor(old, new):
         raise ValueError("Scope approval or reviewed revision is not an ancestor")
 
 
+def approval_change(revision, path):
+    """The actual last first-parent change, not merely an equal file value."""
+    return checkpoint.git("log", "--first-parent", "-1", "--format=%H", revision, "--", path) or None
+
+
+def approval_parent(revision, path):
+    parents = checkpoint.git("show", "-s", "--format=%P", revision).split()
+    if len(parents) != 1 or changed_paths(parents[0], revision) != {path}:
+        raise ValueError("Canonical scope publication must be a separate single-parent policy commit")
+    return approval_change(parents[0], path)
+
+
 def verify_scope(pin, issue, version, head, current, pr_base=None):
     path = "ledger/scope-approvals/" + version + ".json"
     def read(revision):
         return checkpoint.parse_json(checkpoint.git("show", revision + ":" + path))
     ledger = checkpoint.parse_json(checkpoint.git("show", pin + ":ledger/issue-versions.json"))
     approval = validate_scope(read(pin), ledger, issue, version)
-    if read(current) != approval:
+    if approval_change(current, path) != pin or read(current) != approval:
         raise ValueError("Stale scope approval; reload the current canonical approval")
     if pr_base is not None and pr_base != approval["base_sha"]:
         parents = checkpoint.git("show", "-s", "--format=%P", head).split()
@@ -129,6 +141,8 @@ def verify_scope(pin, issue, version, head, current, pr_base=None):
     cursor, child = pin, approval
     for _ in range(32):
         prior = child["previous_approval_sha"]
+        if approval_parent(cursor, path) != prior:
+            raise ValueError("Scope approval predecessor does not match actual canonical history")
         if prior is None:
             break
         if prior == cursor:
@@ -139,6 +153,7 @@ def verify_scope(pin, issue, version, head, current, pr_base=None):
                 or parent["reviewed_sha"] == child["reviewed_sha"]):
             raise ValueError("Amendment must bind a new reviewed revision and unchanged baseline")
         ancestor(parent["reviewed_sha"], child["reviewed_sha"])
+        assert_scope_paths(parent, changed_paths(parent["base_sha"], child["reviewed_sha"]))
         cursor, child = prior, parent
     else:
         raise ValueError("Scope amendment chain exceeds bound")
@@ -181,6 +196,8 @@ def main():
             pin = checkpoint.require(checkpoint.SHA, args.installed_ref, "installed revision")
             issue = session.issue_number(args.issue)
             version = read_projection(pin, issue)
+            if checkpoint.version_number(version) >= (0, 0, 0, 41):
+                raise ValueError("Scope-controlled checkpoints require --worker-branch")
         print(f"VIB self-use preflight passed: #{issue} {version} at {pin}")
     except (ValueError, KeyError, OSError, TypeError, subprocess.CalledProcessError) as exc:
         parser.exit(1, f"VIB self-use preflight refused: {exc}\n")
