@@ -4277,5 +4277,1115 @@
       "observation": "Historical rows staged/deferred, product main remains baseline placeholder. Exact integration proofs and bounded owner deferrals not established.",
       "resolution": "Review each binding; implement bounded policy and publication/claim guard; no automatic integration."
     }
+  ],
+  "screening": {
+    "status": "all_commit_objects_screened_not_semantic_certification",
+    "unique_commits": 173,
+    "batches": [
+      {
+        "comment": 7202376438,
+        "title": "## .43 historical diff inventory batch 1–12 / 173 (bounded automated screening)"
+      },
+      {
+        "comment": 7202381914,
+        "title": "## .43 historical diff inventory batch 13–24 / 173 (bounded automated screening)"
+      },
+      {
+        "comment": 7202387538,
+        "title": "## .43 historical diff inventory batch 25–37 / 173 (bounded automated screening)"
+      },
+      {
+        "comment": 7202392083,
+        "title": "## .43 historical diff inventory batch 38–50 / 173 (bounded automated screening)"
+      },
+      {
+        "comment": 7202395923,
+        "title": "## .43 historical diff inventory batch 51–63 / 173 (bounded automated screening)"
+      },
+      {
+        "comment": 7202400281,
+        "title": "## .43 historical diff inventory batch 64–76 / 173 (bounded automated screening)"
+      },
+      {
+        "comment": 7202404246,
+        "title": "## .43 historical diff inventory batch 77–89 / 173 (bounded automated screening)"
+      },
+      {
+        "comment": 7202408302,
+        "title": "## .43 historical diff inventory batch 90–102 / 173 (bounded automated screening)"
+      },
+      {
+        "comment": 7202412903,
+        "title": "## .43 historical diff inventory batch 103–115 / 173 (bounded automated screening)"
+      },
+      {
+        "comment": 7202417730,
+        "title": "## .43 historical diff inventory batch 116–128 / 173 (bounded automated screening)"
+      },
+      {
+        "comment": 7202421955,
+        "title": "## .43 historical diff inventory batch 129–141 / 173 (bounded automated screening)"
+      },
+      {
+        "comment": 7202426454,
+        "title": "## .43 historical diff inventory batch 142–154 / 173 (bounded automated screening)"
+      },
+      {
+        "comment": 7202430891,
+        "title": "## .43 historical diff inventory batch 155–167 / 173 (bounded automated screening)"
+      },
+      {
+        "comment": 7202435208,
+        "title": "## .43 historical diff inventory batch 168–173 / 173 (bounded automated screening)"
+      }
+    ],
+    "common_credential_pattern_hits": 0,
+    "missing_patch_explanation": [
+      {
+        "commit": "cecc32ab1a65a21d1f8e42af453b190a9f8b2d45",
+        "parent": "4ebeb16ed99ed2697309343b9ae5b1f54c341ff2",
+        "previous": ".github/workflows/vib53-implementation.yml",
+        "path": "docs/qualification/vib53-implementation.yml",
+        "blob": "94a7dbbd50c1806e2adf9e4030b23c7cb34bb9d0",
+        "verified": "identical bytes zero-line rename"
+      },
+      {
+        "commit": "26243de4d616598989bdbc15ac74966241bd9a6c",
+        "parent": "4ebeb16ed99ed2697309343b9ae5b1f54c341ff2",
+        "previous": ".github/workflows/vib53-implementation.yml",
+        "path": "docs/qualification/vib53-implementation.yml",
+        "blob": "94a7dbbd50c1806e2adf9e4030b23c7cb34bb9d0",
+        "verified": "identical bytes zero-line rename"
+      }
+    ],
+    "limits": "Available API patches screened, not exhaustive secret detection, complete semantic review, source/provenance or authorization certification."
+  },
+  "branch_review": {
+    "at_candidate": "d368631a1aa867752f0126041ec7dac1c160e2fa",
+    "disposition": "provisional retain and simplify; no deletion authority",
+    "refs": [
+      {
+        "name": "Brand-Identity",
+        "sha": "2b5f6dd0b0b6a7031406681e5cff275c0812630b",
+        "proposed_disposition": "keep_independent_foundation",
+        "open_prs": [
+          4
+        ],
+        "tip_in_historical_engineering_ancestry": false
+      },
+      {
+        "name": "Lydite-Test-Vault",
+        "sha": "7e7e453dd02638f070ab7d61a0a463e9060af58e",
+        "proposed_disposition": "keep_independent_foundation",
+        "open_prs": [
+          6
+        ],
+        "tip_in_historical_engineering_ancestry": false
+      },
+      {
+        "name": "Provenistem",
+        "sha": "b090c1107f4f228f318ad3a2bb240d4f3da5a91e",
+        "proposed_disposition": "keep_independent_foundation",
+        "open_prs": [
+          81
+        ],
+        "tip_in_historical_engineering_ancestry": false
+      },
+      {
+        "name": "VIB-Product-Direction",
+        "sha": "ce78ae38f20f8554ccf38b0c4930e813e1c0a1ad",
+        "proposed_disposition": "keep_independent_foundation",
+        "open_prs": [],
+        "tip_in_historical_engineering_ancestry": false
+      },
+      {
+        "name": "Veraphify",
+        "sha": "9573757a8dc277545d13ad306c31aeb60ebe64be",
+        "proposed_disposition": "keep_independent_foundation",
+        "open_prs": [
+          3
+        ],
+        "tip_in_historical_engineering_ancestry": false
+      },
+      {
+        "name": "Version-Issues-Hub",
+        "sha": "08f9b79cbbf9be50a396c1a54cf92dd308c0b268",
+        "proposed_disposition": "keep_canonical_installation_separate",
+        "open_prs": [],
+        "tip_in_historical_engineering_ancestry": false
+      },
+      {
+        "name": "adopt/provenistem-brand-identity",
+        "sha": "c0334e326c0e9e839c72be079a8f06099f85f2a2",
+        "proposed_disposition": "retain_open_PR_dependency",
+        "open_prs": [
+          4
+        ],
+        "tip_in_historical_engineering_ancestry": false
+      },
+      {
+        "name": "adopt/provenistem-lydite-test-vault",
+        "sha": "2695aeb966f77f608905b8bdd7c4749fb7e6c3c2",
+        "proposed_disposition": "retain_open_PR_dependency",
+        "open_prs": [
+          6
+        ],
+        "tip_in_historical_engineering_ancestry": false
+      },
+      {
+        "name": "adopt/provenistem-readme-hq",
+        "sha": "d824ae6bb99b131448f4c2a5d3b26cb4f2c3e28b",
+        "proposed_disposition": "retain_open_PR_dependency",
+        "open_prs": [
+          5
+        ],
+        "tip_in_historical_engineering_ancestry": false
+      },
+      {
+        "name": "adopt/provenistem-veraphify",
+        "sha": "59e7b4db89c070255d129719f5d45da4c5b1b20a",
+        "proposed_disposition": "retain_open_PR_dependency",
+        "open_prs": [
+          3
+        ],
+        "tip_in_historical_engineering_ancestry": false
+      },
+      {
+        "name": "audit/ecosystem-dogfooding",
+        "sha": "d127f4e642fcaea76cafa488f6448a1bf0870d59",
+        "proposed_disposition": "retain_unmerged_or_external_history_pending_dependency_review",
+        "open_prs": [],
+        "tip_in_historical_engineering_ancestry": false
+      },
+      {
+        "name": "audit/mr-042-001-prepared",
+        "sha": "b1aac7dc2daba811a22abe3f431d29bc7922d27f",
+        "proposed_disposition": "retain_unmerged_or_external_history_pending_dependency_review",
+        "open_prs": [],
+        "tip_in_historical_engineering_ancestry": false
+      },
+      {
+        "name": "audit/vib-final-ecosystem-20261124",
+        "sha": "89255a82c598075ff18350313a7d07631afc6667",
+        "proposed_disposition": "retain_unmerged_or_external_history_pending_dependency_review",
+        "open_prs": [],
+        "tip_in_historical_engineering_ancestry": false
+      },
+      {
+        "name": "impl/vib-53-contention-recovery",
+        "sha": "0a164f9357be3d2ca7ada0d8e208de7f3e7828dd",
+        "proposed_disposition": "retain_open_PR_dependency",
+        "open_prs": [
+          59
+        ],
+        "tip_in_historical_engineering_ancestry": false
+      },
+      {
+        "name": "impl/vib-53-durable-recovery",
+        "sha": "c2ea9cacf01cfdcd5e4eecae6b62d84c7c514d89",
+        "proposed_disposition": "retain_open_PR_dependency",
+        "open_prs": [
+          64
+        ],
+        "tip_in_historical_engineering_ancestry": false
+      },
+      {
+        "name": "impl/vib-53-independent-transactions",
+        "sha": "2ca71c5f29c93550db57bae534ad51b1fd8d63a7",
+        "proposed_disposition": "retain_open_PR_dependency",
+        "open_prs": [
+          59,
+          55
+        ],
+        "tip_in_historical_engineering_ancestry": false
+      },
+      {
+        "name": "main",
+        "sha": "1b11865f79464ae7db9a648467e8c2c1cb898a02",
+        "proposed_disposition": "keep_authoritative_product",
+        "open_prs": [
+          49,
+          2
+        ],
+        "tip_in_historical_engineering_ancestry": false
+      },
+      {
+        "name": "ops/vib-adopter-audit-20261124",
+        "sha": "f390adc193a0f372fba0782886600a9db229791f",
+        "proposed_disposition": "retain_unmerged_or_external_history_pending_dependency_review",
+        "open_prs": [],
+        "tip_in_historical_engineering_ancestry": false
+      },
+      {
+        "name": "ops/vib-fresh-cli-self-pilot",
+        "sha": "149df88f5be082bce5646723c516edca4d142a9c",
+        "proposed_disposition": "retain_unmerged_or_external_history_pending_dependency_review",
+        "open_prs": [],
+        "tip_in_historical_engineering_ancestry": false
+      },
+      {
+        "name": "ops/vib-v0.0.1-release-pipeline",
+        "sha": "a472e04f4c2cc781c654000d6c0567e703f32791",
+        "proposed_disposition": "retain_open_PR_dependency",
+        "open_prs": [
+          49
+        ],
+        "tip_in_historical_engineering_ancestry": false
+      },
+      {
+        "name": "plan/audit-mr-042-001-native",
+        "sha": "0dce28f8bf48d884baf7b7c2ddee05e278e5b43f",
+        "proposed_disposition": "retain_unmerged_or_external_history_pending_dependency_review",
+        "open_prs": [],
+        "tip_in_historical_engineering_ancestry": false
+      },
+      {
+        "name": "plan/checkpoint-v0.0.0.33",
+        "sha": "b64b73ba8bcf9b3ebab84c662637f9edcb0cab5d",
+        "proposed_disposition": "archive_or_retire_candidate_after_dependency_and_receipt_review",
+        "open_prs": [],
+        "tip_in_historical_engineering_ancestry": true
+      },
+      {
+        "name": "plan/checkpoint-v0.0.0.34",
+        "sha": "67bf97f311af67052ba92eeadcd78da9e2a03ed9",
+        "proposed_disposition": "archive_or_retire_candidate_after_dependency_and_receipt_review",
+        "open_prs": [],
+        "tip_in_historical_engineering_ancestry": true
+      },
+      {
+        "name": "plan/checkpoint-v0.0.0.35",
+        "sha": "6dc2e782310e6c59c59fd6231611c5c627f5bbe3",
+        "proposed_disposition": "archive_or_retire_candidate_after_dependency_and_receipt_review",
+        "open_prs": [],
+        "tip_in_historical_engineering_ancestry": true
+      },
+      {
+        "name": "plan/checkpoint-v0.0.0.36",
+        "sha": "c5a0bb957cb77cfc3da945c2e572ab8960b3cacd",
+        "proposed_disposition": "archive_or_retire_candidate_after_dependency_and_receipt_review",
+        "open_prs": [],
+        "tip_in_historical_engineering_ancestry": true
+      },
+      {
+        "name": "plan/checkpoint-v0.0.0.37",
+        "sha": "041e187dc1d383082c1a4805e6d4743eec97e535",
+        "proposed_disposition": "archive_or_retire_candidate_after_dependency_and_receipt_review",
+        "open_prs": [],
+        "tip_in_historical_engineering_ancestry": true
+      },
+      {
+        "name": "plan/checkpoint-v0.0.0.38",
+        "sha": "05716f8f14e7aa33c2f95d4c867fddd83e082c9c",
+        "proposed_disposition": "archive_or_retire_candidate_after_dependency_and_receipt_review",
+        "open_prs": [],
+        "tip_in_historical_engineering_ancestry": true
+      },
+      {
+        "name": "plan/checkpoint-v0.0.0.39",
+        "sha": "37dca21355fbd6c8c95f149c7649978b212e893a",
+        "proposed_disposition": "archive_or_retire_candidate_after_dependency_and_receipt_review",
+        "open_prs": [],
+        "tip_in_historical_engineering_ancestry": true
+      },
+      {
+        "name": "plan/checkpoint-v0.0.0.40",
+        "sha": "e963d92a09dabdf879b4808b65159a57a5348c51",
+        "proposed_disposition": "archive_or_retire_candidate_after_dependency_and_receipt_review",
+        "open_prs": [],
+        "tip_in_historical_engineering_ancestry": true
+      },
+      {
+        "name": "plan/checkpoint-v0.0.0.41",
+        "sha": "b1c60dd6680ce99726a7b2fa1349cd9d9e3a04f4",
+        "proposed_disposition": "archive_or_retire_candidate_after_dependency_and_receipt_review",
+        "open_prs": [],
+        "tip_in_historical_engineering_ancestry": true
+      },
+      {
+        "name": "plan/checkpoint-v0.0.0.42",
+        "sha": "8a2f6fb2f651493eee1dc08d9bae3d805208d5c3",
+        "proposed_disposition": "archive_or_retire_candidate_after_dependency_and_receipt_review",
+        "open_prs": [],
+        "tip_in_historical_engineering_ancestry": true
+      },
+      {
+        "name": "plan/checkpoint-v0.0.0.43",
+        "sha": "d368631a1aa867752f0126041ec7dac1c160e2fa",
+        "proposed_disposition": "retain_active_worker",
+        "open_prs": [
+          97
+        ],
+        "tip_in_historical_engineering_ancestry": false
+      },
+      {
+        "name": "plan/individual-v0.0.0.1",
+        "sha": "e99e66deaa4ff8e36e407457a20866159473798a",
+        "proposed_disposition": "retain_unmerged_or_external_history_pending_dependency_review",
+        "open_prs": [],
+        "tip_in_historical_engineering_ancestry": false
+      },
+      {
+        "name": "plan/itqs-37-coverage-catalog",
+        "sha": "c364832b66ba0bfc834e8c56e669ea00e3e77e05",
+        "proposed_disposition": "retain_unmerged_or_external_history_pending_dependency_review",
+        "open_prs": [],
+        "tip_in_historical_engineering_ancestry": false
+      },
+      {
+        "name": "plan/live-acceptance-isolation",
+        "sha": "8e24a3a4145ba3e291d207477bfe95a7924cabc5",
+        "proposed_disposition": "archive_or_retire_candidate_after_dependency_and_receipt_review",
+        "open_prs": [],
+        "tip_in_historical_engineering_ancestry": true
+      },
+      {
+        "name": "plan/optional-hard-gate-34",
+        "sha": "588f8d25d2bced7bb9dcf18ab13acf3cdd0b7d0e",
+        "proposed_disposition": "archive_or_retire_candidate_after_dependency_and_receipt_review",
+        "open_prs": [],
+        "tip_in_historical_engineering_ancestry": true
+      },
+      {
+        "name": "plan/qualification-53-batch2",
+        "sha": "3610e00263b7fcce21de4c678d4d4ba61475e1b9",
+        "proposed_disposition": "retain_open_PR_dependency",
+        "open_prs": [
+          64
+        ],
+        "tip_in_historical_engineering_ancestry": false
+      },
+      {
+        "name": "plan/repair-56-57-54",
+        "sha": "82cfa7272ad83b044e7d4e9760133dc8a443f102",
+        "proposed_disposition": "archive_or_retire_candidate_after_dependency_and_receipt_review",
+        "open_prs": [],
+        "tip_in_historical_engineering_ancestry": true
+      },
+      {
+        "name": "plan/repair-61-60-json",
+        "sha": "6e428f222c7aa7a35a8d398bde2846ac0e3b9657",
+        "proposed_disposition": "archive_or_retire_candidate_after_dependency_and_receipt_review",
+        "open_prs": [],
+        "tip_in_historical_engineering_ancestry": true
+      },
+      {
+        "name": "plan/self-use-recovery-65",
+        "sha": "686f93bdb7ed122f957941a512bca35cad518ade",
+        "proposed_disposition": "archive_or_retire_candidate_after_dependency_and_receipt_review",
+        "open_prs": [],
+        "tip_in_historical_engineering_ancestry": true
+      },
+      {
+        "name": "plan/v0.0.0.1",
+        "sha": "3160df17f60b3eaa9a9e70e1ca13bffcfe2eb4e8",
+        "proposed_disposition": "retain_until_approved_product_integration_then_review_retirement",
+        "open_prs": [
+          97,
+          55,
+          2
+        ],
+        "tip_in_historical_engineering_ancestry": true
+      },
+      {
+        "name": "plan/v0.0.1-licensing-review",
+        "sha": "70242433f07d49e9d78f900eccc7745aa7063838",
+        "proposed_disposition": "archive_or_retire_candidate_after_dependency_and_receipt_review",
+        "open_prs": [],
+        "tip_in_historical_engineering_ancestry": true
+      },
+      {
+        "name": "plan/vib-dedicated-branch",
+        "sha": "460d2313e1981d66b855b381709bb25c5214d8f0",
+        "proposed_disposition": "retain_unmerged_or_external_history_pending_dependency_review",
+        "open_prs": [],
+        "tip_in_historical_engineering_ancestry": false
+      },
+      {
+        "name": "policy/capability-discovery-v1",
+        "sha": "0bc5e739e245fa9c04ba856a850503f0f473c707",
+        "proposed_disposition": "archive_or_retire_candidate_after_dependency_and_receipt_review",
+        "open_prs": [],
+        "tip_in_historical_engineering_ancestry": true
+      },
+      {
+        "name": "policy/six-engineering-laws",
+        "sha": "fe030545347678689ea31477b46aa0cae1e6e652",
+        "proposed_disposition": "archive_or_retire_candidate_after_dependency_and_receipt_review",
+        "open_prs": [],
+        "tip_in_historical_engineering_ancestry": true
+      },
+      {
+        "name": "qualification/vib-53-20261125",
+        "sha": "a236b986c8f5c625f62021de3e72eb36cf074d75",
+        "proposed_disposition": "retain_unmerged_or_external_history_pending_dependency_review",
+        "open_prs": [],
+        "tip_in_historical_engineering_ancestry": false
+      },
+      {
+        "name": "readme-hq",
+        "sha": "a9cdd97c4ad111ed4bb3eb1efa4c9bafc306a9b4",
+        "proposed_disposition": "keep_independent_foundation",
+        "open_prs": [
+          5
+        ],
+        "tip_in_historical_engineering_ancestry": false
+      },
+      {
+        "name": "readme-hq-v0.0.1",
+        "sha": "990ffad5c1ede38bc7edac3a145499f0dbbc0788",
+        "proposed_disposition": "retain_unmerged_or_external_history_pending_dependency_review",
+        "open_prs": [],
+        "tip_in_historical_engineering_ancestry": false
+      },
+      {
+        "name": "repair/lydite-vib-54-stale-pin",
+        "sha": "78943b6a7d14b19b29dca33e198e8ec2dea56f3e",
+        "proposed_disposition": "retain_unmerged_or_external_history_pending_dependency_review",
+        "open_prs": [],
+        "tip_in_historical_engineering_ancestry": false
+      },
+      {
+        "name": "research/provenistem-vib-ideas-20261125",
+        "sha": "d4e5b8e926e8da5a1111814bcdd22eca4e8c1cc4",
+        "proposed_disposition": "retain_open_PR_dependency",
+        "open_prs": [
+          81
+        ],
+        "tip_in_historical_engineering_ancestry": false
+      },
+      {
+        "name": "research/vib-53-transaction-contract",
+        "sha": "1cbb0f505bdc2ffe3b324bbbddcbce99b40764d5",
+        "proposed_disposition": "retain_unmerged_or_external_history_pending_dependency_review",
+        "open_prs": [],
+        "tip_in_historical_engineering_ancestry": false
+      },
+      {
+        "name": "review/vib-37-freeze-boundaries",
+        "sha": "5420ee92984e79e3c6716a1ada85b4fe5ed9a077",
+        "proposed_disposition": "retain_unmerged_or_external_history_pending_dependency_review",
+        "open_prs": [],
+        "tip_in_historical_engineering_ancestry": false
+      },
+      {
+        "name": "review/vib-37-repair-qualification",
+        "sha": "da8aa012cdc07cd8dbdf1c5f59c3df92769da044",
+        "proposed_disposition": "retain_unmerged_or_external_history_pending_dependency_review",
+        "open_prs": [],
+        "tip_in_historical_engineering_ancestry": false
+      },
+      {
+        "name": "review/vib-53-independent-audit",
+        "sha": "d7565b9c07659cd80f50edd484d8c3adcd83fc17",
+        "proposed_disposition": "retain_unmerged_or_external_history_pending_dependency_review",
+        "open_prs": [],
+        "tip_in_historical_engineering_ancestry": false
+      },
+      {
+        "name": "review/vib-63-recovery-pilot",
+        "sha": "11f77d9f4bf21ac22406890ac9a2e3a298d127cb",
+        "proposed_disposition": "retain_unmerged_or_external_history_pending_dependency_review",
+        "open_prs": [],
+        "tip_in_historical_engineering_ancestry": false
+      },
+      {
+        "name": "review/vib-77-code-graphs",
+        "sha": "47c630afb87b6eb1216d319c8ca81d78da91ad7d",
+        "proposed_disposition": "retain_unmerged_or_external_history_pending_dependency_review",
+        "open_prs": [],
+        "tip_in_historical_engineering_ancestry": false
+      },
+      {
+        "name": "review/vib-80-engineering-graphs-37-40",
+        "sha": "0ff3e8a94ace13bfba2ee551949befbd821d076c",
+        "proposed_disposition": "retain_unmerged_or_external_history_pending_dependency_review",
+        "open_prs": [],
+        "tip_in_historical_engineering_ancestry": false
+      },
+      {
+        "name": "review/vib-homepage-final-draft",
+        "sha": "9e4f997c0df141ab3c547b98da7ad9273acf96ca",
+        "proposed_disposition": "retain_unmerged_or_external_history_pending_dependency_review",
+        "open_prs": [],
+        "tip_in_historical_engineering_ancestry": false
+      },
+      {
+        "name": "review/vib-homepage-preflight",
+        "sha": "15868e46c97c0b93d132dc02492e6b7b046e244f",
+        "proposed_disposition": "retain_unmerged_or_external_history_pending_dependency_review",
+        "open_prs": [],
+        "tip_in_historical_engineering_ancestry": false
+      },
+      {
+        "name": "review/vib-homepage-root-rehearsal",
+        "sha": "41c5007a7b51621ad1ef1735beac4930cef266f7",
+        "proposed_disposition": "retain_unmerged_or_external_history_pending_dependency_review",
+        "open_prs": [],
+        "tip_in_historical_engineering_ancestry": false
+      },
+      {
+        "name": "review/vib-homepage-v36",
+        "sha": "dbf75cbdda5fd32be7bdad997711bbc65285fbcf",
+        "proposed_disposition": "retain_unmerged_or_external_history_pending_dependency_review",
+        "open_prs": [],
+        "tip_in_historical_engineering_ancestry": false
+      },
+      {
+        "name": "review/vib-homepage-v40",
+        "sha": "a3bcd9bd111fe4bb3fe697fb9f625f2c972cdc92",
+        "proposed_disposition": "retain_unmerged_or_external_history_pending_dependency_review",
+        "open_prs": [],
+        "tip_in_historical_engineering_ancestry": false
+      },
+      {
+        "name": "review/vib-release-preflight-refresh",
+        "sha": "6f80ab87452b9148fa7817faa9e3ba38f0fe6199",
+        "proposed_disposition": "retain_unmerged_or_external_history_pending_dependency_review",
+        "open_prs": [],
+        "tip_in_historical_engineering_ancestry": false
+      },
+      {
+        "name": "review/vib-v0.0.1-aggregate",
+        "sha": "75617d4226620455cc4ab1d895bc5d268eea87fd",
+        "proposed_disposition": "retain_unmerged_or_external_history_pending_dependency_review",
+        "open_prs": [],
+        "tip_in_historical_engineering_ancestry": false
+      },
+      {
+        "name": "review/vib-v0.0.1-final-candidate",
+        "sha": "896ce5576974e0881ac9438b4200347aa79018a8",
+        "proposed_disposition": "retain_unmerged_or_external_history_pending_dependency_review",
+        "open_prs": [],
+        "tip_in_historical_engineering_ancestry": false
+      },
+      {
+        "name": "review/vib-v0.0.1-isolated-aggregate",
+        "sha": "7a6647723cde34f7a01af6c7879dd065ab3a2a66",
+        "proposed_disposition": "retain_unmerged_or_external_history_pending_dependency_review",
+        "open_prs": [],
+        "tip_in_historical_engineering_ancestry": false
+      },
+      {
+        "name": "test/ecosystem-discovery-v1",
+        "sha": "9d4699fb5dc8c6fb6b2fe31af0a1bc554f862cf1",
+        "proposed_disposition": "retain_unmerged_or_external_history_pending_dependency_review",
+        "open_prs": [],
+        "tip_in_historical_engineering_ancestry": false
+      },
+      {
+        "name": "test/vib-install-lifecycle",
+        "sha": "2d19c4c00d78fb20b5bb98bef6a39453a1c0d1ea",
+        "proposed_disposition": "retain_unmerged_or_external_history_pending_dependency_review",
+        "open_prs": [],
+        "tip_in_historical_engineering_ancestry": false
+      }
+    ]
+  },
+  "historical_reconciliation_plan": [
+    {
+      "issue": 1,
+      "version": "v0.0.0.1",
+      "canonical_state": "staged",
+      "github_state": "closed",
+      "fix_sha": "f767cc133f8dba5ebb68b6530e8601dc66879e81",
+      "production_target": "main",
+      "production_revision": "1b11865f79464ae7db9a648467e8c2c1cb898a02",
+      "production_fix_ancestry": "not_present_main_is_single_root",
+      "action": "requalify exact aggregate product PR and reconcile each issue separately after approved merge",
+      "actual_record_changed": false
+    },
+    {
+      "issue": 7,
+      "version": "v0.0.0.2",
+      "canonical_state": "staged",
+      "github_state": "closed",
+      "fix_sha": "fee90e84d981740938989c1a53f70a9570ae2293",
+      "production_target": "main",
+      "production_revision": "1b11865f79464ae7db9a648467e8c2c1cb898a02",
+      "production_fix_ancestry": "not_present_main_is_single_root",
+      "action": "requalify exact aggregate product PR and reconcile each issue separately after approved merge",
+      "actual_record_changed": false
+    },
+    {
+      "issue": 9,
+      "version": "v0.0.0.3",
+      "canonical_state": "staged",
+      "github_state": "closed",
+      "fix_sha": "fbb76a77f896fb39290a1b862e7dde1a74ae3a8a",
+      "production_target": "main",
+      "production_revision": "1b11865f79464ae7db9a648467e8c2c1cb898a02",
+      "production_fix_ancestry": "not_present_main_is_single_root",
+      "action": "requalify exact aggregate product PR and reconcile each issue separately after approved merge",
+      "actual_record_changed": false
+    },
+    {
+      "issue": 10,
+      "version": "v0.0.0.4",
+      "canonical_state": "staged",
+      "github_state": "closed",
+      "fix_sha": "1a53dc83cd578faa26b8253e0699646ea58e2dbb",
+      "production_target": "main",
+      "production_revision": "1b11865f79464ae7db9a648467e8c2c1cb898a02",
+      "production_fix_ancestry": "not_present_main_is_single_root",
+      "action": "requalify exact aggregate product PR and reconcile each issue separately after approved merge",
+      "actual_record_changed": false
+    },
+    {
+      "issue": 11,
+      "version": "v0.0.0.5",
+      "canonical_state": "staged",
+      "github_state": "closed",
+      "fix_sha": "87930df3c14b277cb4ab092ca672df7b0623b763",
+      "production_target": "main",
+      "production_revision": "1b11865f79464ae7db9a648467e8c2c1cb898a02",
+      "production_fix_ancestry": "not_present_main_is_single_root",
+      "action": "requalify exact aggregate product PR and reconcile each issue separately after approved merge",
+      "actual_record_changed": false
+    },
+    {
+      "issue": 12,
+      "version": "v0.0.0.6",
+      "canonical_state": "deferred",
+      "github_state": "closed",
+      "fix_sha": "cc5de51d5ca2e03622ac18d2c3bf0933f33e252e",
+      "production_target": "main",
+      "production_revision": "1b11865f79464ae7db9a648467e8c2c1cb898a02",
+      "production_fix_ancestry": "not_present_main_is_single_root",
+      "action": "preserve existing hold; no automatic promotion; separate owner disposition",
+      "actual_record_changed": false
+    },
+    {
+      "issue": 13,
+      "version": "v0.0.0.7",
+      "canonical_state": "staged",
+      "github_state": "closed",
+      "fix_sha": "d6df358c67c4fecaefaa725dd7b4687a2f3b89cd",
+      "production_target": "main",
+      "production_revision": "1b11865f79464ae7db9a648467e8c2c1cb898a02",
+      "production_fix_ancestry": "not_present_main_is_single_root",
+      "action": "requalify exact aggregate product PR and reconcile each issue separately after approved merge",
+      "actual_record_changed": false
+    },
+    {
+      "issue": 14,
+      "version": "v0.0.0.8",
+      "canonical_state": "deferred",
+      "github_state": "closed",
+      "fix_sha": "d5272dbfbe63f721820d01316d0e932503b53062",
+      "production_target": "main",
+      "production_revision": "1b11865f79464ae7db9a648467e8c2c1cb898a02",
+      "production_fix_ancestry": "not_present_main_is_single_root",
+      "action": "preserve existing hold; no automatic promotion; separate owner disposition",
+      "actual_record_changed": false
+    },
+    {
+      "issue": 22,
+      "version": "v0.0.0.9",
+      "canonical_state": "staged",
+      "github_state": "closed",
+      "fix_sha": "0bb2cae91c1673231645e6301c95d333a4a35afd",
+      "production_target": "main",
+      "production_revision": "1b11865f79464ae7db9a648467e8c2c1cb898a02",
+      "production_fix_ancestry": "not_present_main_is_single_root",
+      "action": "requalify exact aggregate product PR and reconcile each issue separately after approved merge",
+      "actual_record_changed": false
+    },
+    {
+      "issue": 23,
+      "version": "v0.0.0.10",
+      "canonical_state": "staged",
+      "github_state": "closed",
+      "fix_sha": "65dc35530f98d489b15b0b4fbf147818e1bdf5eb",
+      "production_target": "main",
+      "production_revision": "1b11865f79464ae7db9a648467e8c2c1cb898a02",
+      "production_fix_ancestry": "not_present_main_is_single_root",
+      "action": "requalify exact aggregate product PR and reconcile each issue separately after approved merge",
+      "actual_record_changed": false
+    },
+    {
+      "issue": 24,
+      "version": "v0.0.0.11",
+      "canonical_state": "staged",
+      "github_state": "closed",
+      "fix_sha": "e3f5f917307f38372277b7aecae3652c85935f80",
+      "production_target": "main",
+      "production_revision": "1b11865f79464ae7db9a648467e8c2c1cb898a02",
+      "production_fix_ancestry": "not_present_main_is_single_root",
+      "action": "requalify exact aggregate product PR and reconcile each issue separately after approved merge",
+      "actual_record_changed": false
+    },
+    {
+      "issue": 25,
+      "version": "v0.0.0.12",
+      "canonical_state": "staged",
+      "github_state": "closed",
+      "fix_sha": "78decbe8d6ff4eb9ab7e19394cec8790a12ecfae",
+      "production_target": "main",
+      "production_revision": "1b11865f79464ae7db9a648467e8c2c1cb898a02",
+      "production_fix_ancestry": "not_present_main_is_single_root",
+      "action": "requalify exact aggregate product PR and reconcile each issue separately after approved merge",
+      "actual_record_changed": false
+    },
+    {
+      "issue": 26,
+      "version": "v0.0.0.13",
+      "canonical_state": "staged",
+      "github_state": "closed",
+      "fix_sha": "b6b9d281e55bfed85729533087838f202ae30530",
+      "production_target": "main",
+      "production_revision": "1b11865f79464ae7db9a648467e8c2c1cb898a02",
+      "production_fix_ancestry": "not_present_main_is_single_root",
+      "action": "requalify exact aggregate product PR and reconcile each issue separately after approved merge",
+      "actual_record_changed": false
+    },
+    {
+      "issue": 29,
+      "version": "v0.0.0.14",
+      "canonical_state": "staged",
+      "github_state": "closed",
+      "fix_sha": "9fdbd365702c52850cc6448c71684c9b130a4efd",
+      "production_target": "main",
+      "production_revision": "1b11865f79464ae7db9a648467e8c2c1cb898a02",
+      "production_fix_ancestry": "not_present_main_is_single_root",
+      "action": "requalify exact aggregate product PR and reconcile each issue separately after approved merge",
+      "actual_record_changed": false
+    },
+    {
+      "issue": 30,
+      "version": "v0.0.0.15",
+      "canonical_state": "staged",
+      "github_state": "closed",
+      "fix_sha": "cddcb935a2e71bcf167c2096674c4292ea72d232",
+      "production_target": "main",
+      "production_revision": "1b11865f79464ae7db9a648467e8c2c1cb898a02",
+      "production_fix_ancestry": "not_present_main_is_single_root",
+      "action": "requalify exact aggregate product PR and reconcile each issue separately after approved merge",
+      "actual_record_changed": false
+    },
+    {
+      "issue": 31,
+      "version": "v0.0.0.16",
+      "canonical_state": "staged",
+      "github_state": "closed",
+      "fix_sha": "f2b2620b4f34744f8422a509994547b471cdfc6b",
+      "production_target": "main",
+      "production_revision": "1b11865f79464ae7db9a648467e8c2c1cb898a02",
+      "production_fix_ancestry": "not_present_main_is_single_root",
+      "action": "requalify exact aggregate product PR and reconcile each issue separately after approved merge",
+      "actual_record_changed": false
+    },
+    {
+      "issue": 33,
+      "version": "v0.0.0.17",
+      "canonical_state": "staged",
+      "github_state": "closed",
+      "fix_sha": "15396556f7674f27b039520a7538fa76f7ac49c1",
+      "production_target": "main",
+      "production_revision": "1b11865f79464ae7db9a648467e8c2c1cb898a02",
+      "production_fix_ancestry": "not_present_main_is_single_root",
+      "action": "requalify exact aggregate product PR and reconcile each issue separately after approved merge",
+      "actual_record_changed": false
+    },
+    {
+      "issue": 35,
+      "version": "v0.0.0.18",
+      "canonical_state": "staged",
+      "github_state": "closed",
+      "fix_sha": "8b447acda070c288c8c546c02b041bd726befea1",
+      "production_target": "main",
+      "production_revision": "1b11865f79464ae7db9a648467e8c2c1cb898a02",
+      "production_fix_ancestry": "not_present_main_is_single_root",
+      "action": "requalify exact aggregate product PR and reconcile each issue separately after approved merge",
+      "actual_record_changed": false
+    },
+    {
+      "issue": 36,
+      "version": "v0.0.0.19",
+      "canonical_state": "staged",
+      "github_state": "closed",
+      "fix_sha": "733a4e51357df6acb8ffc2ddedaede664df22c35",
+      "production_target": "main",
+      "production_revision": "1b11865f79464ae7db9a648467e8c2c1cb898a02",
+      "production_fix_ancestry": "not_present_main_is_single_root",
+      "action": "requalify exact aggregate product PR and reconcile each issue separately after approved merge",
+      "actual_record_changed": false
+    },
+    {
+      "issue": 41,
+      "version": "v0.0.0.20",
+      "canonical_state": "staged",
+      "github_state": "closed",
+      "fix_sha": "983e60e7328c9f524633d29e80ca03395fb1d14e",
+      "production_target": "main",
+      "production_revision": "1b11865f79464ae7db9a648467e8c2c1cb898a02",
+      "production_fix_ancestry": "not_present_main_is_single_root",
+      "action": "requalify exact aggregate product PR and reconcile each issue separately after approved merge",
+      "actual_record_changed": false
+    },
+    {
+      "issue": 42,
+      "version": "v0.0.0.21",
+      "canonical_state": "staged",
+      "github_state": "closed",
+      "fix_sha": "bdceeb11eb4b33a36065d6db2a74eb48817804c6",
+      "production_target": "main",
+      "production_revision": "1b11865f79464ae7db9a648467e8c2c1cb898a02",
+      "production_fix_ancestry": "not_present_main_is_single_root",
+      "action": "requalify exact aggregate product PR and reconcile each issue separately after approved merge",
+      "actual_record_changed": false
+    },
+    {
+      "issue": 43,
+      "version": "v0.0.0.22",
+      "canonical_state": "staged",
+      "github_state": "closed",
+      "fix_sha": "af4ddbd797899d6c68ee7d8d1e92f03bda65f450",
+      "production_target": "main",
+      "production_revision": "1b11865f79464ae7db9a648467e8c2c1cb898a02",
+      "production_fix_ancestry": "not_present_main_is_single_root",
+      "action": "requalify exact aggregate product PR and reconcile each issue separately after approved merge",
+      "actual_record_changed": false
+    },
+    {
+      "issue": 40,
+      "version": "v0.0.0.23",
+      "canonical_state": "deferred",
+      "github_state": "open",
+      "fix_sha": null,
+      "production_target": "main",
+      "production_revision": "1b11865f79464ae7db9a648467e8c2c1cb898a02",
+      "production_fix_ancestry": "not_applicable_operational_hold",
+      "action": "preserve existing hold; no automatic promotion; separate owner disposition",
+      "actual_record_changed": false
+    },
+    {
+      "issue": 39,
+      "version": "v0.0.0.24",
+      "canonical_state": "staged",
+      "github_state": "closed",
+      "fix_sha": "114a22196eab578b3053002f8eb7af935b26fe89",
+      "production_target": "main",
+      "production_revision": "1b11865f79464ae7db9a648467e8c2c1cb898a02",
+      "production_fix_ancestry": "not_present_main_is_single_root",
+      "action": "requalify exact aggregate product PR and reconcile each issue separately after approved merge",
+      "actual_record_changed": false
+    },
+    {
+      "issue": 51,
+      "version": "v0.0.0.25",
+      "canonical_state": "staged",
+      "github_state": "closed",
+      "fix_sha": "d7a1efef88704be952f3ecefde1c018b1155fe9a",
+      "production_target": "main",
+      "production_revision": "1b11865f79464ae7db9a648467e8c2c1cb898a02",
+      "production_fix_ancestry": "not_present_main_is_single_root",
+      "action": "requalify exact aggregate product PR and reconcile each issue separately after approved merge",
+      "actual_record_changed": false
+    },
+    {
+      "issue": 56,
+      "version": "v0.0.0.26",
+      "canonical_state": "staged",
+      "github_state": "closed",
+      "fix_sha": "82cfa7272ad83b044e7d4e9760133dc8a443f102",
+      "production_target": "main",
+      "production_revision": "1b11865f79464ae7db9a648467e8c2c1cb898a02",
+      "production_fix_ancestry": "not_present_main_is_single_root",
+      "action": "requalify exact aggregate product PR and reconcile each issue separately after approved merge",
+      "actual_record_changed": false
+    },
+    {
+      "issue": 57,
+      "version": "v0.0.0.27",
+      "canonical_state": "staged",
+      "github_state": "closed",
+      "fix_sha": "82cfa7272ad83b044e7d4e9760133dc8a443f102",
+      "production_target": "main",
+      "production_revision": "1b11865f79464ae7db9a648467e8c2c1cb898a02",
+      "production_fix_ancestry": "not_present_main_is_single_root",
+      "action": "requalify exact aggregate product PR and reconcile each issue separately after approved merge",
+      "actual_record_changed": false
+    },
+    {
+      "issue": 54,
+      "version": "v0.0.0.28",
+      "canonical_state": "staged",
+      "github_state": "closed",
+      "fix_sha": "82cfa7272ad83b044e7d4e9760133dc8a443f102",
+      "production_target": "main",
+      "production_revision": "1b11865f79464ae7db9a648467e8c2c1cb898a02",
+      "production_fix_ancestry": "not_present_main_is_single_root",
+      "action": "requalify exact aggregate product PR and reconcile each issue separately after approved merge",
+      "actual_record_changed": false
+    },
+    {
+      "issue": 61,
+      "version": "v0.0.0.29",
+      "canonical_state": "staged",
+      "github_state": "closed",
+      "fix_sha": "6e428f222c7aa7a35a8d398bde2846ac0e3b9657",
+      "production_target": "main",
+      "production_revision": "1b11865f79464ae7db9a648467e8c2c1cb898a02",
+      "production_fix_ancestry": "not_present_main_is_single_root",
+      "action": "requalify exact aggregate product PR and reconcile each issue separately after approved merge",
+      "actual_record_changed": false
+    },
+    {
+      "issue": 60,
+      "version": "v0.0.0.30",
+      "canonical_state": "staged",
+      "github_state": "closed",
+      "fix_sha": "a0039470d6742474232c050856a4be857f2360ac",
+      "production_target": "main",
+      "production_revision": "1b11865f79464ae7db9a648467e8c2c1cb898a02",
+      "production_fix_ancestry": "not_present_main_is_single_root",
+      "action": "requalify exact aggregate product PR and reconcile each issue separately after approved merge",
+      "actual_record_changed": false
+    },
+    {
+      "issue": 65,
+      "version": "v0.0.0.31",
+      "canonical_state": "staged",
+      "github_state": "closed",
+      "fix_sha": "6e321de7cc488d548d56ed2bece08673a9a7f8b1",
+      "production_target": "main",
+      "production_revision": "1b11865f79464ae7db9a648467e8c2c1cb898a02",
+      "production_fix_ancestry": "not_present_main_is_single_root",
+      "action": "requalify exact aggregate product PR and reconcile each issue separately after approved merge",
+      "actual_record_changed": false
+    },
+    {
+      "issue": 34,
+      "version": "v0.0.0.32",
+      "canonical_state": "deferred",
+      "github_state": "closed",
+      "fix_sha": "d9994cfb699409d6d377e8edd72e8865c2cfa1e7",
+      "production_target": "main",
+      "production_revision": "1b11865f79464ae7db9a648467e8c2c1cb898a02",
+      "production_fix_ancestry": "not_present_main_is_single_root",
+      "action": "preserve existing hold; no automatic promotion; separate owner disposition",
+      "actual_record_changed": false
+    },
+    {
+      "issue": 68,
+      "version": "v0.0.0.33",
+      "canonical_state": "staged",
+      "github_state": "closed",
+      "fix_sha": "a8569d491bd93549dcd2011ca89e3e56d3ada50e",
+      "production_target": "main",
+      "production_revision": "1b11865f79464ae7db9a648467e8c2c1cb898a02",
+      "production_fix_ancestry": "not_present_main_is_single_root",
+      "action": "requalify exact aggregate product PR and reconcile each issue separately after approved merge",
+      "actual_record_changed": false
+    },
+    {
+      "issue": 70,
+      "version": "v0.0.0.34",
+      "canonical_state": "staged",
+      "github_state": "closed",
+      "fix_sha": "a8facf5b7e809ee72230d9e109263e31da264346",
+      "production_target": "main",
+      "production_revision": "1b11865f79464ae7db9a648467e8c2c1cb898a02",
+      "production_fix_ancestry": "not_present_main_is_single_root",
+      "action": "requalify exact aggregate product PR and reconcile each issue separately after approved merge",
+      "actual_record_changed": false
+    },
+    {
+      "issue": 71,
+      "version": "v0.0.0.35",
+      "canonical_state": "staged",
+      "github_state": "closed",
+      "fix_sha": "68aa26cf0353a5126be2a3acc1dad10be90ad2b8",
+      "production_target": "main",
+      "production_revision": "1b11865f79464ae7db9a648467e8c2c1cb898a02",
+      "production_fix_ancestry": "not_present_main_is_single_root",
+      "action": "requalify exact aggregate product PR and reconcile each issue separately after approved merge",
+      "actual_record_changed": false
+    },
+    {
+      "issue": 72,
+      "version": "v0.0.0.36",
+      "canonical_state": "staged",
+      "github_state": "closed",
+      "fix_sha": "11091c34e2436af21895aceb09e9ec7692345e3b",
+      "production_target": "main",
+      "production_revision": "1b11865f79464ae7db9a648467e8c2c1cb898a02",
+      "production_fix_ancestry": "not_present_main_is_single_root",
+      "action": "requalify exact aggregate product PR and reconcile each issue separately after approved merge",
+      "actual_record_changed": false
+    },
+    {
+      "issue": 53,
+      "version": "v0.0.0.37",
+      "canonical_state": "deferred",
+      "github_state": "open",
+      "fix_sha": "4f7c9a8d38b2e93b9b2aea4c0c1c49a7fd87ece9",
+      "production_target": "main",
+      "production_revision": "1b11865f79464ae7db9a648467e8c2c1cb898a02",
+      "production_fix_ancestry": "not_present_main_is_single_root",
+      "action": "preserve existing hold; no automatic promotion; separate owner disposition",
+      "actual_record_changed": false
+    },
+    {
+      "issue": 82,
+      "version": "v0.0.0.38",
+      "canonical_state": "deferred",
+      "github_state": "open",
+      "fix_sha": "cecc32ab1a65a21d1f8e42af453b190a9f8b2d45",
+      "production_target": "main",
+      "production_revision": "1b11865f79464ae7db9a648467e8c2c1cb898a02",
+      "production_fix_ancestry": "not_present_main_is_single_root",
+      "action": "ambiguous legacy engineering decision; separate exact historical authorization required",
+      "actual_record_changed": false
+    },
+    {
+      "issue": 84,
+      "version": "v0.0.0.39",
+      "canonical_state": "deferred",
+      "github_state": "open",
+      "fix_sha": "a121f3004072eb820b999b8128ac8aa22498b29d",
+      "production_target": "main",
+      "production_revision": "1b11865f79464ae7db9a648467e8c2c1cb898a02",
+      "production_fix_ancestry": "not_present_main_is_single_root",
+      "action": "ambiguous legacy engineering decision; separate exact historical authorization required",
+      "actual_record_changed": false
+    },
+    {
+      "issue": 86,
+      "version": "v0.0.0.40",
+      "canonical_state": "deferred",
+      "github_state": "open",
+      "fix_sha": "024046556bf00b649b2428c112f5456210036dfb",
+      "production_target": "main",
+      "production_revision": "1b11865f79464ae7db9a648467e8c2c1cb898a02",
+      "production_fix_ancestry": "not_present_main_is_single_root",
+      "action": "verify exact engineering archive then qualify historical product integration policy",
+      "actual_record_changed": false
+    },
+    {
+      "issue": 92,
+      "version": "v0.0.0.41",
+      "canonical_state": "deferred",
+      "github_state": "closed",
+      "fix_sha": "c25d8a3dca5ed90656ac4679028188c03f2e5a50",
+      "production_target": "main",
+      "production_revision": "1b11865f79464ae7db9a648467e8c2c1cb898a02",
+      "production_fix_ancestry": "not_present_main_is_single_root",
+      "action": "verify exact engineering archive then qualify historical product integration policy",
+      "actual_record_changed": false
+    },
+    {
+      "issue": 94,
+      "version": "v0.0.0.42",
+      "canonical_state": "deferred",
+      "github_state": "closed",
+      "fix_sha": "d42401171119b7abbb42d3ebc270358d753208ab",
+      "production_target": "main",
+      "production_revision": "1b11865f79464ae7db9a648467e8c2c1cb898a02",
+      "production_fix_ancestry": "not_present_main_is_single_root",
+      "action": "verify exact engineering archive then qualify historical product integration policy",
+      "actual_record_changed": false
+    }
   ]
 }

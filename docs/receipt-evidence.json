@@ -75,7 +75,7 @@
       "implemented_in": [
         {
           "path": "tools/install.py",
-          "anchor": "def install(api, target, source_sha, baseline, apply=False):"
+          "anchor": "def install(api, target, source_sha, baseline, apply=False, *, product_branch=None,"
         }
       ],
       "tested_by": [

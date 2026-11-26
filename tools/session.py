@@ -1583,8 +1583,14 @@ def reconcile_historical_integration(api, state, number, decision, policy):
             for suffix in ("", "/attempts/" + str(attempt)):
                 standard.check_pr_run(api.request("GET", root + suffix), preview_policy, run, attempt)
     check_preview()
-    pr = get_pr(api, state, candidate)
-    merged, links = standard.verify_integration(api, state, candidate, pr, review)
+    def read_pr():
+        pr = get_pr(api, state, candidate)
+        if not install.same_id((pr["head"].get("repo") or {}).get("id"),
+                               state["manifest"]["target_repository_id"]):
+            raise ValueError("Historical integration PR head repository differs")
+        return pr
+    merged, links = standard.verify_merged_destination(api, state, candidate, read_pr(), review,
+        state["manifest"]["product_branch"], read_pr)
     check_preview()
     candidate["evidence"] = list(dict.fromkeys(candidate["evidence"] + links))
     ledger, handoff = copy.deepcopy(state["ledger"]), copy.deepcopy(state["handoff"])
