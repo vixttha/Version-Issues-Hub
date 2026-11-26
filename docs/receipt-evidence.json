@@ -1640,6 +1640,18 @@
         {
           "path": "tools/session.py",
           "anchor": "def revalidate_claim_and_deferrals():"
+        },
+        {
+          "path": "tools/session.py",
+          "anchor": "def require_product_lineage(api, state):"
+        },
+        {
+          "path": "tools/session.py",
+          "anchor": "def reconcile_historical_integration(api, state, number, decision, policy):"
+        },
+        {
+          "path": "tools/install.py",
+          "anchor": "def product_target(meta, manifest):"
         }
       ],
       "tested_by": [
@@ -1658,6 +1670,26 @@
         {
           "path": "tests/test_integration_integrity.py",
           "anchor": "def test_deferral_rechecks_original_run_attempt(self):"
+        },
+        {
+          "path": "tests/test_integration_integrity.py",
+          "anchor": "def test_historical_engineering_reconciliation_preserves_original_archive(self):"
+        },
+        {
+          "path": "tests/test_integration_integrity.py",
+          "anchor": "def test_product_lineage_reset_blocks_claim_and_publication(self):"
+        },
+        {
+          "path": "tests/test_integration_integrity.py",
+          "anchor": "def test_blocked_rework_cannot_hide_historical_debt(self):"
+        },
+        {
+          "path": "tests/test_install.py",
+          "anchor": "def test_explicit_alternate_product_target_plan(self):"
+        },
+        {
+          "path": "tests/test_scope_control.py",
+          "anchor": "def test_malformed_043_scope_cannot_authorize_itself(self):"
         }
       ]
     }

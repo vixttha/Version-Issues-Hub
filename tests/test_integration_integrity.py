@@ -175,3 +175,43 @@ class IntegrationIntegrityTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError,"no longer contains"):
             session.claim(self.api,self.state,247,["test"],"New work")
         self.assertEqual(self.api.writes,[])
+
+    def test_historical_engineering_reconciliation_preserves_original_archive(self):
+        from test_session import BASE, PROPOSED, post_policy
+        from unittest.mock import patch
+        self.state["ledger"], self.state["handoff"] = session.claim(
+            self.api, self.state, 247, ["test"], "Fix")
+        self.state["ledger"], self.state["handoff"] = session.advance(
+            self.api, self.state, "Head review", return_to_head=True)
+        self.state["ledger"], self.state["handoff"] = session.finish(
+            self.api, self.state, "deferred",
+            "Owner-approved engineering completion: PR #8; fix " + FIX +
+            "; candidate " + CANDIDATE + "; merge " + NEXT + ".")
+        archive = copy.deepcopy(self.state["handoff"]["history"])
+        self.api.pr.update(state="closed",merged=True,merge_commit_sha=NEXT)
+        self.api.product = NEXT
+        review = post_policy(self.state)
+        review["issues"][0]["fix_sha"] = FIX
+        policy = {"schema_version":1, "outcome":"historical_product_integration",
+                  "archive_index":0, "archive_digest":session.closure_digest(archive[0]),
+                  "premerge":{"merge_sha":PROPOSED,"evidence":[RUN]}, "review":review}
+        original = self.api.request
+        def request(method,path,body=None):
+            if method == "GET" and path.endswith("/git/commits/"+PROPOSED):
+                return {"sha":PROPOSED,"parents":[{"sha":BASE},{"sha":CANDIDATE}]}
+            return original(method,path,body)
+        with patch.object(self.api,"request",side_effect=request):
+            with self.assertRaisesRegex(ValueError,"digest"):
+                session.reconcile(self.api,self.state,247,"Owner integration",
+                    policy={**policy,"archive_digest":"0"*64})
+            ledger,handoff = session.reconcile(self.api,self.state,247,"Owner integration",policy=policy)
+            self.assertEqual(ledger["issues"][0]["state"],"integrated")
+            self.assertEqual(handoff["history"][:-1],archive)
+            self.assertEqual(handoff["history"][-1]["handoff"]["fix_sha"],FIX)
+            self.assertEqual(handoff["history"][-1]["merged_sha"],NEXT)
+            self.assertEqual(session.save(self.api,self.state,ledger,handoff,issue=247,
+                                          policy=policy)["status"],"planned")
+            self.api.pre_run["run_attempt"] = 2
+            with self.assertRaises(ValueError):
+                session.reconcile(self.api,self.state,247,"Owner integration",policy=policy)
+        self.assertEqual(self.api.writes,[])

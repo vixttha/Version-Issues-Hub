@@ -1511,10 +1511,99 @@ def integration_decision(decision, policy):
     return text(decision, "owner decision") + "\nPost-merge policy: " + json.dumps(
         policy, sort_keys=True, separators=(",", ":"), ensure_ascii=True, allow_nan=False)
 
+HISTORICAL_INTEGRATION_DECISION = "VIB-HISTORICAL-INTEGRATION-1: "
+
+
+def reconcile_historical_integration(api, state, number, decision, policy):
+    """Append one exact product integration without rewriting earlier evidence."""
+    from tools import standard
+    if (not isinstance(policy, dict)
+            or set(policy) != {"schema_version", "outcome", "archive_index",
+                              "archive_digest", "premerge", "review"}
+            or type(policy["schema_version"]) is not int or policy["schema_version"] != 1
+            or policy["outcome"] != "historical_product_integration"):
+        raise ValueError("Invalid historical integration policy")
+    number = issue_number(number)
+    require_unheld_scope(state, [number])
+    if state["handoff"]["schema_version"] != 1:
+        raise ValueError("Historical integration requires singleton state")
+    row = next((r for r in state["ledger"]["issues"] if r["issue"] == number), None)
+    if row is None or row["state"] not in ("staged", "deferred"):
+        raise ValueError("Historical integration requires staged or deferred work")
+    index = closure_archive_index(state["handoff"], number)
+    if (index is None or type(policy["archive_index"]) is not int or policy["archive_index"] != index):
+        raise ValueError("Historical integration archive occurrence changed")
+    prior = state["handoff"]["history"][index]
+    if prior["disposition"] != row["state"] or policy["archive_digest"] != closure_digest(prior):
+        raise ValueError("Historical integration archive digest or disposition changed")
+    if row["state"] == "staged":
+        fix = prior["handoff"]["fix_sha"]
+    else:
+        engineering = engineering_receipt(prior, state["ledger"])
+        legacy = legacy_engineering_approval(prior)
+        if engineering is not None:
+            if engineering["policy"]["production_branch"] != state["manifest"]["product_branch"]:
+                raise ValueError("Historical engineering production target differs")
+            fix = engineering["policy"]["review"]["issues"][0]["fix_sha"]
+        elif legacy is not None:
+            fix = legacy.group(2)
+        else:
+            raise ValueError("Deferred work lacks exact engineering approval; owner reconciliation required")
+    review = policy["review"]
+    standard.validate_policy(review)
+    if (len(review["issues"]) != 1 or review["issues"][0]["issue"] != number
+            or review["issues"][0]["fix_sha"] != fix
+            or review["product_branch"] != state["manifest"]["product_branch"]):
+        raise ValueError("Historical integration must preserve original fix and target")
+    pre = policy["premerge"]
+    if not isinstance(pre, dict) or set(pre) != {"merge_sha", "evidence"}:
+        raise ValueError("Invalid historical pre-merge evidence")
+    preview = install.require(install.SHA, pre["merge_sha"], "historical pre-merge revision")
+    evidence = evidence_links(state["ledger"]["repository"], pre["evidence"])
+    if not evidence:
+        raise ValueError("Historical integration requires fresh product PR evidence")
+    prefix = state["prefix"]
+    candidate = {**copy.deepcopy(prior["handoff"]), "phase": "Head", "fix_sha": fix,
+                 "candidate_sha": review["head_sha"], "pull_request": review["pull_request"],
+                 "integration_base_sha": review["base_sha"], "integration_merge_sha": preview,
+                 "evidence": list(evidence)}
+    preview_policy = {"repository_id": review["repository_id"], "pull_request": review["pull_request"],
+                      "head_sha": review["head_sha"], "base_sha": review["base_sha"], "merge_sha": preview}
+    def check_preview():
+        commit = install.response_object(api.request("GET", prefix + "/git/commits/" + preview),
+                                         "historical proposed merge")
+        if (commit.get("sha") != preview
+                or [p.get("sha") for p in install.response_rows(commit.get("parents"), "preview parents")]
+                    != [review["base_sha"], review["head_sha"]]
+                or review["base_sha"] == review["head_sha"]):
+            raise ValueError("Historical product preview parents differ")
+        for link in evidence:
+            run, attempt = evidence_run(state["ledger"]["repository"], link)
+            root = prefix + "/actions/runs/" + str(run)
+            for suffix in ("", "/attempts/" + str(attempt)):
+                standard.check_pr_run(api.request("GET", root + suffix), preview_policy, run, attempt)
+    check_preview()
+    pr = get_pr(api, state, candidate)
+    merged, links = standard.verify_integration(api, state, candidate, pr, review)
+    check_preview()
+    candidate["evidence"] = list(dict.fromkeys(candidate["evidence"] + links))
+    ledger, handoff = copy.deepcopy(state["ledger"]), copy.deepcopy(state["handoff"])
+    next(r for r in ledger["issues"] if r["issue"] == number)["state"] = "integrated"
+    handoff["history"].append({"handoff":candidate, "disposition":"integrated",
+        "decision": HISTORICAL_INTEGRATION_DECISION + json.dumps(
+            {"owner_decision": text(decision, "owner decision"), "policy": policy},
+            sort_keys=True, separators=(",", ":"), ensure_ascii=True, allow_nan=False),
+        "merged_sha": merged})
+    validate_handoff(handoff, ledger)
+    return ledger, handoff
+
+
 def reconcile(api, state, number, decision, *, policy=None):
     validate_handoff(state["handoff"], state["ledger"])
     if pending_closure(state["handoff"]) is not None:
         raise ValueError("Reconcile unresolved closure before integration reconciliation")
+    if isinstance(policy, dict) and policy.get("outcome") == "historical_product_integration":
+        return reconcile_historical_integration(api, state, number, decision, policy)
     ledger = copy.deepcopy(state["ledger"])
     handoff = copy.deepcopy(state["handoff"])
     # Reconciliation operates on one staged issue, not the active slot.
@@ -1933,6 +2022,14 @@ def save(api, state, ledger, handoff, apply=False, *, issue=None, operation_id=N
             elif record["disposition"] == "staged":
                 verify_candidate_runs(api, state, active, active["evidence"])
             elif record["disposition"] == "integrated":
+                if record["decision"].startswith(HISTORICAL_INTEGRATION_DECISION):
+                    receipt = checkpoint.parse_json(record["decision"][len(HISTORICAL_INTEGRATION_DECISION):])
+                    if (not isinstance(receipt, dict) or set(receipt) != {"owner_decision", "policy"}
+                            or receipt["policy"] != policy
+                            or reconcile(api, state, active["issue"], receipt["owner_decision"],
+                                         policy=policy) != (ledger, handoff)):
+                        raise ValueError("Historical integration publication differs from reviewed intent")
+                    continue
                 merged, links = standard.verify_integration(api, state, active,
                                                              get_pr(api, state, active), policy)
                 if (merged != record["merged_sha"] or not set(links).issubset(active["evidence"])
