@@ -1,0 +1,42 @@
+{
+  "schema_version": 1,
+  "id": "IDEA-000015",
+  "title": "Adversarial authorization and scope checks",
+  "summary": "Design original negative tests for untrusted issue text, missing or mismatched owner approval, wrong repository or issue, stale candidate, forged evidence and unauthorized state changes. Distinguish cooperative validation from optional live enforcement.",
+  "kind": "research",
+  "origin": {
+    "created_by": "joint",
+    "source": "Owner-directed VIB engineering research and independent implementation discussion, 2026-11-25; source-level provenance retained separately."
+  },
+  "lifecycle_status": "captured",
+  "implementation_status": "not_planned",
+  "testing": {
+    "status": "untested"
+  },
+  "importance": "critical",
+  "complexity": "medium",
+  "categories": [
+    "security",
+    "verification"
+  ],
+  "benefits": [
+    "Makes accidental scope violations observable"
+  ],
+  "risks": [
+    "No claim that advisory controls prevent direct GitHub writes; avoid widening credentials or requiring rulesets"
+  ],
+  "related_ideas": [
+    "IDEA-000003",
+    "IDEA-000004",
+    "IDEA-000008"
+  ],
+  "evidence": [
+    {
+      "relation": "context",
+      "claim": "Existing VIB candidate context only; does not establish implementation or acceptance of this idea.",
+      "repository": "vixttha/Version-Issues-Hub",
+      "commit": "a4684c3fd61e5d7a8472b1fa23831bec26341b80",
+      "path": "install/branch/AGENTS.md"
+    }
+  ]
+}

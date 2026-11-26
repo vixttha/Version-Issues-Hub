@@ -1,0 +1,42 @@
+{
+  "schema_version": 1,
+  "id": "IDEA-000019",
+  "title": "Regression isolation and order independence",
+  "summary": "Develop original qualification cases for test-order dependency, fixture mutation, cross-issue state leakage and reproducible results under isolated and reordered execution. Keep evidence tied to exact checkout and actual test invocation.",
+  "kind": "research",
+  "origin": {
+    "created_by": "joint",
+    "source": "Owner-directed VIB engineering research and independent implementation discussion, 2026-11-25; source-level provenance retained separately."
+  },
+  "lifecycle_status": "captured",
+  "implementation_status": "not_planned",
+  "testing": {
+    "status": "untested"
+  },
+  "importance": "high",
+  "complexity": "medium",
+  "categories": [
+    "testing",
+    "reliability"
+  ],
+  "benefits": [
+    "Detects hidden coupling and false green results"
+  ],
+  "risks": [
+    "Random ordering without a recorded seed harms reproducibility; scope to VIB rather than expanding mandatory dependencies"
+  ],
+  "related_ideas": [
+    "IDEA-000003",
+    "IDEA-000006",
+    "IDEA-000008"
+  ],
+  "evidence": [
+    {
+      "relation": "context",
+      "claim": "Existing VIB candidate context only; does not establish implementation or acceptance of this idea.",
+      "repository": "vixttha/Version-Issues-Hub",
+      "commit": "a4684c3fd61e5d7a8472b1fa23831bec26341b80",
+      "path": "tests/test_contention_recovery.py"
+    }
+  ]
+}

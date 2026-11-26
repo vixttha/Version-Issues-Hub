@@ -1,0 +1,41 @@
+{
+  "schema_version": 1,
+  "id": "IDEA-000018",
+  "title": "Provider-neutral onboarding readiness",
+  "summary": "Explore concise onboarding and read-only readiness diagnostics for compatible connector-only and shell hosts: scope, permissions, installation pin, supported capabilities and next safe action. Document real qualified environments without requiring a provider.",
+  "kind": "product",
+  "origin": {
+    "created_by": "joint",
+    "source": "Owner-directed VIB engineering research and independent implementation discussion, 2026-11-25; source-level provenance retained separately."
+  },
+  "lifecycle_status": "captured",
+  "implementation_status": "not_planned",
+  "testing": {
+    "status": "untested"
+  },
+  "importance": "medium",
+  "complexity": "medium",
+  "categories": [
+    "adoption",
+    "documentation"
+  ],
+  "benefits": [
+    "Reduces setup ambiguity and improves portability"
+  ],
+  "risks": [
+    "Documentation is not independent-host acceptance; no mandatory plugin, paid runner or automatic install"
+  ],
+  "related_ideas": [
+    "IDEA-000007",
+    "IDEA-000009"
+  ],
+  "evidence": [
+    {
+      "relation": "context",
+      "claim": "Existing VIB candidate context only; does not establish implementation or acceptance of this idea.",
+      "repository": "vixttha/Version-Issues-Hub",
+      "commit": "a4684c3fd61e5d7a8472b1fa23831bec26341b80",
+      "path": "install/branch/AGENTS.md"
+    }
+  ]
+}
