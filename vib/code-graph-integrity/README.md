@@ -1,0 +1,3 @@
+# Independent #77 Lydite graph archive verification
+
+Read-only qualification of exact Veraphify candidate 47c630afb87b6eb1216d319c8ca81d78da91ad7d, engineering ledger 26e9fe8c019a33c5f84f77a37da70925505204e3. Six tests independently verify all 36 issue/version bindings, actual original fix and operational source pins, cumulative ancestry, 72 native graph reads and digests, source trees and relationship endpoints, and four negative probes. Public Ubuntu and Windows only. No graph generation, archive mutation, canonical checkpoint claim or release. Re-pin on a future authorized archive revision.
