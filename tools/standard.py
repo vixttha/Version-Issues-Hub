@@ -99,6 +99,13 @@ def check_test(api, prefix, policy, evidence, test, *, post_merge=False):
 
 def verify_integration(api, state, active, pr, policy):
     """Reuse Standard mappings for one issue's actual merged revision; read-only."""
+    return verify_merged_destination(api, state, active, pr, policy,
+                                     state["manifest"]["product_branch"],
+                                     lambda: session.get_pr(api, state, active))
+
+
+def verify_merged_destination(api, state, active, pr, policy, destination, read_pr):
+    """Shared exact merged-revision evidence checks; destination is selected by the caller."""
     if policy is None:
         raise ValueError("Integration requires an owner-reviewed post-merge policy")
     validate_policy(policy)
@@ -106,7 +113,7 @@ def verify_integration(api, state, active, pr, policy):
     merged = install.require(install.SHA, pr.get("merge_commit_sha"), "merged revision")
     if (policy["repository"] != ledger["repository"]
             or policy["repository_id"] != manifest["target_repository_id"]
-            or policy["product_branch"] != manifest["product_branch"]
+            or policy["product_branch"] != destination
             or policy["source_sha"] != manifest["source_sha"]
             or policy["installed_sha"] != state["ref"]
             or policy["pull_request"] != active["pull_request"]
@@ -116,7 +123,7 @@ def verify_integration(api, state, active, pr, policy):
     meta = api.request("GET", prefix)
     if (meta.get("id") != policy["repository_id"] or meta.get("private") is not False
             or meta.get("full_name") != policy["repository"]
-            or meta.get("default_branch") != policy["product_branch"]):
+            or meta.get("default_branch") != manifest["product_branch"]):
         raise ValueError("Post-merge verification requires the matching public repository")
     row = next(r for r in ledger["issues"] if r["issue"] == active["issue"])
     scope = policy["issues"]
@@ -158,7 +165,7 @@ def verify_integration(api, state, active, pr, policy):
                 or latest.get("head_sha") != merged or latest.get("head_branch") != policy["product_branch"]
                 or latest.get("status") != "completed" or latest.get("conclusion") != "success"):
             raise ValueError("Post-merge run changed during review")
-    assert_merged(session.get_pr(api, state, active))
+    assert_merged(read_pr())
     if install.read_ref(api, prefix, install.BRANCH) != state["ref"]:
         raise ValueError("Installed state advanced during post-merge review")
     return merged, links

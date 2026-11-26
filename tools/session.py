@@ -168,6 +168,96 @@ def validate_handoff(handoff, ledger):
             install.require(install.SHA, record["merged_sha"], "merged revision")
         elif record["merged_sha"] is not None:
             raise ValueError("Non-integrated handoff has merged revision")
+        engineering_receipt(record, ledger)
+
+
+ENGINEERING_DECISION = "VIB-ENGINEERING-COMPLETE-1: "
+
+
+def engineering_policy(policy, ledger, number):
+    """Validate an explicit engineering-only envelope around Standard evidence."""
+    from tools import standard
+    if (not isinstance(policy, dict)
+            or set(policy) != {"schema_version", "outcome", "production_branch", "engineering_branch", "review"}
+            or type(policy["schema_version"]) is not int or policy["schema_version"] != 1
+            or policy["outcome"] != "engineering_complete"):
+        raise ValueError("Invalid engineering completion policy")
+    production = text(policy["production_branch"], "production branch")
+    branch = text(policy["engineering_branch"], "engineering branch")
+    if branch in (production, install.BRANCH) or production == install.BRANCH:
+        raise ValueError("Engineering destination must differ from production and installed branch")
+    review = policy["review"]
+    standard.validate_policy(review)
+    row = next((r for r in ledger["issues"] if r["issue"] == issue_number(number)), None)
+    scope = review["issues"]
+    if (row is None or review["repository"] != ledger["repository"]
+            or review["product_branch"] != branch or len(scope) != 1
+            or scope[0]["issue"] != number or scope[0]["version"] != row["version"]
+            or [c["text"] for c in scope[0]["criteria"]] != row["acceptance"]):
+        raise ValueError("Engineering policy scope or destination mismatch")
+    return review
+
+
+def engineering_receipt(record, ledger):
+    """Recognize only the reserved decision format, preserving legacy archives."""
+    decision = record["decision"]
+    if not decision.startswith(ENGINEERING_DECISION):
+        return None
+    receipt = checkpoint.parse_json(decision[len(ENGINEERING_DECISION):])
+    if (not isinstance(receipt, dict) or set(receipt) != {"owner_decision", "policy"}
+            or record["disposition"] != "deferred" or record["merged_sha"] is not None):
+        raise ValueError("Invalid engineering-only archive")
+    text(receipt["owner_decision"], "owner decision")
+    active = record["handoff"]
+    if (active["phase"] != "Head" or any(active[k] is not None for k in
+            ("fix_sha", "candidate_sha", "pull_request")) or active["evidence"] or PIN_KEYS & set(active)):
+        raise ValueError("Engineering-only archive must not contain production candidate pins")
+    engineering_policy(receipt["policy"], ledger, active["issue"])
+    return receipt
+
+
+def finish_engineering(api, state, decision, *, policy, owner_approved=False, issue=None):
+    """Plan engineering completion without publishing or asserting production integration."""
+    from tools import standard
+    if owner_approved is not True:
+        raise ValueError("Explicit owner approval is required")
+    validate_handoff(state["handoff"], state["ledger"])
+    active = select_active(state["handoff"], issue)
+    if (active["phase"] != "Head" or any(active[k] is not None for k in
+            ("fix_sha", "candidate_sha", "pull_request")) or active["evidence"] or PIN_KEYS & set(active)):
+        raise ValueError("Engineering completion requires Head without production candidate pins")
+    review = engineering_policy(policy, state["ledger"], active["issue"])
+    if policy["production_branch"] != state["manifest"]["product_branch"]:
+        raise ValueError("Production branch does not match installed target")
+    if get_issue(api, state, active["issue"]).get("state") != "open":
+        raise ValueError("Issue is not open; owner reconciliation required")
+    scoped = {**active, "fix_sha": review["issues"][0]["fix_sha"],
+              "candidate_sha": review["head_sha"], "pull_request": review["pull_request"]}
+    def read_pr():
+        pr = pr_response(api.request("GET", state["prefix"] + "/pulls/" + str(review["pull_request"])))
+        repo_id = state["manifest"]["target_repository_id"]
+        if (not install.same_id(pr.get("number"), review["pull_request"])
+                or pr["base"].get("ref") != policy["engineering_branch"]
+                or not install.same_id(pr["base"]["repo"].get("id"), repo_id)
+                or not install.same_id((pr["head"].get("repo") or {}).get("id"), repo_id)
+                or pr["head"].get("sha") != review["head_sha"]):
+            raise ValueError("Engineering PR candidate or destination changed")
+        return pr
+    standard.verify_merged_destination(api, state, scoped, read_pr(), review,
+                                      policy["engineering_branch"], read_pr)
+    if get_issue(api, state, active["issue"]).get("state") != "open":
+        raise ValueError("Issue changed during engineering review")
+    ledger, handoff = copy.deepcopy(state["ledger"]), copy.deepcopy(state["handoff"])
+    archived = copy.deepcopy(active)
+    receipt = {"owner_decision": text(decision, "owner decision"), "policy": policy}
+    handoff["history"].append({"handoff": archived, "disposition": "deferred",
+        "decision": ENGINEERING_DECISION + json.dumps(receipt, sort_keys=True, separators=(",", ":"), allow_nan=False),
+        "merged_sha": None})
+    next(row for row in ledger["issues"] if row["issue"] == active["issue"])["state"] = "deferred"
+    put_active(handoff, active["issue"], None)
+    validate_handoff(handoff, ledger)
+    return ledger, handoff
+
 
 def load(api, target, expected_sha=None, *, _source_cache=None):
     prefix = install.repo_path(target)
@@ -373,11 +463,20 @@ def inspect(api, state, requested=None):
                         status = "stale_integration_evidence"
         if status in ("resume", "staged") and info["state"] != "open":
             status = "issue_reconciliation_required"
+    engineering = None
+    if issue is not None and any(r["issue"] == issue and r["state"] == "deferred" for r in state["ledger"]["issues"]):
+        prior = next((r for r in reversed(handoff["history"]) if r["handoff"]["issue"] == issue), None)
+        if prior is not None:
+            engineering = engineering_receipt(prior, state["ledger"])
+        if engineering is not None:
+            status = "engineering_complete"
     return {"status": status, "installed_sha": state["ref"], "product_sha": state["product_sha"],
             "repository": state["ledger"]["repository"], "baseline": state["manifest"]["baseline_version"],
             "target": state["manifest"]["target_version"], "issue": info, "active": active,
             "owner_merge_required": True, "evidence_verified": False,
-            "staged": staged, **({"active_issues": [a["issue"] for a in rows]}
+            "staged": staged, **({"engineering_completion": engineering, "production_integrated": False}
+                                  if engineering is not None else {}),
+            **({"active_issues": [a["issue"] for a in rows]}
                                   if handoff["schema_version"] == 2 else {})}
 
 def verify_closed_staged_pr(api, state, previous):
@@ -533,6 +632,8 @@ def finish(api, state, disposition, decision, *, policy=None, issue=None):
         raise ValueError("Return to Head before deciding")
     if disposition not in ("blocked", "deferred", "staged", "integrated"):
         raise ValueError("Invalid disposition")
+    if text(decision, "owner decision").startswith(ENGINEERING_DECISION):
+        raise ValueError("Use the dedicated engineering completion command")
     merged = None
     if policy is not None and disposition != "integrated":
         raise ValueError("Post-merge policy applies only to integration")
@@ -897,7 +998,7 @@ class HandoffRejected(install.ApiError):
 
 
 def save(api, state, ledger, handoff, apply=False, *, issue=None, operation_id=None,
-         on_recovery_ticket=None, policy=None):
+         on_recovery_ticket=None, policy=None, engineering_approved=False):
     if operation_id is not None and (not isinstance(operation_id, str)
             or not re.fullmatch(r"[0-9a-f]{64}", operation_id)):
         raise ValueError("Invalid operation identity")
@@ -926,7 +1027,13 @@ def save(api, state, ledger, handoff, apply=False, *, issue=None, operation_id=N
             verify_closed_staged_pr(api, state, previous)
         for record in appended:
             active = record["handoff"]
-            if record["disposition"] == "staged":
+            engineering = engineering_receipt(record, ledger)
+            if engineering is not None:
+                expected = finish_engineering(api, state, engineering["owner_decision"],
+                    policy=engineering["policy"], owner_approved=engineering_approved, issue=active["issue"])
+                if expected != (ledger, handoff):
+                    raise ValueError("Engineering publication proof does not match reviewed record")
+            elif record["disposition"] == "staged":
                 verify_candidate_runs(api, state, active, active["evidence"])
             elif record["disposition"] == "integrated":
                 merged, links = standard.verify_integration(api, state, active,
@@ -1280,13 +1387,18 @@ def main():
     f.add_argument("--decision", required=True)
     f.add_argument("--issue", type=int, help="Assert the intended active issue before finishing")
     f.add_argument("--owner-approved", action="store_true")
+    e = sub.add_parser("finish-engineering", help="Record engineering completion without production integration")
+    e.add_argument("--issue", type=int)
+    e.add_argument("--decision", required=True)
+    e.add_argument("--policy", required=True, help="Owner-reviewed engineering completion policy JSON")
+    e.add_argument("--owner-approved", action="store_true")
     i = sub.add_parser("reconcile")
     i.add_argument("issue", type=int)
     i.add_argument("--decision", required=True)
     i.add_argument("--owner-approved", action="store_true")
     for command in (f, i):
         command.add_argument("--policy", help="Owner-reviewed Standard post-merge policy JSON (required for integration)")
-    for command in (c, a, f, i):
+    for command in (c, a, f, i, e):
         command.add_argument("--apply", action="store_true")
     args = p.parse_args()
     token = os.environ.get("GH_TOKEN") or os.environ.get("GITHUB_TOKEN")
@@ -1306,15 +1418,15 @@ def main():
         else:
             if args.apply and (not token or not args.expected_sha):
                 raise ValueError("Apply requires a credential and exact expected installed SHA")
-            if args.command in ("claim", "finish", "reconcile") and not args.owner_approved:
+            if args.command in ("claim", "finish", "reconcile", "finish-engineering") and not args.owner_approved:
                 raise ValueError("Explicit owner approval is required")
-            if args.command in ("advance", "finish"):
+            if args.command in ("advance", "finish", "finish-engineering"):
                 scope = select_active(state["handoff"], args.issue)["issue"]
             else:
                 scope = args.issue
             from pathlib import Path
             policy = (checkpoint.parse_json(Path(args.policy).read_text(encoding="utf-8"))
-                      if args.command in ("finish", "reconcile") and args.policy else None)
+                      if args.command in ("finish", "reconcile", "finish-engineering") and args.policy else None)
             def plan(current):
                 if args.command == "claim":
                     return claim(api, current, args.issue, args.acceptance, args.note,
@@ -1326,6 +1438,9 @@ def main():
                         return_to_head=args.return_to_head, refresh=args.refresh, issue=scope)
                 if args.command == "finish":
                     return finish(api, current, args.disposition, args.decision, policy=policy, issue=scope)
+                if args.command == "finish-engineering":
+                    return finish_engineering(api, current, args.decision, policy=policy,
+                                              owner_approved=args.owner_approved, issue=scope)
                 return reconcile(api, current, args.issue, args.decision, policy=policy)
             # Exact owner post-merge policy pins must not be silently rewritten.
             if args.apply and policy is None and args.command != "reconcile" and not (
@@ -1346,7 +1461,11 @@ def main():
                                       _source_cache=source_cache)
             else:
                 ledger, handoff = plan(state)
-                result = save(api, state, ledger, handoff, args.apply, issue=scope, policy=policy)
+                if args.command == "finish-engineering":
+                    result = save(api, state, ledger, handoff, args.apply, issue=scope,
+                                  engineering_approved=args.owner_approved)
+                else:
+                    result = save(api, state, ledger, handoff, args.apply, issue=scope, policy=policy)
         print(install.render(result), end="")
     except (ValueError, KeyError, TypeError, OSError, install.ApiError) as exc:
         install.cli_error(p, "VIB session stopped", exc)
