@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "product_repository": "vixttha/Version-Issues-Hub",
-  "product_sha": "4fc9ac47462101b941ea2f78fc939d42a9de0032",
+  "product_sha": "5a6074d77ec37823f81c6d7ebb1f4593d969cd71",
   "cases": [
     {
       "case_id": "VIB-001",
@@ -81,6 +81,42 @@
       "plan": {
         "schema_version": 2,
         "case_id": "VIB-007",
+        "required_checks": [
+          "python-unittest"
+        ],
+        "shared_evidence": false
+      }
+    },
+    {
+      "case_id": "VIB-008",
+      "suite": "test_live_acceptance.py",
+      "plan": {
+        "schema_version": 2,
+        "case_id": "VIB-008",
+        "required_checks": [
+          "python-unittest"
+        ],
+        "shared_evidence": false
+      }
+    },
+    {
+      "case_id": "VIB-009",
+      "suite": "test_pilot_refs.py",
+      "plan": {
+        "schema_version": 2,
+        "case_id": "VIB-009",
+        "required_checks": [
+          "python-unittest"
+        ],
+        "shared_evidence": false
+      }
+    },
+    {
+      "case_id": "VIB-010",
+      "suite": "test_release_checkpoint_mapping.py",
+      "plan": {
+        "schema_version": 2,
+        "case_id": "VIB-010",
         "required_checks": [
           "python-unittest"
         ],

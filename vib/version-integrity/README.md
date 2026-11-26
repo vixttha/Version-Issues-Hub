@@ -1,0 +1,3 @@
+# VIB .36 version integrity regression
+
+Read-only exact snapshots: engineering 26e9fe8c019a33c5f84f77a37da70925505204e3, reconciled canonical 3ad6e455e86231c43ddf2dcded91f8d2debb1744, prior canonical e2ce4baf398750e81ac9ab2138095b666bd41a2d. The tests separate permanent mappings from frozen engineering state, check all 36 assignments, 35 receipt/graph features, ten retrospective staged dispositions, optional deferrals, active #40 and original installed package hashes. No main integration or upgrade is claimed. Negative probes verify rejection of stale/contradictory records. Free public Ubuntu and Windows jobs only. Update pins deliberately on future authorized candidate changes.

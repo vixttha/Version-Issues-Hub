@@ -1,0 +1,46 @@
+name: VIB tri-runtime transaction experiment
+on:
+  push:
+    branches: [Lydite-Test-Vault]
+    paths:
+      - 'vib/tri-runtime/**'
+      - '.github/workflows/vib-tri-runtime.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  experiment:
+    if: github.event.repository.private == false
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [ubuntu-24.04, windows-latest]
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 8
+    env:
+      VIB_CHECKOUT: ${{ github.workspace }}/product
+      PYTHONDONTWRITEBYTECODE: '1'
+      PYTHONUTF8: '1'
+      GH_TOKEN: ''
+      GITHUB_TOKEN: ''
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          path: vault
+          persist-credentials: false
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          path: product
+          ref: '5a6074d77ec37823f81c6d7ebb1f4593d969cd71'
+          persist-credentials: false
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
+        with:
+          python-version: '3.12'
+      - name: Single-source three-runtime transaction test
+        run: python -B vault/vib/tri-runtime/verify.py
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: tri-runtime-${{ matrix.runner }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/tri-runtime
+          if-no-files-found: error

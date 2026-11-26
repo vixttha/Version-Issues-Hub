@@ -1,0 +1,390 @@
+{
+  "schema": 1,
+  "product": "449e4b493daa1f9906396dae49877a32333c418d",
+  "scenarios": [
+    {
+      "id": "normal",
+      "fault": "none",
+      "winner": 101,
+      "patches": 1,
+      "recovery": "unchanged",
+      "criteria": [
+        "preserve state"
+      ]
+    },
+    {
+      "id": "lost-before",
+      "fault": "before",
+      "winner": 101,
+      "patches": 2,
+      "recovery": "saved",
+      "criteria": [
+        "preserve state"
+      ]
+    },
+    {
+      "id": "lost-after",
+      "fault": "after",
+      "winner": 101,
+      "patches": 1,
+      "recovery": "unchanged",
+      "criteria": [
+        "preserve state"
+      ]
+    },
+    {
+      "id": "competing-claim",
+      "fault": "compete",
+      "winner": 102,
+      "patches": 2,
+      "recovery": "blocked",
+      "criteria": [
+        "preserve state"
+      ]
+    },
+    {
+      "id": "tree-before",
+      "fault": "tree-before",
+      "winner": 101,
+      "patches": 1,
+      "recovery": "saved",
+      "criteria": [
+        "preserve state"
+      ]
+    },
+    {
+      "id": "tree-after",
+      "fault": "tree-after",
+      "winner": 101,
+      "patches": 1,
+      "recovery": "saved",
+      "criteria": [
+        "preserve state"
+      ]
+    },
+    {
+      "id": "commit-before",
+      "fault": "commit-before",
+      "winner": 101,
+      "patches": 1,
+      "recovery": "saved",
+      "criteria": [
+        "preserve state"
+      ]
+    },
+    {
+      "id": "commit-after",
+      "fault": "commit-after",
+      "winner": 101,
+      "patches": 1,
+      "recovery": "saved",
+      "criteria": [
+        "preserve state"
+      ]
+    },
+    {
+      "id": "competing-tree",
+      "fault": "compete-tree",
+      "winner": 102,
+      "patches": 2,
+      "recovery": "blocked",
+      "criteria": [
+        "preserve state"
+      ]
+    },
+    {
+      "id": "competing-commit",
+      "fault": "compete-commit",
+      "winner": 102,
+      "patches": 2,
+      "recovery": "blocked",
+      "criteria": [
+        "preserve state"
+      ]
+    },
+    {
+      "id": "stale-readback",
+      "fault": "stale",
+      "winner": 101,
+      "patches": 1,
+      "recovery": "unchanged",
+      "criteria": [
+        "preserve state"
+      ]
+    },
+    {
+      "id": "unexpected-readback",
+      "fault": "unexpected",
+      "winner": 101,
+      "patches": 1,
+      "recovery": "unchanged",
+      "criteria": [
+        "preserve state"
+      ]
+    },
+    {
+      "id": "normal-unicode",
+      "fault": "none",
+      "winner": 101,
+      "patches": 1,
+      "recovery": "unchanged",
+      "criteria": [
+        "café 水 🚀",
+        "literal $ [ ]"
+      ]
+    },
+    {
+      "id": "normal-line-endings",
+      "fault": "none",
+      "winner": 101,
+      "patches": 1,
+      "recovery": "unchanged",
+      "criteria": [
+        "CRLF\r\nLF\n",
+        "trailing space "
+      ]
+    },
+    {
+      "id": "lost-before-unicode",
+      "fault": "before",
+      "winner": 101,
+      "patches": 2,
+      "recovery": "saved",
+      "criteria": [
+        "café 水 🚀",
+        "literal $ [ ]"
+      ]
+    },
+    {
+      "id": "lost-before-line-endings",
+      "fault": "before",
+      "winner": 101,
+      "patches": 2,
+      "recovery": "saved",
+      "criteria": [
+        "CRLF\r\nLF\n",
+        "trailing space "
+      ]
+    },
+    {
+      "id": "lost-after-unicode",
+      "fault": "after",
+      "winner": 101,
+      "patches": 1,
+      "recovery": "unchanged",
+      "criteria": [
+        "café 水 🚀",
+        "literal $ [ ]"
+      ]
+    },
+    {
+      "id": "lost-after-line-endings",
+      "fault": "after",
+      "winner": 101,
+      "patches": 1,
+      "recovery": "unchanged",
+      "criteria": [
+        "CRLF\r\nLF\n",
+        "trailing space "
+      ]
+    },
+    {
+      "id": "competing-claim-unicode",
+      "fault": "compete",
+      "winner": 102,
+      "patches": 2,
+      "recovery": "blocked",
+      "criteria": [
+        "café 水 🚀",
+        "literal $ [ ]"
+      ]
+    },
+    {
+      "id": "competing-claim-line-endings",
+      "fault": "compete",
+      "winner": 102,
+      "patches": 2,
+      "recovery": "blocked",
+      "criteria": [
+        "CRLF\r\nLF\n",
+        "trailing space "
+      ]
+    },
+    {
+      "id": "tree-before-unicode",
+      "fault": "tree-before",
+      "winner": 101,
+      "patches": 1,
+      "recovery": "saved",
+      "criteria": [
+        "café 水 🚀",
+        "literal $ [ ]"
+      ]
+    },
+    {
+      "id": "tree-before-line-endings",
+      "fault": "tree-before",
+      "winner": 101,
+      "patches": 1,
+      "recovery": "saved",
+      "criteria": [
+        "CRLF\r\nLF\n",
+        "trailing space "
+      ]
+    },
+    {
+      "id": "tree-after-unicode",
+      "fault": "tree-after",
+      "winner": 101,
+      "patches": 1,
+      "recovery": "saved",
+      "criteria": [
+        "café 水 🚀",
+        "literal $ [ ]"
+      ]
+    },
+    {
+      "id": "tree-after-line-endings",
+      "fault": "tree-after",
+      "winner": 101,
+      "patches": 1,
+      "recovery": "saved",
+      "criteria": [
+        "CRLF\r\nLF\n",
+        "trailing space "
+      ]
+    },
+    {
+      "id": "commit-before-unicode",
+      "fault": "commit-before",
+      "winner": 101,
+      "patches": 1,
+      "recovery": "saved",
+      "criteria": [
+        "café 水 🚀",
+        "literal $ [ ]"
+      ]
+    },
+    {
+      "id": "commit-before-line-endings",
+      "fault": "commit-before",
+      "winner": 101,
+      "patches": 1,
+      "recovery": "saved",
+      "criteria": [
+        "CRLF\r\nLF\n",
+        "trailing space "
+      ]
+    },
+    {
+      "id": "commit-after-unicode",
+      "fault": "commit-after",
+      "winner": 101,
+      "patches": 1,
+      "recovery": "saved",
+      "criteria": [
+        "café 水 🚀",
+        "literal $ [ ]"
+      ]
+    },
+    {
+      "id": "commit-after-line-endings",
+      "fault": "commit-after",
+      "winner": 101,
+      "patches": 1,
+      "recovery": "saved",
+      "criteria": [
+        "CRLF\r\nLF\n",
+        "trailing space "
+      ]
+    },
+    {
+      "id": "competing-tree-unicode",
+      "fault": "compete-tree",
+      "winner": 102,
+      "patches": 2,
+      "recovery": "blocked",
+      "criteria": [
+        "café 水 🚀",
+        "literal $ [ ]"
+      ]
+    },
+    {
+      "id": "competing-tree-line-endings",
+      "fault": "compete-tree",
+      "winner": 102,
+      "patches": 2,
+      "recovery": "blocked",
+      "criteria": [
+        "CRLF\r\nLF\n",
+        "trailing space "
+      ]
+    },
+    {
+      "id": "competing-commit-unicode",
+      "fault": "compete-commit",
+      "winner": 102,
+      "patches": 2,
+      "recovery": "blocked",
+      "criteria": [
+        "café 水 🚀",
+        "literal $ [ ]"
+      ]
+    },
+    {
+      "id": "competing-commit-line-endings",
+      "fault": "compete-commit",
+      "winner": 102,
+      "patches": 2,
+      "recovery": "blocked",
+      "criteria": [
+        "CRLF\r\nLF\n",
+        "trailing space "
+      ]
+    },
+    {
+      "id": "stale-readback-unicode",
+      "fault": "stale",
+      "winner": 101,
+      "patches": 1,
+      "recovery": "unchanged",
+      "criteria": [
+        "café 水 🚀",
+        "literal $ [ ]"
+      ]
+    },
+    {
+      "id": "stale-readback-line-endings",
+      "fault": "stale",
+      "winner": 101,
+      "patches": 1,
+      "recovery": "unchanged",
+      "criteria": [
+        "CRLF\r\nLF\n",
+        "trailing space "
+      ]
+    },
+    {
+      "id": "unexpected-readback-unicode",
+      "fault": "unexpected",
+      "winner": 101,
+      "patches": 1,
+      "recovery": "unchanged",
+      "criteria": [
+        "café 水 🚀",
+        "literal $ [ ]"
+      ]
+    },
+    {
+      "id": "unexpected-readback-line-endings",
+      "fault": "unexpected",
+      "winner": 101,
+      "patches": 1,
+      "recovery": "unchanged",
+      "criteria": [
+        "CRLF\r\nLF\n",
+        "trailing space "
+      ]
+    }
+  ]
+}

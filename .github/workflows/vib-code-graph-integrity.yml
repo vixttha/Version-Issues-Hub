@@ -1,0 +1,45 @@
+name: VIB 77 independent Lydite graph archive verification
+on:
+  push:
+    branches: [Lydite-Test-Vault]
+    paths: ['vib/code-graph-integrity/**', '.github/workflows/vib-code-graph-integrity.yml']
+permissions:
+  contents: read
+jobs:
+  verify:
+    if: github.repository == 'vixttha/Version-Issues-Hub' && github.event.repository.private == false
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [ubuntu-24.04, windows-latest]
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 12
+    env:
+      PYTHONUTF8: '1'
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          path: vault
+          persist-credentials: false
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          path: candidate
+          ref: '47c630afb87b6eb1216d319c8ca81d78da91ad7d'
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          path: engineering
+          ref: '26e9fe8c019a33c5f84f77a37da70925505204e3'
+          persist-credentials: false
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: '24.22.3'
+          package-manager-cache: false
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
+        with:
+          python-version: '3.12'
+      - name: Fetch immutable source objects
+        run: git -C candidate fetch --no-tags origin 26e9fe8c019a33c5f84f77a37da70925505204e3 a472e04f4c2cc781c654000d6c0567e703f32791
+      - name: Independently verify all actual code graphs
+        run: python vault/vib/code-graph-integrity/test_graph_archive.py
