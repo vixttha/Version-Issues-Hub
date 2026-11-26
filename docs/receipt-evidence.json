@@ -1580,6 +1580,42 @@
           "anchor": "def test_held_issues_and_experimental_gate_refused(self):"
         }
       ]
+    },
+    {
+      "id": "v0-0-0-42",
+      "label": "Issue #94 · read-only recovery and exact evidence reuse",
+      "documented_in": [
+        {
+          "path": "docs/v0.0.0.42.md",
+          "anchor": "# v0.0.0.42 — Simplified recovery, handoffs and evidence reuse (#94)"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "tools/session.py",
+          "anchor": "def recovery_plan(api, state, requested=None):"
+        }
+      ],
+      "implemented_in": [
+        {
+          "path": "tools/session.py",
+          "anchor": "def recovery_plan(api, state, requested=None):"
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tests/test_recovery_plan.py",
+          "anchor": "def test_same_issue_exact_run_revalidated_without_advancing(self):"
+        },
+        {
+          "path": "tests/test_recovery_plan.py",
+          "anchor": "def test_changed_run_and_candidate_never_reused(self):"
+        },
+        {
+          "path": "tests/test_recovery_plan.py",
+          "anchor": "def test_lease_advance_during_validation_refuses_advisory(self):"
+        }
+      ]
     }
   ]
 }
