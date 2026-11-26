@@ -46,10 +46,10 @@ jobs:
           python -m pip check
       - name: Test archive inventory and partition contract
         run: python veraphify/tools/test_archive_scope.py
-      - name: Archive and verify every pinned VIB checkpoint
-        run: python veraphify/tools/verify-vib-candidate.py
       - name: Generate and query exact candidate raw code graph
         run: python veraphify/tools/candidate-code-graph.py build
+      - name: Archive and verify every pinned VIB checkpoint
+        run: python veraphify/tools/verify-vib-candidate.py
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         with:
           name: vib-candidate-archive-${{ github.run_id }}-${{ github.run_attempt }}

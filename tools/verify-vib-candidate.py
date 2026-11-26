@@ -19,7 +19,7 @@ if not versions or len(set(versions)) != len(versions):
     raise ValueError("Empty or duplicate ledger versions")
 version = max(versions, key=lambda value: tuple(map(int, value[1:].split("."))))
 output = Path(os.environ["RUNNER_TEMP"]) / "vib-candidate-archive"
-output.mkdir()
+output.mkdir(exist_ok=True)
 
 def git(directory, *args):
     return subprocess.check_output(["git", *args], cwd=directory)
@@ -89,8 +89,11 @@ for index, part in enumerate(partitions, 1):
         raise ValueError("Archive verification mismatch")
     for feature in ids:
         result = call("lookup", *pin, "--feature", f"feature:{feature}")
-        if result["citations"] != expected[feature] or result["source"] != source:
-            raise ValueError(f"Incorrect citation: {feature}")
+        # Graphify may canonicalize edge order; compare exact citation multisets,
+        # not presentation order. Missing, extra or wrong anchors still fail.
+        canonical = lambda items: sorted(json.dumps(item, sort_keys=True) for item in items)
+        if canonical(result["citations"]) != canonical(expected[feature]) or result["source"] != source:
+            raise ValueError(f"Incorrect citation: {feature}; actual={result['citations']!r}; expected={expected[feature]!r}")
         lookups[feature] = result
     shards.append({"directory": folder.name, "features": ids, "archive_sha256": digest})
 if set(lookups) != set(expected):
