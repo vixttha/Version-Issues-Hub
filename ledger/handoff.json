@@ -1,5 +1,14 @@
 {
-  "active": null,
+  "active": {
+    "issue": 94,
+    "version": "v0.0.0.42",
+    "phase": "Worker",
+    "next_action": "Implement only locked #94 criteria: read-only recovery/handoff planning and exact current evidence reuse. Ordinary public-runner qualification only; retain all historical archives, owner holds, single lane and production deferral. No live migration or .43 work.",
+    "fix_sha": null,
+    "candidate_sha": null,
+    "pull_request": null,
+    "evidence": []
+  },
   "history": [
     {
       "decision": "PR49 CodeRabbit finding 4682051116: rework exact product SHA comparisons and add regression checks; preserve previous evidence.",
