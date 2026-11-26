@@ -1137,6 +1137,12 @@ def recovery_plan(api, state, requested=None):
                     status = "evidence_revalidation_required"
                     action = "Revalidate exact recorded evidence or return to Head; do not advance."
     debt = unresolved_integration_debt(state)
+    if status == "head_scope_required":
+        try:
+            require_product_lineage(api, state)
+        except (ValueError, KeyError, TypeError, install.ApiError, OSError):
+            status = "product_lineage_reconciliation_required"
+            action = "Verify target identity, baseline and historical product merge ancestry before claiming work."
     if status == "head_scope_required" and debt:
         try:
             if number is None:
@@ -1258,6 +1264,47 @@ def unresolved_integration_debt(state):
             if r["state"] in ("staged", "deferred") or r["issue"] in outstanding]
 
 
+def require_product_lineage(api, state):
+    """Check baseline and recorded product merges, never infer content from closure."""
+    from tools import gate
+    manifest, prefix = state["manifest"], state["prefix"]
+    # Direct legacy fixture callers can omit install metadata. Every state
+    # loaded from an actual installation validates this mandatory field.
+    if "product_baseline_sha" not in manifest:
+        return
+    baseline = install.require(install.SHA, manifest["product_baseline_sha"], "product baseline")
+    meta = install.response_object(api.request("GET", prefix), "target repository")
+    if (meta.get("full_name") != state["ledger"]["repository"]
+            or not install.same_id(meta.get("id"), manifest["target_repository_id"])):
+        raise ValueError("Product lineage repository identity changed")
+    branch = install.product_target(meta, manifest)
+    current = install.require(install.SHA, state["product_sha"], "observed product revision")
+    def lease():
+        if install.read_ref(api, prefix, install.BRANCH) != state["ref"]:
+            raise ValueError("Installed state advanced; reload product lineage")
+        if install.read_ref(api, prefix, branch) != current:
+            raise ValueError("Product lineage target advanced; reload")
+    lease()
+    revisions = {baseline}
+    archives = {}
+    for record in state["handoff"]["history"]:
+        if record["disposition"] == "integrated":
+            archives[record["handoff"]["issue"]] = record
+    for row in state["ledger"]["issues"]:
+        if row["state"] == "integrated":
+            prior = archives.get(row["issue"])
+            if prior is None:
+                raise ValueError("Product lineage lacks historical integration archive")
+            revisions.add(install.require(install.SHA, prior["merged_sha"], "historical product merge"))
+    for revision in sorted(revisions):
+        if revision != current:
+            try:
+                gate.check_ancestry(api, prefix, revision, current)
+            except ValueError as exc:
+                raise ValueError("Product lineage no longer contains a reviewed baseline or merge") from exc
+    lease()
+
+
 def require_integration_debt_clear(api, state, number):
     # Same-issue recovery remains available through normal owner claim.
     # Experimental parallel state remains frozen by its independent gate.
@@ -1305,6 +1352,7 @@ def claim(api, state, number, criteria, note, *, resume_prior_line=False, parall
         handoff["active"] = rows
     if handoff["schema_version"] == 1 and rows:
         raise ValueError("Another issue owns the active handoff")
+    require_product_lineage(api, state)
     require_integration_debt_clear(api, state, number)
     if handoff["schema_version"] == 2:
         require_parallel_package(state)
@@ -1824,6 +1872,7 @@ def save(api, state, ledger, handoff, apply=False, *, issue=None, operation_id=N
         previous = {a["issue"] for a in active_rows(state["handoff"])}
         for active in active_rows(handoff):
             if active["issue"] not in previous:
+                require_product_lineage(api, state)
                 require_integration_debt_clear(api, state, active["issue"])
         appended = handoff["history"][len(state["handoff"]["history"]):]
         before = {row["issue"]: row for row in state["ledger"]["issues"]}

@@ -160,3 +160,18 @@ class IntegrationIntegrityTests(unittest.TestCase):
         self.assertEqual(install.product_target(meta, {"product_branch":"trunk"}),"trunk")
         with self.assertRaisesRegex(ValueError,"collision"):
             install.product_target(meta, {"product_branch":install.BRANCH})
+
+    def test_product_lineage_reset_blocks_claim_and_publication(self):
+        from test_session import BASE
+        self.state["manifest"]["product_baseline_sha"] = BASE
+        self.state["product_sha"] = BASE
+        ledger, handoff = session.claim(self.api, self.state, 247, ["test"], "New work")
+        self.assertEqual(handoff["active"]["issue"],247)
+        self.api.product = NEXT
+        for apply in (False, True):
+            with self.assertRaisesRegex(ValueError,"lineage target advanced"):
+                session.save(self.api,self.state,ledger,handoff,apply,issue=247)
+        self.state["product_sha"] = NEXT
+        with self.assertRaisesRegex(ValueError,"no longer contains"):
+            session.claim(self.api,self.state,247,["test"],"New work")
+        self.assertEqual(self.api.writes,[])
