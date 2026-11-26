@@ -2,7 +2,7 @@ name: Engineering law contract
 on:
   pull_request:
   push:
-    branches: [main, 'plan/v0.0.1', 'policy/six-engineering-laws']
+    branches: [main, 'plan/v0.0.0.1', 'policy/six-engineering-laws']
 permissions:
   contents: read
 jobs:
