@@ -1,0 +1,92 @@
+name: Brand motion V1.1 experiment
+on:
+  push:
+    branches: [Brand-Identity]
+    paths:
+      - 'brand-identity/10-motion/sequential-v1.1/**'
+      - '.github/workflows/brand-motion-v1.1-experiment.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  render:
+    if: github.event.repository.private == false && github.ref == 'refs/heads/Brand-Identity'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    defaults:
+      run:
+        working-directory: brand-identity/10-motion/sequential-v1.1
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Verify checkout and install tools
+        run: |
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg webp python3-pil
+          npm install --no-audit --no-fund
+          node --version
+          ./node_modules/.bin/hyperframes --version
+          img2webp -version
+      - name: Qualify exact source and prepare compositions
+        run: |
+          python3 ../../08-review/verify_lock.py
+          python3 -m unittest test_prepare test_frames -v
+          python3 prepare.py
+      - name: Lint, inspect and render RGBA frames
+        run: |
+          export HF_STATIC_DEDUP=false
+          for theme in light dark light-reference dark-reference light-uncropped dark-uncropped; do
+            (
+              cd "build/$theme"
+              ../../node_modules/.bin/hyperframes lint
+              ../../node_modules/.bin/hyperframes inspect
+              ../../node_modules/.bin/hyperframes render --format png-sequence --output frames --fps 24 --workers 1 --no-browser-gpu
+            )
+          done
+      - name: Encode and verify exact visible pixels and loop
+        run: |
+          python3 encode_verify.py
+          python3 responsive_verify.py | tee build/exports/responsive-verification.json
+          cat build/exports/responsive-verification.json >> "$GITHUB_STEP_SUMMARY"
+          cp package-lock.json build/exports/npm-resolved-lock.json
+          printf '%s\n' "$GITHUB_SHA" > build/exports/render-commit.txt
+          cat build/exports/verification.json >> "$GITHUB_STEP_SUMMARY"
+      - name: Qualify temporary WebPs in three browser engines
+        run: |
+          python3 -m venv --system-site-packages build/browser-venv
+          build/browser-venv/bin/pip install 'playwright==1.65.2'
+          build/browser-venv/bin/python -m playwright install --with-deps chromium firefox webkit
+          build/browser-venv/bin/python browser_verify.py | tee build/browser-verification.json
+          cat build/browser-verification.json >> "$GITHUB_STEP_SUMMARY"
+      # Review retention requires separate owner approval; no upload in this candidate.
+      - name: Record retention gate and remove ephemeral media
+        if: always()
+        run: |
+          rm -rf -- build
+          echo "Runner media removed; V1.1 review retention not authorized." >> "$GITHUB_STEP_SUMMARY"
+  windows-verifier:
+    if: github.event.repository.private == false && github.ref == 'refs/heads/Brand-Identity'
+    runs-on: windows-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: brand-identity/10-motion/sequential-v1.1
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Verify source and frame-validator regression tests on Windows
+        shell: pwsh
+        run: |
+          if ((git rev-parse HEAD) -ne $env:GITHUB_SHA) { throw "Wrong revision" }
+          python -m pip install Pillow==11.3.0
+          if ($LASTEXITCODE -ne 0) { throw "Install failed" }
+          python -m unittest test_prepare test_frames -v
+          if ($LASTEXITCODE -ne 0) { throw "Regression failed" }
