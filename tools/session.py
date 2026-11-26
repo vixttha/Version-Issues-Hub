@@ -1135,8 +1135,22 @@ def recovery_plan(api, state, requested=None):
                 elif reuse["status"] == "refused":
                     status = "evidence_revalidation_required"
                     action = "Revalidate exact recorded evidence or return to Head; do not advance."
+    debt = unresolved_integration_debt(state)
+    if status == "head_scope_required" and debt:
+        try:
+            if number is None:
+                raise ValueError("No exact proposed issue for deferral review")
+            require_integration_debt_clear(api, state, number)
+        except (ValueError, KeyError, TypeError, install.ApiError, OSError):
+            status = "integration_debt_reconciliation_required"
+            action = "Review outstanding production integration debt and exact bounded owner deferrals before unrelated claim."
+        else:
+            if any(row["issue"] == number for row in debt):
+                action = "Owner may authorize scoped recovery of this existing issue; preserve its version and history."
     require_lease()
-    return {**observed, "recovery_status": status, "recommended_next_action": action,
+    return {**observed, "integration_debt": [{"issue": row["issue"], "version": row["version"],
+                  "state": row["state"]} for row in debt],
+            "recovery_status": status, "recommended_next_action": action,
             "evidence_reuse": reuse, "read_only": True,
             "owner_decision_required": True, "evidence_verified": False}
 
@@ -1214,7 +1228,11 @@ def check_deferral(api, state, record, next_issue=None):
             or install.read_ref(api, prefix, policy["product_branch"]) != target):
         raise ValueError("Integration debt deferral target is stale")
     if active["pull_request"] is not None:
+        from tools import gate
+        gate.check_ancestry(api, prefix, active["fix_sha"], active["candidate_sha"])
         require_fresh_snapshot(api, state, active)
+        if active["evidence"]:
+            verify_candidate_runs(api, state, active, active["evidence"])
     if install.read_ref(api, prefix, install.BRANCH) != state["ref"]:
         raise ValueError("Installed state advanced during integration debt review")
     if install.read_ref(api, prefix, policy["product_branch"]) != target:
@@ -1237,9 +1255,8 @@ def require_integration_debt_clear(api, state, number):
     for row in debt:
         prior = next((r for r in reversed(state["handoff"]["history"])
                       if r["handoff"]["issue"] == row["issue"]
-                      and r["disposition"] == row["state"]
                       and closure_receipt(r) is None), None)
-        if prior is None:
+        if prior is None or prior["disposition"] != row["state"]:
             raise ValueError("Missing integration debt archive; owner reconciliation required")
         check_deferral(api, state, prior, number)
 

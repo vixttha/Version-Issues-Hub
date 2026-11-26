@@ -12,3 +12,7 @@ The #65 / v0.0.0.31 corrective engineering recovery and #34 / v0.0.0.32 engineer
 ## Current owner law and roadmap
 
 VIB-LAW-OWNER-QUALIFICATION-001 supersedes any instruction to resume advanced qualification automatically. Follow the locked .38–.42 roadmap in [docs/v0.0.0.38.md](docs/v0.0.0.38.md). Never dispatch independent trials, exploratory scale campaigns or benchmarks without separate explicit owner approval. No routine requalification of unchanged evidence. One active Worker only; no scope expansion. Historical .37 instructions are not authorization to run suspended work.
+
+## Active corrective scope (#96 / v0.0.0.43)
+
+Product integration integrity supersedes the unclaimed .43 agent-instruction roadmap. No unrelated claim, .44/.45 work, production merge or external adopter write. Consult the exact canonical Worker and independently published scope before any mutation. See [corrective record](docs/v0.0.0.43.md). The malformed initial scope publication is a recorded preflight blocker; do not bypass it or self-approve an amendment. Preserve history and existing holds.

@@ -1616,6 +1616,50 @@
           "anchor": "def test_lease_advance_during_validation_refuses_advisory(self):"
         }
       ]
+    },
+    {
+      "id": "v0-0-0-43",
+      "label": "Issue #96 · integration debt claim and publication guard (candidate)",
+      "documented_in": [
+        {
+          "path": "docs/v0.0.0.43.md",
+          "anchor": "# v0.0.0.43 — Integration integrity corrective checkpoint (#96)"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "tools/session.py",
+          "anchor": "def require_integration_debt_clear(api, state, number):"
+        }
+      ],
+      "implemented_in": [
+        {
+          "path": "tools/session.py",
+          "anchor": "def check_deferral(api, state, record, next_issue=None):"
+        },
+        {
+          "path": "tools/session.py",
+          "anchor": "def revalidate_claim_and_deferrals():"
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tests/test_integration_integrity.py",
+          "anchor": "def test_unbounded_deferred_work_blocks_unrelated_claim(self):"
+        },
+        {
+          "path": "tests/test_integration_integrity.py",
+          "anchor": "def test_explicit_bounded_staging_authorizes_only_named_next_issue(self):"
+        },
+        {
+          "path": "tests/test_integration_integrity.py",
+          "anchor": "def test_direct_publication_cannot_bypass_claim_guard(self):"
+        },
+        {
+          "path": "tests/test_integration_integrity.py",
+          "anchor": "def test_deferral_rechecks_original_run_attempt(self):"
+        }
+      ]
     }
   ]
 }

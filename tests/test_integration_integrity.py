@@ -103,3 +103,25 @@ class IntegrationIntegrityTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "integration debt"):
                 session.save(self.api, self.state, ledger, handoff, apply, issue=248)
         self.assertEqual(self.api.writes, [])
+
+    def test_recovery_plan_reports_outstanding_integration_debt(self):
+        self.reach_head()
+        self.state["ledger"], self.state["handoff"] = session.finish(
+            self.api, self.state, "deferred", "Legacy unbounded decision")
+        before = copy.deepcopy(self.state)
+        result = session.recovery_plan(self.api, self.state, 248)
+        self.assertEqual(result["recovery_status"], "integration_debt_reconciliation_required")
+        self.assertEqual(result["integration_debt"], [
+            {"issue": 247, "version": "v1.0.6.1", "state": "deferred"}])
+        self.assertEqual(self.state, before)
+        self.assertEqual(self.api.writes, [])
+
+    def test_deferral_rechecks_original_run_attempt(self):
+        self.reach_head()
+        decision = bounded_deferral(self.state, self.api, 248)
+        self.state["ledger"], self.state["handoff"] = session.finish(
+            self.api, self.state, "staged", decision, deferral_approved=True)
+        self.api.pre_run["run_attempt"] = 2
+        with self.assertRaises(ValueError):
+            session.claim(self.api, self.state, 248, ["next"], "New work")
+        self.assertEqual(self.api.writes, [])
