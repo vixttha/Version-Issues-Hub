@@ -17,7 +17,7 @@ def digest(path):
     return hashlib.sha256(path.read_bytes()).hexdigest()
 def git(repo, *args):
     return subprocess.check_output(["git", "-C", str(repo), *args], text=True).strip()
-def verify(folder):
+def verify(folder, current_run=True):
     index=read(folder/"index.json")
     assert index["schema"]==1 and index["repository"]==REPO and not index["failures"]
     assert len(index["results"])==len(ROWS)
@@ -34,7 +34,9 @@ def verify(folder):
         assert graph["built_at_commit"]==r["source"]
         assert len(ids)==len(graph["nodes"])==r["nodes"]>0 and len(graph["links"])==r["edges"]
         assert all(e["source"] in ids and e["target"] in ids for e in graph["links"])
-        assert r["run"]==os.environ["GITHUB_RUN_ID"] and r["attempt"]==os.environ["GITHUB_RUN_ATTEMPT"]
+        assert all(isinstance(r[k],str) and r[k].isascii() and r[k].isdigit() and int(r[k])>0 for k in ("run","attempt"))
+        if current_run:
+            assert r["run"]==os.environ["GITHUB_RUN_ID"] and r["attempt"]==os.environ["GITHUB_RUN_ATTEMPT"]
     return index
 def build():
     assert importlib.metadata.version("graphifyy")=="0.9.109"
@@ -76,6 +78,8 @@ def retain():
         raise ValueError("Refusing to overwrite an existing engineering archive")
     shutil.copytree(OUT,dest)
     assert verify(dest)==ix
+    validate_native(dest,ix)
+def validate_native(dest,ix):
     for r in ix["results"]:
         assert native(ROOT/"archives",r,"code-verify")==r
         assert native(ROOT/"archives",r,"code-graph")=={"receipt":r,"graph":read(dest/r["version"]/"graph.json")}
@@ -89,5 +93,8 @@ def retain():
             native(Path(tmp),r,"code-verify",False)
         print(r["version"],r["source"],r["nodes"],r["edges"],r["graph_sha256"],flush=True)
     print("4 exact merge graphs; 8 positive and 12 negative native checks")
+def validate_existing():
+    dest=ROOT/"archives/engineering-code-graphs"
+    validate_native(dest,verify(dest,current_run=False))
 if __name__=="__main__":
-    {"build":build,"retain":retain}[sys.argv[1]]()
+    {"build":build,"retain":retain,"validate-existing":validate_existing}[sys.argv[1]]()
