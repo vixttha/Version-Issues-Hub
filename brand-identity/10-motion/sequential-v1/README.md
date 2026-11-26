@@ -6,3 +6,5 @@ Run the dedicated Brand motion experiment workflow on a standard public GitHub-h
 Rendering uses two independent HyperFrames passes: immutable full SVG reference and scheduled transparent GSAP checkpoint overlays. The complete RGBA frames are assembled with exact source alpha, strict active-region validation and lossless timeline coverage before encoding. No failed frames are silently replaced.
 
 Compatibility qualification uses Playwright Chromium, Firefox and WebKit to observe two cycles of the actual temporary WebP assets and verify transparent holes and static fallback. Windows executes independent verifier regression tests. These local browser tests do not establish GitHub's README rendering or its account accessibility behavior. No screenshots or generated media are retained.
+
+The GSAP accent pass is now a white opacity mask (not a visible brand color). The verifier rejects colored masks and unauthorized geometry, then applies the exact selected palette color while preserving the static base alpha. This avoids browser-dependent RGB rounding in partially transparent accent layers.

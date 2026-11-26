@@ -49,16 +49,21 @@ def overlay_mask(base,overlay,box,accent):
     check(ImageChops.multiply(a,ImageChops.invert(allowed)).getbbox() is None,"overlay outside active checkpoint")
     opaque=base.getchannel("A").point(lambda x:255 if x==255 else 0)
     check(ImageChops.multiply(a,ImageChops.invert(opaque)).getbbox() is None,"overlay changes alpha or hollow center")
-    # Browser premultiplication can round RGB on very low alpha values.
-    # Require exact approved accent at fully opaque overlay pixels; all other
-    # pixels must be consistent with at most one premultiplication roundtrip.
+    # HyperFrames emits a white opacity mask only. Use its verified alpha
+    # and apply the exact approved palette after capture, avoiding browser
+    # premultiplied RGB rounding in partially transparent mask pixels.
     bounds=a.getbbox()
     if bounds is None: return base.copy()
-    for rgb,c in zip(overlay.crop(bounds).split()[:3],accent):
-        for value,alpha in zip(rgb.getdata(),a.crop(bounds).getdata()):
-            if alpha:
-                check(value==c if alpha==255 else abs(value-c)*alpha<=255,"overlay color not approved accent")
-    result=Image.alpha_composite(base,overlay)
+    cropped=overlay.crop(bounds)
+    for red,green,blue,alpha in cropped.getdata():
+        if alpha:
+            check(max(red,green,blue)-min(red,green,blue)<=1,
+                  f"unexpected colored mask pixel {red,green,blue,alpha}")
+            check(alpha<255 or (red,green,blue)==(255,255,255),
+                  f"non-white opaque mask pixel {red,green,blue,alpha}")
+    colored=Image.new("RGBA",base.size,accent+(0,))
+    colored.putalpha(a)
+    result=Image.alpha_composite(base,colored)
     check(result.getchannel("A").tobytes()==base.getchannel("A").tobytes(),"composited alpha drift")
     return result
 def verify_decoded(target,files):
@@ -98,7 +103,10 @@ def verify(theme):
     for i,p in enumerate(overlays):
         overlay=load_rgba(p)
         active=active_checkpoint(i)
-        frame=overlay_mask(base,overlay,None if active is None else boxes[active],accent)
+        try:
+            frame=overlay_mask(base,overlay,None if active is None else boxes[active],accent)
+        except ValueError as error:
+            raise ValueError(f"{theme}: source frame {i} ({p.name}): {error}") from error
         if active is None: check(equal(base,frame),f"{theme}: rest state drift {i}")
         elif overlay.getchannel("A").getextrema()[1]==255: peaks.add(active)
         f=full/f"frame_{i:06d}.png"

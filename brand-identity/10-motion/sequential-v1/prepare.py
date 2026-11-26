@@ -44,7 +44,7 @@ def prepare():
         rings = []
         for i,(x,y) in enumerate([(344,508),(700,428),(1104,508)]):
             d = f"M{x+3} {y+3}h98v98h-98Z M{x+17} {y+17}h70v70h-70Z"
-            rings.append(f'<svg xmlns="http://www.w3.org/2000/svg" class="activation-layer" id="activation-{i}" viewBox="0 0 1448 1086" aria-hidden="true" style="opacity:0;visibility:hidden"><path d="{d}" fill="{accent}" fill-rule="evenodd"/></svg>')
+            rings.append(f'<svg xmlns="http://www.w3.org/2000/svg" class="activation-layer" id="activation-{i}" viewBox="0 0 1448 1086" aria-hidden="true" style="opacity:0;visibility:hidden"><path d="{d}" fill="#FFFFFF" fill-rule="evenodd"/></svg>')
         if svg.count("</svg>") != 1: raise ValueError("unexpected SVG root")
         derived = "\n".join(rings)
         target = out/theme
