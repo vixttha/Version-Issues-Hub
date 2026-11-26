@@ -735,3 +735,60 @@ class ClosureTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "history changed during pending closure"):
             session.validate_handoff(candidate, ledger)
         self.assertFalse(self.api.writes)
+
+    def test_not_planned_reconciliation_rejects_engineering_approval(self):
+        import json
+        original = copy.deepcopy(self.state)
+        review = self.policy["engineering"]["review"]
+        closed = {"number": 247, "state": "closed", "state_reason": "not_planned"}
+        for kind in ("structured", "legacy", "legacy_wrong_pin", "ordinary_blocked", "ordinary_deferred"):
+            with self.subTest(kind=kind):
+                state = copy.deepcopy(original)
+                archive = state["handoff"]["history"][-1]
+                if kind in ("legacy", "legacy_wrong_pin"):
+                    archive["decision"] = session.legacy_approval_statement(review)
+                    if kind == "legacy_wrong_pin":
+                        archive["handoff"].update(pull_request=review["pull_request"] + 1,
+                            fix_sha=review["issues"][0]["fix_sha"], candidate_sha=review["head_sha"])
+                if kind.startswith("ordinary_"):
+                    archive["decision"] = "Owner declined further work"
+                    if kind == "ordinary_blocked":
+                        archive["disposition"] = "blocked"
+                        state["ledger"]["issues"][0]["state"] = "blocked"
+                policy = {**self.policy, "archive_digest": session.closure_digest(archive),
+                          "reason": "not_planned", "engineering": None}
+                historical = {session.HANDOFF: copy.deepcopy(state["handoff"]),
+                              session.LEDGER: copy.deepcopy(state["ledger"]),
+                              "vib-install.json": {**state["manifest"],
+                                 "target_repository": state["ledger"]["repository"]}}
+                approved = not kind.startswith("ordinary_")
+                status = session.closure_status(state, closed)
+                self.assertEqual(status["disposition_conflict"], approved)
+                self.assertEqual(status["closure_synchronization"],
+                                 "conflict" if approved else "historical_unverified")
+                self.assertEqual(status["engineering_completion"],
+                                 "recorded" if kind in ("structured", "legacy") else "unverified")
+                self.assertFalse(status["production_integrated"])
+                self.assertFalse(status["live_evidence_verified"])
+                with patch.object(install, "read_text", side_effect=lambda api, prefix, path, ref:
+                                  install.render(historical[path])), \
+                        patch.object(gate, "check_ancestry"), \
+                        patch.object(session, "get_issue", return_value=closed):
+                    if approved:
+                        with self.assertRaisesRegex(ValueError, "Engineering-complete work"):
+                            session.verify_closure_basis(self.api, state, 247, policy)
+                        with self.assertRaisesRegex(ValueError, "Engineering-complete work"):
+                            session.closure_plan(self.api, state, 247, policy, "pending", owner_approved=True)
+                        # A contradictory receipt inserted directly into history
+                        # must fail on load as well as on publication.
+                        receipt = {"status": "pending", "policy": policy}
+                        state["handoff"]["history"].append({**copy.deepcopy(archive),
+                            "decision": session.CLOSURE_DECISION + json.dumps(receipt)})
+                        with self.assertRaisesRegex(ValueError, "Engineering-complete work"):
+                            session.validate_handoff(state["handoff"], state["ledger"])
+                    else:
+                        self.assertEqual(session.verify_closure_basis(self.api, state, 247, policy), archive)
+                        _, handoff = session.closure_plan(self.api, state, 247, policy, "pending",
+                                                           owner_approved=True)
+                        self.assertEqual(session.pending_closure(handoff)["status"], "pending")
+        self.assertFalse(self.api.writes)

@@ -1436,6 +1436,10 @@
         {
           "path": "tools/session.py",
           "anchor": "def validate_closure_history(handoff, ledger):"
+        },
+        {
+          "path": "tools/session.py",
+          "anchor": "def archive_has_engineering_approval(archive, ledger):"
         }
       ],
       "tested_by": [
@@ -1482,6 +1486,10 @@
         {
           "path": "tests/test_issue_closure.py",
           "anchor": "def test_history_loader_rejects_overlapping_closures_even_when_resolved(self):"
+        },
+        {
+          "path": "tests/test_issue_closure.py",
+          "anchor": "def test_not_planned_reconciliation_rejects_engineering_approval(self):"
         }
       ]
     }
