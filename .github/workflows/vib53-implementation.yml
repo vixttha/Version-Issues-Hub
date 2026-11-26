@@ -1,7 +1,7 @@
 name: VIB 53 implementation candidate
 on:
   push:
-    branches: ['impl/vib-53-independent-transactions', 'impl/vib-53-contention-recovery']
+    branches: ['impl/vib-53-independent-transactions', 'impl/vib-53-contention-recovery', 'impl/vib-53-durable-recovery']
 permissions:
   contents: read
 jobs:

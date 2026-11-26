@@ -75,6 +75,35 @@ class TransactionTests(unittest.TestCase):
                 self.assertEqual(error.exception.candidate_sha,NEXT)
                 self.assertEqual(sum(m=="PATCH" for m,_,_ in api.writes),1)
 
+    def test_malformed_post_write_readback_retains_candidate(self):
+        cases = (
+            ("ref", None), ("ref", []), ("compare", []),
+            ("compare", {"status": "ahead", "behind_by": False,
+                         "ahead_by": 1, "base_commit": {"sha": NEXT},
+                         "merge_base_commit": {"sha": NEXT}}),
+            ("compare", {"status": "ahead", "behind_by": 0,
+                         "ahead_by": 1, "base_commit": None,
+                         "merge_base_commit": {"sha": NEXT}}),
+            ("commit", []), ("commit", {"sha": NEXT, "tree": None,
+                                       "parents": [{"sha": HEAD}]}),
+        )
+        for endpoint, payload in cases:
+            with self.subTest(endpoint=endpoint, payload=payload):
+                api = Remote("descendant")
+                original = api.request
+                def request(method, path, body=None):
+                    if method == "GET" and api.ref == LATER:
+                        if ((endpoint == "ref" and "/git/ref/heads/" in path)
+                            or (endpoint == "compare" and "/compare/" in path)
+                            or (endpoint == "commit" and path.endswith("/git/commits/" + NEXT))):
+                            return payload
+                    return original(method, path, body)
+                api.request = request
+                with self.assertRaises(session.HandoffUnconfirmed) as error:
+                    self.save(api)
+                self.assertEqual(error.exception.candidate_sha, NEXT)
+                self.assertEqual(sum(m == "PATCH" for m, _, _ in api.writes), 1)
+
     def test_denial_and_throttle_stop(self):
         for outcome in ("denied","limited"):
             api=Remote(outcome)

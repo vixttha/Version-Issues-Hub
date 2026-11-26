@@ -49,3 +49,13 @@ Qualification fixes: same-issue rejection test now competes with genuinely diffe
 ## Qualification review repairs
 
 Preserve ambiguous 408/5xx candidate identity with Retry-After; wait for delays up to eight seconds before confirmation, otherwise defer with exact candidate and delay. Propagate numeric child CLI cooldown receipts without replay or text guessing. Verify immutable criteria and integrated rows for every intervening revision, plus unchanged pinned package blob IDs and modes, including intermediate changes that are later restored. Qualification only; no new feature or deployment.
+
+## Bounded continuation qualification
+
+Isolated candidate atop the exact compatibility revision 3610e00263b7fcce21de4c678d4d4ba61475e1b9. Existing CLI eligible parallel writes may continue the same immutable issue intent for two bounded rounds of four attempts. Each definitive conflict is verified, including the final attempt; an unchanged ref does not become a contention result. A stable digest of original installation, product, issue, planned transition and CLI request parameters is recorded in the same publication commit; raw intent is not written to metadata. Exhaustion returns an identity and initial/observed revisions but does not persist pending intent or automatically resume after process loss. This is a publication receipt, not exactly-once crash recovery or starvation freedom. Reuse only verified immutable tree metadata and identical blob identities during adjacent history reads; changed bytes must match the claimed blob SHA. No policy repin or ambiguous PATCH replay; no coordinator, deployment or version allocation.
+
+## Repeated workload qualification
+
+Repeat the previous qualification matrix against the compatibility-plus-continuation source. Four concurrent workers maximum, 1/2/5/10/25/50/100 logical clients and three transactions each, two bounded rounds; record all simulated API requests and separately identify harness resubmission. Eight consecutive wins establish the remaining starvation counterexample. Restart replay and real Git migration tests remain required. Accelerated sleeps and simulated transport are not a live service or independent agent acceptance. Failed progress gates remain failures even if regression assertions pass.
+
+Receipt verification refinement: read back exact operation metadata on successful publication and candidate ancestry recovery; reject mismatched receipts as unconfirmed. A fresh Python process reads the persisted real Git commit and verifies the same identity. This demonstrates durable committed identity only, not pending-intent persistence or automatic restart recovery.
