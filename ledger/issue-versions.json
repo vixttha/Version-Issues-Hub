@@ -357,6 +357,19 @@
       "issue": 72,
       "state": "staged",
       "version": "v0.0.0.36"
+    },
+    {
+      "acceptance": [
+        "Preserve existing Solo behavior, historical mappings, criteria, receipts and immutable fix pins; keep Standard advisory validation and optional enforcement separate.",
+        "Qualify independent issue selection, globally unique permanent version allocation, issue-scoped handoffs and stale/same-issue conflict rejection on public Ubuntu and Windows runners.",
+        "Qualify bounded contention and lost-response/restart recovery, exact operation intent and ancestry, no blind replay or lost records; identify any unresolved cross-process recovery limits.",
+        "Exercise simulated 1, 2, 5, 10, 25, 50 and 100 clients including blocked lanes, competing writes, crash/recovery and invalid evidence; distinguish simulation from real independent host acceptance.",
+        "Reconcile isolated #53 implementation with current .36 engineering head without dropping any accepted repair; preserve exact fix/candidate/tested/integrated SHA evidence.",
+        "Verify legacy package compatibility, migration/upgrade and owner-controlled integration, no mandatory ecosystem dependency or paid runner; preserve release hold and installed singleton until separately approved migration."
+      ],
+      "issue": 53,
+      "state": "in_progress",
+      "version": "v0.0.0.37"
     }
   ],
   "repository": "vixttha/Version-Issues-Hub",

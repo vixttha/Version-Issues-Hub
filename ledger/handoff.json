@@ -1,5 +1,14 @@
 {
-  "active": null,
+  "active": {
+    "candidate_sha": null,
+    "evidence": [],
+    "fix_sha": null,
+    "issue": 53,
+    "next_action": "Reconcile isolated #53 drafts with exact v0.0.0.36 engineering base; qualify recovery fix c2ea9cacf01cfdcd5e4eecae6b62d84c7c514d89 and outstanding acceptance. No migration, main merge or release; preserve #40 release hold and current singleton.",
+    "phase": "Worker",
+    "pull_request": null,
+    "version": "v0.0.0.37"
+  },
   "history": [
     {
       "decision": "PR49 CodeRabbit finding 4682051116: rework exact product SHA comparisons and add regression checks; preserve previous evidence.",
