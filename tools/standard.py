@@ -40,8 +40,8 @@ def validate_policy(policy):
                 if any(not isinstance(s, str) or not s.strip() for s in steps) or len(steps) != len(set(steps)):
                     raise ValueError("Invalid steps")
 
-def check_pr_run(item, policy, run, attempt):
-    """A head-only run without an exact base association is not integration evidence."""
+def check_pr_run(api, prefix, item, policy, run, attempt):
+    """Bind exact run metadata to the preview revision or an identical Git tree."""
     item = install.response_object(item, "workflow run")
     if (not install.same_id(item.get("id"), run) or not install.same_id(item.get("run_attempt"), attempt)
             or not install.same_id(install.response_object(item.get("repository"), "run repository").get("id"), policy["repository_id"])
@@ -55,6 +55,20 @@ def check_pr_run(item, policy, run, attempt):
                         and install.response_object(p.get("head"), "run PR head").get("sha") == policy["head_sha"]
                         and install.response_object(p.get("base"), "run PR base").get("sha") == policy["base_sha"] for p in prs)):
         raise ValueError("Run PR association does not match current head and base")
+    if item["head_sha"] != policy["merge_sha"]:
+        # GitHub can report the branch head for pull_request runs. It is not
+        # interchangeable with a merge preview unless the full trees match.
+        # Exact checkout and required workflow steps still need owner review.
+        def tree_at(sha):
+            sha = install.require(install.SHA, sha, "run/preview commit")
+            commit = install.response_object(api.request("GET", prefix + "/git/commits/" + sha),
+                                             "run/preview commit")
+            if commit.get("sha") != sha:
+                raise ValueError("Run/preview commit identity mismatch")
+            tree = install.response_object(commit.get("tree"), "run/preview tree")
+            return install.require(install.SHA, tree.get("sha"), "run/preview tree")
+        if tree_at(item["head_sha"]) != tree_at(policy["merge_sha"]):
+            raise ValueError("Run head tree differs from exact merge preview; fresh preview evidence required")
 
 def check_test(api, prefix, policy, evidence, test, *, post_merge=False):
     run, attempt = test["run"], test["attempt"]
@@ -76,7 +90,7 @@ def check_test(api, prefix, policy, evidence, test, *, post_merge=False):
                 or item.get("status") != "completed" or item.get("conclusion") != "success"):
             raise ValueError("Run is stale, unsuccessful or unrelated")
         if not post_merge:
-            check_pr_run(item, policy, run, attempt)
+            check_pr_run(api, prefix, item, policy, run, attempt)
     jobs = gate.exact_collection(api, root + "/attempts/" + str(attempt) + "/jobs?per_page=100", "jobs")
     matches = [j for j in jobs if j.get("name") == test["job_name"]]
     if len(matches) != 1 or matches[0].get("status") != "completed" or matches[0].get("conclusion") != "success":
@@ -187,7 +201,7 @@ def evaluate(api, target, policy):
         root = prefix + "/actions/runs/" + str(run)
         for path in (root + "/attempts/" + str(attempt), root):
             item = api.request("GET", path)
-            check_pr_run(item, policy, run, attempt)
+            check_pr_run(api, prefix, item, policy, run, attempt)
             if not install.same_id(item.get("workflow_id"), workflow):
                 raise ValueError("Run workflow changed during review")
     if install.read_ref(api, prefix, install.BRANCH) != policy["installed_sha"]:

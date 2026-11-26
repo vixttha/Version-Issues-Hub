@@ -1770,6 +1770,14 @@
         {
           "path": "tests/test_integration_integrity.py",
           "anchor": "def test_integration_archive_without_row_transition_refused(self):"
+        },
+        {
+          "path": "tests/test_standard.py",
+          "anchor": "def test_matching_pr_metadata_with_different_tree_rejected(self):"
+        },
+        {
+          "path": "tests/test_standard.py",
+          "anchor": "def test_missing_preview_tree_rejected(self):"
         }
       ]
     }

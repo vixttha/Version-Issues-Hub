@@ -2,7 +2,7 @@ import copy
 import unittest
 from unittest.mock import patch
 from tools import standard, session
-from test_gate import Fake, fixture, REPO, HEAD, BASE, SOURCE, PREFIX
+from test_gate import Fake, fixture, REPO, HEAD, BASE, SOURCE, PREFIX, MERGE
 
 class StandardTests(unittest.TestCase):
     def setUp(self):
@@ -17,6 +17,8 @@ class StandardTests(unittest.TestCase):
         original = self.api.request
         self.api.request = lambda method,path,body=None: (
             {"id":42,"full_name":REPO,"private":False} if method=="GET" and path==PREFIX
+            else {"sha":HEAD,"tree":{"sha":SOURCE}} if method=="GET" and path==PREFIX+"/git/commits/"+HEAD
+            else {**original(method,path,body),"tree":{"sha":SOURCE}} if method=="GET" and path==PREFIX+"/git/commits/"+MERGE
             else original(method,path,body))
         patcher = patch.object(session,"load",return_value=self.state)
         patcher.start()
@@ -37,6 +39,35 @@ class StandardTests(unittest.TestCase):
         self.assertEqual(receipt["url"], url)
         with self.assertRaisesRegex(ValueError, "not in staged evidence"):
             standard.check_test(self.api, PREFIX, self.policy, [url.upper()[:-1] + "2"], check)
+        self.assertEqual(self.api.writes, [])
+
+    def test_matching_pr_metadata_with_different_tree_rejected(self):
+        original = self.api.request
+        def request(method, path, body=None):
+            result = original(method, path, body)
+            if method == "GET" and path == PREFIX + "/git/commits/" + MERGE:
+                return {**result, "tree":{"sha":BASE}}
+            return result
+        self.api.request = request
+        with self.assertRaisesRegex(ValueError, "differs from exact merge preview"):
+            standard.evaluate(self.api, REPO, self.policy)
+        self.assertEqual(self.api.writes, [])
+
+    def test_missing_preview_tree_rejected(self):
+        original = self.api.request
+        def request(method, path, body=None):
+            result = original(method, path, body)
+            if method == "GET" and path == PREFIX + "/git/commits/" + MERGE:
+                return {k:v for k,v in result.items() if k != "tree"}
+            return result
+        self.api.request = request
+        with self.assertRaises(ValueError):
+            standard.evaluate(self.api, REPO, self.policy)
+        self.assertEqual(self.api.writes, [])
+
+    def test_exact_preview_run_without_pr_association_accepted(self):
+        self.api.run.update(head_sha=MERGE, pull_requests=[])
+        self.assertEqual(standard.evaluate(self.api, REPO, self.policy)["status"],"review_required")
         self.assertEqual(self.api.writes, [])
 
     def test_stale_run_rejected(self):

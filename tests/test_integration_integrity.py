@@ -190,7 +190,7 @@ class IntegrationIntegrityTests(unittest.TestCase):
         self.assertEqual(self.api.writes, [])
 
     def test_historical_engineering_reconciliation_preserves_original_archive(self):
-        from test_session import BASE, PROPOSED, post_policy
+        from test_session import BASE, PROPOSED, TREE, post_policy
         from unittest.mock import patch
         self.state["ledger"], self.state["handoff"] = session.claim(
             self.api, self.state, 247, ["test"], "Fix")
@@ -211,7 +211,7 @@ class IntegrationIntegrityTests(unittest.TestCase):
         original = self.api.request
         def request(method,path,body=None):
             if method == "GET" and path.endswith("/git/commits/"+PROPOSED):
-                return {"sha":PROPOSED,"parents":[{"sha":BASE},{"sha":CANDIDATE}]}
+                return {"sha":PROPOSED,"tree":{"sha":TREE},"parents":[{"sha":BASE},{"sha":CANDIDATE}]}
             return original(method,path,body)
         with patch.object(self.api,"request",side_effect=request):
             with self.assertRaisesRegex(ValueError,"digest"):
