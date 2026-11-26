@@ -56,6 +56,10 @@ jobs:
         run: ./vault/vib/independent-audit/audit.ps1
       - name: Confirm outstanding RD-002 and RD-003 on pinned candidate
         run: python vault/vib/independent-audit/followup.py
+      - name: Second-pass source bindings for 601 unresolved inferred occurrences
+        run: python vault/vib/independent-audit/inferred_second_pass.py
+      - name: Execute exact historical offline suites
+        run: python vault/vib/independent-audit/historical_tests.py
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         if: always()
         with:
