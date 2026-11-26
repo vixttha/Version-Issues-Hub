@@ -1179,7 +1179,7 @@
         },
         {
           "path": "tools/standard.py",
-          "anchor": "def check_pr_run(item, policy, run, attempt):"
+          "anchor": "def check_pr_run(item, policy, run, attempt, *, api=None, prefix=None):"
         }
       ],
       "tested_by": [

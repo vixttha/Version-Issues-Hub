@@ -54,6 +54,8 @@ class Fake:
             return {"sha":self.pr["merge_commit_sha"],"tree":{"sha":TREE},"parents":[{"sha":self.pr["base"]["sha"]},{"sha":self.pr["head"]["sha"]}]}
         if method == "GET" and (path.endswith("/actions/runs/" + str(self.pre_run["id"])) or path.endswith("/actions/runs/" + str(self.pre_run["id"]) + "/attempts/1")):
             return self.pre_run
+        if method == "GET" and path.endswith("/git/commits/" + PROPOSED):
+            return {"sha":PROPOSED,"tree":{"sha":TREE},"parents":[{"sha":BASE},{"sha":CANDIDATE}]}
         if method == "GET" and path.endswith("/git/commits/" + CANDIDATE):
             return {"sha":CANDIDATE,"tree":{"sha":TREE}}
         if method == "GET" and path.endswith("/git/commits/" + NEXT):

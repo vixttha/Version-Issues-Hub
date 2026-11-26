@@ -959,12 +959,12 @@ def verify_candidate_runs(api, state, active, links):
             raise ValueError("Archived run belongs to stale integration evidence; use a new run")
         root = state["prefix"] + "/actions/runs/" + str(run)
         for item in (api.request("GET", root), api.request("GET", root + "/attempts/" + str(attempt))):
-            standard.check_pr_run(api, state["prefix"], item, policy, run, attempt)
+            standard.check_pr_run(item, policy, run, attempt, api=api, prefix=state["prefix"])
     # Re-read every earlier run after all links were inspected.
     for link in links:
         run, attempt = evidence_run(state["ledger"]["repository"], link)
-        standard.check_pr_run(api, state["prefix"], api.request("GET", state["prefix"] + "/actions/runs/" + str(run)),
-                              policy, run, attempt)
+        standard.check_pr_run(api.request("GET", state["prefix"] + "/actions/runs/" + str(run)),
+                              policy, run, attempt, api=api, prefix=state["prefix"])
     require_fresh_snapshot(api, state, active)
 
 
@@ -1604,7 +1604,8 @@ def reconcile_historical_integration(api, state, number, decision, policy):
                 raise ValueError("Archived run belongs to stale integration evidence; use a new run")
             root = prefix + "/actions/runs/" + str(run)
             for suffix in ("", "/attempts/" + str(attempt)):
-                standard.check_pr_run(api, prefix, api.request("GET", root + suffix), preview_policy, run, attempt)
+                standard.check_pr_run(api.request("GET", root + suffix), preview_policy, run, attempt,
+                                      api=api, prefix=prefix)
     check_preview()
     def read_pr():
         pr = get_pr(api, state, candidate)
