@@ -418,12 +418,31 @@
     {
       "issue": 94,
       "version": "v0.0.0.42",
-      "state": "in_progress",
+      "state": "deferred",
       "acceptance": [
         "Provide a concise read-only recovery and next-handoff plan from canonical state, including active, staged, stale, merged, closed and pending-closure conditions; never automatically mutate state or infer authorization.",
         "Permit reuse of recorded verification references only for the same issue, fix, candidate, PR, base and proposed merge after fresh exact-run validation and current installed-state lease checks; refuse stale, ambiguous, cross-issue or missing evidence.",
         "Preserve the singleton workflow, immutable version mappings and historical receipts; keep production, issue closure, experimental activation and owner decisions separate; retain #37/#40/#53 holds.",
         "Qualify bounded deterministic regressions on ordinary public Ubuntu/Windows runners, Graphify and CodeRabbit, preserving all six laws and prior evidence; no live migration, main integration, release, advanced qualification, new dependency or schedule restart."
+      ]
+    },
+    {
+      "issue": 96,
+      "version": "v0.0.0.43",
+      "state": "in_progress",
+      "acceptance": [
+        "Freeze unrelated development; preserve current refs and evidence; inventory concurrent agents/schedules, without unauthorized cancellation.",
+        "Inventory all branches with exact SHA, purpose, dependencies, open PRs, ownership evidence, keep/archive/retire proposal. No deletion or default-branch changes without exact approval.",
+        "Account for all 173 engineering commits at baseline with exact parent/ancestry, changed paths, purpose, associated issue and disposition; inspect substantive diffs, excluded/experimental material, secrets/provenance, workflows and historical evidence. Report unreviewed items honestly.",
+        "Reconcile all 42 bindings individually against GitHub issue status, fix/candidate/merge evidence, target inclusion and historical authorization. Do not rewrite original records or bulk mark deferred as integrated.",
+        "Decide which permanent branches are necessary, including self-install versus source; distinguish template branches and archive refs from working branches.",
+        "Implement law in authoritative engineering and portable package rules, state/preflight/claim/finish/recovery checks and reporting; maintain compatible state or explicitly reviewed migration, fail closed on missing/stale evidence. Document ownership and expiry of deferrals; no mandatory branch protection, external services, paid runners or hard enforcement.",
+        "Prepare exact safe main candidate and manifest of included/excluded files/commits; preserve history, license/provenance, approved brand restrictions, #37/#40/#53 holds; no release tag, deployment, brand rollout or experimental activation. Review workflow triggers before main integration; do not merge live adopter ledgers or private diagnostics.",
+        "Bounded regression coverage on standard free public GitHub-hosted Ubuntu and Windows: placeholder default, wrong target, non-main default, valid documented alternate target, stale/expired/unapproved deferral, stale lease, accepted integration evidence, engineering-only closure, existing installations/upgrades, interruption and partial synchronization; clean and existing consumer fixtures, Graphify mapping, exact-head CodeRabbit and Internal Auditor review. No advanced independent host campaigns.",
+        "Obtain separate explicit owner approval of corrected architecture and exact integration candidate/base/head/tree; resolve existing integration holds explicitly. Preserve history with reviewed non-force integration.",
+        "Integrate only approved software into designated product branch; verify actual post-merge CI and exact tree/ancestry. Stop on mismatch; prepare safe forward correction, no force reset.",
+        "Append canonical dispositions and reconcile actual GitHub state, installed package pin and issue-specific evidence; preserve historical mappings and archives. Qualify upgrade plan before any external repository writes; read-only adopter inventory may identify exposure.",
+        "Obtain Head acceptance, close only with verified receipt and owner authority; release slot and resume agent instructions (proposed .44) and README HQ (proposed .45) in sequence. No stable release or commercial launch inferred."
       ]
     }
   ],
