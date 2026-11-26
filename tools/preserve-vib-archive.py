@@ -6,6 +6,7 @@ from pathlib import Path
 import re
 import shutil
 import subprocess
+from archive_scope import feature_ids
 
 ROOT = Path.cwd()
 TEMP = Path(os.environ["RUNNER_TEMP"])
@@ -52,7 +53,7 @@ def preserve_sharded(origin, source, run, attempt):
     versions = receipt["versions"]
     if len(versions) != len(set(versions)) or version != max(versions, key=lambda v: tuple(map(int,v[1:].split(".")))) or receipt["operational_exclusions"] != ["v0.0.0.23"]:
         raise ValueError("Invalid version scope")
-    expected = {v.replace(".", "-") for v in versions if v not in receipt["operational_exclusions"]}
+    expected = feature_ids([v for v in versions if v not in receipt["operational_exclusions"]])
     seen = set()
     items = [(receipt_path, Path("candidate-receipt.json"))]
     for number, shard in enumerate(receipt["shards"], 1):

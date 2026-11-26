@@ -18,4 +18,11 @@ class ScopeTests(unittest.TestCase):
         with self.assertRaises(ValueError): scope(self.versions,self.selected,self.features[:-1]+[{"id":"v0-0-0-99"}])
     def test_duplicate_ledger(self):
         with self.assertRaises(ValueError): scope(self.versions+[self.versions[0]],self.selected,self.features)
+    def test_checkpoint_37_supplemental_node_is_not_an_extra_version(self):
+        versions = self.versions + ["v0.0.0.37"]
+        selected = self.selected + ["v0.0.0.37"]
+        features = self.features + [{"id":"v0-0-0-37"}, {"id":"v0-0-0-37-review-recovery"}]
+        self.assertEqual([32,5], list(map(len,scope(versions,selected,features))))
+        with self.assertRaises(ValueError): scope(versions,selected,features[:-1])
+        with self.assertRaises(ValueError): scope(versions,selected,features+[{"id":"v0-0-0-37-unknown"}])
 if __name__ == "__main__": unittest.main()

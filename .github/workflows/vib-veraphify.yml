@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     env:
-      VIB_SOURCE: '26e9fe8c019a33c5f84f77a37da70925505204e3'
+      VIB_SOURCE: 'e8359a4acaf2e956332585aa69a109e3242dad50'
       PRODUCER_SHA: '6af3c2025be3f51e02dca4e4502088c526aae6d1'
       GRAPHIFY_QUERY_LOG_DISABLE: '1'
       PYTHONHASHSEED: '0'
@@ -24,7 +24,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           repository: vixttha/Version-Issues-Hub
-          ref: '26e9fe8c019a33c5f84f77a37da70925505204e3'
+          ref: 'e8359a4acaf2e956332585aa69a109e3242dad50'
           path: vib
           persist-credentials: false
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
@@ -48,6 +48,8 @@ jobs:
         run: python veraphify/tools/test_archive_scope.py
       - name: Archive and verify every pinned VIB checkpoint
         run: python veraphify/tools/verify-vib-candidate.py
+      - name: Generate and query exact candidate raw code graph
+        run: python veraphify/tools/candidate-code-graph.py build
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         with:
           name: vib-candidate-archive-${{ github.run_id }}-${{ github.run_attempt }}
@@ -57,7 +59,7 @@ jobs:
 
   preserve:
     env:
-      VIB_SOURCE: '26e9fe8c019a33c5f84f77a37da70925505204e3'
+      VIB_SOURCE: 'e8359a4acaf2e956332585aa69a109e3242dad50'
     needs: archive
     if: github.event_name == 'push' && github.ref == 'refs/heads/Veraphify' && github.event.repository.private == false
     runs-on: ubuntu-24.04
@@ -88,7 +90,8 @@ jobs:
       - name: Verify and preserve archive entries without replacing history
         run: |
           python3 tools/preserve-vib-archive.py
-          git add archives/candidates
+          python3 tools/candidate-code-graph.py preserve
+          git add archives/candidates archives/candidate-code-graphs
           if git diff --cached --quiet; then exit 0; fi
           git diff --cached --name-status
           git -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' commit -m "Preserve verified VIB candidate archive $GITHUB_RUN_ID/$GITHUB_RUN_ATTEMPT"

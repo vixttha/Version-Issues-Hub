@@ -40,7 +40,7 @@ assert len({old["results"][i]["issue"] for i in (25,26,27)})==3
 assert ancestor(old["results"][23]["source"],old["results"][21]["source"])
 assert ancestor(old["results"][29]["source"],old["results"][28]["source"])
 # Original archive blobs stay exactly the same.
-assert git("diff","--name-only","365a53437882e50d37a62b2940fab898b220ae9b","HEAD","--","archives/code-graphs","archives/candidates","archives/README.md")==""
+assert git("diff","--name-only","--diff-filter=DMRTUXB","365a53437882e50d37a62b2940fab898b220ae9b","HEAD","--","archives/code-graphs","archives/candidates","archives/README.md")==""
 # Full native CLI reads and negative probes.
 subprocess.run([sys.executable,"tools/test-code-graph-retrieval.py"],check=True)
 # Old overlay is immutable historical evidence, superseded by fresh all-version audit.
