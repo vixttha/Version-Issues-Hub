@@ -20,3 +20,7 @@ For each candidate, check standalone usage with other ecosystem tools absent, op
 ## Owner-controlled qualification — VIB-LAW-OWNER-QUALIFICATION-001
 
 Advanced qualification is suspended until explicit scoped owner approval. Normal relevant regression and revision-bound review remain permitted. See [qualification boundary](docs/v0.0.0.38.md). The six architectural laws above are unchanged.
+
+## Product integration integrity — VIB-LAW-PRODUCT-INTEGRATION-001
+
+Owner-directed corrective scope #96: the designated product branch, not the installation or engineering branch, is authoritative for integrated software. Engineering completion, production integration, issue closure and release remain separate. Refuse unrelated claims while outstanding integration debt lacks exact, bounded owner authorization; preserve historical evidence and allow scoped corrective recovery. No automatic merge, branch deletion, release, or advanced qualification. Implementation and qualification are in progress; this document does not certify compliance or authorize a product merge.

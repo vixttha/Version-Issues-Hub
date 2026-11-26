@@ -8,6 +8,7 @@ import os
 import re
 import random
 import sys
+import time
 import uuid
 from tools import checkpoint, install
 
@@ -1151,6 +1152,98 @@ def verify_closed_staged_pr(api, state, previous):
         raise ValueError("Staged rework requires a verified closed unmerged PR")
 
 
+# Preserve the historical archive envelope. Explicit owner evidence remains
+# cooperative; this does not claim authenticated owner signatures.
+DEFERRAL_DECISION = "VIB-INTEGRATION-DEFERRAL-1: "
+DEFERRAL_MAX_SECONDS = 30 * 24 * 60 * 60
+DEFERRAL_KEYS = {"schema_version", "repository", "repository_id", "product_branch",
+                 "product_sha", "issue", "version", "criteria", "fix_sha",
+                 "candidate_sha", "pull_request", "approved_at", "expires_at",
+                 "authorized_next_issue", "reason", "review_trigger", "next_action"}
+
+
+def deferral_record(record):
+    decision = record["decision"]
+    if not decision.startswith(DEFERRAL_DECISION):
+        return None
+    policy = checkpoint.parse_json(decision[len(DEFERRAL_DECISION):])
+    if (not isinstance(policy, dict) or set(policy) != DEFERRAL_KEYS
+            or type(policy["schema_version"]) is not int or policy["schema_version"] != 1
+            or record["disposition"] not in ("staged", "deferred")
+            or record["merged_sha"] is not None):
+        raise ValueError("Invalid integration debt deferral record")
+    return policy
+
+
+def check_deferral(api, state, record, next_issue=None):
+    policy = deferral_record(record)
+    if policy is None:
+        raise ValueError("Unbounded integration debt; owner reconciliation required")
+    active = record["handoff"]
+    row = next(r for r in state["ledger"]["issues"] if r["issue"] == active["issue"])
+    manifest = state["manifest"]
+    for key in ("issue", "version", "fix_sha", "candidate_sha", "pull_request"):
+        if policy[key] != active[key] or type(policy[key]) is not type(active[key]):
+            raise ValueError("Integration debt deferral scope differs from archive")
+    issue_number(policy["authorized_next_issue"])
+    if (policy["authorized_next_issue"] == active["issue"]
+            or (next_issue is not None and policy["authorized_next_issue"] != next_issue)
+            or policy["criteria"] != row["acceptance"]
+            or policy["repository"] != state["ledger"]["repository"]
+            or not install.same_id(policy["repository_id"], manifest["target_repository_id"])
+            or policy["product_branch"] != manifest["product_branch"]):
+        raise ValueError("Integration debt deferral scope or target differs")
+    for key in ("reason", "review_trigger", "next_action"):
+        text(policy[key], "integration debt " + key)
+    approved, expires = policy["approved_at"], policy["expires_at"]
+    if (type(approved) is not int or type(expires) is not int
+            or not 0 < expires - approved <= DEFERRAL_MAX_SECONDS
+            or not approved <= time.time() < expires):
+        raise ValueError("Integration debt deferral expired or invalid")
+    prefix = state["prefix"]
+    if install.read_ref(api, prefix, install.BRANCH) != state["ref"]:
+        raise ValueError("Installed state advanced; reload integration debt review")
+    meta = install.response_object(api.request("GET", prefix), "target repository")
+    if (meta.get("full_name") != policy["repository"]
+            or not install.same_id(meta.get("id"), policy["repository_id"])
+            or meta.get("default_branch") != policy["product_branch"]
+            or policy["product_branch"] == install.BRANCH):
+        raise ValueError("Integration debt target identity changed")
+    target = install.require(install.SHA, policy["product_sha"], "deferral product revision")
+    if (target != state["product_sha"]
+            or install.read_ref(api, prefix, policy["product_branch"]) != target):
+        raise ValueError("Integration debt deferral target is stale")
+    if active["pull_request"] is not None:
+        require_fresh_snapshot(api, state, active)
+    if install.read_ref(api, prefix, install.BRANCH) != state["ref"]:
+        raise ValueError("Installed state advanced during integration debt review")
+    if install.read_ref(api, prefix, policy["product_branch"]) != target:
+        raise ValueError("Integration debt target changed during review")
+    return policy
+
+
+def unresolved_integration_debt(state):
+    return [r for r in state["ledger"]["issues"] if r["state"] in ("staged", "deferred")]
+
+
+def require_integration_debt_clear(api, state, number):
+    # Same-issue recovery remains available through normal owner claim.
+    # Experimental parallel state remains frozen by its independent gate.
+    if state["handoff"]["schema_version"] != 1:
+        return
+    debt = unresolved_integration_debt(state)
+    if any(row["issue"] == number for row in debt):
+        return
+    for row in debt:
+        prior = next((r for r in reversed(state["handoff"]["history"])
+                      if r["handoff"]["issue"] == row["issue"]
+                      and r["disposition"] == row["state"]
+                      and closure_receipt(r) is None), None)
+        if prior is None:
+            raise ValueError("Missing integration debt archive; owner reconciliation required")
+        check_deferral(api, state, prior, number)
+
+
 def claim(api, state, number, criteria, note, *, resume_prior_line=False, parallel=False,
           rework_staged=False):
     validate_handoff(state["handoff"], state["ledger"])
@@ -1180,6 +1273,7 @@ def claim(api, state, number, criteria, note, *, resume_prior_line=False, parall
         handoff["active"] = rows
     if handoff["schema_version"] == 1 and rows:
         raise ValueError("Another issue owns the active handoff")
+    require_integration_debt_clear(api, state, number)
     if handoff["schema_version"] == 2:
         require_parallel_package(state)
     baseline = state["manifest"]["baseline_version"]
@@ -1290,7 +1384,7 @@ def advance(api, state, note, *, fix=None, candidate=None, pr=None, evidence=Non
     validate_handoff(handoff, ledger)
     return ledger, handoff
 
-def finish(api, state, disposition, decision, *, policy=None, issue=None):
+def finish(api, state, disposition, decision, *, policy=None, issue=None, deferral_approved=False):
     validate_handoff(state["handoff"], state["ledger"])
     ledger = copy.deepcopy(state["ledger"])
     handoff = copy.deepcopy(state["handoff"])
@@ -1319,8 +1413,13 @@ def finish(api, state, disposition, decision, *, policy=None, issue=None):
             merged, links = standard.verify_integration(api, state, active, pr, policy)
             active["evidence"] = list(dict.fromkeys(active["evidence"] + links))
             decision = integration_decision(decision, policy)
-    handoff["history"].append({"handoff": active, "disposition": disposition,
-                               "decision": text(decision, "owner decision"), "merged_sha": merged})
+    record = {"handoff": active, "disposition": disposition,
+              "decision": text(decision, "owner decision"), "merged_sha": merged}
+    if decision.startswith(DEFERRAL_DECISION):
+        if deferral_approved is not True:
+            raise ValueError("Explicit owner approval of integration debt deferral required")
+        check_deferral(api, state, record)
+    handoff["history"].append(record)
     next(x for x in ledger["issues"] if x["issue"] == active["issue"])["state"] = disposition
     put_active(handoff, active["issue"], None)
     validate_handoff(handoff, ledger)
@@ -1674,7 +1773,8 @@ class HandoffRejected(install.ApiError):
 
 
 def save(api, state, ledger, handoff, apply=False, *, issue=None, operation_id=None,
-         on_recovery_ticket=None, policy=None, engineering_approved=False, closure_approved=False):
+         on_recovery_ticket=None, policy=None, engineering_approved=False, closure_approved=False,
+         deferral_approved=False):
     if operation_id is not None and (not isinstance(operation_id, str)
             or not re.fullmatch(r"[0-9a-f]{64}", operation_id)):
         raise ValueError("Invalid operation identity")
@@ -1688,6 +1788,17 @@ def save(api, state, ledger, handoff, apply=False, *, issue=None, operation_id=N
                 or appended_closure[0]["handoff"]["issue"] != unresolved["issue"]
                 or closure_receipt(appended_closure[0]) is None):
             raise ValueError("Reconcile unresolved closure before unrelated state publication")
+    def revalidate_claim_and_deferrals():
+        previous = {a["issue"] for a in active_rows(state["handoff"])}
+        for active in active_rows(handoff):
+            if active["issue"] not in previous:
+                require_integration_debt_clear(api, state, active["issue"])
+        for record in handoff["history"][len(state["handoff"]["history"]):]:
+            if deferral_record(record) is not None:
+                if deferral_approved is not True:
+                    raise ValueError("Explicit owner approval of integration debt deferral required")
+                check_deferral(api, state, record)
+    revalidate_claim_and_deferrals()
     if not apply:
         return {"status": "planned", "ledger": ledger, "handoff": handoff}
     # Recheck proof for newly staged rows before persisting. A stale stage
@@ -1706,6 +1817,7 @@ def save(api, state, ledger, handoff, apply=False, *, issue=None, operation_id=N
             rework_prs.append(prior["handoff"])
     def revalidate_publication():
         from tools import standard
+        revalidate_claim_and_deferrals()
         for previous in rework_prs:
             verify_closed_staged_pr(api, state, previous)
         for record in appended:
@@ -2161,13 +2273,16 @@ def main():
                         pr=args.pr, evidence=args.evidence, rework=args.rework,
                         return_to_head=args.return_to_head, refresh=args.refresh, issue=scope)
                 if args.command == "finish":
-                    return finish(api, current, args.disposition, args.decision, policy=policy, issue=scope)
+                    return finish(api, current, args.disposition, args.decision, policy=policy, issue=scope,
+                                  deferral_approved=args.owner_approved)
                 if args.command == "finish-engineering":
                     return finish_engineering(api, current, args.decision, policy=policy,
                                               owner_approved=args.owner_approved, issue=scope)
                 return reconcile(api, current, args.issue, args.decision, policy=policy)
             # Exact owner post-merge policy pins must not be silently rewritten.
-            if args.apply and policy is None and args.command != "reconcile" and not (
+            bounded_deferral = (args.command == "finish"
+                                and args.decision.startswith(DEFERRAL_DECISION))
+            if args.apply and policy is None and args.command != "reconcile" and not bounded_deferral and not (
                     args.command == "finish" and args.disposition == "integrated"):
                 # Preserve the CLI interface. A second bounded round continues
                 # only the same verified intent in this execution.
@@ -2189,7 +2304,8 @@ def main():
                     result = save(api, state, ledger, handoff, args.apply, issue=scope,
                                   engineering_approved=args.owner_approved)
                 else:
-                    result = save(api, state, ledger, handoff, args.apply, issue=scope, policy=policy)
+                    result = save(api, state, ledger, handoff, args.apply, issue=scope, policy=policy,
+                                  deferral_approved=bounded_deferral and args.owner_approved)
         print(install.render(result), end="")
     except (ValueError, KeyError, TypeError, OSError, install.ApiError) as exc:
         install.cli_error(p, "VIB session stopped", exc)

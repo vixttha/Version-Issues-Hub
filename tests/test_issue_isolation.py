@@ -3,7 +3,7 @@ import copy
 import json
 import unittest
 from tools import session, install
-from test_session import Fake, state, post_policy, FIX, FIX2, CANDIDATE, BASE, NEXT, RUN, PROPOSED
+from test_session import Fake, state, post_policy, bounded_deferral, FIX, FIX2, CANDIDATE, BASE, NEXT, RUN, PROPOSED
 
 A, B = 247, 248
 
@@ -16,7 +16,8 @@ class IssueIsolationTests(unittest.TestCase):
         self.apply(s,session.claim(api,s,A,["test A"],"A"))
         for kw in ({"fix":FIX,"candidate":CANDIDATE,"pr":8},{"evidence":[RUN]},{}):
             self.apply(s,session.advance(api,s,"next",**kw))
-        self.apply(s,session.finish(api,s,"staged","A staged"))
+        self.apply(s,session.finish(api,s,"staged",bounded_deferral(s,api,B),
+                                    deferral_approved=True))
         self.apply(s,session.claim(api,s,B,["test B"],"B"))
         return api,s
 

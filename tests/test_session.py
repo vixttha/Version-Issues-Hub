@@ -1,5 +1,6 @@
 import copy
 import json
+import time
 import unittest
 from unittest.mock import patch
 from tools import install, session
@@ -96,6 +97,24 @@ def post_policy(s, number=247):
             "fix_sha":active["fix_sha"],"criteria":[{"text":criterion,"checks":[
                 {"run":124,"attempt":1,"workflow_id":52,"job_name":"test","steps":["Run acceptance"]}
             ]} for criterion in row["acceptance"]]}]}
+
+def bounded_deferral(s, api, next_issue):
+    """Fixture: deliberately authorize one subsequent issue at current target."""
+    s["product_sha"] = api.product
+    active = s["handoff"]["active"]
+    now = int(time.time())
+    row = next(r for r in s["ledger"]["issues"] if r["issue"] == active["issue"])
+    policy = {"schema_version": 1, "repository": s["ledger"]["repository"],
+              "repository_id": s["manifest"]["target_repository_id"],
+              "product_branch": s["manifest"]["product_branch"],
+              "product_sha": s["product_sha"], "criteria": row["acceptance"],
+              **{k: active[k] for k in ("issue", "version", "fix_sha", "candidate_sha", "pull_request")},
+              "approved_at": now, "expires_at": now + 3600,
+              "authorized_next_issue": next_issue, "reason": "Review bounded batch",
+              "review_trigger": "Before accepting another issue",
+              "next_action": "Integrate reviewed PR or reconcile with owner"}
+    return session.DEFERRAL_DECISION + json.dumps(policy, sort_keys=True)
+
 
 class SessionTests(unittest.TestCase):
     def setUp(self):
@@ -210,7 +229,8 @@ class SessionTests(unittest.TestCase):
         self.advance(evidence=[RUN])
         self.advance()
         self.state["ledger"], self.state["handoff"] = session.finish(
-            self.api, self.state, "staged", "Owner stages first issue")
+            self.api, self.state, "staged", bounded_deferral(self.state, self.api, 248),
+            deferral_approved=True)
         self.assertEqual(self.state["ledger"]["issues"][0]["state"], "staged")
         self.assertIsNone(self.state["handoff"]["active"])
         self.state["ledger"], self.state["handoff"] = session.claim(
