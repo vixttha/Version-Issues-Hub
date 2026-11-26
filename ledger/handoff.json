@@ -2,8 +2,8 @@
   "active": {
     "issue": 86,
     "version": "v0.0.0.40",
-    "phase": "Worker",
-    "next_action": "Owner-directed installed closure compatibility repair only: qualify an explicitly approved, exact-scope staged-preserving package upgrade while retaining all 32 staged records and original evidence; keep default upgrade and retirement refusal, no live migration, main merge, issue closure or new checkpoint before review.",
+    "phase": "Head",
+    "next_action": "Owner-authorized PR #91 engineering merge 43ef2b660aae5ccee00009e900509158f0137d0f; exact head e963d92a09dabdf879b4808b65159a57a5348c51; base 8cbb4562fb2e2425eaae52b9145513e2f5927ba2; identical tested tree 413b10757a3f06b16ed61f8a2555233eab3870f4. Internal Auditor exact-head review 10/10, zero unresolved threads; actual merge CI at readback 9/11, remaining jobs must pass before completion. Retain active slot at Head; no production integration, closure, live migration or .41 allocation yet. Original .40 fix pin 024046556bf00b649b2428c112f5456210036dfb preserved. Use installed main-bound legacy return-to-Head path with null production pins. After actual checks pass, append engineering-only production-deferred disposition with exact approved PR/fix/head/merge grammar. User authorized next .41 claim only after slot released.",
     "fix_sha": null,
     "candidate_sha": null,
     "pull_request": null,
