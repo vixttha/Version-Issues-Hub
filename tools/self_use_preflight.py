@@ -244,10 +244,11 @@ def verify_checkpoint_branch(branch):
     # Read the public installed ref; a historical pin must be in its ancestry.
     # This is revision-bound evidence, not a claim that the Worker is still active.
     ref = "refs/heads/Version-Issues-Hub"
-    observed = checkpoint.git("ls-remote", "--exit-code", "origin", ref).split()
-    if len(observed) != 2 or observed[1] != ref:
+    rows = [line.split() for line in checkpoint.git("ls-remote", "--exit-code", "origin", ref).splitlines()]
+    observed = [row for row in rows if len(row) == 2 and row[1] == ref]
+    if len(observed) != 1:
         raise ValueError("Canonical installed ref is missing or ambiguous")
-    current = checkpoint.require(checkpoint.SHA, observed[0], "observed canonical revision")
+    current = checkpoint.require(checkpoint.SHA, observed[0][0], "observed canonical revision")
     subprocess.run(["git", "fetch", "--no-tags", "--no-write-fetch-head", "origin", current],
                    check=True)
     if subprocess.run(["git", "merge-base", "--is-ancestor", pin, current],

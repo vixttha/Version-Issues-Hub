@@ -126,3 +126,24 @@ class SelfUsePreflightTests(unittest.TestCase):
         verify.assert_called_once_with("a"*40, 96, "v0.0.0.43", "c"*40, "b"*40, "d"*40)
         run.assert_any_call(["git", "merge-base", "--is-ancestor", "a"*40, "b"*40], check=False)
         self.assertEqual(git.call_count, 2)
+
+    @patch("tools.self_use_preflight.checkpoint.git")
+    @patch("tools.self_use_preflight.WORKER_RECORD")
+    @patch("tools.self_use_preflight.subprocess.run")
+    @patch("tools.self_use_preflight.read_projection")
+    def test_ls_remote_matches_exact_canonical_ref_only(self, read, run, record, git):
+        record.read_text.return_value = '{"schema_version":1,"issue":65,"version":"v0.0.0.31","installed_sha":"' + "a"*40 + '"}'
+        read.return_value = "v0.0.0.31"
+        run.return_value = CompletedProcess([],0)
+        exact = "b"*40 + "\trefs/heads/Version-Issues-Hub"
+        extra = "c"*40 + "\trefs/heads/x/refs/heads/Version-Issues-Hub"
+        git.return_value = extra + "\n" + exact
+        branch = "plan/checkpoint-v0.0.0.31"
+        self_use_preflight.verify_checkpoint_branch(branch)
+        run.assert_any_call(["git","fetch","--no-tags","--no-write-fetch-head","origin","b"*40],check=True)
+        for invalid in (extra, exact+"\n"+exact):
+            run.reset_mock()
+            git.return_value = invalid
+            with self.assertRaisesRegex(ValueError,"missing or ambiguous"):
+                self_use_preflight.verify_checkpoint_branch(branch)
+            run.assert_not_called()

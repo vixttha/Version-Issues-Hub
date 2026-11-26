@@ -1257,8 +1257,8 @@ def check_deferral(api, state, record, next_issue=None):
 
 def outstanding_integration_records(state):
     # An obligation follows its original fix, not merely the issue number.
-    # Pinless ordinary deferrals may be renewed only by another bounded
-    # pinless ordinary deferral for the same issue. Preserve all archives.
+    # Renew only bounded ordinary decisions for the exact same issue and
+    # original fix (or both pinless). Preserve all archives.
     outstanding = {}
     for record in state["handoff"]["history"]:
         if closure_receipt(record) is not None:
@@ -1277,11 +1277,11 @@ def outstanding_integration_records(state):
                 return legacy.group(2)
             return prior["handoff"]["fix_sha"]
         if record["disposition"] in ("staged", "deferred"):
-            if (record["disposition"] == "deferred" and fix_of(record) is None
-                    and deferral_record(record) is not None):
+            if deferral_record(record) is not None:
+                fix = fix_of(record)
                 records[:] = [prior for prior in records
-                              if not (prior["disposition"] == "deferred" and fix_of(prior) is None
-                                      and deferral_record(prior) is not None)]
+                              if not (deferral_record(prior) is not None
+                                      and fix_of(prior) == fix)]
             records.append(record)
         elif record["disposition"] == "integrated":
             records[:] = [prior for prior in records
@@ -2110,6 +2110,12 @@ def save(api, state, ledger, handoff, apply=False, *, issue=None, operation_id=N
             if deferral_record(record) is not None:
                 if deferral_approved is not True:
                     raise ValueError("Explicit owner approval of integration debt deferral required")
+                proposed = record["handoff"]
+                prior = next((a for a in active_rows(state["handoff"])
+                              if a["issue"] == proposed["issue"]), None)
+                if (prior is None or prior["phase"] != "Head" or prior != proposed
+                        or any(a["issue"] == proposed["issue"] for a in active_rows(handoff))):
+                    raise ValueError("Integration debt deferral must preserve the original active Head handoff")
                 policies.append(check_deferral(api, state, record))
         return policies
     revalidate_claim_and_deferrals()

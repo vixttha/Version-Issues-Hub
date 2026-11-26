@@ -450,3 +450,41 @@ class IntegrationIntegrityTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError,"different historical fix unresolved"):
                 session.save(self.api,self.state,ledger,handoff,apply,issue=247,policy=policy)
         self.assertEqual(self.api.writes,[])
+
+    def test_expired_pinned_deferral_can_be_renewed_for_same_fix(self):
+        from unittest.mock import patch
+        self.reach_head()
+        first=bounded_deferral(self.state,self.api,248)
+        self.state["ledger"],self.state["handoff"]=session.finish(
+            self.api,self.state,"deferred",first,deferral_approved=True)
+        old=copy.deepcopy(self.state["handoff"]["history"])
+        expiry=json.loads(first[len(session.DEFERRAL_DECISION):])["expires_at"]
+        with patch.object(session.time,"time",return_value=expiry+1):
+            with self.assertRaisesRegex(ValueError,"expired"):
+                session.claim(self.api,self.state,248,["next"],"Blocked")
+            self.reach_head()
+            second=bounded_deferral(self.state,self.api,248)
+            ledger,handoff=session.finish(self.api,self.state,"deferred",second,deferral_approved=True)
+            self.assertEqual(session.save(self.api,self.state,ledger,handoff,issue=247,
+                                          deferral_approved=True)["status"],"planned")
+            self.state.update(ledger=ledger,handoff=handoff)
+            _,next_handoff=session.claim(self.api,self.state,248,["next"],"Approved")
+            self.assertEqual(next_handoff["active"]["issue"],248)
+            self.assertEqual(next_handoff["history"][:len(old)],old)
+        self.assertEqual(self.api.writes,[])
+
+    def test_direct_deferral_cannot_erase_active_head_pins(self):
+        self.reach_head()
+        original=copy.deepcopy(self.state)
+        forged=copy.deepcopy(self.state)
+        active=forged["handoff"]["active"]
+        active.update(fix_sha=None,candidate_sha=None,pull_request=None,evidence=[])
+        active.pop("integration_base_sha")
+        active.pop("integration_merge_sha")
+        decision=bounded_deferral(forged,self.api,248)
+        ledger,handoff=session.finish(self.api,forged,"deferred",decision,deferral_approved=True)
+        for apply in (False,True):
+            with self.assertRaisesRegex(ValueError,"preserve the original active Head handoff"):
+                session.save(self.api,self.state,ledger,handoff,apply,issue=247,deferral_approved=True)
+        self.assertEqual(self.state,original)
+        self.assertEqual(self.api.writes,[])
