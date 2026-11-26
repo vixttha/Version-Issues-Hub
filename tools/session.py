@@ -551,9 +551,9 @@ def closure_status(state, item):
     else:
         synchronization = ("conflict" if github_state == "closed" and active else
                            ("historical_unverified" if github_state == "closed" else "not_recorded"))
-    # Preserve the durable execution-recovery warning if an executor holds
-    # the lane, but expose the disposition conflict independently.
-    if disposition_conflict and synchronization != "execution_reconciliation_required":
+    # Preserve an observed cancellation or the durable execution-recovery
+    # warning; disposition conflict is a separate dimension.
+    if disposition_conflict and synchronization not in ("cancelled", "execution_reconciliation_required"):
         synchronization = "conflict"
     return {"issue": number, "version": row["version"] if row else None,
             "engineering_completion": engineering, "github_state": github_state,

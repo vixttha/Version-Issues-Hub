@@ -287,7 +287,10 @@ class ClosureTests(unittest.TestCase):
                 last = session.closure_records(final["handoff"], 247)[-1]
                 self.assertEqual(last["execution_id"], execution)
                 self.assertEqual(last["cancellation"]["state"], "closed")
-                self.assertEqual(session.closure_status(final, current)["closure_synchronization"], "cancelled")
+                status = session.closure_status(final, current)
+            self.assertEqual(status["closure_synchronization"], "cancelled")
+            self.assertTrue(status["disposition_conflict"])
+            self.assertFalse(status["production_integrated"])
                 self.assertEqual(sum(method == "PATCH" and "/issues/" in path
                                      for method, path, _ in self.api.writes), 1)
                 return
