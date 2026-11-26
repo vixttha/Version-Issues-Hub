@@ -245,6 +245,22 @@ class IntegrationIntegrityTests(unittest.TestCase):
                 session.save(self.api,self.state,ledger,handoff,apply,issue=247,policy=policy)
         self.assertEqual(self.api.writes, [])
 
+    def test_integration_archive_without_row_transition_refused(self):
+        from test_session import post_policy
+        self.reach_head()
+        self.state["ledger"], self.state["handoff"] = session.finish(
+            self.api, self.state, "staged", "Owner stages")
+        self.api.pr.update(state="closed", merged=True, merge_commit_sha=NEXT)
+        self.api.product = NEXT
+        policy = post_policy(self.state)
+        ledger, handoff = session.reconcile(self.api, self.state, 247, "Owner integrates", policy=policy)
+        self.assertEqual(session.save(self.api,self.state,ledger,handoff,issue=247,policy=policy)["status"],"planned")
+        ledger["issues"][0]["state"] = "staged"
+        for apply in (False, True):
+            with self.assertRaisesRegex(ValueError, "matching integrated row transition"):
+                session.save(self.api,self.state,ledger,handoff,apply,issue=247,policy=policy)
+        self.assertEqual(self.api.writes, [])
+
     def test_historical_legacy_conflicting_pin_rejected(self):
         from test_session import post_policy, PROPOSED
         self.reach_head()

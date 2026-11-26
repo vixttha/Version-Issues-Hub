@@ -441,13 +441,18 @@ def install(api, target, source_sha, baseline, apply=False, *, product_branch=No
     if installed.get("sha") != commit or installed["tree"]["sha"] != tree:
         raise ValueError("Installed tree read-back mismatch")
     try:
-        latest = api.request("GET", prefix)
+        latest = response_object(api.request("GET", prefix), "final target repository")
         if (latest.get("id") != meta["id"] or latest.get("full_name") != meta["full_name"]
                 or latest.get("default_branch") != default or product_target(latest, manifest) != branch):
             raise ValueError("Target identity or default branch changed")
         if read_ref(api, prefix, branch) != product:
             raise ValueError("Product ref changed concurrently")
-    except (ValueError, ApiError, KeyError, OSError) as exc:
+    except ApiError as exc:
+        # Preserve the typed throttle receipt for CLI callers; never replay the create.
+        exc.args = ("Installed ref was created at " + commit +
+                    "; final product verification failed; inspect before retrying: " + str(exc),)
+        raise
+    except (ValueError, KeyError, OSError) as exc:
         raise ValueError("Installed ref was created at " + commit +
                          "; final product verification failed; inspect before retrying: " + str(exc)) from exc
     return {**plan, "status": "installed", "installed_sha": commit, "installed_tree_sha": tree}

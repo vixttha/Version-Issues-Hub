@@ -1758,6 +1758,18 @@
         {
           "path": "tests/test_graphify_evidence.py",
           "anchor": "def test_integration_integrity_graph_anchors_match_exact_source(self):"
+        },
+        {
+          "path": "tests/test_install.py",
+          "anchor": "def test_post_install_malformed_metadata_requires_inspection(self):"
+        },
+        {
+          "path": "tests/test_install.py",
+          "anchor": "def test_post_install_throttle_retains_typed_delay_receipt(self):"
+        },
+        {
+          "path": "tests/test_integration_integrity.py",
+          "anchor": "def test_integration_archive_without_row_transition_refused(self):"
         }
       ]
     }

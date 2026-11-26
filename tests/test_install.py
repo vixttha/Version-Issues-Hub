@@ -204,6 +204,36 @@ class InstallerTests(unittest.TestCase):
         self.assertEqual(self.api.refs["trunk"], PRODUCT)
         self.assertEqual(len(self.api.writes), 3)
 
+    def test_post_install_malformed_metadata_requires_inspection(self):
+        original = self.api.request
+        def race(method, path, body=None):
+            if method == "GET" and path == PREFIX and install.BRANCH in self.api.refs:
+                return []
+            return original(method, path, body)
+        self.api.request = race
+        with self.assertRaisesRegex(ValueError, INSTALLED + ".*inspect before retrying"):
+            install.install(self.api, TARGET, PIN, "v1.0.6", True)
+        self.assertEqual(self.api.refs[install.BRANCH], INSTALLED)
+        self.assertEqual(len(self.api.writes), 3)
+
+    def test_post_install_throttle_retains_typed_delay_receipt(self):
+        original = self.api.request
+        def race(method, path, body=None):
+            if method == "GET" and path == PREFIX and install.BRANCH in self.api.refs:
+                raise install.ApiError(429, "GET", "repository", 90)
+            return original(method, path, body)
+        self.api.request = race
+        with self.assertRaisesRegex(install.ApiError, INSTALLED + ".*inspect before retrying") as caught:
+            install.install(self.api, TARGET, PIN, "v1.0.6", True)
+        self.assertEqual((caught.exception.status, caught.exception.retry_after), (429, 90))
+        from unittest.mock import Mock
+        parser = Mock()
+        install.cli_error(parser, "Install stopped", caught.exception)
+        receipt = json.loads(parser.exit.call_args.args[1].splitlines()[-1])
+        self.assertEqual(receipt, {"kind":"vib_api_delay", "status":429, "retry_after":90})
+        self.assertEqual(self.api.refs[install.BRANCH], INSTALLED)
+        self.assertEqual(len(self.api.writes), 3)
+
     def test_default_branch_collision_refused(self):
         self.api.metadata["default_branch"] = install.BRANCH
         with self.assertRaisesRegex(ValueError, "product default"):

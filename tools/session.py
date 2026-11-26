@@ -1995,6 +1995,13 @@ def save(api, state, ledger, handoff, apply=False, *, issue=None, operation_id=N
                 policies.extend(require_integration_debt_clear(api, state, active["issue"]) or [])
         appended = handoff["history"][len(state["handoff"]["history"]):]
         before = {row["issue"]: row for row in state["ledger"]["issues"]}
+        transitions = {row["issue"] for row in ledger["issues"]
+                       if row["state"] == "integrated" and
+                       before.get(row["issue"], {}).get("state") != "integrated"}
+        integrated_records = [r["handoff"]["issue"] for r in appended
+                              if r["disposition"] == "integrated"]
+        if set(integrated_records) - transitions:
+            raise ValueError("Integration archive requires a matching integrated row transition")
         for row in ledger["issues"]:
             old = before.get(row["issue"])
             if row["state"] == "integrated" and (old is None or old["state"] != "integrated"):
