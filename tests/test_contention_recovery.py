@@ -103,8 +103,9 @@ class RecoveryTests(unittest.TestCase):
         for error in (session.HandoffUnconfirmed("a"*40),install.ApiError(403),
                       install.ApiError(422,retry_after=120),install.ApiError(429,retry_after=60)):
             with self.subTest(error=type(error).__name__), patch.object(session,"save",side_effect=error) as save:
-                with self.assertRaises(type(error)):
+                with self.assertRaises(type(error)) as caught:
                     self.recover(lambda s:self.claim(s,B),B)
+                self.assertIs(caught.exception, error)
                 self.assertEqual(save.call_count,1)
 
     def test_bounded_exhaustion_no_infinite_retry(self):
@@ -387,9 +388,11 @@ class RecoveryTests(unittest.TestCase):
     def test_prepublication_ticket_confirms_exact_candidate_read_only(self):
         api = self.api
         tickets = []
+        attempts = []
         original = api.request
         def request(method, path, body=None):
             if method == "PATCH":
+                attempts.append(body["sha"])
                 self.assertEqual(len(tickets), 1)
                 self.assertEqual(tickets[0]["candidate_sha"], body["sha"])
                 original(method, path, body)
@@ -397,6 +400,7 @@ class RecoveryTests(unittest.TestCase):
             return original(method, path, body)
         api.request = request
         result = self.recover(lambda s: self.claim(s, B), B, on_recovery_ticket=tickets.append)
+        self.assertEqual(attempts, [result["installed_sha"]])
         api.request = original
         fresh = session.load(api, REPO)
         before = list(api.writes)
@@ -506,7 +510,12 @@ class RecoveryTests(unittest.TestCase):
             paths = []
             def pending(intent):
                 paths.append(session.persist_pending_intent(directory, intent))
-            with patch.object(session, "save", side_effect=session.HandoffStale("advanced")) as save, \
+            def stale(*args, **kwargs):
+                self.assertEqual(len(paths), 1)
+                persisted = json.loads(paths[0].read_text(encoding="utf-8"))
+                self.assertEqual(persisted["operation_id"], kwargs["operation_id"])
+                raise session.HandoffStale("advanced")
+            with patch.object(session, "save", side_effect=stale) as save, \
                  patch.object(session, "load", return_value=self.s), \
                  patch.object(session, "retry_scope", return_value=None):
                 with self.assertRaises(session.HandoffDeferred) as error:
@@ -575,15 +584,45 @@ class RecoveryTests(unittest.TestCase):
                     if method == "GET" and "/compare/" + missing + "..." in path:
                         raise install.ApiError(404, retry_after=delay)
                     return original(method, path, body)
-                with patch.object(api, "request", side_effect=request):
+                with patch.object(api, "request", side_effect=request), \
+                     patch.object(session, "inspect_operation", wraps=session.inspect_operation) as inspect:
                     if delay is not None:
-                        with self.assertRaises(install.ApiError):
+                        with self.assertRaises(install.ApiError) as caught:
                             session.inspect_pending(api, fresh, paths[0])
+                        self.assertEqual(caught.exception.retry_after, delay)
+                        expected = [missing]
                     else:
                         inspected = session.inspect_pending(api, fresh, paths[0])
                         self.assertEqual([x["status"] for x in inspected["candidates"]],
                                          ["unconfirmed", "published"])
                         self.assertEqual(inspected["candidates"][1]["installed_sha"], result["installed_sha"])
+                        expected = [missing, result["installed_sha"]]
+                    self.assertEqual([call.args[2]["candidate_sha"] for call in inspect.call_args_list],
+                                     expected)
+            self.assertEqual(api.writes, before)
+
+    def test_pending_inventory_preserves_partial_ticket_and_inspects_later_candidate(self):
+        api = self.api
+        with tempfile.TemporaryDirectory() as directory:
+            paths = []
+            result = self.recover(lambda s: self.claim(s, B), B,
+                on_pending_intent=lambda intent: paths.append(session.persist_pending_intent(directory, intent)),
+                on_recovery_ticket=lambda ticket: session.persist_recovery_ticket(directory, ticket))
+            fresh = session.load(api, REPO)
+            partial = Path(directory) / (result["operation_id"] + "-" + "0" * 40 + ".json")
+            partial.write_bytes(b'{"schema_version":')
+            before = list(api.writes)
+            inspected = session.inspect_pending(api, fresh, paths[0])
+            self.assertEqual([x["status"] for x in inspected["candidates"]],
+                             ["unreadable", "published"])
+            self.assertEqual(inspected["candidates"][0]["candidate_sha"], "0" * 40)
+            self.assertEqual(inspected["candidates"][1]["installed_sha"], result["installed_sha"])
+            self.assertFalse(inspected["automatic_replay"])
+            self.assertEqual(partial.read_bytes(), b'{"schema_version":')
+            self.assertEqual(api.writes, before)
+            partial.write_text("{}", encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "journal identity"):
+                session.inspect_pending(api, fresh, paths[0])
             self.assertEqual(api.writes, before)
 
     def test_decoding_failure_after_patch_confirms_without_replay(self):

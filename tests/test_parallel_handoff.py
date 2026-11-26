@@ -56,13 +56,17 @@ class ParallelTests(unittest.TestCase):
     def test_explicit_selection_even_when_only_one_parallel_issue(self):
         s=self.setup_two()
         before=copy.deepcopy(s)
-        for issue in (None,999):
-            with self.assertRaises(ValueError):
+        for issue, diagnostic in ((None, "explicit"), (999, "does not own")):
+            with self.assertRaisesRegex(ValueError, diagnostic):
                 session.advance(self.api,s,"wrong",issue=issue,return_to_head=True)
-            with self.assertRaises(ValueError):
-                session.finish(self.api,s,"blocked","wrong",issue=issue)
         self.assertEqual(s,before)
-        self.apply(s,session.advance(self.api,s,"head",issue=B,return_to_head=True),B)
+        for issue in (A,B):
+            self.apply(s,session.advance(self.api,s,"head",issue=issue,return_to_head=True),issue)
+        at_head=copy.deepcopy(s)
+        for issue, diagnostic in ((None, "explicit"), (999, "does not own")):
+            with self.assertRaisesRegex(ValueError, diagnostic):
+                session.finish(self.api,s,"blocked","wrong",issue=issue)
+        self.assertEqual(s,at_head)
         self.apply(s,session.finish(self.api,s,"blocked","B",issue=B),B)
         with self.assertRaisesRegex(ValueError,"explicit"):
             session.advance(self.api,s,"wrong",return_to_head=True)

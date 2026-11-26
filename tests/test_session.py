@@ -495,6 +495,33 @@ class SessionTests(unittest.TestCase):
         self.assertEqual(ledger["issues"][0]["acceptance"], before["ledger"]["issues"][0]["acceptance"])
         self.assertEqual(self.state, before)
 
+    def test_staged_rework_rechecks_closed_pr_at_publication(self):
+        self.claim()
+        self.advance(fix=FIX, candidate=CANDIDATE, pr=8)
+        self.advance(evidence=[RUN])
+        self.advance()
+        self.state["ledger"], self.state["handoff"] = session.finish(
+            self.api, self.state, "staged", "Owner stages")
+        self.api.pr.update(state="closed", merged=False)
+        ledger, handoff = session.claim(self.api, self.state, 247, [], "rework", rework_staged=True)
+        original = self.api.request
+        for status, merged in (("open", False), ("closed", True)):
+            self.api.pr.update(state="closed", merged=False)
+            def race(method, path, body=None):
+                result = original(method, path, body)
+                if method == "POST" and path.endswith("/git/commits"):
+                    self.api.pr.update(state=status, merged=merged)
+                return result
+            with patch.object(self.api, "request", side_effect=race):
+                with self.assertRaisesRegex(ValueError, "verified closed unmerged"):
+                    session.save(self.api, self.state, ledger, handoff, True, issue=247)
+            self.assertEqual(self.api.ref, HEAD)
+            self.assertFalse(any(method == "PATCH" for method, _, _ in self.api.writes))
+        self.api.pr.update(state="closed", merged=False)
+        self.assertEqual(session.save(self.api, self.state, ledger, handoff, True,
+                                      issue=247)["installed_sha"], NEXT)
+        self.assertEqual(handoff["history"], self.state["handoff"]["history"])
+
     def test_integrated_publication_rechecks_policy_and_rejects_rerun(self):
         for staged in (False, True):
             with self.subTest(staged=staged):

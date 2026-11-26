@@ -380,6 +380,17 @@ def inspect(api, state, requested=None):
             "staged": staged, **({"active_issues": [a["issue"] for a in rows]}
                                   if handoff["schema_version"] == 2 else {})}
 
+def verify_closed_staged_pr(api, state, previous):
+    """Require the same archived PR to remain closed and unmerged."""
+    pr = pr_response(api.request("GET", state["prefix"] + "/pulls/" +
+                                 str(issue_number(previous["pull_request"]))))
+    if (not install.same_id(pr.get("number"), previous["pull_request"])
+            or pr.get("state") != "closed" or pr.get("merged") is not False
+            or pr["base"].get("ref") != state["manifest"]["product_branch"]
+            or not install.same_id(pr["base"]["repo"].get("id"), state["manifest"]["target_repository_id"])):
+        raise ValueError("Staged rework requires a verified closed unmerged PR")
+
+
 def claim(api, state, number, criteria, note, *, resume_prior_line=False, parallel=False,
           rework_staged=False):
     validate_handoff(state["handoff"], state["ledger"])
@@ -420,14 +431,7 @@ def claim(api, state, number, criteria, note, *, resume_prior_line=False, parall
         if prior is None or prior["disposition"] != "staged":
             raise ValueError("Missing latest staged handoff")
         if rework_staged:
-            previous = prior["handoff"]
-            pr = pr_response(api.request("GET", state["prefix"] + "/pulls/" +
-                                         str(issue_number(previous["pull_request"]))))
-            if (not install.same_id(pr.get("number"), previous["pull_request"])
-                    or pr.get("state") != "closed" or pr.get("merged") is not False
-                    or pr.get("base", {}).get("ref") != state["manifest"]["product_branch"]
-                    or not install.same_id(pr.get("base", {}).get("repo", {}).get("id"), state["manifest"]["target_repository_id"])):
-                raise ValueError("Staged rework requires a verified closed unmerged PR")
+            verify_closed_staged_pr(api, state, prior["handoff"])
             worker = {"issue": number, "version": row["version"], "phase": "Worker",
                       "next_action": text(note, "next action"), "fix_sha": None,
                       "candidate_sha": None, "pull_request": None, "evidence": []}
@@ -699,7 +703,16 @@ def inspect_pending(api, state, path):
         raise ValueError("Pending journal filename does not match operation identity")
     outcomes = []
     for candidate in sorted(path.parent.glob(op + "-*.json")):
-        ticket = checkpoint.parse_json(candidate.read_text(encoding="utf-8"))
+        candidate_sha = install.require(install.SHA, candidate.name[len(op)+1:-5],
+                                        "recovery candidate filename")
+        try:
+            ticket = checkpoint.parse_json(candidate.read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            # A damaged file cannot establish publication or nonpublication.
+            # Preserve it untouched and keep inspecting the other tickets.
+            outcomes.append({"status": "unreadable", "candidate_sha": candidate_sha,
+                             "origin_ancestry_verified": False})
+            continue
         if (not isinstance(ticket, dict) or ticket.get("operation_id") != op
                 or ticket.get("issue") != intent["issue"]
                 or ticket.get("repository") != intent["repository"]
@@ -896,8 +909,21 @@ def save(api, state, ledger, handoff, apply=False, *, issue=None, operation_id=N
     # Recheck proof for newly staged rows before persisting. A stale stage
     # must not be published merely because its earlier plan was successful.
     appended = handoff["history"][len(state["handoff"]["history"]):]
+    # A staged-to-Worker rework has no new archive entry. Recover the exact
+    # archived PR from the verified prior state rather than trusting a caller pin.
+    staged_issues = {row["issue"] for row in state["ledger"]["issues"] if row["state"] == "staged"}
+    rework_prs = []
+    for active in active_rows(handoff):
+        if active["phase"] == "Worker" and active["issue"] in staged_issues:
+            prior = next((record for record in reversed(state["handoff"]["history"])
+                          if record["handoff"]["issue"] == active["issue"]), None)
+            if prior is None or prior["disposition"] != "staged":
+                raise ValueError("Missing latest staged handoff")
+            rework_prs.append(prior["handoff"])
     def revalidate_publication():
         from tools import standard
+        for previous in rework_prs:
+            verify_closed_staged_pr(api, state, previous)
         for record in appended:
             active = record["handoff"]
             if record["disposition"] == "staged":
