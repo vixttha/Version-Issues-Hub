@@ -54,6 +54,12 @@ def bindings(scope,name):
                     found.append((kind,n.lineno))
         elif isinstance(n,ast.Name) and isinstance(n.ctx,(ast.Store,ast.Del)) and n.id==name:
             found.append(("other",n.lineno))
+        elif isinstance(n,ast.ExceptHandler) and n.name==name:
+            found.append(("other",n.lineno))
+        elif isinstance(n,(ast.MatchAs,ast.MatchStar)) and n.name==name:
+            found.append(("other",n.lineno))
+        elif isinstance(n,ast.MatchMapping) and n.rest==name:
+            found.append(("other",n.lineno))
         elif isinstance(n,(ast.Global,ast.Nonlocal)) and name in n.names:
             found.append(("other",n.lineno))
     return found

@@ -51,6 +51,6 @@ spec=importlib.util.spec_from_file_location("audit",root/"tools/audit-inferred-g
 audit=importlib.util.module_from_spec(spec);spec.loader.exec_module(audit)
 out=Path(os.environ["RUNNER_TEMP"])/"retained-graph-audit";out.mkdir(exist_ok=True)
 result=audit.audit(root,archive,out/"source-review")
-report={"status":"pass","historical_graphs":36,"cumulative_graphs":36,"native_positive":144,"native_negative":10,"scope_regressions":7,"inferred_total":result["inferred_total"],"counts":result["counts"],"raw_graphs_preserved":True,"review_index_sha256":sha(out/"source-review/index.json"),"run":os.environ["GITHUB_RUN_ID"],"attempt":os.environ["GITHUB_RUN_ATTEMPT"],"checkout":git("rev-parse","HEAD")}
+report={"status":"pass","historical_graphs":36,"cumulative_graphs":36,"native_positive":144,"native_negative":10,"scope_regressions":11,"inferred_total":result["inferred_total"],"counts":result["counts"],"raw_graphs_preserved":True,"review_index_sha256":sha(out/"source-review/index.json"),"run":os.environ["GITHUB_RUN_ID"],"attempt":os.environ["GITHUB_RUN_ATTEMPT"],"checkout":git("rev-parse","HEAD")}
 (out/"report.json").write_bytes((json.dumps(report,indent=2)+"\n").encode("utf-8"))
 print(json.dumps(report))

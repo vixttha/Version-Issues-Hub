@@ -32,10 +32,10 @@ jobs:
       - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
         with:
           python-version: '3.12'
+      - name: Test lexical scope regressions
+        run: python tools/test-inferred-scopes.py
       - name: Verify all retained code graphs and audit inferred edges
-        run: |
-          python tools/test-inferred-scopes.py
-          python tools/verify-retained-code-graphs.py
+        run: python tools/verify-retained-code-graphs.py
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         if: always()
         with:

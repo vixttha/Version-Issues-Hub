@@ -30,4 +30,13 @@ class ScopeTests(unittest.TestCase):
     def test_class_not_lexical_scope(self):
         self.assertEqual(resolve("def f(): pass\nclass X:\n def f(self): pass\n def run(self):\n  call(f)\n","f",5),("definition",1))
 
+    def test_exception_binding(self):
+        self.assertEqual(resolve("def f(): pass\ndef run():\n try: pass\n except Exception as f:\n  call(f)\n","f",5),("other",4))
+    def test_match_capture(self):
+        self.assertEqual(resolve("def f(): pass\ndef run(x):\n match x:\n  case f:\n   call(f)\n","f",5),("other",4))
+    def test_match_star_capture(self):
+        self.assertEqual(resolve("def f(): pass\ndef run(x):\n match x:\n  case [*f]:\n   call(f)\n","f",5),("other",4))
+    def test_match_mapping_capture(self):
+        self.assertEqual(resolve("def f(): pass\ndef run(x):\n match x:\n  case {**f}:\n   call(f)\n","f",5),("other",4))
+
 if __name__=="__main__":unittest.main()
