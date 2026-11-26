@@ -44,7 +44,7 @@ def prepare():
         rings = []
         for i,(x,y) in enumerate([(344,508),(700,428),(1104,508)]):
             d = f"M{x+3} {y+3}h98v98h-98Z M{x+17} {y+17}h70v70h-70Z"
-            rings.append(f'<path id="activation-{i}" d="{d}" fill="{accent}" fill-rule="evenodd" opacity="0"/>')
+            rings.append(f'<path id="activation-{i}" d="{d}" fill="{accent}" fill-rule="evenodd" style="opacity:0"/>')
         overlay = '<g id="experimental-activation" aria-hidden="true">'+"".join(rings)+"</g>"
         if svg.count("</svg>") != 1: raise ValueError("unexpected SVG root")
         derived = svg.replace("</svg>",overlay+"</svg>")

@@ -27,7 +27,9 @@ def verify(theme):
     base=frames[0]
     alpha=base.getchannel("A")
     check(alpha.getextrema()==(0,255),"missing true transparency")
-    check(all(equal(base,frames[i]) for i in [0,1,83,100,143]),"rest state drift")
+    for i in [0,1,83,100,143]:
+        diff = ImageChops.difference(base,frames[i])
+        check(equal(base,frames[i]),f"{theme}: rest state drift frame {i}, channel bounds {[b.getbbox() for b in diff.split()]}")
     boxes=[(344,508,448,612),(700,428,804,532),(1104,508,1208,612)]
     boxes=[(int(x*W/1448)-2,int(y*H/1086)-2,int(X*W/1448)+3,int(Y*H/1086)+3) for x,y,X,Y in boxes]
     from PIL import ImageDraw

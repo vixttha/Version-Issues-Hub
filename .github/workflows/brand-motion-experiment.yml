@@ -40,6 +40,7 @@ jobs:
           python3 prepare.py
       - name: Lint, inspect and render RGBA frames
         run: |
+          export HF_STATIC_DEDUP=false
           for theme in light dark; do
             (
               cd "build/$theme"
@@ -54,9 +55,6 @@ jobs:
           cp package-lock.json build/exports/npm-resolved-lock.json
           printf '%s\n' "$GITHUB_SHA" > build/exports/render-commit.txt
           cat build/exports/verification.json >> "$GITHUB_STEP_SUMMARY"
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
-        with:
-          name: vib-sequential-v1-experimental
-          path: brand-identity/10-motion/sequential-v1/build/exports/
-          if-no-files-found: error
-          retention-days: 30
+      # Generated images remain ephemeral until the owner explicitly approves review storage.
+      - name: Record retention gate
+        run: echo "Generated images not uploaded; owner storage approval pending." >> "$GITHUB_STEP_SUMMARY"
