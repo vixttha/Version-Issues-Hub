@@ -667,11 +667,12 @@ def inspect_pending(api, state, path):
                 or ticket.get("repository") != intent["repository"]
                 or candidate.name != op + "-" + str(ticket.get("candidate_sha")) + ".json"):
             raise ValueError("Pending candidate does not match journal identity")
+        install.require(install.SHA, ticket.get("candidate_sha"), "recovery candidate")
         try:
             result = inspect_operation(api, state, ticket)
-        except (ValueError, install.ApiError):
-            # An absent, rejected, malformed or inaccessible candidate is not
-            # proof of nonpublication. Report uncertainty, not a retry signal.
+        except ValueError:
+            # Unconfirmed evidence is not proof of nonpublication. API errors
+            # (including throttling) propagate immediately; do not keep polling.
             result = {"status": "unconfirmed", "candidate_sha": ticket["candidate_sha"]}
         outcomes.append(result)
     return {"status": "inspection_only", "operation_id": op, "issue": intent["issue"],

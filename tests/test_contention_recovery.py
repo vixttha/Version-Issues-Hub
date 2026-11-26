@@ -534,3 +534,22 @@ class RecoveryTests(unittest.TestCase):
             self.assertEqual(inspected["candidates"][0]["installed_sha"], result["installed_sha"])
             self.assertEqual(inspected["candidates"][0]["status"], "published")
             self.assertEqual(api.writes, before)
+
+    def test_pending_inventory_stops_on_api_throttle(self):
+        api = self.api
+        with tempfile.TemporaryDirectory() as directory:
+            paths = []
+            result = self.recover(lambda s: self.claim(s, B), B,
+                on_pending_intent=lambda intent: paths.append(session.persist_pending_intent(directory, intent)),
+                on_recovery_ticket=lambda ticket: session.persist_recovery_ticket(directory, ticket))
+            fresh = session.load(api, REPO)
+            ticket = {"schema_version": 1, "repository": self.s["prefix"], "issue": B,
+                      "parent_sha": self.s["ref"], "candidate_sha": "f"*40,
+                      "tree_sha": "a"*40, "operation_id": result["operation_id"]}
+            session.persist_recovery_ticket(directory, ticket)
+            before = list(api.writes)
+            with patch.object(session, "inspect_operation", side_effect=install.ApiError(429)) as inspect:
+                with self.assertRaises(install.ApiError):
+                    session.inspect_pending(api, fresh, paths[0])
+            self.assertEqual(inspect.call_count, 1)
+            self.assertEqual(api.writes, before)
