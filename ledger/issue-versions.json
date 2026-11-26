@@ -374,12 +374,23 @@
     {
       "issue": 82,
       "version": "v0.0.0.38",
-      "state": "in_progress",
+      "state": "deferred",
       "acceptance": [
         "Separate owner-prohibited advanced qualification campaigns from routine default regression verification without deleting historical tests or receipts.",
         "Require explicit owner-approved, narrowly scoped opt-in before independent-host trials, real-agent benchmarks, or exploratory scale/qualification jobs can execute; default fail closed and retain the six engineering laws.",
         "Keep normal exact-revision Ubuntu/Windows public-runner regression checks and routine CodeRabbit/Graphify evidence available; test the opt-in boundary using small deterministic controls only, without executing advanced qualification.",
         "Preserve .37 experimental disposition, historical mappings, current main-bound installed package, release hold and all owner approval boundaries. No main merge, live migration, release, new dependency or schedule restart."
+      ]
+    },
+    {
+      "issue": 84,
+      "version": "v0.0.0.39",
+      "state": "in_progress",
+      "acceptance": [
+        "Define and document distinct engineering completion and production integration outcomes, with explicit source, destination, actual merge revision and evidence; do not conflate a development merge with a main merge.",
+        "Support an owner-authorized engineering-only disposition in a compatible workflow representation, retaining exact issue/version, fix and candidate pins, engineering PR/merge identity, and routine verification receipts without incorrectly accepting production integration.",
+        "Preserve historical schema-1 and schema-2 state and receipts; validate wrong targets, unmerged or stale PRs, contradictory evidence and unauthorized changes using small deterministic regression controls; no live package migration or main merge.",
+        "Keep canonical singleton workflow, owner control, the six architectural laws and VIB-LAW-OWNER-QUALIFICATION-001 intact; use ordinary public Ubuntu/Windows checks, Graphify and routine code review. Leave issue-closure synchronization to .40, broader experimental/scope policy to .41 and recovery/evidence reuse to .42."
       ]
     }
   ],
