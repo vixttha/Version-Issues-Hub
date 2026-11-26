@@ -4,8 +4,8 @@
   "issue": 96,
   "version": "v0.0.0.43",
   "base_sha": "3160df17f60b3eaa9a9e70e1ca13bffcfe2eb4e8",
-  "reviewed_sha": "211302f22411e23af56cf7fb89545c249e59f9d4",
-  "previous_approval_sha": "08f9b79cbbf9be50a396c1a54cf92dd308c0b268",
+  "reviewed_sha": "4d441f72350e7b9707f5620de8da25a30ef4856a",
+  "previous_approval_sha": "65e63b2b06de4811d94b081c36106d9772a77f2c",
   "criteria": [
     "Freeze unrelated development; preserve current refs and evidence; inventory concurrent agents/schedules, without unauthorized cancellation.",
     "Inventory all branches with exact SHA, purpose, dependencies, open PRs, ownership evidence, keep/archive/retire proposal. No deletion or default-branch changes without exact approval.",
@@ -21,6 +21,8 @@
     "Obtain Head acceptance, close only with verified receipt and owner authority; release slot and resume agent instructions (proposed .44) and README HQ (proposed .45) in sequence. No stable release or commercial launch inferred."
   ],
   "allowed_paths": [
+    ".github/workflows/engineering-laws.yml",
+    ".github/workflows/live-acceptance.yml",
     "AGENTS.md",
     "ENGINEERING-LAWS.md",
     "README.md",
@@ -36,6 +38,7 @@
     "ledger/receipt-scope.json",
     "ledger/self-use-worker.json",
     "tests/test_engineering_completion.py",
+    "tests/test_gate.py",
     "tests/test_graphify_evidence.py",
     "tests/test_install.py",
     "tests/test_integration_integrity.py",
@@ -62,5 +65,5 @@
   ],
   "qualification": "ordinary",
   "disposition": "engineering_only",
-  "owner_decision": "Proposed forward-only independent recovery of malformed #96 scope publication; exact reviewed source 211302f22411e23af56cf7fb89545c249e59f9d4. Publication requires separate explicit owner approval and independent review. Original scope, criteria, qualification and engineering-only disposition retained; no production merge, release or external upgrade authorized."
+  "owner_decision": "Owner explicitly approved continuation under delegated authorization on 2026-11-26; delegated scope acceptance receipt https://github.com/vixttha/Version-Issues-Hub/issues/96#issuecomment-7204059973. Exact proposed source 253ef66627b387fe11b7755f589f57941e2cd5bc, tree cc622fe9517e2e67aca090ac9f7a25954f11a222; approved correction only: engineering-law push branch plan/v0.0.1 to plan/v0.0.0.1. Reviewed revision is in-prior-scope parent 4d441f72350e7b9707f5620de8da25a30ef4856a per existing verifier. Add only three literal paths, retain all 12 criteria and ordinary engineering-only disposition. No production integration, release, adopter mutation or retrospective recovery authorization."
 }
