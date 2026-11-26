@@ -1,0 +1,2 @@
+# Independent VIB audit
+Exact candidate e8359a4acaf2e956332585aa69a109e3242dad50, archive 3841de9bb17a10a9ce579fc2cf2ac7111e524fac. Diagnostic RD-002 reproduction (a passing reproduction demonstrates the limitation, not acceptance), eleven controls, 72 raw graph integrity and selected production-call anchor checks. Disposable real Git objects and simulated API only, no live mutation. Public runners only. No active Worker claim. Results must be rechecked on the latest candidate before Head acceptance.
