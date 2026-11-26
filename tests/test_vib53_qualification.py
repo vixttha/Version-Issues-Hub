@@ -107,6 +107,7 @@ class MemoryGit:
 
 
 class QualificationTests(unittest.TestCase):
+    @unittest.skip("VIB-LAW-OWNER-QUALIFICATION-001: advanced qualification suspended")
     def test_bounded_concurrent_workloads(self):
         real_sleep=time.sleep
         for count in (1,2,5,10,25,50,100):
@@ -164,6 +165,7 @@ class QualificationTests(unittest.TestCase):
                                elapsed_seconds=round(time.perf_counter()-start,3), api_requests=api.requests)
                 print("VIB53_SCALE "+json.dumps(metrics,sort_keys=True),flush=True)
 
+    @unittest.skip("VIB-LAW-OWNER-QUALIFICATION-001: advanced qualification suspended")
     def test_full_lifecycle_with_one_hundred_distinct_issue_lanes(self):
         # Separate from the four-worker contention workload: qualify every
         # phase and PR/run association for 100 logical lanes, not live hosts.
@@ -239,6 +241,7 @@ class QualificationTests(unittest.TestCase):
         self.assertEqual(api.read(api.product, "product.txt"), "unchanged")
         print("VIB53_FULL_LOOP 100 staged logical lanes; 500 exact simulated ref publications; 99 cross-lane run rejections", flush=True)
 
+    @unittest.skip("VIB-LAW-OWNER-QUALIFICATION-001: advanced qualification suspended")
     def test_matched_serial_and_parallel_protocol_cost(self):
         # Same tasks and same mock API; a protocol cost comparison, not AI productivity.
         measurements = []
@@ -293,6 +296,7 @@ class QualificationTests(unittest.TestCase):
         self.assertGreater(measurements[1]["requests"], measurements[0]["requests"])
         print("VIB53_MATCHED_PROTOCOL " + json.dumps(measurements, sort_keys=True), flush=True)
 
+    @unittest.skip("VIB-LAW-OWNER-QUALIFICATION-001: advanced qualification suspended")
     def test_starvation_counterexample_with_real_production_retry(self):
         api=MemoryGit()
         with patch.object(install,"source_files",return_value=PACKAGE), \

@@ -1216,6 +1216,38 @@
           "anchor": "def test_pending_origin_valid_after_competing_publication(self):"
         }
       ]
+    },
+    {
+      "id": "v0-0-0-38",
+      "label": "Issue #82 · owner-controlled qualification boundary",
+      "documented_in": [
+        {
+          "path": "docs/v0.0.0.38.md",
+          "anchor": "## Qualification boundary"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "ledger/issue-versions.json",
+          "anchor": "\"issue\": 82,"
+        }
+      ],
+      "implemented_in": [
+        {
+          "path": "tests/test_vib53_qualification.py",
+          "anchor": "def test_bounded_concurrent_workloads(self):"
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tests/test_qualification_policy.py",
+          "anchor": "def test_advanced_methods_are_unconditionally_skipped(self):"
+        },
+        {
+          "path": "tests/test_qualification_policy.py",
+          "anchor": "def test_historical_experiment_is_not_an_active_workflow(self):"
+        }
+      ]
     }
   ]
 }

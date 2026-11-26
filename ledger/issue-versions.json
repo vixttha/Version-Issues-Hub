@@ -368,8 +368,19 @@
         "Verify legacy package compatibility, migration/upgrade and owner-controlled integration, no mandatory ecosystem dependency or paid runner; preserve release hold and installed singleton until separately approved migration."
       ],
       "issue": 53,
-      "state": "in_progress",
+      "state": "deferred",
       "version": "v0.0.0.37"
+    },
+    {
+      "issue": 82,
+      "version": "v0.0.0.38",
+      "state": "in_progress",
+      "acceptance": [
+        "Separate owner-prohibited advanced qualification campaigns from routine default regression verification without deleting historical tests or receipts.",
+        "Require explicit owner-approved, narrowly scoped opt-in before independent-host trials, real-agent benchmarks, or exploratory scale/qualification jobs can execute; default fail closed and retain the six engineering laws.",
+        "Keep normal exact-revision Ubuntu/Windows public-runner regression checks and routine CodeRabbit/Graphify evidence available; test the opt-in boundary using small deterministic controls only, without executing advanced qualification.",
+        "Preserve .37 experimental disposition, historical mappings, current main-bound installed package, release hold and all owner approval boundaries. No main merge, live migration, release, new dependency or schedule restart."
+      ]
     }
   ],
   "repository": "vixttha/Version-Issues-Hub",
