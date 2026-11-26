@@ -5387,5 +5387,23 @@
       "action": "verify exact engineering archive then qualify historical product integration policy",
       "actual_record_changed": false
     }
+  ],
+  "recovery_receipts": [
+    {
+      "finding": "INT-043-SCOPE-001",
+      "status": "technical_recovery_verified_authorization_record_reconciled_with_execution_receipt",
+      "original_canonical": "08f9b79cbbf9be50a396c1a54cf92dd308c0b268",
+      "canonical_successor": "65e63b2b06de4811d94b081c36106d9772a77f2c",
+      "reviewed_source": "211302f22411e23af56cf7fb89545c249e59f9d4",
+      "worker": "c32db2f40d66254fbc31bb8a654cbfa83dda4172",
+      "authorization_basis": "Owner instructed actual immediate recovery execution in chat; the executing agent interpreted this as permission for the previously identified exact transaction. The policy retains its original proposed wording; no separate verbatim SHA-specific owner approval is asserted. Independent audit accepted the technical outcome only. Current owner directs .43 completion within locked scope; production approval remains separate.",
+      "evidence": [
+        "https://github.com/vixttha/Version-Issues-Hub/issues/96#issuecomment-7203241470",
+        "https://github.com/vixttha/Version-Issues-Hub/issues/96#issuecomment-7203255379",
+        "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45894653485/job/140165445113",
+        "https://github.com/vixttha/Version-Issues-Hub/actions/runs/45894659544/job/140165464763"
+      ],
+      "qualification": "Both canonical preflights passed; full runs failed later on graph evidence. No integration or closure asserted."
+    }
   ]
 }

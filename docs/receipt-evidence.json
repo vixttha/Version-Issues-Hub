@@ -1713,7 +1713,7 @@
         },
         {
           "path": "tools/install.py",
-          "anchor": "Installed ref was created at "
+          "anchor": "Installed ref was created at"
         }
       ],
       "implemented_in": [
