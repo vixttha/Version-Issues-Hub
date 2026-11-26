@@ -2083,8 +2083,6 @@ def save(api, state, ledger, handoff, apply=False, *, issue=None, operation_id=N
                 if dispositions[-1] != proof[0]:
                     raise ValueError("Final archive disposition must match integrated row")
                 record = proof[0]
-                if outstanding_integration_records({**state, "ledger": ledger, "handoff": handoff}).get(row["issue"]):
-                    raise ValueError("Integration proof leaves a different historical fix unresolved; owner reconciliation required")
                 if record["decision"].startswith(HISTORICAL_INTEGRATION_DECISION):
                     receipt = checkpoint.parse_json(record["decision"][len(HISTORICAL_INTEGRATION_DECISION):])
                     if (not isinstance(receipt, dict) or set(receipt) != {"owner_decision", "policy"}
@@ -2106,6 +2104,8 @@ def save(api, state, ledger, handoff, apply=False, *, issue=None, operation_id=N
                             for k in PIN_KEYS | {"fix_sha", "candidate_sha", "pull_request"})
                             or not set(prior["evidence"]).issubset(proposed["evidence"])):
                         raise ValueError("Integration publication must preserve original handoff pins")
+                if outstanding_integration_records({**state, "ledger": ledger, "handoff": handoff}).get(row["issue"]):
+                    raise ValueError("Integration proof leaves a different historical fix unresolved; owner reconciliation required")
         for record in appended:
             if deferral_record(record) is not None:
                 if deferral_approved is not True:
