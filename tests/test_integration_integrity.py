@@ -246,9 +246,12 @@ class IntegrationIntegrityTests(unittest.TestCase):
                     if preview_reads[0] > 1:
                         return {**result, "tree":{"sha":"1"*40}}
                 return result
-            with patch.object(self.api,"request",side_effect=changed_preview):
-                with self.assertRaises(ValueError):
-                    session.reconcile(self.api,self.state,247,"Owner integration",policy=policy)
+            with patch.dict(self.api.pre_run, {"head_sha":PROPOSED}):
+                with patch.object(self.api,"request",side_effect=changed_preview):
+                    with self.assertRaisesRegex(ValueError,"Historical preview tree changed during review"):
+                        session.reconcile(self.api,self.state,247,"Owner integration",policy=policy)
+            self.assertEqual(preview_reads[0], 2)
+            self.assertEqual(self.api.writes,[])
             # Revert only during the second (final) preview review.
             reads = [0]
             def rollback(method,path,body=None):
