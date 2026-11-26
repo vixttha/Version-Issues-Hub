@@ -2,8 +2,8 @@
   "active": {
     "issue": 94,
     "version": "v0.0.0.42",
-    "phase": "Worker",
-    "next_action": "Implement only locked #94 criteria: read-only recovery/handoff planning and exact current evidence reuse. Ordinary public-runner qualification only; retain all historical archives, owner holds, single lane and production deferral. No live migration or .43 work.",
+    "phase": "Head",
+    "next_action": "Owner approved exact engineering merge PR #95; actual merge 3160df17f60b3eaa9a9e70e1ca13bffcfe2eb4e8 verified with 11/11 post-merge checks. Logical Validate/Internal Auditor evidence review completed; engineering-only Head disposition, no production pins.",
     "fix_sha": null,
     "candidate_sha": null,
     "pull_request": null,
