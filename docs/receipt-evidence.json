@@ -495,7 +495,7 @@
       "implemented_in": [
         {
           "path": "tools/lifecycle.py",
-          "anchor": "def upgrade(api, target, expected_sha, source_sha, *, apply=False, owner_approved=False, prepare_only=False):"
+          "anchor": "def upgrade(api, target, expected_sha, source_sha, *, apply=False, owner_approved=False, prepare_only=False,"
         }
       ],
       "tested_by": [
@@ -1331,7 +1331,7 @@
         },
         {
           "path": "tools/lifecycle.py",
-          "anchor": "def idle_state(api, target, expected_sha):"
+          "anchor": "def idle_state(api, target, expected_sha, *, preserve_staged=False):"
         },
         {
           "path": "tools/session.py",
@@ -1423,7 +1423,7 @@
         },
         {
           "path": "tools/lifecycle.py",
-          "anchor": "def idle_state(api, target, expected_sha):"
+          "anchor": "def idle_state(api, target, expected_sha, *, preserve_staged=False):"
         },
         {
           "path": "tools/session.py",
@@ -1440,6 +1440,10 @@
         {
           "path": "tools/session.py",
           "anchor": "def archive_has_engineering_approval(archive, ledger):"
+        },
+        {
+          "path": "tools/lifecycle.py",
+          "anchor": "def staged_upgrade_scope(api, state, source_sha):"
         }
       ],
       "tested_by": [
@@ -1490,6 +1494,14 @@
         {
           "path": "tests/test_issue_closure.py",
           "anchor": "def test_not_planned_reconciliation_rejects_engineering_approval(self):"
+        },
+        {
+          "path": "tests/test_lifecycle.py",
+          "anchor": "def test_staged_preserving_upgrade_requires_exact_scope_and_preserves_bytes(self):"
+        },
+        {
+          "path": "tests/test_lifecycle.py",
+          "anchor": "def test_staged_preserving_upgrade_refuses_changed_pr_or_missing_capability(self):"
         }
       ]
     }
