@@ -202,7 +202,13 @@ class IntegrationIntegrityTests(unittest.TestCase):
         decision = bounded_deferral(self.state, self.api, 248)
         self.state["ledger"], self.state["handoff"] = session.finish(
             self.api, self.state, "staged", decision, deferral_approved=True)
-        self.api.pre_run["run_attempt"] = 2
+        request = self.api.request
+        def current_attempt_only(method, path, body=None):
+            result = request(method, path, body)
+            if method == "GET" and path.endswith("/actions/runs/123"):
+                return {**result, "run_attempt": 2}
+            return result
+        self.api.request = current_attempt_only
         with self.assertRaises(ValueError):
             session.claim(self.api, self.state, 248, ["next"], "New work")
         self.assertEqual(self.api.writes, [])
@@ -927,6 +933,54 @@ class IntegrationIntegrityTests(unittest.TestCase):
                   "review": post_policy(self.state)}
         ledger, handoff = session.reconcile(self.api, self.state, 247, "Owner integrates", policy=policy)
         self.assertEqual(handoff["history"][:2], self.state["handoff"]["history"])
+        self.assertEqual(ledger["issues"][0]["state"], "integrated")
+        self.assertEqual(session.save(self.api, self.state, ledger, handoff, issue=247,
+                                      policy=policy)["status"], "planned")
+        self.assertEqual(self.api.writes, [])
+
+    def test_active_head_cannot_disappear_without_disposition(self):
+        self.reach_head()
+        ledger, handoff = copy.deepcopy((self.state["ledger"], self.state["handoff"]))
+        handoff["active"] = None
+        ledger["issues"][0]["state"] = "assigned"
+        for apply in (False, True):
+            with self.assertRaisesRegex(ValueError, "matching Head disposition"):
+                session.save(self.api, self.state, ledger, handoff, apply, issue=247)
+        self.assertEqual(self.api.writes, [])
+
+    def test_same_fix_deferred_renewal_retains_exact_original_product_proof(self):
+        from test_session import PROPOSED, post_policy
+        self.reach_head()
+        self.state["ledger"], self.state["handoff"] = session.finish(
+            self.api, self.state, "deferred", "Original deferred product proof")
+        original = copy.deepcopy(self.state["handoff"]["history"][0])
+        old_pr, old_run = copy.deepcopy(self.api.pr), copy.deepcopy(self.api.pre_run)
+        self.state["ledger"], self.state["handoff"] = session.claim(
+            self.api, self.state, 247, ["test"], "Renew")
+        self.api.pr = {**copy.deepcopy(old_pr), "number": 9}
+        self.api.pre_run = copy.deepcopy(old_run)
+        self.api.pre_run.update(id=125)
+        self.api.pre_run["pull_requests"][0]["number"] = 9
+        for kwargs in (dict(fix=FIX, candidate=CANDIDATE, pr=9),
+                       dict(evidence=[RUN.replace("/123/", "/125/")]), {}):
+            self.state["ledger"], self.state["handoff"] = session.advance(
+                self.api, self.state, "Renew same fix", **kwargs)
+        decision = bounded_deferral(self.state, self.api, 248)
+        self.state["ledger"], self.state["handoff"] = session.finish(
+            self.api, self.state, "deferred", decision, deferral_approved=True)
+        self.assertEqual(session.outstanding_integration_records(self.state)[247],
+                         [self.state["handoff"]["history"][1]])
+        self.assertEqual(session.claim(self.api, self.state, 248, ["next"], "Approved")[1]["active"]["issue"], 248)
+        self.assertTrue(session.renewed_staged_basis(self.state, 247, 0))
+        self.api.pr, self.api.pre_run = old_pr, old_run
+        self.api.pr.update(state="closed", merged=True, merge_commit_sha=NEXT)
+        self.api.product = NEXT
+        policy = {"schema_version": 1, "outcome": "historical_product_integration",
+                  "archive_index": 0, "archive_digest": session.closure_digest(original),
+                  "premerge": {"merge_sha": PROPOSED, "evidence": [RUN]},
+                  "review": post_policy(self.state)}
+        ledger, handoff = session.reconcile(self.api, self.state, 247, "Owner integrates", policy=policy)
+        self.assertEqual(handoff["history"][:-1], self.state["handoff"]["history"])
         self.assertEqual(ledger["issues"][0]["state"], "integrated")
         self.assertEqual(session.save(self.api, self.state, ledger, handoff, issue=247,
                                       policy=policy)["status"], "planned")

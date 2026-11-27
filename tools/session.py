@@ -1266,6 +1266,27 @@ def check_deferral(api, state, record, next_issue=None):
     return policy
 
 
+def integration_record_fix(state, prior):
+    engineering = engineering_receipt(prior, state["ledger"])
+    legacy = legacy_engineering_approval(prior)
+    if engineering is not None:
+        return engineering["policy"]["review"]["issues"][0]["fix_sha"]
+    if legacy is not None:
+        # A conflicting legacy pin cannot be silently resolved.
+        if prior["handoff"]["fix_sha"] not in (None, legacy.group(2)):
+            return ("conflicting", prior["handoff"]["fix_sha"], legacy.group(2))
+        return legacy.group(2)
+    return prior["handoff"]["fix_sha"]
+
+
+def eligible_product_proof_basis(record):
+    active = record["handoff"]
+    return (record["disposition"] == "staged" and active["fix_sha"] is not None
+            or record["disposition"] == "deferred" and active["fix_sha"] is not None
+            and bool(active["candidate_sha"]) and bool(active["pull_request"])
+            and all(active.get(key) for key in PIN_KEYS))
+
+
 def outstanding_integration_records(state, *, proof_basis=False):
     # An obligation follows its original fix, not merely the issue number.
     # Renew only bounded ordinary decisions for the exact same issue and
@@ -1276,34 +1297,23 @@ def outstanding_integration_records(state, *, proof_basis=False):
             continue
         active = record["handoff"]
         records = outstanding.setdefault(active["issue"], [])
-        def fix_of(prior):
-            engineering = engineering_receipt(prior, state["ledger"])
-            legacy = legacy_engineering_approval(prior)
-            if engineering is not None:
-                return engineering["policy"]["review"]["issues"][0]["fix_sha"]
-            if legacy is not None:
-                # A conflicting legacy pin cannot be silently resolved.
-                if prior["handoff"]["fix_sha"] not in (None, legacy.group(2)):
-                    return ("conflicting", prior["handoff"]["fix_sha"], legacy.group(2))
-                return legacy.group(2)
-            return prior["handoff"]["fix_sha"]
         if record["disposition"] in ("staged", "deferred"):
             if deferral_record(record) is not None:
-                fix = fix_of(record)
+                fix = integration_record_fix(state, record)
                 records[:] = [prior for prior in records
                               if not (engineering_receipt(prior, state["ledger"]) is None
                                       and legacy_engineering_approval(prior) is None
-                                      and fix_of(prior) == fix
-                                      and not (proof_basis and prior["disposition"] == "staged"))]
+                                      and integration_record_fix(state, prior) == fix
+                                      and not (proof_basis and eligible_product_proof_basis(prior)))]
             records.append(record)
         elif record["disposition"] == "integrated":
             records[:] = [prior for prior in records
-                          if fix_of(prior) not in (None, active["fix_sha"])]
+                          if integration_record_fix(state, prior) not in (None, active["fix_sha"])]
     return {number: records for number, records in outstanding.items() if records}
 
 
 def renewed_staged_basis(state, number, index):
-    """Keep a staged proof eligible after renewal or a pinless deferral."""
+    """Keep an exact staged or product-deferred proof after renewal or pinless deferral."""
     history = state["handoff"]["history"]
     latest = closure_archive_index(state["handoff"], number)
     if latest is None or not 0 <= index < latest:
@@ -1313,7 +1323,7 @@ def renewed_staged_basis(state, number, index):
     pinless = current["disposition"] == "deferred" and fix is None
     renewal = (current["disposition"] in ("staged", "deferred")
                and fix == prior["handoff"]["fix_sha"] and deferral_record(current) is not None)
-    return (prior["handoff"]["issue"] == number and prior["disposition"] == "staged"
+    return (prior["handoff"]["issue"] == number and eligible_product_proof_basis(prior)
             and prior["handoff"]["fix_sha"] is not None and (pinless or renewal)
             and any(prior is r for r in outstanding_integration_records(
                 state, proof_basis=True).get(number, [])))
@@ -2378,6 +2388,16 @@ def save(api, state, ledger, handoff, apply=False, *, issue=None, operation_id=N
                 if deferral_approved is not True:
                     raise ValueError("Explicit owner approval of integration debt deferral required")
                 policies.append(check_deferral(api, state, record))
+        if state["handoff"]["schema_version"] == handoff["schema_version"] == 1:
+            prior = state["handoff"]["active"]
+            if prior is not None and handoff["active"] is None:
+                dispositions = [r for r in appended if r["handoff"]["issue"] == prior["issue"]
+                                and closure_receipt(r) is None]
+                row = next(r for r in ledger["issues"] if r["issue"] == prior["issue"])
+                if (prior["phase"] != "Head" or len(dispositions) != 1
+                        or row["state"] not in ("blocked", "deferred", "staged", "integrated")
+                        or dispositions[0]["disposition"] != row["state"]):
+                    raise ValueError("Active handoff removal requires a matching Head disposition archive")
         return policies
     revalidate_claim_and_deferrals()
     if not apply:

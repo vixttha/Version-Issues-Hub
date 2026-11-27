@@ -225,7 +225,7 @@ def verify_forward_recovery_authority(source, specification, gate_a_evidence, *,
     }
     # The resolver cannot mutate our comparison basis. A true/false answer
     # or a bare policy document is never enough for this exact validation.
-    receipt = resolve(copy.deepcopy(binding))
+    receipt = copy.deepcopy(resolve(copy.deepcopy(binding)))
     if (not isinstance(receipt, dict)
             or set(receipt) != {"schema_version", "status", "decision_id", "binding",
                                "approved_at", "expires_at"}
