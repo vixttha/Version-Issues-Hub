@@ -489,6 +489,46 @@ class IntegrationIntegrityTests(unittest.TestCase):
         self.assertEqual(self.state,original)
         self.assertEqual(self.api.writes,[])
 
+    def test_ordinary_deferred_archive_preserves_exact_head(self):
+        self.reach_head()
+        original = copy.deepcopy(self.state)
+        ledger, handoff = session.finish(self.api, self.state, "deferred", "Ordinary deferral")
+        self.assertEqual(session.save(self.api, self.state, ledger, handoff, issue=247)["status"],
+                         "planned")
+        for key, value in (("fix_sha", "9"*40), ("candidate_sha", "9"*40),
+                           ("pull_request", 9), ("integration_merge_sha", "9"*40),
+                           ("evidence", []), ("next_action", "Changed")):
+            forged = copy.deepcopy(handoff)
+            forged["history"][-1]["handoff"][key] = value
+            for apply in (False, True):
+                with self.subTest(key=key, apply=apply):
+                    with self.assertRaisesRegex(ValueError, "preserve the original active Head handoff"):
+                        session.save(self.api, self.state, ledger, forged, apply, issue=247)
+        forged = copy.deepcopy(handoff)
+        active = forged["history"][-1]["handoff"]
+        active.update(fix_sha=None, candidate_sha=None, pull_request=None, evidence=[])
+        for key in session.PIN_KEYS:
+            active.pop(key, None)
+        for apply in (False, True):
+            with self.assertRaisesRegex(ValueError, "preserve the original active Head handoff"):
+                session.save(self.api, self.state, ledger, forged, apply, issue=247)
+            with self.assertRaisesRegex(ValueError, "matching final deferred archive"):
+                session.save(self.api, self.state, ledger, {**handoff, "history": []},
+                             apply, issue=247)
+        self.assertEqual(self.state, original)
+        self.assertEqual(self.api.writes, [])
+
+    def test_ordinary_pinless_head_deferral_remains_valid(self):
+        self.state["ledger"], self.state["handoff"] = session.claim(
+            self.api, self.state, 247, ["test"], "Fix")
+        self.state["ledger"], self.state["handoff"] = session.advance(
+            self.api, self.state, "Return", return_to_head=True)
+        ledger, handoff = session.finish(self.api, self.state, "deferred", "Ordinary deferral")
+        self.assertEqual(handoff["history"][-1]["handoff"], self.state["handoff"]["active"])
+        self.assertEqual(session.save(self.api, self.state, ledger, handoff, issue=247)["status"],
+                         "planned")
+        self.assertEqual(self.api.writes, [])
+
     def test_stage_cannot_substitute_reviewed_fix_or_pins(self):
         from test_session import FIX2
         self.reach_head()
@@ -672,6 +712,48 @@ class IntegrationIntegrityTests(unittest.TestCase):
         self.assertEqual(session.save(self.api,self.state,ledger,handoff,issue=247,
                                       policy=policy)["status"],"planned")
         self.assertEqual(self.api.writes,[])
+
+    def test_renewed_stage_retains_earlier_same_fix_proof(self):
+        from test_session import PROPOSED, post_policy
+        self.reach_head()
+        self.state["ledger"], self.state["handoff"] = session.finish(
+            self.api, self.state, "staged", "Original stage")
+        original = copy.deepcopy(self.state["handoff"]["history"][0])
+        old_pr, old_run = copy.deepcopy(self.api.pr), copy.deepcopy(self.api.pre_run)
+        self.api.pr.update(state="closed", merged=False)
+        self.state["ledger"], self.state["handoff"] = session.claim(
+            self.api, self.state, 247, ["test"], "Rework", rework_staged=True)
+        self.api.pr = {**copy.deepcopy(old_pr), "number": 9}
+        self.api.pre_run = copy.deepcopy(old_run)
+        self.api.pre_run.update(id=125)
+        self.api.pre_run["pull_requests"][0]["number"] = 9
+        for kwargs in (dict(fix=FIX, candidate=CANDIDATE, pr=9),
+                       dict(evidence=[RUN.replace("/123/", "/125/")]), {}):
+            self.state["ledger"], self.state["handoff"] = session.advance(
+                self.api, self.state, "Renew same fix", **kwargs)
+        decision = bounded_deferral(self.state, self.api, 248)
+        ledger, handoff = session.finish(self.api, self.state, "staged", decision,
+                                         deferral_approved=True)
+        self.assertEqual(session.save(self.api, self.state, ledger, handoff, issue=247,
+                                      deferral_approved=True)["status"], "planned")
+        self.state.update(ledger=ledger, handoff=handoff)
+        self.assertTrue(session.renewed_staged_basis(self.state, 247, 0))
+        different = copy.deepcopy(self.state)
+        different["handoff"]["history"][-1]["handoff"]["fix_sha"] = "9"*40
+        self.assertFalse(session.renewed_staged_basis(different, 247, 0))
+        self.api.pr, self.api.pre_run = old_pr, old_run
+        self.api.pr.update(state="closed", merged=True, merge_commit_sha=NEXT)
+        self.api.product = NEXT
+        policy = {"schema_version": 1, "outcome": "historical_product_integration",
+                  "archive_index": 0, "archive_digest": session.closure_digest(original),
+                  "premerge": {"merge_sha": PROPOSED, "evidence": [RUN]},
+                  "review": post_policy(self.state)}
+        ledger, handoff = session.reconcile(self.api, self.state, 247, "Owner integrates", policy=policy)
+        self.assertEqual(handoff["history"][:2], self.state["handoff"]["history"])
+        self.assertEqual(ledger["issues"][0]["state"], "integrated")
+        self.assertEqual(session.save(self.api, self.state, ledger, handoff, issue=247,
+                                      policy=policy)["status"], "planned")
+        self.assertEqual(self.api.writes, [])
 
     def test_batch_rechecks_earlier_runs_after_later_proof(self):
         from unittest.mock import patch

@@ -1307,7 +1307,7 @@ def renewed_staged_basis(state, number, index):
         return False
     prior, current = history[index], history[latest]
     return (prior["handoff"]["issue"] == number and prior["disposition"] == "staged"
-            and current["disposition"] == "deferred" and deferral_record(current) is not None
+            and current["disposition"] in ("staged", "deferred") and deferral_record(current) is not None
             and prior["handoff"]["fix_sha"] is not None
             and prior["handoff"]["fix_sha"] == current["handoff"]["fix_sha"]
             and any(prior is r for r in outstanding_integration_records(
@@ -2262,16 +2262,30 @@ def save(api, state, ledger, handoff, apply=False, *, issue=None, operation_id=N
                         raise ValueError("Integration publication must preserve original handoff pins")
                 if outstanding_integration_records({**state, "ledger": ledger, "handoff": handoff}).get(row["issue"]):
                     raise ValueError("Integration proof leaves a different historical fix unresolved; owner reconciliation required")
+        deferred_transitions = {row["issue"] for row in ledger["issues"]
+                                if row["state"] == "deferred" and
+                                before.get(row["issue"], {}).get("state") != "deferred"}
+        for number in deferred_transitions:
+            dispositions = [r for r in appended if r["handoff"]["issue"] == number
+                            and closure_receipt(r) is None]
+            if (not dispositions or dispositions[-1]["disposition"] != "deferred"
+                    or sum(r["disposition"] == "deferred" for r in dispositions) != 1):
+                raise ValueError("Deferred row requires a matching final deferred archive")
         for record in appended:
-            if deferral_record(record) is not None:
-                if deferral_approved is not True:
-                    raise ValueError("Explicit owner approval of integration debt deferral required")
+            bounded = deferral_record(record)
+            if ((record["disposition"] == "deferred" and closure_receipt(record) is None)
+                    or bounded is not None):
                 proposed = record["handoff"]
                 prior = next((a for a in active_rows(state["handoff"])
                               if a["issue"] == proposed["issue"]), None)
                 if (prior is None or prior["phase"] != "Head" or prior != proposed
-                        or any(a["issue"] == proposed["issue"] for a in active_rows(handoff))):
+                        or any(a["issue"] == proposed["issue"] for a in active_rows(handoff))
+                        or (record["disposition"] == "deferred"
+                            and proposed["issue"] not in deferred_transitions)):
                     raise ValueError("Integration debt deferral must preserve the original active Head handoff")
+            if bounded is not None:
+                if deferral_approved is not True:
+                    raise ValueError("Explicit owner approval of integration debt deferral required")
                 policies.append(check_deferral(api, state, record))
         return policies
     revalidate_claim_and_deferrals()
