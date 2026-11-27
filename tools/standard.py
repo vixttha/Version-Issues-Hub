@@ -113,6 +113,92 @@ def check_test(api, prefix, policy, evidence, test, *, post_merge=False):
             "url": url, "checkout_review_required": True}
 
 
+ACTIVE_HEAD_RECOVERY = "active_head_recovery"
+
+
+def verify_active_head_recovery(api, state, active, pr, policy):
+    """Verify a fresh preview for an already merged active Head, retaining old pins."""
+    if (set(policy) != {"schema_version", "outcome", "head_digest", "premerge", "review"}
+            or type(policy["schema_version"]) is not int or policy["schema_version"] != 1
+            or state["handoff"]["schema_version"] != 1):
+        raise ValueError("Invalid active Head recovery policy")
+    original = session.select_active(state["handoff"], active["issue"])
+    if (original["phase"] != "Head" or not original["evidence"]
+            or session.closure_digest(original) != policy["head_digest"]
+            or {k:v for k,v in original.items() if k != "evidence"} !=
+               {k:v for k,v in active.items() if k != "evidence"}
+            or not set(original["evidence"]).issubset(active["evidence"])):
+        raise ValueError("Active Head recovery requires the exact original Head")
+    review = policy["review"]
+    validate_policy(review)
+    old_base = install.require(install.SHA, original.get("integration_base_sha"), "original base")
+    old_preview = install.require(install.SHA, original.get("integration_merge_sha"), "original preview")
+    if (review["base_sha"] == old_base or review["head_sha"] != original["candidate_sha"]
+            or review["pull_request"] != original["pull_request"]):
+        raise ValueError("Active Head recovery requires a changed base and unchanged candidate/PR")
+    pre = policy["premerge"]
+    if not isinstance(pre, dict) or set(pre) != {"merge_sha", "evidence"}:
+        raise ValueError("Invalid active Head recovery premerge evidence")
+    preview = install.require(install.SHA, pre["merge_sha"], "recovery preview")
+    fresh = session.evidence_links(state["ledger"]["repository"], pre["evidence"])
+    if not fresh or preview == old_preview:
+        raise ValueError("Active Head recovery requires fresh preview evidence")
+    prefix = state["prefix"]
+    repo_id = state["manifest"]["target_repository_id"]
+    old = install.response_object(api.request("GET", prefix + "/git/commits/" + old_preview),
+                                  "original integration preview")
+    if (old.get("sha") != old_preview or
+            [p.get("sha") for p in install.response_rows(old.get("parents"), "original preview parents")]
+            != [old_base, original["candidate_sha"]]):
+        raise ValueError("Original integration preview differs")
+    candidate = {**original, "integration_base_sha": review["base_sha"],
+                 "integration_merge_sha": preview, "evidence": fresh}
+    invalidated = session.invalidated_archive_runs(state, candidate)
+    invalidated.update(session.evidence_run(state["ledger"]["repository"], link)[0]
+                       for link in original["evidence"])
+    preview_policy = {"repository_id": repo_id, "pull_request": original["pull_request"],
+                      "head_sha": original["candidate_sha"], "base_sha": review["base_sha"],
+                      "merge_sha": preview}
+    def check_fresh():
+        for link in fresh:
+            run, attempt = session.evidence_run(state["ledger"]["repository"], link)
+            if run in invalidated:
+                raise ValueError("Active Head recovery cannot reuse stale run evidence")
+            root = prefix + "/actions/runs/" + str(run)
+            for suffix in ("", "/attempts/" + str(attempt)):
+                item = install.response_object(api.request("GET", root + suffix), "recovery preview run")
+                check_pr_run(item, preview_policy, run, attempt, api=api, prefix=prefix)
+                if not install.response_rows(item.get("pull_requests", []), "recovery PR associations"):
+                    raise ValueError("Active Head recovery requires exact PR association")
+        for link in fresh:
+            run, attempt = session.evidence_run(state["ledger"]["repository"], link)
+            item = install.response_object(api.request("GET", prefix + "/actions/runs/" + str(run)),
+                                           "latest recovery preview run")
+            check_pr_run(item, preview_policy, run, attempt, api=api, prefix=prefix)
+            if not install.response_rows(item.get("pull_requests", []), "recovery PR associations"):
+                raise ValueError("Active Head recovery requires exact PR association")
+    def read_merged():
+        item = session.get_pr(api, state, original)
+        if (item.get("state") != "closed" or item.get("merged") is not True
+                or item.get("merge_commit_sha") != review["merge_sha"]
+                or not install.same_id((item["head"].get("repo") or {}).get("id"), repo_id)):
+            raise ValueError("Active Head recovery requires exact merged PR identity")
+        return item
+    if pr != read_merged():
+        raise ValueError("Merged PR changed before recovery review")
+    check_fresh()
+    merged, post = verify_integration(api, state, candidate, pr, review)
+    check_fresh()
+    read_merged()
+    branch = state["manifest"]["product_branch"]
+    current = install.require(install.SHA, install.read_ref(api, prefix, branch), "current product revision")
+    gate.check_ancestry(api, prefix, merged, current)
+    if (install.read_ref(api, prefix, branch) != current
+            or install.read_ref(api, prefix, install.BRANCH) != state["ref"]):
+        raise ValueError("Product or installed revision changed during active Head recovery")
+    return merged, list(dict.fromkeys(fresh + post))
+
+
 def verify_integration(api, state, active, pr, policy):
     """Reuse Standard mappings for one issue's actual merged revision; read-only."""
     session.require_unheld_scope(state, [active["issue"]])
@@ -120,6 +206,8 @@ def verify_integration(api, state, active, pr, policy):
         session.require_experimental_parallel()
     if policy is None:
         raise ValueError("Integration requires an owner-reviewed post-merge policy")
+    if isinstance(policy, dict) and policy.get("outcome") == ACTIVE_HEAD_RECOVERY:
+        return verify_active_head_recovery(api, state, active, pr, policy)
     validate_policy(policy)
     if active.get("integration_base_sha") != policy["base_sha"]:
         raise ValueError("Stale or unpinned integration base; historical reconciliation required")

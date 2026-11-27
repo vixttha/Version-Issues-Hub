@@ -66,6 +66,95 @@ class StaleIntegrationTests(unittest.TestCase):
         self.assertEqual(handoff["history"][-1]["handoff"]["evidence"],[NEW_RUN])
         self.assertEqual(handoff["history"][-1]["handoff"]["integration_base_sha"],NEW_BASE)
 
+    def active_recovery_fixture(self):
+        from test_session import post_policy, TREE
+        api, s = self.setup_case()
+        original = copy.deepcopy(s["handoff"]["active"])
+        self.move_base(api)
+        api.product = NEXT
+        api.pr.update(state="closed", merged=True, merge_commit_sha=NEXT)
+        api.merge_parents = [{"sha": NEW_BASE}, {"sha": CANDIDATE}]
+        request = api.request
+        fresh_run = {**api.pre_run, "id": 125, "head_sha": NEW_MERGE,
+                     "pull_requests": [{"number": 8, "head": {"sha": CANDIDATE},
+                                        "base": {"sha": NEW_BASE}}]}
+        def dispatch(method, path, body=None):
+            if method == "GET" and path.endswith("/git/commits/" + NEW_MERGE):
+                return {"sha": NEW_MERGE, "tree": {"sha": TREE},
+                        "parents": [{"sha": NEW_BASE}, {"sha": CANDIDATE}]}
+            if method == "GET" and "/actions/runs/125" in path:
+                return fresh_run
+            return request(method, path, body)
+        api.request = dispatch
+        review = post_policy(s)
+        review["base_sha"] = NEW_BASE
+        policy = {"schema_version": 1, "outcome": "active_head_recovery",
+                  "head_digest": session.closure_digest(original),
+                  "premerge": {"merge_sha": NEW_MERGE, "evidence": [NEW_RUN]},
+                  "review": review}
+        return api, s, original, policy, fresh_run
+
+    def test_active_head_recovery_preserves_original_pins_and_accepts_fresh_proof(self):
+        from test_session import POST_RUN
+        api, s, original, policy, _ = self.active_recovery_fixture()
+        snapshot = copy.deepcopy(s)
+        with self.assertRaisesRegex(ValueError, "Stale"):
+            session.finish(api, s, "integrated", "Ordinary integration", policy=policy["review"])
+        ledger, handoff = session.finish(api, s, "integrated", "Owner reviewed recovery", policy=policy)
+        record = handoff["history"][-1]
+        self.assertEqual(record["handoff"], {**original, "evidence": [RUN, NEW_RUN, POST_RUN]})
+        self.assertEqual(record["merged_sha"], NEXT)
+        self.assertEqual(ledger["issues"][0]["state"], "integrated")
+        self.assertIsNone(handoff["active"])
+        self.assertEqual(session.save(api, s, ledger, handoff, issue=247, policy=policy)["status"],
+                         "planned")
+        self.assertEqual(s, snapshot)
+        self.assertEqual(api.writes, [])
+        self.assertEqual(session.save(api, s, ledger, handoff, True, issue=247,
+                                      policy=policy)["installed_sha"], NEXT)
+        self.assertEqual([w[0] for w in api.writes], ["POST", "POST", "PATCH"])
+
+    def test_active_head_recovery_rejects_invalid_or_stale_proof_before_publication(self):
+        for mutation in ("digest", "old_run", "wrong_base", "wrong_head", "wrong_merge",
+                         "no_association", "rerun", "wrong_tree", "forged_archive"):
+            with self.subTest(mutation=mutation):
+                api, s, _, policy, fresh = self.active_recovery_fixture()
+                snapshot = copy.deepcopy(s)
+                if mutation == "digest":
+                    policy["head_digest"] = "0"*64
+                elif mutation == "old_run":
+                    policy["premerge"]["evidence"] = [RUN]
+                elif mutation == "wrong_base":
+                    policy["review"]["base_sha"] = BASE
+                elif mutation == "wrong_head":
+                    policy["review"]["head_sha"] = "9"*40
+                elif mutation == "wrong_merge":
+                    api.merge_parents = [{"sha": BASE}, {"sha": CANDIDATE}]
+                elif mutation == "no_association":
+                    fresh["pull_requests"] = []
+                elif mutation == "rerun":
+                    fresh["run_attempt"] = 2
+                elif mutation == "wrong_tree":
+                    request = api.request
+                    def different_tree(method, path, body=None):
+                        result = request(method, path, body)
+                        if method == "GET" and path.endswith("/git/commits/" + NEW_MERGE):
+                            return {**result, "tree": {"sha": "9"*40}}
+                        return result
+                    api.request = different_tree
+                if mutation == "forged_archive":
+                    ledger, handoff = session.finish(api, s, "integrated", "Recovery", policy=policy)
+                    handoff["history"][-1]["handoff"]["evidence"].append(
+                        RUN.replace("/123/", "/999/"))
+                    for apply in (False, True):
+                        with self.assertRaisesRegex(ValueError, "differs from reviewed proof"):
+                            session.save(api, s, ledger, handoff, apply, issue=247, policy=policy)
+                else:
+                    with self.assertRaises(ValueError):
+                        session.finish(api, s, "integrated", "Recovery", policy=policy)
+                self.assertEqual(s, snapshot)
+                self.assertEqual(api.writes, [])
+
     def test_staged_reclaim_preserves_original_fix_and_slot(self):
         api,s=self.setup_case(True)
         old=copy.deepcopy(s["handoff"]["history"])
