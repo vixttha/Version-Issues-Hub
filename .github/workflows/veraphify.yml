@@ -32,3 +32,27 @@ jobs:
           awk '/^```bash$/{copy=1;next} /^```$/{if(copy)exit} copy' docs/adopter-walkthrough.md > "$script"
           test -s "$script"
           bash "$script"
+
+  standalone-package:
+    if: github.repository == 'vixttha/Version-Issues-Hub' && github.event.repository.private == false
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [ubuntu-24.04, windows-latest]
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: '041e187dc1d383082c1a4805e6d4743eec97e535'
+          path: standalone-source
+          persist-credentials: false
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: '24.22.3'
+          package-manager-cache: false
+      - name: Verify isolated runtime packaging and exact candidate replay
+        run: node tools/test-standalone-package.mjs standalone-source
