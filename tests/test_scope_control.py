@@ -214,6 +214,84 @@ class ScopeControlTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "changed historical state or Worker identity"):
                 scope.verify_043_scope_genesis(predecessor,path,record,successor,"f"*40)
 
+    def test_real_git_recovery_chain_retains_immediate_successor_and_later_scope(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            def git(*args):
+                return subprocess.check_output(["git", "-C", tmp, *args], text=True).strip()
+            def write(path, value):
+                target = root / path
+                target.parent.mkdir(parents=True, exist_ok=True)
+                target.write_text(json.dumps(value, sort_keys=True) + "\n", encoding="utf-8")
+            def commit(message):
+                git("add", ".")
+                git("commit", "-qm", message)
+                return git("rev-parse", "HEAD")
+            git("init", "-q")
+            git("config", "user.name", "VIB test")
+            git("config", "user.email", "test@example.invalid")
+            write("tools/session.py", "original")
+            base = commit("engineering baseline")
+            git("checkout", "-qb", "engineering")
+            write("tools/session.py", "first reviewed change")
+            reviewed = commit("first review")
+            write("tools/session.py", "second reviewed change")
+            later_reviewed = commit("second review")
+            write("docs/repair.md", "later authorized path")
+            engineering_head = commit("worker head")
+            git("checkout", "-qb", "canonical", base)
+            old = {**self.ledger, "issues": []}
+            before = {"schema_version": 1, "active": None, "history": []}
+            write("ledger/issue-versions.json", old)
+            write("ledger/handoff.json", before)
+            parent = commit("canonical parent")
+            record = {**self.record, "issue": 96, "version": "v0.0.0.43",
+                      "base_sha": base, "reviewed_sha": base,
+                      "allowed_paths": ["tools/session.py"]}
+            path = "ledger/scope-approvals/v0.0.0.43.json"
+            new = {**old, "issues": [{"issue": 96, "version": "v0.0.0.43",
+                   "state": "in_progress", "acceptance": record["criteria"]}]}
+            active = {"issue": 96, "version": "v0.0.0.43", "phase": "Worker",
+                      "next_action": "Repair", "fix_sha": None, "candidate_sha": None,
+                      "pull_request": None, "evidence": []}
+            write(path, record)
+            write("ledger/issue-versions.json", new)
+            write("ledger/handoff.json", {**before, "active": active})
+            genesis = commit("malformed combined claim")
+            successor = {**record, "previous_approval_sha": genesis, "reviewed_sha": reviewed,
+                         "owner_decision": "Structural recovery only"}
+            write(path, successor)
+            recovered = commit("independent structural successor")
+            continuation = {**successor, "previous_approval_sha": recovered,
+                            "reviewed_sha": later_reviewed,
+                            "allowed_paths": ["docs/repair.md", "tools/session.py"],
+                            "owner_decision": "Later bounded continuation"}
+            write(path, continuation)
+            current = commit("independent later continuation")
+            real_changed, real_scope = scope.changed_paths, scope.scope_paths
+            def ancestor(old_sha, new_sha):
+                if subprocess.run(["git", "-C", tmp, "merge-base", "--is-ancestor",
+                                   old_sha, new_sha], check=False).returncode:
+                    raise ValueError("Scope approval or reviewed revision is not an ancestor")
+            with patch.object(scope, "MALFORMED_043_SCOPE", genesis), \
+                 patch.object(scope, "MALFORMED_043_PARENT", parent), \
+                 patch.object(scope.checkpoint, "git", side_effect=git), \
+                 patch.object(scope, "ancestor", side_effect=ancestor), \
+                 patch.object(scope, "changed_paths", side_effect=lambda a,b: real_changed(a,b,tmp)), \
+                 patch.object(scope, "scope_paths", side_effect=lambda a,b: real_scope(a,b,tmp)), \
+                 patch.object(scope, "verify_043_scope_genesis",
+                              wraps=scope.verify_043_scope_genesis) as incident:
+                self.assertEqual(scope.verify_scope(current, 96, "v0.0.0.43",
+                                                    engineering_head, current), continuation)
+                incident.assert_called_once_with(genesis, path, record, successor, recovered)
+                with self.assertRaisesRegex(ValueError, "authorization.*not established"):
+                    scope.verify_scope(current, 96, "v0.0.0.43", engineering_head, current,
+                                       require_recovery_authorization=True)
+                with self.assertRaisesRegex(ValueError, "Stale scope approval"):
+                    scope.verify_scope(recovered, 96, "v0.0.0.43", engineering_head, current)
+                self.assertEqual(git("show", genesis + ":" + path), json.dumps(record, sort_keys=True))
+                self.assertEqual(git("show", recovered + ":" + path), json.dumps(successor, sort_keys=True))
+
     def test_legacy_explicit_preflight_cannot_bypass_scope(self):
         with patch("sys.argv", ["preflight", "--installed-ref", "a"*40, "--issue", "92"]), \
              patch.object(scope, "read_projection", return_value="v0.0.0.41"), \
