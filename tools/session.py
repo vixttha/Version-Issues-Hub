@@ -8,6 +8,7 @@ import os
 import re
 import random
 import sys
+import time
 import uuid
 from tools import checkpoint, install
 
@@ -828,10 +829,9 @@ def load(api, target, expected_sha=None, *, _source_cache=None):
             or manifest.get("source_repository") != install.SOURCE
             or manifest.get("target_repository") != meta["full_name"]
             or manifest.get("target_repository_id") != meta["id"]
-            or manifest.get("install_branch") != install.BRANCH
-            or manifest.get("product_branch") != meta["default_branch"]
-            or meta["default_branch"] == install.BRANCH):
+            or manifest.get("install_branch") != install.BRANCH):
         raise ValueError("Installed manifest does not match target identity or product branch")
+    product_branch = install.product_target(meta, manifest)
     baseline = install.require(install.BASELINE, manifest["baseline_version"], "baseline")
     major, minor, patch = checkpoint.version_number(baseline)
     if manifest["target_version"] != f"v{major}.{minor}.{patch + 1}":
@@ -846,6 +846,8 @@ def load(api, target, expected_sha=None, *, _source_cache=None):
         expected_files = install.source_files(api, source)
         if _source_cache is not None:
             _source_cache[source] = dict(expected_files)
+    if manifest.get("product_target_approval") is not None and not install.supports_designated_target(expected_files):
+        raise ValueError("Installed package lacks designated-target support")
     digests = {p: hashlib.sha256(s.encode()).hexdigest() for p, s in expected_files.items()}
     if manifest["package_files_sha256"] != digests or any(read(p) != s for p, s in expected_files.items()):
         raise ValueError("Installed package does not match pinned source")
@@ -860,7 +862,7 @@ def load(api, target, expected_sha=None, *, _source_cache=None):
     parallel_supported = supports_parallel_package(expected_files)
     if handoff["schema_version"] == 2 and not parallel_supported:
         raise ValueError("Installed package lacks parallel handoff support")
-    product = install.read_ref(api, prefix, meta["default_branch"])
+    product = install.read_ref(api, prefix, product_branch)
     if product is None:
         raise ValueError("Product branch is missing")
     return {"prefix": prefix, "ref": ref, "manifest": manifest,
@@ -950,28 +952,37 @@ def verify_candidate_runs(api, state, active, links):
     policy = {"repository_id": state["manifest"]["target_repository_id"],
               "pull_request": active["pull_request"], "head_sha": active["candidate_sha"],
               "base_sha": active["integration_base_sha"], "merge_sha": active["integration_merge_sha"]}
-    # An old run must not be re-labelled as fresh by a rerun or mutable PR
-    # association. Keep its original record; require a new run for changed pins.
-    invalidated = set()
-    for record in state["handoff"]["history"]:
-        old = record["handoff"]
-        if (old["issue"] == active["issue"] and
-                any(old.get(k) != active.get(k) for k in PIN_KEYS | {"candidate_sha", "pull_request"})):
-            invalidated.update(evidence_run(state["ledger"]["repository"], link)[0]
-                               for link in old["evidence"])
+    invalidated = invalidated_archive_runs(state, active)
     for link in links:
         run, attempt = evidence_run(state["ledger"]["repository"], link)
         if run in invalidated:
             raise ValueError("Archived run belongs to stale integration evidence; use a new run")
         root = state["prefix"] + "/actions/runs/" + str(run)
         for item in (api.request("GET", root), api.request("GET", root + "/attempts/" + str(attempt))):
-            standard.check_pr_run(item, policy, run, attempt)
+            standard.check_pr_run(item, policy, run, attempt, api=api, prefix=state["prefix"])
     # Re-read every earlier run after all links were inspected.
     for link in links:
         run, attempt = evidence_run(state["ledger"]["repository"], link)
         standard.check_pr_run(api.request("GET", state["prefix"] + "/actions/runs/" + str(run)),
-                              policy, run, attempt)
+                              policy, run, attempt, api=api, prefix=state["prefix"])
     require_fresh_snapshot(api, state, active)
+
+
+def invalidated_archive_runs(state, active, *, legacy_index=None):
+    # Never relabel an archived run as fresh for different candidate or preview pins.
+    # Only the specifically selected legacy archive may have absent preview pins.
+    invalidated = set()
+    for index, record in enumerate(state["handoff"]["history"]):
+        old = record["handoff"]
+        if (old["issue"] == active["issue"] and
+                any(old.get(k) != active.get(k) for k in PIN_KEYS | {"candidate_sha", "pull_request"})):
+            if (legacy_index == index and record["disposition"] == "staged"
+                    and all(old[k] == active[k] for k in ("fix_sha", "candidate_sha", "pull_request"))
+                    and all(old.get(k) in (None, active.get(k)) for k in PIN_KEYS)):
+                continue
+            invalidated.update(evidence_run(state["ledger"]["repository"], link)[0]
+                               for link in old["evidence"])
+    return invalidated
 
 def inspect(api, state, requested=None):
     handoff = state["handoff"]
@@ -1031,6 +1042,9 @@ def inspect(api, state, requested=None):
     return {"status": status, "installed_sha": state["ref"], "product_sha": state["product_sha"],
             **({"pending_closure": pending} if pending is not None else {}),
             "repository": state["ledger"]["repository"], "baseline": state["manifest"]["baseline_version"],
+            "installed_source_sha": state["manifest"]["source_sha"],
+            "product_branch": state["manifest"]["product_branch"],
+            "canonical_active_phases": {str(a["issue"]): a["phase"] for a in rows},
             "target": state["manifest"]["target_version"], "issue": info, "active": active,
             "owner_merge_required": True, "evidence_verified": False,
             "staged": staged, **({"lifecycle": closure_status(state, item)} if info is not None else {}),
@@ -1038,6 +1052,58 @@ def inspect(api, state, requested=None):
                                   if engineering is not None else {}),
             **({"active_issues": [a["issue"] for a in rows]}
                                   if handoff["schema_version"] == 2 else {})}
+
+def debt_first_plan(api, state, debt):
+    """Rank existing obligations for Head review, never grant claim authority."""
+    if not debt:
+        return {"status": "clear", "queue": [], "recommended_issue": None}
+    if (state["handoff"]["schema_version"] != 1 or active_rows(state["handoff"])
+            or pending_closure(state["handoff"]) is not None):
+        return {"status": "existing_lane_or_closure", "queue": [], "recommended_issue": None}
+    archives = outstanding_integration_records(state)
+    first = {id(record): index for index, record in enumerate(state["handoff"]["history"])}
+    queue = []
+    for row in sorted(debt, key=lambda r: (
+            min((first[id(a)] for a in archives.get(r["issue"], [])),
+                default=len(first)), r["issue"])):
+        number = row["issue"]
+        entry = {"issue": number, "version": row["version"], "state": row["state"],
+                 "outstanding_archives": len(archives.get(number, [])),
+                 "recovery_claim_binding": None, "action": "owner_reconciliation"}
+        try:
+            require_unheld_scope(state, [number])
+        except ValueError:
+            entry["action"] = "owner_hold"
+        else:
+            if (row["state"] == "staged"
+                    and row["version"].rsplit(".", 1)[0] != state["manifest"]["baseline_version"]):
+                entry["action"] = "owner_reconcile_prior_line_staged"
+            elif (row["state"] in ("staged", "deferred", "blocked", "assigned")
+                    and archives.get(number)):
+                try:
+                    item = get_issue(api, state, number)
+                    if item.get("state") == "open":
+                        if len(debt) > 1:
+                            entry["recovery_claim_binding"] = recovery_claim_binding(state, number)
+                            entry["action"] = "review_recovery_only_claim"
+                        else:
+                            entry["action"] = "review_ordinary_recovery"
+                    elif item.get("state") == "closed":
+                        entry["action"] = "owner_reconcile_closed_issue"
+                    else:
+                        entry["action"] = "issue_state_unverified"
+                except (ValueError, KeyError, TypeError, install.ApiError, OSError) as exc:
+                    if isinstance(exc, install.ApiError) and exc.retry_after is not None:
+                        raise
+                    entry["action"] = "issue_state_unverified"
+        queue.append(entry)
+    # Advice is an unsigned proposal, not a feasibility proof. The normal
+    # claim/reconciliation planners still validate criteria, PR and lineage.
+    candidate = next((x["issue"] for x in queue if x["action"] in
+                      ("review_recovery_only_claim", "review_ordinary_recovery")), None)
+    return {"status": "debt_review_required", "queue": queue,
+            "recommended_issue": candidate}
+
 
 def recovery_plan(api, state, requested=None):
     """Read-only, lease-bound next step and same-issue evidence reuse advisory."""
@@ -1068,7 +1134,7 @@ def recovery_plan(api, state, requested=None):
         "closure_reconciliation_required": "Reconcile durable closure with owner; never replay issue mutation.",
         "experimental_history_only": "Inspect historical state only; experimental activation remains suspended.",
         "owner_hold": "Retain owner hold; do not claim or promote this issue.",
-        "closure_recorded": "Retain historical closure receipt; no new closure or integration.",
+        "closure_recorded": "Retain historical closure receipt; never replay closure. Later verified product reconciliation remains possible with exact evidence and owner approval.",
         "engineering_complete": "Retain engineering receipt; production and issue closure remain separate decisions.",
         "head_scope_required": "Head must select and authorize scope before claim.",
         "blocked_other_active_issue": "Resume the existing active issue or obtain a Head disposition.",
@@ -1134,8 +1200,60 @@ def recovery_plan(api, state, requested=None):
                 elif reuse["status"] == "refused":
                     status = "evidence_revalidation_required"
                     action = "Revalidate exact recorded evidence or return to Head; do not advance."
+    debt = unresolved_integration_debt(state)
+    if status == "head_scope_required":
+        try:
+            require_product_lineage(api, state)
+        except (ValueError, KeyError, TypeError, install.ApiError, OSError) as exc:
+            if isinstance(exc, install.ApiError) and exc.retry_after is not None:
+                raise
+            status = "product_lineage_reconciliation_required"
+            action = "Verify target identity, baseline and historical product merge ancestry before claiming work."
+    if status == "head_scope_required" and info is not None:
+        terminal = any(row["issue"] == number and row["state"] in ("integrated", "retired")
+                       for row in state["ledger"]["issues"])
+        if terminal or info["state"] != "open":
+            status = "issue_reconciliation_required"
+            action = actions[status]
+    if status == "head_scope_required" and debt:
+        try:
+            if number is None:
+                raise ValueError("No exact proposed issue for deferral review")
+            require_integration_debt_clear(api, state, number)
+        except (ValueError, KeyError, TypeError, install.ApiError, OSError) as exc:
+            if isinstance(exc, install.ApiError) and exc.retry_after is not None:
+                raise
+            status = "integration_debt_reconciliation_required"
+            action = "Review outstanding production integration debt and exact bounded owner deferrals before unrelated claim."
+        else:
+            if any(row["issue"] == number for row in debt):
+                action = "Owner may authorize scoped recovery of this existing issue; preserve its version and history."
+    recovery_binding = None
+    if status in ("head_scope_required", "integration_debt_reconciliation_required", "staged",
+                  "closed_pr_rework_required") and info is not None and info["state"] == "open":
+        try:
+            recovery_binding = recovery_claim_binding(state, number)
+        except ValueError:
+            pass
+    # Preserve explicit bounded continuation and the existing active lane.
+    # A blocked or unspecified claim gets a deterministic debt-first advisory.
+    scheduling = None
+    if status == "integration_debt_reconciliation_required":
+        scheduling = debt_first_plan(api, state, debt)
+        if scheduling["status"] == "debt_review_required":
+            status = "integration_debt_reconciliation_required"
+            action = ("Head reviews outstanding debt in oldest-archive order; "
+                      "select an existing obligation for recovery or reconciliation. "
+                      "No automatic claim or authority.")
+    if scheduling is not None or recovery_binding is not None:
+        # Queue issue lookups can outlast the earlier product-lineage check.
+        # Refuse the entire advisory, including unsigned recovery bindings.
+        if install.read_ref(api, state["prefix"], state["manifest"]["product_branch"]) != state["product_sha"]:
+            raise ValueError("Product state advanced; reload recovery plan")
     require_lease()
-    return {**observed, "recovery_status": status, "recommended_next_action": action,
+    return {**observed, "debt_first": scheduling, "recovery_claim_binding": recovery_binding, "integration_debt": [{"issue": row["issue"], "version": row["version"],
+                  "state": row["state"]} for row in debt],
+            "recovery_status": status, "recommended_next_action": action,
             "evidence_reuse": reuse, "read_only": True,
             "owner_decision_required": True, "evidence_verified": False}
 
@@ -1151,12 +1269,309 @@ def verify_closed_staged_pr(api, state, previous):
         raise ValueError("Staged rework requires a verified closed unmerged PR")
 
 
+# Preserve the historical archive envelope. Explicit owner evidence remains
+# cooperative; this does not claim authenticated owner signatures.
+DEFERRAL_DECISION = "VIB-INTEGRATION-DEFERRAL-1: "
+DEFERRAL_MAX_SECONDS = 30 * 24 * 60 * 60
+DEFERRAL_KEYS = {"schema_version", "repository", "repository_id", "product_branch",
+                 "product_sha", "issue", "version", "criteria", "fix_sha",
+                 "candidate_sha", "pull_request", "approved_at", "expires_at",
+                 "authorized_next_issue", "reason", "review_trigger", "next_action"}
+
+
+def deferral_record(record, *, historical=False):
+    decision = record["decision"]
+    if not decision.startswith(DEFERRAL_DECISION):
+        return None
+    try:
+        policy = checkpoint.parse_json(decision[len(DEFERRAL_DECISION):])
+    except ValueError as exc:
+        if historical:
+            return None
+        raise ValueError("Invalid integration debt deferral record") from exc
+    if (not isinstance(policy, dict) or set(policy) != DEFERRAL_KEYS
+            or type(policy["schema_version"]) is not int or policy["schema_version"] != 1
+            or record["disposition"] not in ("staged", "deferred")
+            or record["merged_sha"] is not None):
+        if historical:
+            return None
+        raise ValueError("Invalid integration debt deferral record")
+    return policy
+
+
+def check_deferral(api, state, record, next_issue=None):
+    policy = deferral_record(record)
+    if policy is None:
+        raise ValueError("Unbounded integration debt; owner reconciliation required")
+    active = record["handoff"]
+    row = next(r for r in state["ledger"]["issues"] if r["issue"] == active["issue"])
+    manifest = state["manifest"]
+    for key in ("issue", "version", "fix_sha", "candidate_sha", "pull_request"):
+        if policy[key] != active[key] or type(policy[key]) is not type(active[key]):
+            raise ValueError("Integration debt deferral scope differs from archive")
+    issue_number(policy["authorized_next_issue"])
+    if (policy["authorized_next_issue"] == active["issue"]
+            or (next_issue is not None and policy["authorized_next_issue"] != next_issue)
+            or policy["criteria"] != row["acceptance"]
+            or policy["repository"] != state["ledger"]["repository"]
+            or not install.same_id(policy["repository_id"], manifest["target_repository_id"])
+            or policy["product_branch"] != manifest["product_branch"]):
+        raise ValueError("Integration debt deferral scope or target differs")
+    for key in ("reason", "review_trigger", "next_action"):
+        text(policy[key], "integration debt " + key)
+    approved, expires = policy["approved_at"], policy["expires_at"]
+    if (type(approved) is not int or type(expires) is not int
+            or not 0 < expires - approved <= DEFERRAL_MAX_SECONDS
+            or not approved <= time.time() < expires):
+        raise ValueError("Integration debt deferral expired or invalid")
+    prefix = state["prefix"]
+    if install.read_ref(api, prefix, install.BRANCH) != state["ref"]:
+        raise ValueError("Installed state advanced; reload integration debt review")
+    meta = install.response_object(api.request("GET", prefix), "target repository")
+    if (meta.get("full_name") != policy["repository"]
+            or not install.same_id(meta.get("id"), policy["repository_id"])
+            or install.product_target(meta, manifest) != policy["product_branch"]
+            or policy["product_branch"] == install.BRANCH):
+        raise ValueError("Integration debt target identity changed")
+    target = install.require(install.SHA, policy["product_sha"], "deferral product revision")
+    if (target != state["product_sha"]
+            or install.read_ref(api, prefix, policy["product_branch"]) != target):
+        raise ValueError("Integration debt deferral target is stale")
+    if active["pull_request"] is not None:
+        from tools import gate
+        gate.check_ancestry(api, prefix, active["fix_sha"], active["candidate_sha"])
+        require_fresh_snapshot(api, state, active)
+        if active["evidence"]:
+            verify_candidate_runs(api, state, active, active["evidence"])
+    if install.read_ref(api, prefix, install.BRANCH) != state["ref"]:
+        raise ValueError("Installed state advanced during integration debt review")
+    if install.read_ref(api, prefix, policy["product_branch"]) != target:
+        raise ValueError("Integration debt target changed during review")
+    return policy
+
+
+def integration_record_fix(state, prior):
+    engineering = engineering_receipt(prior, state["ledger"])
+    legacy = legacy_engineering_approval(prior)
+    if engineering is not None:
+        return engineering["policy"]["review"]["issues"][0]["fix_sha"]
+    if legacy is not None:
+        # A conflicting legacy pin cannot be silently resolved.
+        if prior["handoff"]["fix_sha"] not in (None, legacy.group(2)):
+            return ("conflicting", prior["handoff"]["fix_sha"], legacy.group(2))
+        return legacy.group(2)
+    return prior["handoff"]["fix_sha"]
+
+
+def eligible_product_proof_basis(record):
+    active = record["handoff"]
+    return (record["disposition"] == "staged" and active["fix_sha"] is not None
+            or record["disposition"] == "deferred" and active["fix_sha"] is not None
+            and bool(active["candidate_sha"]) and bool(active["pull_request"])
+            and all(active.get(key) for key in PIN_KEYS))
+
+
+def outstanding_integration_records(state, *, proof_basis=False):
+    # An obligation follows its original fix, not merely the issue number.
+    # Renew only bounded ordinary decisions for the exact same issue and
+    # original fix (or both pinless). Preserve all archives.
+    outstanding = {}
+    for record in state["handoff"]["history"]:
+        if closure_receipt(record) is not None:
+            continue
+        active = record["handoff"]
+        records = outstanding.setdefault(active["issue"], [])
+        if record["disposition"] in ("staged", "deferred"):
+            # Unreadable authorization preserves the obligation without allowing renewal.
+            if deferral_record(record, historical=True) is not None:
+                fix = integration_record_fix(state, record)
+                records[:] = [prior for prior in records
+                              if not (engineering_receipt(prior, state["ledger"]) is None
+                                      and legacy_engineering_approval(prior) is None
+                                      and integration_record_fix(state, prior) == fix
+                                      and not (proof_basis and eligible_product_proof_basis(prior)))]
+            records.append(record)
+        elif record["disposition"] == "integrated":
+            records[:] = [prior for prior in records
+                          if integration_record_fix(state, prior) not in (None, active["fix_sha"])]
+    return {number: records for number, records in outstanding.items() if records}
+
+
+def renewed_staged_basis(state, number, index):
+    """Keep an exact staged or product-deferred proof after renewal or pinless deferral."""
+    history = state["handoff"]["history"]
+    latest = closure_archive_index(state["handoff"], number)
+    if latest is None or not 0 <= index < latest:
+        return False
+    prior, current = history[index], history[latest]
+    fix = current["handoff"]["fix_sha"]
+    pinless = current["disposition"] == "deferred" and fix is None
+    renewal = (current["disposition"] in ("staged", "deferred")
+               and fix == prior["handoff"]["fix_sha"]
+               and deferral_record(current, historical=True) is not None)
+    return (prior["handoff"]["issue"] == number and eligible_product_proof_basis(prior)
+            and prior["handoff"]["fix_sha"] is not None and (pinless or renewal)
+            and any(prior is r for r in outstanding_integration_records(
+                state, proof_basis=True).get(number, [])))
+
+
+def unresolved_integration_debt(state):
+    outstanding = outstanding_integration_records(state)
+    return [r for r in state["ledger"]["issues"]
+            if r["state"] in ("staged", "deferred") or r["issue"] in outstanding]
+
+
+def require_all_fixes_resolved(state, ledger, handoff, number):
+    proposed = {**state, "ledger": ledger, "handoff": handoff}
+    if outstanding_integration_records(proposed).get(number):
+        raise ValueError("Integration proof leaves a different historical fix unresolved; owner reconciliation required")
+
+
+def require_product_lineage(api, state, *, allow_stale_plan=False):
+    """Check baseline and recorded product merges, never infer content from closure."""
+    from tools import gate
+    manifest, prefix = state["manifest"], state["prefix"]
+    # Direct legacy fixture callers can omit install metadata. Every state
+    # loaded from an actual installation validates this mandatory field.
+    if "product_baseline_sha" not in manifest:
+        return
+    baseline = install.require(install.SHA, manifest["product_baseline_sha"], "product baseline")
+    meta = install.response_object(api.request("GET", prefix), "target repository")
+    if (meta.get("full_name") != state["ledger"]["repository"]
+            or not install.same_id(meta.get("id"), manifest["target_repository_id"])):
+        raise ValueError("Product lineage repository identity changed")
+    branch = install.product_target(meta, manifest)
+    current = install.require(install.SHA, state["product_sha"], "observed product revision")
+    def lease():
+        if install.read_ref(api, prefix, install.BRANCH) != state["ref"]:
+            # Only an already-active experimental parallel planner may retain
+            # an immutable stale intent. Publication still requires a fresh
+            # lease and the existing bounded retry_scope ancestry proof.
+            if allow_stale_plan and state["handoff"]["schema_version"] == 2:
+                return False
+            raise HandoffStale("Installed state advanced; reload product lineage")
+        if install.read_ref(api, prefix, branch) != current:
+            raise ValueError("Product lineage target advanced; reload")
+        return True
+    if not lease():
+        return
+    revisions = {baseline}
+    archives = {}
+    for record in state["handoff"]["history"]:
+        if record["disposition"] == "integrated":
+            archives.setdefault(record["handoff"]["issue"], []).append(record)
+    for row in state["ledger"]["issues"]:
+        if row["state"] == "integrated":
+            prior = archives.get(row["issue"])
+            if prior is None:
+                raise ValueError("Product lineage lacks historical integration archive")
+            revisions.update(install.require(install.SHA, record["merged_sha"], "historical product merge")
+                             for record in prior)
+    for revision in sorted(revisions):
+        if revision != current:
+            try:
+                gate.check_ancestry(api, prefix, revision, current)
+            except ValueError as exc:
+                raise ValueError("Product lineage no longer contains a reviewed baseline or merge") from exc
+    lease()
+
+
+def require_integration_debt_clear(api, state, number):
+    # Same-issue recovery remains available through normal owner claim.
+    # Experimental parallel state remains frozen by its independent gate.
+    if state["handoff"]["schema_version"] != 1:
+        return
+    debt = unresolved_integration_debt(state)
+    archives = outstanding_integration_records(state)
+    policies = []
+    for row in debt:
+        if row["issue"] == number:
+            continue
+        outstanding = archives.get(row["issue"], [])
+        latest = next((record for record in reversed(state["handoff"]["history"])
+                       if record["handoff"]["issue"] == row["issue"]
+                       and closure_receipt(record) is None), None)
+        if (not outstanding or row["state"] not in ("staged", "deferred")
+                or latest is not outstanding[-1] or latest["disposition"] != row["state"]):
+            raise ValueError("Missing current integration debt archive; owner reconciliation required")
+        # A new pinless deferral cannot replace earlier outstanding authority.
+        for prior in outstanding:
+            policies.append(check_deferral(api, state, prior, number))
+    return policies
+
+
+RECOVERY_CLAIM = "recovery_only_claim"
+RECOVERY_CLAIM_PREFIX = "VIB-RECOVERY-CLAIM-1: "
+RECOVERY_CLAIM_MAX_SECONDS = 24 * 60 * 60
+
+
+def recovery_claim_binding(state, number):
+    """Return a proposed exact scope, never an approval or a debt discharge."""
+    number = issue_number(number)
+    require_unheld_scope(state, [number])
+    if (state["handoff"]["schema_version"] != 1 or active_rows(state["handoff"])
+            or pending_closure(state["handoff"]) is not None):
+        raise ValueError("Recovery-only claim requires an idle singleton and no pending closure")
+    debt = unresolved_integration_debt(state)
+    row = next((r for r in debt if r["issue"] == number), None)
+    if (len(debt) < 2 or row is None or row["state"] not in ("staged", "deferred", "blocked", "assigned")
+            or not outstanding_integration_records(state).get(number)):
+        raise ValueError("Recovery-only claim requires an existing reclaimable indebted issue")
+    if (row["state"] == "staged"
+            and row["version"].rsplit(".", 1)[0] != state["manifest"]["baseline_version"]):
+        raise ValueError("Staged prior-line issue requires owner reconciliation")
+    return {"schema_version": 1, "outcome": RECOVERY_CLAIM,
+            "repository": state["ledger"]["repository"],
+            "repository_id": state["manifest"]["target_repository_id"],
+            "product_branch": state["manifest"]["product_branch"],
+            "product_sha": install.require(install.SHA, state["product_sha"], "recovery product revision"),
+            "installed_sha": install.require(install.SHA, state["ref"], "recovery installed revision"),
+            "issue": number, "version": row["version"],
+            "state_sha256": closure_digest({"ledger": state["ledger"], "handoff": state["handoff"]})}
+
+
+def check_recovery_claim(api, state, number, policy, owner_approved):
+    if owner_approved is not True:
+        raise ValueError("Explicit owner approval of recovery-only claim required")
+    binding = recovery_claim_binding(state, number)
+    if (not isinstance(policy, dict) or set(policy) != set(binding) | {"approved_at", "expires_at", "reason"}
+            or any(type(policy[k]) is not type(v) or policy[k] != v for k, v in binding.items())):
+        raise ValueError("Recovery-only claim scope or exact state changed")
+    text(policy["reason"], "recovery-only owner reason")
+    approved, expires = policy["approved_at"], policy["expires_at"]
+    if (type(approved) is not int or type(expires) is not int
+            or not 0 < expires - approved <= RECOVERY_CLAIM_MAX_SECONDS
+            or not approved <= time.time() < expires):
+        raise ValueError("Recovery-only claim authorization expired or invalid")
+    prefix, manifest = state["prefix"], state["manifest"]
+    meta = install.response_object(api.request("GET", prefix), "recovery target repository")
+    if (meta.get("full_name") != binding["repository"]
+            or not install.same_id(meta.get("id"), binding["repository_id"])
+            or meta.get("archived") or meta.get("disabled")
+            or install.product_target(meta, manifest) != binding["product_branch"]
+            or install.read_ref(api, prefix, install.BRANCH) != binding["installed_sha"]
+            or install.read_ref(api, prefix, binding["product_branch"]) != binding["product_sha"]):
+        raise ValueError("Recovery-only claim target or lease changed")
+    if not approved <= time.time() < expires:
+        raise ValueError("Recovery-only claim authorization expired during review")
+    return copy.deepcopy(policy)
+
+
 def claim(api, state, number, criteria, note, *, resume_prior_line=False, parallel=False,
-          rework_staged=False):
+          rework_staged=False, recovery_policy=None, recovery_approved=False):
     validate_handoff(state["handoff"], state["ledger"])
     if pending_closure(state["handoff"]) is not None:
         raise ValueError("Reconcile pending closure before claiming work")
     require_unheld_scope(state, [number])
+    if recovery_policy is not None and parallel:
+        raise ValueError("Recovery-only claim cannot enable parallel mode")
+    if text(note, "next action").startswith(RECOVERY_CLAIM_PREFIX):
+        raise ValueError("Recovery-only claim receipt is reserved for verified publication")
+    if recovery_policy is not None:
+        verified_recovery = check_recovery_claim(api, state, number, recovery_policy, recovery_approved)
+        note = RECOVERY_CLAIM_PREFIX + json.dumps(
+            {"policy": verified_recovery, "note": note}, sort_keys=True, separators=(",", ":"),
+            ensure_ascii=True, allow_nan=False)
     if parallel or state["handoff"]["schema_version"] == 2:
         require_parallel_package(state)
         require_experimental_parallel()
@@ -1180,6 +1595,12 @@ def claim(api, state, number, criteria, note, *, resume_prior_line=False, parall
         handoff["active"] = rows
     if handoff["schema_version"] == 1 and rows:
         raise ValueError("Another issue owns the active handoff")
+    require_product_lineage(api, state,
+                            allow_stale_plan=state["handoff"]["schema_version"] == 2)
+    if recovery_policy is None:
+        require_integration_debt_clear(api, state, number)
+    # Explicit recovery authorization permits only this existing issue; all
+    # other debt remains recorded and ordinary claims still use the gate.
     if handoff["schema_version"] == 2:
         require_parallel_package(state)
     baseline = state["manifest"]["baseline_version"]
@@ -1290,7 +1711,7 @@ def advance(api, state, note, *, fix=None, candidate=None, pr=None, evidence=Non
     validate_handoff(handoff, ledger)
     return ledger, handoff
 
-def finish(api, state, disposition, decision, *, policy=None, issue=None):
+def finish(api, state, disposition, decision, *, policy=None, issue=None, deferral_approved=False):
     validate_handoff(state["handoff"], state["ledger"])
     ledger = copy.deepcopy(state["ledger"])
     handoff = copy.deepcopy(state["handoff"])
@@ -1319,10 +1740,17 @@ def finish(api, state, disposition, decision, *, policy=None, issue=None):
             merged, links = standard.verify_integration(api, state, active, pr, policy)
             active["evidence"] = list(dict.fromkeys(active["evidence"] + links))
             decision = integration_decision(decision, policy)
-    handoff["history"].append({"handoff": active, "disposition": disposition,
-                               "decision": text(decision, "owner decision"), "merged_sha": merged})
+    record = {"handoff": active, "disposition": disposition,
+              "decision": text(decision, "owner decision"), "merged_sha": merged}
+    if decision.startswith(DEFERRAL_DECISION):
+        if deferral_approved is not True:
+            raise ValueError("Explicit owner approval of integration debt deferral required")
+        check_deferral(api, state, record)
+    handoff["history"].append(record)
     next(x for x in ledger["issues"] if x["issue"] == active["issue"])["state"] = disposition
     put_active(handoff, active["issue"], None)
+    if disposition == "integrated":
+        require_all_fixes_resolved(state, ledger, handoff, active["issue"])
     validate_handoff(handoff, ledger)
     return ledger, handoff
 
@@ -1332,10 +1760,266 @@ def integration_decision(decision, policy):
     return text(decision, "owner decision") + "\nPost-merge policy: " + json.dumps(
         policy, sort_keys=True, separators=(",", ":"), ensure_ascii=True, allow_nan=False)
 
+HISTORICAL_INTEGRATION_DECISION = "VIB-HISTORICAL-INTEGRATION-1: "
+
+
+def reconcile_historical_integration(api, state, number, decision, policy, *, allow_older=False):
+    """Append one exact product integration without rewriting earlier evidence."""
+    from tools import standard
+    if (not isinstance(policy, dict)
+            or set(policy) != {"schema_version", "outcome", "archive_index",
+                              "archive_digest", "premerge", "review"}
+            or type(policy["schema_version"]) is not int or policy["schema_version"] != 1
+            or policy["outcome"] != "historical_product_integration"):
+        raise ValueError("Invalid historical integration policy")
+    number = issue_number(number)
+    require_unheld_scope(state, [number])
+    if state["handoff"]["schema_version"] != 1:
+        raise ValueError("Historical integration requires singleton state")
+    row = next((r for r in state["ledger"]["issues"] if r["issue"] == number), None)
+    if row is None or row["state"] not in ("staged", "deferred", "blocked"):
+        raise ValueError("Historical integration requires staged, deferred or blocked work")
+    was_blocked = row["state"] == "blocked"
+    latest = closure_archive_index(state["handoff"], number)
+    index = policy["archive_index"]
+    history = state["handoff"]["history"]
+    if (type(index) is not int or not 0 <= index < len(history)
+            or (not allow_older and not was_blocked and index != latest
+                and not renewed_staged_basis(state, number, index))):
+        raise ValueError("Historical integration archive occurrence changed")
+    prior = history[index]
+    if (prior["handoff"]["issue"] != number
+            or prior["disposition"] not in ("staged", "deferred")
+            or (index == latest and prior["disposition"] != row["state"])
+            or not any(prior is record for record in outstanding_integration_records(state, proof_basis=True).get(number, []))
+            or policy["archive_digest"] != closure_digest(prior)):
+        raise ValueError("Historical integration archive digest or disposition changed")
+    archived_product = None
+    if prior["disposition"] == "staged":
+        fix = prior["handoff"]["fix_sha"]
+    else:
+        engineering = engineering_receipt(prior, state["ledger"])
+        legacy = legacy_engineering_approval(prior)
+        if engineering is not None:
+            if engineering["policy"]["production_branch"] != state["manifest"]["product_branch"]:
+                raise ValueError("Historical engineering production target differs")
+            fix = engineering["policy"]["review"]["issues"][0]["fix_sha"]
+        elif legacy is not None:
+            expected_pins = {"pull_request": int(legacy.group(1)), "fix_sha": legacy.group(2),
+                             "candidate_sha": legacy.group(3)}
+            for key, expected in expected_pins.items():
+                recorded = prior["handoff"][key]
+                if recorded is not None and recorded != expected:
+                    raise ValueError("Historical engineering approval conflicts with archived handoff pin: " + key)
+            fix = legacy.group(2)
+        else:
+            archived_product = prior["handoff"]
+            fix = archived_product["fix_sha"]
+            if (fix is None or not archived_product["candidate_sha"] or not archived_product["pull_request"]
+                    or any(not archived_product.get(key) for key in PIN_KEYS)):
+                raise ValueError("Deferred work lacks exact product pins or engineering approval; owner reconciliation required")
+    review = policy["review"]
+    standard.validate_policy(review)
+    if (len(review["issues"]) != 1 or review["issues"][0]["issue"] != number
+            or review["issues"][0]["fix_sha"] != fix
+            or review["product_branch"] != state["manifest"]["product_branch"]):
+        raise ValueError("Historical integration must preserve original fix and target")
+    pre = policy["premerge"]
+    if not isinstance(pre, dict) or set(pre) != {"merge_sha", "evidence"}:
+        raise ValueError("Invalid historical pre-merge evidence")
+    preview = install.require(install.SHA, pre["merge_sha"], "historical pre-merge revision")
+    if archived_product is not None:
+        old_base = archived_product["integration_base_sha"]
+        old_preview = archived_product["integration_merge_sha"]
+        base_advanced = review["base_sha"] != old_base
+        preview_changed = preview != old_preview
+        if (review["pull_request"] != archived_product["pull_request"]
+                or review["head_sha"] != archived_product["candidate_sha"]
+                or preview_changed != base_advanced):
+            raise ValueError("Historical deferred integration must preserve original product pins")
+        if base_advanced:
+            from tools import gate
+            gate.check_ancestry(api, state["prefix"], old_base, review["base_sha"])
+    evidence = evidence_links(state["ledger"]["repository"], pre["evidence"])
+    if not evidence:
+        raise ValueError("Historical integration requires fresh product PR evidence")
+    prefix = state["prefix"]
+    candidate = {**copy.deepcopy(prior["handoff"]), "phase": "Head", "fix_sha": fix,
+                 "candidate_sha": review["head_sha"], "pull_request": review["pull_request"],
+                 "integration_base_sha": review["base_sha"], "integration_merge_sha": preview,
+                 "evidence": list(evidence)}
+    preview_policy = {"repository_id": review["repository_id"], "pull_request": review["pull_request"],
+                      "head_sha": review["head_sha"], "base_sha": review["base_sha"], "merge_sha": preview}
+    def check_preview():
+        commit = install.response_object(api.request("GET", prefix + "/git/commits/" + preview),
+                                         "historical proposed merge")
+        if (commit.get("sha") != preview
+                or [p.get("sha") for p in install.response_rows(commit.get("parents"), "preview parents")]
+                    != [review["base_sha"], review["head_sha"]]
+                or review["base_sha"] == review["head_sha"]):
+            raise ValueError("Historical product preview parents differ")
+        tree = install.require(install.SHA,
+                               install.response_object(commit.get("tree"), "historical preview tree").get("sha"),
+                               "historical preview tree")
+        invalidated = invalidated_archive_runs(state, candidate)
+        conflicting = invalidated_archive_runs(state, candidate, legacy_index=index)
+        for link in evidence:
+            run, attempt = evidence_run(state["ledger"]["repository"], link)
+            if run in conflicting:
+                raise ValueError("Archived run belongs to stale integration evidence; use a new run")
+            root = prefix + "/actions/runs/" + str(run)
+            for suffix in ("", "/attempts/" + str(attempt)):
+                item = install.response_object(api.request("GET", root + suffix), "historical preview run")
+                if run in invalidated and item.get("head_sha") != preview:
+                    raise ValueError("Legacy missing preview pins require exact preview run evidence")
+                standard.check_pr_run(item, preview_policy, run, attempt, api=api, prefix=prefix)
+                # A historical preview is no longer available from the live PR.
+                # Even an exact reported preview SHA needs the recorded PR association.
+                if not install.response_rows(item.get("pull_requests", []), "historical PR associations"):
+                    raise ValueError("Historical preview run lacks exact PR association")
+        return tree
+    preview_tree = check_preview()
+    def read_pr():
+        pr = get_pr(api, state, candidate)
+        if not install.same_id((pr["head"].get("repo") or {}).get("id"),
+                               state["manifest"]["target_repository_id"]):
+            raise ValueError("Historical integration PR head repository differs")
+        return pr
+    merged, links = standard.verify_merged_destination(api, state, candidate, read_pr(), review,
+        state["manifest"]["product_branch"], read_pr)
+    if check_preview() != preview_tree:
+        raise ValueError("Historical preview tree changed during review")
+    actual = install.response_object(api.request("GET", prefix + "/git/commits/" + merged),
+                                     "historical actual merge")
+    if (actual.get("sha") != merged
+            or [p.get("sha") for p in install.response_rows(actual.get("parents"), "actual merge parents")]
+                != [review["base_sha"], review["head_sha"]]):
+        raise ValueError("Historical actual merge identity or parents differ")
+    actual_tree = install.require(install.SHA,
+                                  install.response_object(actual.get("tree"), "historical actual merge tree").get("sha"),
+                                  "historical actual merge tree")
+    if actual_tree != preview_tree:
+        raise ValueError("Historical actual merge tree differs from tested preview")
+    # Final preview and tree reads may outlast the earlier product ancestry check.
+    # GitHub cannot atomically compare both refs; later rollback is unsupported.
+    from tools import gate
+    branch = state["manifest"]["product_branch"]
+    current = install.require(install.SHA, install.read_ref(api, prefix, branch), "current product revision")
+    gate.check_ancestry(api, prefix, merged, current)
+    if (install.read_ref(api, prefix, branch) != current
+            or install.read_ref(api, prefix, install.BRANCH) != state["ref"]):
+        raise ValueError("Historical integration target or installed state changed")
+    candidate["evidence"] = list(dict.fromkeys(candidate["evidence"] + links))
+    ledger, handoff = copy.deepcopy(state["ledger"]), copy.deepcopy(state["handoff"])
+    next(r for r in ledger["issues"] if r["issue"] == number)["state"] = "integrated"
+    handoff["history"].append({"handoff":candidate, "disposition":"integrated",
+        "decision": HISTORICAL_INTEGRATION_DECISION + json.dumps(
+            {"owner_decision": text(decision, "owner decision"), "policy": policy},
+            sort_keys=True, separators=(",", ":"), ensure_ascii=True, allow_nan=False),
+        "merged_sha": merged})
+    if not allow_older:
+        require_all_fixes_resolved(state, ledger, handoff, number)
+    validate_handoff(handoff, ledger)
+    return ledger, handoff
+
+
+def recheck_historical_batch_runs(api, state, proofs):
+    """Recheck every proof's latest and exact attempt after the complete batch review."""
+    from tools import standard, gate
+    prefix = state["prefix"]
+    branch = state["manifest"]["product_branch"]
+    product = install.require(install.SHA, install.read_ref(api, prefix, branch), "product revision")
+    for proof in proofs:
+        review = proof["review"]
+        gate.check_ancestry(api, prefix, review["merge_sha"], product)
+        preview_policy = {**review, "merge_sha": proof["premerge"]["merge_sha"]}
+        selected = state["handoff"]["history"][proof["archive_index"]]["handoff"]
+        candidate = {**selected, "fix_sha":review["issues"][0]["fix_sha"],
+                     "candidate_sha":review["head_sha"], "pull_request":review["pull_request"],
+                     "integration_base_sha":review["base_sha"],
+                     "integration_merge_sha":preview_policy["merge_sha"]}
+        invalidated = invalidated_archive_runs(state, candidate)
+        conflicting = invalidated_archive_runs(state, candidate, legacy_index=proof["archive_index"])
+        for link in proof["premerge"]["evidence"]:
+            run, attempt = evidence_run(state["ledger"]["repository"], link)
+            if run in conflicting:
+                raise ValueError("Historical batch archived run belongs to stale evidence")
+            root = prefix + "/actions/runs/" + str(run)
+            for suffix in ("/attempts/" + str(attempt), ""):
+                item = install.response_object(api.request("GET", root + suffix), "batch preview run")
+                if run in invalidated and item.get("head_sha") != preview_policy["merge_sha"]:
+                    raise ValueError("Historical batch legacy evidence requires exact preview")
+                standard.check_pr_run(item, preview_policy, run, attempt, api=api, prefix=prefix)
+                if not install.response_rows(item.get("pull_requests", []), "historical PR associations"):
+                    raise ValueError("Historical batch preview association changed")
+        mappings = {(t["run"], t["attempt"], t["workflow_id"])
+                    for row in review["issues"] for criterion in row["criteria"] for t in criterion["checks"]}
+        for run, attempt, workflow in sorted(mappings):
+            root = prefix + "/actions/runs/" + str(run)
+            for suffix in ("/attempts/" + str(attempt), ""):
+                item = install.response_object(api.request("GET", root + suffix), "batch post-merge run")
+                if (not install.same_id(item.get("id"), run)
+                        or not install.same_id(item.get("run_attempt"), attempt)
+                        or not install.same_id(item.get("workflow_id"), workflow)
+                        or not install.same_id(install.response_object(item.get("repository"), "run repository").get("id"), review["repository_id"])
+                        or not install.same_id(install.response_object(item.get("head_repository"), "run head repository").get("id"), review["repository_id"])
+                        or item.get("head_sha") != review["merge_sha"] or item.get("head_branch") != branch
+                        or item.get("event") not in ("push", "workflow_dispatch")
+                        or item.get("status") != "completed" or item.get("conclusion") != "success"):
+                    raise ValueError("Historical batch post-merge run changed during review")
+    if (install.read_ref(api, prefix, branch) != product
+            or install.read_ref(api, prefix, install.BRANCH) != state["ref"]):
+        raise ValueError("Historical batch product or installed state changed")
+
+
+HISTORICAL_BATCH = "historical_product_integration_batch"
+
+
+def reconcile_historical_batch(api, state, number, decision, policy):
+    """Prove every distinct historical fix before one atomic terminal transition."""
+    if (not isinstance(policy, dict) or set(policy) != {"schema_version", "outcome", "proofs"}
+            or type(policy["schema_version"]) is not int or policy["schema_version"] != 1
+            or policy["outcome"] != HISTORICAL_BATCH):
+        raise ValueError("Invalid historical integration batch")
+    proofs = policy["proofs"]
+    history = state["handoff"]["history"]
+    if (not isinstance(proofs, list) or not 2 <= len(proofs) <= len(history)
+            or any(not isinstance(proof, dict) or type(proof.get("archive_index")) is not int
+                   for proof in proofs)):
+        raise ValueError("Historical integration batch requires separate exact occurrence proofs")
+    number = issue_number(number)
+    indices = [proof["archive_index"] for proof in proofs]
+    was_blocked = any(row["issue"] == number and row["state"] == "blocked"
+                      for row in state["ledger"]["issues"])
+    if (indices != sorted(set(indices)) or (not was_blocked
+            and indices[-1] != closure_archive_index(state["handoff"], number)
+            and not any(renewed_staged_basis(state, number, i) for i in indices))):
+        raise ValueError("Historical integration batch occurrences must be unique, ordered and include the latest")
+    ledger, handoff = copy.deepcopy(state["ledger"]), copy.deepcopy(state["handoff"])
+    fixes = set()
+    for proof in proofs:
+        _, planned = reconcile_historical_integration(api, state, number, decision, proof, allow_older=True)
+        record = planned["history"][-1]
+        fix = record["handoff"]["fix_sha"]
+        if fix in fixes:
+            raise ValueError("Historical integration batch repeats a fix")
+        fixes.add(fix)
+        handoff["history"].append(record)
+    next(row for row in ledger["issues"] if row["issue"] == number)["state"] = "integrated"
+    require_all_fixes_resolved(state, ledger, handoff, number)
+    validate_handoff(handoff, ledger)
+    recheck_historical_batch_runs(api, state, proofs)
+    return ledger, handoff
+
+
 def reconcile(api, state, number, decision, *, policy=None):
     validate_handoff(state["handoff"], state["ledger"])
     if pending_closure(state["handoff"]) is not None:
         raise ValueError("Reconcile unresolved closure before integration reconciliation")
+    if isinstance(policy, dict) and policy.get("outcome") == HISTORICAL_BATCH:
+        return reconcile_historical_batch(api, state, number, decision, policy)
+    if isinstance(policy, dict) and policy.get("outcome") == "historical_product_integration":
+        return reconcile_historical_integration(api, state, number, decision, policy)
     ledger = copy.deepcopy(state["ledger"])
     handoff = copy.deepcopy(state["handoff"])
     # Reconciliation operates on one staged issue, not the active slot.
@@ -1358,6 +2042,7 @@ def reconcile(api, state, number, decision, *, policy=None):
     handoff["history"].append({"handoff": active, "disposition": "integrated",
         "decision": integration_decision(decision, policy), "merged_sha": merged})
     row["state"] = "integrated"
+    require_all_fixes_resolved(state, ledger, handoff, number)
     return ledger, handoff
 
 
@@ -1661,6 +2346,61 @@ def check_issue_delta(state, ledger, handoff, number=None, *, historical=False):
         raise ValueError("Issue scope violation: terminal issue history appended")
 
 
+def verify_initial_claim(api, state, ledger, handoff, active, *, recovery_policy=None, recovery_approved=False):
+    """Replay a new singleton claim, preserving criteria and staged recovery mode."""
+    if handoff["schema_version"] != 1:
+        return
+    number = active["issue"]
+    prior = next((row for row in state["ledger"]["issues"] if row["issue"] == number), None)
+    row = next(row for row in ledger["issues"] if row["issue"] == number)
+    prior_line = (prior is not None
+                  and prior["version"].rsplit(".", 1)[0] != state["manifest"]["baseline_version"])
+    rework_staged = prior is not None and prior["state"] == "staged" and active["phase"] == "Worker"
+    note = active["next_action"]
+    if recovery_policy is not None:
+        if not note.startswith(RECOVERY_CLAIM_PREFIX):
+            raise ValueError("Recovery-only claim receipt missing")
+        receipt = checkpoint.parse_json(note[len(RECOVERY_CLAIM_PREFIX):])
+        if (not isinstance(receipt, dict) or set(receipt) != {"policy", "note"}
+                or receipt["policy"] != recovery_policy):
+            raise ValueError("Recovery-only claim receipt differs from approved policy")
+        note = receipt["note"]
+    planned = claim(api, state, number, row["acceptance"], note,
+                    resume_prior_line=prior_line, rework_staged=rework_staged,
+                    recovery_policy=recovery_policy, recovery_approved=recovery_approved)
+    if planned != (ledger, handoff):
+        raise ValueError("New active handoff differs from the planned claim")
+
+
+def verify_active_transition(api, state, ledger, handoff):
+    """Reconstruct a singleton active-to-active change using the normal planner."""
+    if state["handoff"]["schema_version"] != 1 or handoff["schema_version"] != 1:
+        return
+    prior, proposed = state["handoff"]["active"], handoff["active"]
+    if prior is None or proposed is None or prior == proposed:
+        return
+    if prior["issue"] != proposed["issue"]:
+        raise ValueError("Active handoff cannot transfer directly to another issue")
+    before, after = prior["phase"], proposed["phase"]
+    if len(handoff["history"]) > len(state["handoff"]["history"]):
+        if after not in ("Worker", "Validate"):
+            raise ValueError("Invalid archived active transition")
+        options = {"refresh": after == "Validate", "rework": after == "Worker"}
+    elif after == "Head" and before != "Head":
+        # Return to Head can route stale or incomplete evidence for owner review.
+        options = {"return_to_head": True}
+    elif (before, after) == ("Worker", "Validate"):
+        options = {"fix": proposed["fix_sha"], "candidate": proposed["candidate_sha"],
+                   "pr": proposed["pull_request"]}
+    elif (before, after) == ("Validate", "Internal Auditor"):
+        options = {"evidence": proposed["evidence"]}
+    else:
+        raise ValueError("Invalid active phase transition for publication")
+    expected = advance(api, state, proposed["next_action"], issue=prior["issue"], **options)
+    if expected != (ledger, handoff):
+        raise ValueError("Active handoff publication differs from the planned transition")
+
+
 class HandoffStale(ValueError):
     """A known pre-publication conflict: no ref PATCH was sent."""
 
@@ -1674,10 +2414,13 @@ class HandoffRejected(install.ApiError):
 
 
 def save(api, state, ledger, handoff, apply=False, *, issue=None, operation_id=None,
-         on_recovery_ticket=None, policy=None, engineering_approved=False, closure_approved=False):
+         on_recovery_ticket=None, policy=None, engineering_approved=False, closure_approved=False,
+         deferral_approved=False, recovery_approved=False):
     if operation_id is not None and (not isinstance(operation_id, str)
             or not re.fullmatch(r"[0-9a-f]{64}", operation_id)):
         raise ValueError("Invalid operation identity")
+    # Freeze caller-owned publication inputs before any callback or validation.
+    state, ledger, handoff, policy = copy.deepcopy((state, ledger, handoff, policy))
     check_issue_delta(state, ledger, handoff, issue)
     if ledger == state["ledger"] and handoff == state["handoff"]:
         return {"status": "unchanged", "installed_sha": state["ref"]}
@@ -1688,6 +2431,164 @@ def save(api, state, ledger, handoff, apply=False, *, issue=None, operation_id=N
                 or appended_closure[0]["handoff"]["issue"] != unresolved["issue"]
                 or closure_receipt(appended_closure[0]) is None):
             raise ValueError("Reconcile unresolved closure before unrelated state publication")
+    batch = isinstance(policy, dict) and policy.get("outcome") == HISTORICAL_BATCH
+    recovery = isinstance(policy, dict) and policy.get("outcome") == RECOVERY_CLAIM
+    if recovery:
+        proposed = active_rows(handoff)
+        if (active_rows(state["handoff"]) or len(proposed) != 1
+                or handoff["schema_version"] != 1
+                or handoff["history"] != state["handoff"]["history"]
+                or proposed[0]["issue"] != policy.get("issue")):
+            raise ValueError("Recovery-only policy applies only to a new exact singleton claim")
+    def revalidate_claim_and_deferrals():
+        verify_active_transition(api, state, ledger, handoff)
+        policies = []
+        previous = {a["issue"] for a in active_rows(state["handoff"])}
+        for active in active_rows(handoff):
+            if active["issue"] not in previous:
+                require_product_lineage(api, state)
+                if recovery:
+                    policies.append(check_recovery_claim(api, state, active["issue"], policy, recovery_approved))
+                    verify_initial_claim(api, state, ledger, handoff, active,
+                                         recovery_policy=policy, recovery_approved=recovery_approved)
+                else:
+                    policies.extend(require_integration_debt_clear(api, state, active["issue"]) or [])
+                    verify_initial_claim(api, state, ledger, handoff, active)
+        appended = handoff["history"][len(state["handoff"]["history"]):]
+        before = {row["issue"]: row for row in state["ledger"]["issues"]}
+        transitions = {row["issue"] for row in ledger["issues"]
+                       if row["state"] == "integrated" and
+                       before.get(row["issue"], {}).get("state") != "integrated"}
+        integrated_records = [r["handoff"]["issue"] for r in appended
+                              if r["disposition"] == "integrated"]
+        if set(integrated_records) - transitions:
+            raise ValueError("Integration archive requires a matching integrated row transition")
+        if batch and (len(transitions) != 1 or set(integrated_records) != transitions):
+            raise ValueError("Historical integration batch requires one terminal issue transition")
+        staged_transitions = {row["issue"] for row in ledger["issues"]
+                              if row["state"] == "staged" and
+                              before.get(row["issue"], {}).get("state") != "staged"}
+        for number in staged_transitions:
+            dispositions = [r for r in appended if r["handoff"]["issue"] == number
+                            and closure_receipt(r) is None]
+            if (not dispositions or dispositions[-1]["disposition"] != "staged"
+                    or sum(r["disposition"] == "staged" for r in dispositions) != 1):
+                raise ValueError("Staged row requires a matching final staged archive")
+        for record in appended:
+            if record["disposition"] != "staged":
+                continue
+            proposed = record["handoff"]
+            prior = next((a for a in active_rows(state["handoff"])
+                          if a["issue"] == proposed["issue"]), None)
+            if (proposed["issue"] not in staged_transitions or prior is None
+                    or prior["phase"] != "Head" or prior != proposed
+                    or any(a["issue"] == proposed["issue"] for a in active_rows(handoff))):
+                raise ValueError("Staged archive must preserve the original active Head handoff")
+        debt_numbers = {row["issue"] for row in unresolved_integration_debt(state)}
+        debt_numbers.update(row["issue"] for row in unresolved_integration_debt(
+            {**state, "ledger": ledger, "handoff": handoff}))
+        for row in ledger["issues"]:
+            old = before.get(row["issue"])
+            if (row["state"] == "retired" and (old is None or old["state"] != "retired")
+                    and row["issue"] in debt_numbers):
+                raise ValueError("Cannot retire issue with outstanding integration debt")
+            if row["state"] == "integrated" and (old is None or old["state"] != "integrated"):
+                proof = [r for r in appended if r["handoff"]["issue"] == row["issue"]
+                         and r["disposition"] == "integrated"]
+                if not batch and len(proof) != 1:
+                    raise ValueError("Integration debt cannot clear without exact integration archive")
+                dispositions = [r for r in appended if r["handoff"]["issue"] == row["issue"]
+                                and closure_receipt(r) is None]
+                if batch:
+                    if len(proof) < 2 or appended != proof or any(
+                            not r["decision"].startswith(HISTORICAL_INTEGRATION_DECISION) for r in proof):
+                        raise ValueError("Historical integration batch requires only exact integration archives")
+                    first = checkpoint.parse_json(proof[0]["decision"][len(HISTORICAL_INTEGRATION_DECISION):])
+                    if (not isinstance(first, dict) or set(first) != {"owner_decision", "policy"}
+                            or reconcile(api, state, row["issue"], first["owner_decision"],
+                                         policy=policy) != (ledger, handoff)):
+                        raise ValueError("Historical integration batch publication differs from reviewed intent")
+                    continue
+                if dispositions[-1] != proof[0]:
+                    raise ValueError("Final archive disposition must match integrated row")
+                record = proof[0]
+                if record["decision"].startswith(HISTORICAL_INTEGRATION_DECISION):
+                    receipt = checkpoint.parse_json(record["decision"][len(HISTORICAL_INTEGRATION_DECISION):])
+                    if (not isinstance(receipt, dict) or set(receipt) != {"owner_decision", "policy"}
+                            or receipt["policy"] != policy or not isinstance(policy, dict)
+                            or policy.get("outcome") != "historical_product_integration"):
+                        raise ValueError("Historical integration requires exact reconciliation proof")
+                else:
+                    prior = next((a for a in active_rows(state["handoff"])
+                                  if a["issue"] == row["issue"]), None)
+                    if prior is None:
+                        archived = next((r for r in reversed(state["handoff"]["history"])
+                                         if r["handoff"]["issue"] == row["issue"]
+                                         and closure_receipt(r) is None), None)
+                        if archived is None or archived["disposition"] != "staged":
+                            raise ValueError("Historical integration requires exact reconciliation proof")
+                        prior = archived["handoff"]
+                    proposed = record["handoff"]
+                    if (prior["phase"] != "Head" or any(prior.get(k) != proposed.get(k)
+                            for k in PIN_KEYS | {"fix_sha", "candidate_sha", "pull_request"})
+                            or not set(prior["evidence"]).issubset(proposed["evidence"])):
+                        raise ValueError("Integration publication must preserve original handoff pins")
+                    if isinstance(policy, dict) and policy.get("outcome") == "active_head_recovery":
+                        from tools import standard
+                        merged, links = standard.verify_integration(api, state, prior,
+                            get_pr(api, state, prior), policy)
+                        expected = {**prior, "evidence": list(dict.fromkeys(prior["evidence"] + links))}
+                        suffix = "\nPost-merge policy: " + json.dumps(
+                            policy, sort_keys=True, separators=(",", ":"), ensure_ascii=True, allow_nan=False)
+                        if (proposed != expected or record["merged_sha"] != merged
+                                or not record["decision"].endswith(suffix)):
+                            raise ValueError("Active Head recovery publication differs from reviewed proof")
+                require_all_fixes_resolved(state, ledger, handoff, row["issue"])
+        blocked = [r for r in appended if r["disposition"] == "blocked" and closure_receipt(r) is None]
+        enters_blocked = any(row["state"] == "blocked" and before.get(row["issue"], {}).get("state") != "blocked"
+                             for row in ledger["issues"])
+        if blocked or enters_blocked:
+            if len(blocked) != 1 or not enters_blocked or finish(
+                    api, state, "blocked", blocked[0]["decision"],
+                    issue=blocked[0]["handoff"]["issue"]) != (ledger, handoff):
+                raise ValueError("Blocked publication differs from the planned Head disposition")
+        deferred_transitions = {row["issue"] for row in ledger["issues"]
+                                if row["state"] == "deferred" and
+                                before.get(row["issue"], {}).get("state") != "deferred"}
+        for number in deferred_transitions:
+            dispositions = [r for r in appended if r["handoff"]["issue"] == number
+                            and closure_receipt(r) is None]
+            if (not dispositions or dispositions[-1]["disposition"] != "deferred"
+                    or sum(r["disposition"] == "deferred" for r in dispositions) != 1):
+                raise ValueError("Deferred row requires a matching final deferred archive")
+        for record in appended:
+            bounded = deferral_record(record)
+            if ((record["disposition"] == "deferred" and closure_receipt(record) is None)
+                    or bounded is not None):
+                proposed = record["handoff"]
+                prior = next((a for a in active_rows(state["handoff"])
+                              if a["issue"] == proposed["issue"]), None)
+                if (prior is None or prior["phase"] != "Head" or prior != proposed
+                        or any(a["issue"] == proposed["issue"] for a in active_rows(handoff))
+                        or (record["disposition"] == "deferred"
+                            and proposed["issue"] not in deferred_transitions)):
+                    raise ValueError("Integration debt deferral must preserve the original active Head handoff")
+            if bounded is not None:
+                if deferral_approved is not True:
+                    raise ValueError("Explicit owner approval of integration debt deferral required")
+                policies.append(check_deferral(api, state, record))
+        if state["handoff"]["schema_version"] == handoff["schema_version"] == 1:
+            prior = state["handoff"]["active"]
+            if prior is not None and handoff["active"] is None:
+                dispositions = [r for r in appended if r["handoff"]["issue"] == prior["issue"]
+                                and closure_receipt(r) is None]
+                row = next(r for r in ledger["issues"] if r["issue"] == prior["issue"])
+                if (prior["phase"] != "Head" or len(dispositions) != 1
+                        or row["state"] not in ("blocked", "deferred", "staged", "integrated")
+                        or dispositions[0]["disposition"] != row["state"]):
+                    raise ValueError("Active handoff removal requires a matching Head disposition archive")
+        return policies
+    revalidate_claim_and_deferrals()
     if not apply:
         return {"status": "planned", "ledger": ledger, "handoff": handoff}
     # Recheck proof for newly staged rows before persisting. A stale stage
@@ -1706,6 +2607,7 @@ def save(api, state, ledger, handoff, apply=False, *, issue=None, operation_id=N
             rework_prs.append(prior["handoff"])
     def revalidate_publication():
         from tools import standard
+        policies = revalidate_claim_and_deferrals()
         for previous in rework_prs:
             verify_closed_staged_pr(api, state, previous)
         for record in appended:
@@ -1731,12 +2633,25 @@ def save(api, state, ledger, handoff, apply=False, *, issue=None, operation_id=N
             elif record["disposition"] == "staged":
                 verify_candidate_runs(api, state, active, active["evidence"])
             elif record["disposition"] == "integrated":
+                if batch:
+                    # The entire batch was re-derived and compared above, including
+                    # every exact occurrence, run, criterion and final containment.
+                    continue
+                if record["decision"].startswith(HISTORICAL_INTEGRATION_DECISION):
+                    receipt = checkpoint.parse_json(record["decision"][len(HISTORICAL_INTEGRATION_DECISION):])
+                    if (not isinstance(receipt, dict) or set(receipt) != {"owner_decision", "policy"}
+                            or receipt["policy"] != policy
+                            or reconcile(api, state, active["issue"], receipt["owner_decision"],
+                                         policy=policy) != (ledger, handoff)):
+                        raise ValueError("Historical integration publication differs from reviewed intent")
+                    continue
                 merged, links = standard.verify_integration(api, state, active,
                                                              get_pr(api, state, active), policy)
                 if (merged != record["merged_sha"] or not set(links).issubset(active["evidence"])
                         or not record["decision"].endswith("\nPost-merge policy: " + json.dumps(
                             policy, sort_keys=True, separators=(",", ":"), ensure_ascii=True, allow_nan=False))):
                     raise ValueError("Integrated publication proof does not match reviewed record")
+        return policies
     revalidate_publication()
     prefix, old = state["prefix"], state["ref"]
     if install.read_ref(api, prefix, install.BRANCH) != old:
@@ -1765,8 +2680,26 @@ def save(api, state, ledger, handoff, apply=False, *, issue=None, operation_id=N
                             "operation_id": operation_id})
     # A journal sink can take time. Check proof after it completes, as close
     # to the actual ref update as possible (the API is not a shared transaction).
-    revalidate_publication()
-    # Fast-forward-only CAS: a divergent writer cannot overwrite a competing handoff.
+    policies = revalidate_publication()
+    # Recheck the lease even for ordinary transitions that have no PR or
+    # deferral proof. A ticket sink or object creation can outlast the lease.
+    if install.read_ref(api, prefix, install.BRANCH) != old:
+        raise HandoffStale("Installed branch advanced before publication; reload")
+    if policies and install.read_ref(api, prefix, state["manifest"]["product_branch"]) != state["product_sha"]:
+        raise ValueError("Integration debt deferral target changed before publication")
+    if batch:
+        # Final bounded recheck after the ordinary publication lease reads.
+        # This checks both refs at the end, but cannot make remote evidence
+        # reads and the subsequent PATCH a shared transaction.
+        recheck_historical_batch_runs(api, state, policy["proofs"])
+    now = time.time()
+    for deferral in policies:
+        if not deferral["approved_at"] <= now < deferral["expires_at"]:
+            if recovery:
+                raise ValueError("Recovery-only claim authorization expired before publication")
+            raise ValueError("Integration debt deferral expired before publication")
+    # Non-force REST update preserves fast-forward history. This is not a
+    # general expected-old CAS nor an atomic check of the product branch.
     ambiguous = False
     try:
         api.request("PATCH", prefix + "/git/refs/heads/" + install.BRANCH, {"sha": new, "force": False})
@@ -2065,6 +2998,7 @@ def main():
     c.add_argument("--acceptance", action="append", default=[])
     c.add_argument("--note", required=True)
     c.add_argument("--owner-approved", action="store_true")
+    c.add_argument("--recovery-policy", help="Exact owner-reviewed recovery-only claim JSON; no automatic retry")
     c.add_argument("--parallel", action="store_true", help="Owner-approved opt-in to parallel handoffs when claiming a new active issue")
     c.add_argument("--rework-staged", action="store_true", help="Owner-approved rework of a staged issue with a closed unmerged PR")
     c.add_argument("--resume-prior-line", action="store_true", help="Resume an eligible unresolved historical checkpoint without renumbering")
@@ -2151,23 +3085,31 @@ def main():
             from pathlib import Path
             policy = (checkpoint.parse_json(Path(args.policy).read_text(encoding="utf-8"))
                       if args.command in ("finish", "reconcile", "finish-engineering") and args.policy else None)
+            if args.command == "claim" and args.recovery_policy:
+                policy = checkpoint.parse_json(Path(args.recovery_policy).read_text(encoding="utf-8"))
+                if not isinstance(policy, dict):
+                    raise ValueError("Recovery-only claim policy must be a JSON object")
             def plan(current):
                 if args.command == "claim":
                     return claim(api, current, args.issue, args.acceptance, args.note,
                         resume_prior_line=args.resume_prior_line, parallel=args.parallel,
-                        rework_staged=args.rework_staged)
+                        rework_staged=args.rework_staged, recovery_policy=policy,
+                        recovery_approved=args.owner_approved)
                 if args.command == "advance":
                     return advance(api, current, args.note, fix=args.fix, candidate=args.candidate,
                         pr=args.pr, evidence=args.evidence, rework=args.rework,
                         return_to_head=args.return_to_head, refresh=args.refresh, issue=scope)
                 if args.command == "finish":
-                    return finish(api, current, args.disposition, args.decision, policy=policy, issue=scope)
+                    return finish(api, current, args.disposition, args.decision, policy=policy, issue=scope,
+                                  deferral_approved=args.owner_approved)
                 if args.command == "finish-engineering":
                     return finish_engineering(api, current, args.decision, policy=policy,
                                               owner_approved=args.owner_approved, issue=scope)
                 return reconcile(api, current, args.issue, args.decision, policy=policy)
             # Exact owner post-merge policy pins must not be silently rewritten.
-            if args.apply and policy is None and args.command != "reconcile" and not (
+            bounded_deferral = (args.command == "finish"
+                                and args.decision.startswith(DEFERRAL_DECISION))
+            if args.apply and policy is None and args.command != "reconcile" and not bounded_deferral and not (
                     args.command == "finish" and args.disposition == "integrated"):
                 # Preserve the CLI interface. A second bounded round continues
                 # only the same verified intent in this execution.
@@ -2189,7 +3131,9 @@ def main():
                     result = save(api, state, ledger, handoff, args.apply, issue=scope,
                                   engineering_approved=args.owner_approved)
                 else:
-                    result = save(api, state, ledger, handoff, args.apply, issue=scope, policy=policy)
+                    result = save(api, state, ledger, handoff, args.apply, issue=scope, policy=policy,
+                                  deferral_approved=bounded_deferral and args.owner_approved,
+                                  recovery_approved=args.command == "claim" and args.owner_approved)
         print(install.render(result), end="")
     except (ValueError, KeyError, TypeError, OSError, install.ApiError) as exc:
         install.cli_error(p, "VIB session stopped", exc)

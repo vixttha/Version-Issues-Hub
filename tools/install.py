@@ -316,7 +316,49 @@ def require_publishable_package(files):
         raise ValueError("Legal review package is not authorized for installation or upgrade")
 
 
-def install(api, target, source_sha, baseline, apply=False):
+DESIGNATED_PRODUCT_TARGET_V1 = True
+
+
+def supports_designated_target(files):
+    try:
+        code = ast.parse(files.get("tools/install.py", ""))
+    except (SyntaxError, TypeError, ValueError):
+        return False
+    return any(isinstance(node, ast.Assign)
+               and any(isinstance(t, ast.Name) and t.id == "DESIGNATED_PRODUCT_TARGET_V1"
+                       for t in node.targets)
+               and isinstance(node.value, ast.Constant) and node.value.value is True
+               for node in code.body)
+
+
+def product_target(meta, manifest):
+    """Resolve the actual default or a separately authorized exact alternate."""
+    default, branch = meta.get("default_branch"), manifest.get("product_branch")
+    if (not isinstance(default, str) or not default or default == BRANCH
+            or not isinstance(branch, str) or not branch or branch == BRANCH):
+        raise ValueError("Invalid product branch or workflow/default collision")
+    approval = manifest.get("product_target_approval")
+    if approval is None:
+        if branch != default:
+            raise ValueError("Product branch differs from default without owner designation")
+        return branch
+    keys = {"schema_version", "repository", "repository_id", "branch",
+            "default_at_approval", "approved_baseline_sha", "owner_decision"}
+    if (not isinstance(approval, dict) or set(approval) != keys
+            or type(approval["schema_version"]) is not int or approval["schema_version"] != 1
+            or approval["repository"] != meta.get("full_name")
+            or not same_id(approval["repository_id"], meta.get("id"))
+            or approval["branch"] != branch or approval["default_at_approval"] != default
+            or branch == default or approval["approved_baseline_sha"] != manifest.get("product_baseline_sha")
+            or not isinstance(approval["owner_decision"], str)
+            or not approval["owner_decision"].strip()):
+        raise ValueError("Owner-designated product target identity or default branch changed")
+    require(SHA, approval["approved_baseline_sha"], "approved product baseline")
+    return branch
+
+
+def install(api, target, source_sha, baseline, apply=False, *, product_branch=None,
+            product_sha=None, product_decision=None, owner_approved=False):
     require(SHA, source_sha, "full source commit")
     require(BASELINE, baseline, "baseline")
     prefix = repo_path(target)
@@ -330,23 +372,45 @@ def install(api, target, source_sha, baseline, apply=False):
     default = meta["default_branch"]
     if default == BRANCH:
         raise ValueError("Install branch cannot be the product default branch")
+    branch = default if product_branch is None else product_branch
+    if not isinstance(branch, str) or not branch or branch == BRANCH:
+        raise ValueError("Invalid product branch")
+    alternate = branch != default
+    if alternate:
+        if (owner_approved is not True or not isinstance(product_decision, str)
+                or not product_decision.strip()):
+            raise ValueError("Alternate product branch requires explicit owner approval and decision")
+        require(SHA, product_sha, "reviewed product revision")
+    elif product_sha is not None or product_decision is not None:
+        raise ValueError("Alternate-target policy is only for a distinct designated branch")
     if read_ref(api, prefix, BRANCH) is not None:
         raise ValueError("Install branch already exists; no overwrite or upgrade performed")
-    product = read_ref(api, prefix, default)
+    product = read_ref(api, prefix, branch)
     if product is None:
         raise ValueError("Initialize the target repository before installing VIB")
+    if alternate and product != product_sha:
+        raise ValueError("Reviewed alternate product revision is stale")
     files = source_files(api, source_sha)
+    if alternate and not supports_designated_target(files):
+        raise ValueError("Pinned package lacks reviewed designated-target support")
     major, minor, patch = map(int, baseline[1:].split("."))
     manifest = {
         "schema_version": 1, "package": "Version-Issues-Hub",
         "source_repository": SOURCE, "source_sha": source_sha,
         "target_repository": meta["full_name"], "target_repository_id": meta["id"],
-        "product_branch": default, "product_baseline_sha": product,
+        "product_branch": branch, "product_baseline_sha": product,
         "install_branch": BRANCH, "baseline_version": baseline,
         "target_version": f"v{major}.{minor}.{patch + 1}",
         "enforcement": "disabled",
         "package_files_sha256": {p: hashlib.sha256(s.encode()).hexdigest() for p, s in files.items()},
     }
+    if alternate:
+        manifest["product_target_approval"] = {
+            "schema_version": 1, "repository": meta["full_name"],
+            "repository_id": meta["id"], "branch": branch,
+            "default_at_approval": default, "approved_baseline_sha": product,
+            "owner_decision": product_decision}
+    product_target(meta, manifest)
     files["vib-install.json"] = render(manifest)
     files["ledger/issue-versions.json"] = render({
         "schema_version": 1, "repository": meta["full_name"], "issues": [],
@@ -358,9 +422,10 @@ def install(api, target, source_sha, baseline, apply=False):
     require_publishable_package(files)
     # Recheck identity and refs before creating unreachable objects. Never update a ref.
     latest = api.request("GET", prefix)
-    if latest.get("id") != meta["id"] or latest.get("default_branch") != default:
+    if (latest.get("id") != meta["id"] or latest.get("full_name") != meta["full_name"]
+            or latest.get("default_branch") != default or product_target(latest, manifest) != branch):
         raise ValueError("Target identity or default branch changed")
-    if read_ref(api, prefix, BRANCH) is not None or read_ref(api, prefix, default) != product:
+    if read_ref(api, prefix, BRANCH) is not None or read_ref(api, prefix, branch) != product:
         raise ValueError("Target refs changed; rerun the dry run")
     entries = [{"path": p, "mode": "100644", "type": "blob", "content": s}
                for p, s in sorted(files.items())]
@@ -375,8 +440,21 @@ def install(api, target, source_sha, baseline, apply=False):
     installed = api.request("GET", prefix + "/git/commits/" + commit)
     if installed.get("sha") != commit or installed["tree"]["sha"] != tree:
         raise ValueError("Installed tree read-back mismatch")
-    if read_ref(api, prefix, default) != product:
-        raise ValueError("Product ref changed concurrently; inspect before retrying")
+    try:
+        latest = response_object(api.request("GET", prefix), "final target repository")
+        if (latest.get("id") != meta["id"] or latest.get("full_name") != meta["full_name"]
+                or latest.get("default_branch") != default or product_target(latest, manifest) != branch):
+            raise ValueError("Target identity or default branch changed")
+        if read_ref(api, prefix, branch) != product:
+            raise ValueError("Product ref changed concurrently")
+    except ApiError as exc:
+        # Preserve the typed throttle receipt for CLI callers; never replay the create.
+        exc.args = ("Installed ref was created at " + commit +
+                    "; final product verification failed; inspect before retrying: " + str(exc),)
+        raise
+    except (ValueError, KeyError, OSError) as exc:
+        raise ValueError("Installed ref was created at " + commit +
+                         "; final product verification failed; inspect before retrying: " + str(exc)) from exc
     return {**plan, "status": "installed", "installed_sha": commit, "installed_tree_sha": tree}
 
 def main():
@@ -384,13 +462,19 @@ def main():
     p.add_argument("--target", required=True)
     p.add_argument("--source-sha", required=True)
     p.add_argument("--baseline", required=True)
+    p.add_argument("--product-branch", help="Explicit alternate product branch")
+    p.add_argument("--product-sha", help="Exact reviewed alternate branch revision")
+    p.add_argument("--product-decision", help="Owner designation and reason")
+    p.add_argument("--owner-approved", action="store_true")
     p.add_argument("--apply", action="store_true", help="Create only the dedicated branch")
     args = p.parse_args()
     token = os.environ.get("GH_TOKEN") or os.environ.get("GITHUB_TOKEN")
     if args.apply and not token:
         p.error("Apply requires a GitHub credential in GH_TOKEN or GITHUB_TOKEN")
     try:
-        print(render(install(GitHub(token), args.target, args.source_sha, args.baseline, args.apply)), end="")
+        print(render(install(GitHub(token), args.target, args.source_sha, args.baseline, args.apply,
+                             product_branch=args.product_branch, product_sha=args.product_sha,
+                             product_decision=args.product_decision, owner_approved=args.owner_approved)), end="")
     except (ValueError, ApiError, KeyError, OSError) as exc:
         cli_error(p, "Install stopped", exc)
 

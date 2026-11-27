@@ -1,5 +1,6 @@
 import copy
 import json
+import time
 import unittest
 from unittest.mock import patch
 from tools import install, session
@@ -50,9 +51,13 @@ class Fake:
         if method == "GET" and path.endswith("/git/ref/heads/trunk"):
             return {"ref":"refs/heads/trunk","object":{"type":"commit","sha": self.product}}
         if method == "GET" and path.endswith("/git/commits/" + self.pr["merge_commit_sha"]) and self.pr["merged"] is False:
-            return {"sha":self.pr["merge_commit_sha"],"parents":[{"sha":self.pr["base"]["sha"]},{"sha":self.pr["head"]["sha"]}]}
+            return {"sha":self.pr["merge_commit_sha"],"tree":{"sha":TREE},"parents":[{"sha":self.pr["base"]["sha"]},{"sha":self.pr["head"]["sha"]}]}
         if method == "GET" and (path.endswith("/actions/runs/" + str(self.pre_run["id"])) or path.endswith("/actions/runs/" + str(self.pre_run["id"]) + "/attempts/1")):
             return self.pre_run
+        if method == "GET" and path.endswith("/git/commits/" + PROPOSED):
+            return {"sha":PROPOSED,"tree":{"sha":TREE},"parents":[{"sha":BASE},{"sha":CANDIDATE}]}
+        if method == "GET" and path.endswith("/git/commits/" + CANDIDATE):
+            return {"sha":CANDIDATE,"tree":{"sha":TREE}}
         if method == "GET" and path.endswith("/git/commits/" + NEXT):
             return {"sha":NEXT,"tree":{"sha":TREE},"parents":self.merge_parents}
         if method == "GET" and "/compare/" in path:
@@ -97,6 +102,24 @@ def post_policy(s, number=247):
                 {"run":124,"attempt":1,"workflow_id":52,"job_name":"test","steps":["Run acceptance"]}
             ]} for criterion in row["acceptance"]]}]}
 
+def bounded_deferral(s, api, next_issue):
+    """Fixture: deliberately authorize one subsequent issue at current target."""
+    s["product_sha"] = api.product
+    active = s["handoff"]["active"]
+    now = int(time.time())
+    row = next(r for r in s["ledger"]["issues"] if r["issue"] == active["issue"])
+    policy = {"schema_version": 1, "repository": s["ledger"]["repository"],
+              "repository_id": s["manifest"]["target_repository_id"],
+              "product_branch": s["manifest"]["product_branch"],
+              "product_sha": s["product_sha"], "criteria": row["acceptance"],
+              **{k: active[k] for k in ("issue", "version", "fix_sha", "candidate_sha", "pull_request")},
+              "approved_at": now, "expires_at": now + 3600,
+              "authorized_next_issue": next_issue, "reason": "Review bounded batch",
+              "review_trigger": "Before accepting another issue",
+              "next_action": "Integrate reviewed PR or reconcile with owner"}
+    return session.DEFERRAL_DECISION + json.dumps(policy, sort_keys=True)
+
+
 class SessionTests(unittest.TestCase):
     def setUp(self):
         self.api = Fake()
@@ -112,12 +135,38 @@ class SessionTests(unittest.TestCase):
     def test_fresh_session_recovers_active_issue(self):
         active = self.claim()
         self.assertEqual(active["version"], "v1.0.6.1")
-        self.assertEqual(session.inspect(self.api, self.state)["status"], "resume")
+        report = session.inspect(self.api, self.state)
+        self.assertEqual(report["status"], "resume")
+        self.assertEqual(report["installed_source_sha"], PIN)
+        self.assertEqual(report["product_branch"], "trunk")
+        self.assertEqual(json.loads(install.render(report)), report)
+        self.assertEqual(report["canonical_active_phases"], {"247": "Worker"})
         self.assertEqual(session.inspect(self.api, self.state, 248)["status"], "blocked_other_active_issue")
         with self.assertRaisesRegex(ValueError, "Another issue"):
             session.claim(self.api, self.state, 248, ["test"], "Fix")
         self.assertEqual(session.claim(self.api, self.state, 247, ["test"], "Retry"),
                          (self.state["ledger"], self.state["handoff"]))
+
+    def test_explicit_recovery_policy_rejects_json_null_before_claim(self):
+        import contextlib
+        import io
+        import sys
+        import tempfile
+        from pathlib import Path
+
+        with tempfile.TemporaryDirectory() as directory:
+            policy = Path(directory) / "policy.json"
+            policy.write_text("null", encoding="utf-8")
+            args = ["session", "--target", REPO, "claim", "247", "--note", "Recover",
+                    "--owner-approved", "--recovery-policy", str(policy)]
+            stderr = io.StringIO()
+            with patch.object(sys, "argv", args), patch.object(session, "load", return_value=self.state), \
+                    patch.object(session, "claim") as claim, contextlib.redirect_stderr(stderr):
+                with self.assertRaises(SystemExit) as error:
+                    session.main()
+            self.assertEqual(error.exception.code, 1)
+            self.assertIn("Recovery-only claim policy must be a JSON object", stderr.getvalue())
+            claim.assert_not_called()
 
     def test_handoff_loop_and_owner_integration(self):
         self.claim()
@@ -210,7 +259,8 @@ class SessionTests(unittest.TestCase):
         self.advance(evidence=[RUN])
         self.advance()
         self.state["ledger"], self.state["handoff"] = session.finish(
-            self.api, self.state, "staged", "Owner stages first issue")
+            self.api, self.state, "staged", bounded_deferral(self.state, self.api, 248),
+            deferral_approved=True)
         self.assertEqual(self.state["ledger"]["issues"][0]["state"], "staged")
         self.assertIsNone(self.state["handoff"]["active"])
         self.state["ledger"], self.state["handoff"] = session.claim(
@@ -557,6 +607,35 @@ class SessionTests(unittest.TestCase):
                 self.api.run["run_attempt"] = 1
                 self.assertEqual(session.save(self.api, self.state, ledger, handoff, True,
                                               policy=policy)["installed_sha"], NEXT)
+
+    def test_ordinary_publication_rechecks_lease_after_candidate_and_ticket(self):
+        for at_ticket in (False, True):
+            with self.subTest(at_ticket=at_ticket):
+                self.setUp()
+                self.claim()
+                ledger, handoff = session.advance(
+                    self.api, self.state, "Return to Head", return_to_head=True)
+                before = copy.deepcopy(self.state)
+                competing = "7"*40
+                original_request = self.api.request
+                tickets = []
+                def request(method, path, body=None):
+                    result = original_request(method, path, body)
+                    if not at_ticket and method == "POST" and path.endswith("/git/commits"):
+                        self.api.ref = competing
+                    return result
+                self.api.request = request
+                def sink(ticket):
+                    tickets.append(ticket)
+                    if at_ticket:
+                        self.api.ref = competing
+                with self.assertRaisesRegex(session.HandoffStale, "advanced before publication"):
+                    session.save(self.api, self.state, ledger, handoff, True, issue=247,
+                                 operation_id="a"*64, on_recovery_ticket=sink)
+                self.assertEqual(self.state, before)
+                self.assertEqual(self.api.ref, competing)
+                self.assertEqual(len(tickets), 1)
+                self.assertEqual([w[0] for w in self.api.writes], ["POST", "POST"])
 
     def test_staged_publication_rechecks_after_recovery_ticket_sink(self):
         self.claim()

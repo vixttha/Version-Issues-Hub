@@ -78,8 +78,10 @@ class Fake:
         if path.startswith(PREFIX + "/git/ref/heads/"):
             name = path.split("/heads/")[-1]
             return {"ref": "refs/heads/" + name, "object": {"type": "commit", "sha": self.refs[name]}}
+        if path == PREFIX + "/git/commits/" + HEAD:
+            return {"sha": HEAD, "tree": {"sha": SOURCE}}
         if path == PREFIX + "/git/commits/" + MERGE:
-            return {"sha": MERGE, "parents": [{"sha": s} for s in self.parents]}
+            return {"sha": MERGE, "tree": {"sha": SOURCE}, "parents": [{"sha": s} for s in self.parents]}
         if path.startswith(PREFIX + "/issues/"):
             return {"number": int(path.rsplit("/", 1)[-1]), "state": "open"}
         if path == PREFIX + "/compare/" + FIX + "..." + HEAD:

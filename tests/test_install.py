@@ -18,6 +18,7 @@ PREFIX = "/repos/" + TARGET
 class FakeGitHub:
     def __init__(self):
         self.refs = {"trunk": PRODUCT}
+        self.expected_parent = PRODUCT
         self.writes = []
         self.entries = {}
         self.metadata = {"id": 42, "full_name": TARGET, "default_branch": "trunk"}
@@ -33,7 +34,7 @@ class FakeGitHub:
                 self.entries = {e["path"]: e["content"] for e in body["tree"]}
                 return {"sha": TREE}
             if path == PREFIX + "/git/commits":
-                assert body["parents"] == [PRODUCT] and body["tree"] == TREE
+                assert body["parents"] == [self.expected_parent] and body["tree"] == TREE
                 return {"sha": INSTALLED}
             if path == PREFIX + "/git/refs":
                 branch = body["ref"].removeprefix("refs/heads/")
@@ -71,6 +72,42 @@ class FakeGitHub:
 class InstallerTests(unittest.TestCase):
     def setUp(self):
         self.api = FakeGitHub()
+
+    def test_explicit_alternate_product_target_plan(self):
+        release = "f" * 40
+        self.api.refs["release"] = release
+        self.api.expected_parent = release
+        with patch.object(install, "source_files", return_value={
+                "tools/install.py": "DESIGNATED_PRODUCT_TARGET_V1 = True\n"}):
+            with self.assertRaisesRegex(ValueError, "owner approval"):
+                install.install(self.api, TARGET, PIN, "v1.0.6", product_branch="release",
+                                product_sha=release)
+            plan = install.install(self.api, TARGET, PIN, "v1.0.6",
+                product_branch="release", product_sha=release,
+                product_decision="Owner uses release branch for product integration", owner_approved=True)
+            manifest = plan["manifest"]
+            self.assertEqual(manifest["product_branch"], "release")
+            self.assertEqual(manifest["product_baseline_sha"], release)
+            self.assertEqual(install.product_target(self.api.metadata, manifest), "release")
+            with self.assertRaisesRegex(ValueError, "changed"):
+                install.product_target({**self.api.metadata, "default_branch":"other"}, manifest)
+            with self.assertRaisesRegex(ValueError, "stale"):
+                install.install(self.api, TARGET, PIN, "v1.0.6",
+                    product_branch="release", product_sha="e"*40,
+                    product_decision="Owner selected release", owner_approved=True)
+        with self.assertRaisesRegex(ValueError, "lacks reviewed"):
+            install.install(self.api, TARGET, PIN, "v1.0.6",
+                product_branch="release", product_sha=release,
+                product_decision="Owner selected release", owner_approved=True)
+        self.assertEqual(self.api.writes, [])
+        with patch.object(install, "source_files", return_value={
+                "tools/install.py": "DESIGNATED_PRODUCT_TARGET_V1 = True\n"}):
+            result = install.install(self.api, TARGET, PIN, "v1.0.6", True,
+                product_branch="release", product_sha=release,
+                product_decision="Owner selected release", owner_approved=True)
+        self.assertEqual(result["manifest"]["product_baseline_sha"], release)
+        self.assertEqual(self.api.writes[1][1]["parents"], [release])
+        self.assertEqual(self.api.refs["trunk"], PRODUCT)
 
     def test_install_isolated_branch(self):
         result = install.install(self.api, TARGET, PIN, "v1.0.6", True)
@@ -164,6 +201,50 @@ class InstallerTests(unittest.TestCase):
             install.install(self.api, TARGET, PIN, "v0.0.0", True)
         self.assertEqual(self.api.refs[install.BRANCH], "e" * 40)
         self.assertEqual(self.api.refs["trunk"], PRODUCT)
+
+    def test_post_install_default_change_requires_inspection(self):
+        original = self.api.request
+        def race(method, path, body=None):
+            result = original(method, path, body)
+            if method == "POST" and path.endswith("/git/refs"):
+                self.api.metadata["default_branch"] = "other"
+            return result
+        self.api.request = race
+        with self.assertRaisesRegex(ValueError, INSTALLED + ".*inspect before retrying"):
+            install.install(self.api, TARGET, PIN, "v1.0.6", True)
+        self.assertEqual(self.api.refs[install.BRANCH], INSTALLED)
+        self.assertEqual(self.api.refs["trunk"], PRODUCT)
+        self.assertEqual(len(self.api.writes), 3)
+
+    def test_post_install_malformed_metadata_requires_inspection(self):
+        original = self.api.request
+        def race(method, path, body=None):
+            if method == "GET" and path == PREFIX and install.BRANCH in self.api.refs:
+                return []
+            return original(method, path, body)
+        self.api.request = race
+        with self.assertRaisesRegex(ValueError, INSTALLED + ".*inspect before retrying"):
+            install.install(self.api, TARGET, PIN, "v1.0.6", True)
+        self.assertEqual(self.api.refs[install.BRANCH], INSTALLED)
+        self.assertEqual(len(self.api.writes), 3)
+
+    def test_post_install_throttle_retains_typed_delay_receipt(self):
+        original = self.api.request
+        def race(method, path, body=None):
+            if method == "GET" and path == PREFIX and install.BRANCH in self.api.refs:
+                raise install.ApiError(429, "GET", "repository", 90)
+            return original(method, path, body)
+        self.api.request = race
+        with self.assertRaisesRegex(install.ApiError, INSTALLED + ".*inspect before retrying") as caught:
+            install.install(self.api, TARGET, PIN, "v1.0.6", True)
+        self.assertEqual((caught.exception.status, caught.exception.retry_after), (429, 90))
+        from unittest.mock import Mock
+        parser = Mock()
+        install.cli_error(parser, "Install stopped", caught.exception)
+        receipt = json.loads(parser.exit.call_args.args[1].splitlines()[-1])
+        self.assertEqual(receipt, {"kind":"vib_api_delay", "status":429, "retry_after":90})
+        self.assertEqual(self.api.refs[install.BRANCH], INSTALLED)
+        self.assertEqual(len(self.api.writes), 3)
 
     def test_default_branch_collision_refused(self):
         self.api.metadata["default_branch"] = install.BRANCH
@@ -347,3 +428,4 @@ class InstallerTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+

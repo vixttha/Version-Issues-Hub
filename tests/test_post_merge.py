@@ -145,3 +145,44 @@ class IntegrationTests(unittest.TestCase):
                 self.integrate(api,s,staged,p)
             self.assertEqual(s,before)
             self.assertEqual(api.writes,[])
+
+    def test_actual_merge_must_match_pinned_preview_on_both_paths(self):
+        from test_session import PROPOSED
+        for staged in (False, True):
+            for fault in ("wrong_tree", "missing_tree", "wrong_parents", "changed_at_final_read"):
+                with self.subTest(staged=staged, fault=fault):
+                    api,s,p=self.setup_case(staged)
+                    before=copy.deepcopy(s)
+                    original=api.request
+                    reads=0
+                    def request(method,path,body=None):
+                        nonlocal reads
+                        result=original(method,path,body)
+                        if method=="GET" and path.endswith("/git/commits/"+PROPOSED):
+                            reads+=1
+                            if fault=="wrong_tree" or (fault=="changed_at_final_read" and reads>1):
+                                return {**result,"tree":{"sha":BASE}}
+                            if fault=="missing_tree":
+                                return {**result,"tree":None}
+                            if fault=="wrong_parents":
+                                return {**result,"parents":[{"sha":BASE},{"sha":FIX}]}
+                        return result
+                    api.request=request
+                    with self.assertRaises(ValueError):
+                        self.integrate(api,s,staged,p)
+                    self.assertEqual(s,before)
+                    self.assertEqual(api.writes,[])
+
+    def test_unpinned_or_wrong_base_requires_historical_reconciliation(self):
+        for staged in (False, True):
+            for bad_base in (None, FIX):
+                api,s,p=self.setup_case(staged)
+                active=s["handoff"]["history"][-1]["handoff"] if staged else s["handoff"]["active"]
+                if bad_base is None:
+                    active.pop("integration_base_sha")
+                    active.pop("integration_merge_sha")
+                else:
+                    active["integration_base_sha"]=bad_base
+                with self.assertRaisesRegex(ValueError,"historical reconciliation"):
+                    self.integrate(api,s,staged,p)
+                self.assertEqual(api.writes,[])

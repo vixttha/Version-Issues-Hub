@@ -1,4 +1,5 @@
 import copy
+import json
 import unittest
 from unittest.mock import patch
 from subprocess import CompletedProcess
@@ -18,6 +19,42 @@ class SelfUsePreflightTests(unittest.TestCase):
                                    "phase": "Worker", "next_action": "recover",
                                    "fix_sha": None, "candidate_sha": None,
                                    "pull_request": None, "evidence": []}}
+
+    def test_committed_projection_rejects_replacement_object(self):
+        import tempfile
+        from pathlib import Path
+        from subprocess import check_output
+        from tools import checkpoint
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            def git(*args):
+                return check_output(["git", "-C", tmp, *args], text=True).strip()
+            git("init", "-q", "-b", "baseline")
+            git("config", "user.name", "VIB test")
+            git("config", "user.email", "vib@example.invalid")
+            (root / "ledger").mkdir()
+            path = root / "ledger/issue-versions.json"
+            path.write_text(json.dumps(self.ledger), encoding="utf-8")
+            (root / "ledger/handoff.json").write_text(json.dumps(self.handoff), encoding="utf-8")
+            git("add", ".")
+            git("commit", "-qm", "canonical")
+            pin = git("rev-parse", "HEAD")
+            bad = copy.deepcopy(self.ledger)
+            bad["issues"][0]["acceptance"] = ["drift"]
+            path.write_text(json.dumps(bad), encoding="utf-8")
+            git("add", ".")
+            git("commit", "-qm", "bad tested revision")
+            tested = git("rev-parse", "HEAD")
+            path.write_text(json.dumps(self.ledger), encoding="utf-8")
+            git("add", ".")
+            git("commit", "-qm", "replacement correction")
+            replacement = git("rev-parse", "HEAD")
+            git("replace", tested, replacement)
+            self.assertEqual(json.loads(git("show", tested + ":ledger/issue-versions.json")), self.ledger)
+            actual_git = checkpoint.git
+            with patch.object(checkpoint, "git", side_effect=lambda *args: actual_git("-C", tmp, *args)):
+                with self.assertRaisesRegex(ValueError, "acceptance criteria differ"):
+                    self_use_preflight.read_projection(pin, 65, tested_head=tested)
 
     def test_valid_projection(self):
         self.assertEqual(self_use_preflight.validate_projection(
@@ -86,10 +123,12 @@ class SelfUsePreflightTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "does not match"):
             self_use_preflight.worker_record(record, "plan/checkpoint-wrong")
 
+    @patch("tools.self_use_preflight.checkpoint.git")
     @patch("tools.self_use_preflight.WORKER_RECORD")
     @patch("tools.self_use_preflight.subprocess.run")
     @patch("tools.self_use_preflight.read_projection")
-    def test_generic_branch_checks_canonical_ancestry_and_version(self, read, run, record):
+    def test_generic_branch_checks_canonical_ancestry_and_version(self, read, run, record, git):
+        git.return_value = "b"*40 + "\trefs/heads/Version-Issues-Hub"
         record.read_text.return_value = '{"schema_version":1,"issue":65,"version":"v0.0.0.31","installed_sha":"' + "a" * 40 + '"}'
         run.return_value = CompletedProcess([], 0)
         read.return_value = "v0.0.0.31"
@@ -97,6 +136,8 @@ class SelfUsePreflightTests(unittest.TestCase):
         self.assertEqual(self_use_preflight.verify_checkpoint_branch(branch),
                          ("a" * 40, 65, "v0.0.0.31"))
         read.assert_called_once_with("a" * 40, 65)
+        run.assert_any_call(["git", "fetch", "--no-tags", "--no-write-fetch-head", "origin", "b"*40], check=True)
+        run.assert_any_call(["git", "--no-replace-objects", "merge-base", "--is-ancestor", "a"*40, "b"*40], check=False)
         read.return_value = "v0.0.0.32"
         with self.assertRaisesRegex(ValueError, "differs"):
             self_use_preflight.verify_checkpoint_branch(branch)
@@ -106,3 +147,78 @@ class SelfUsePreflightTests(unittest.TestCase):
         record.read_text.side_effect = FileNotFoundError
         with self.assertRaises(FileNotFoundError):
             self_use_preflight.verify_checkpoint_branch(branch)
+
+    @patch("tools.self_use_preflight.verify_scope")
+    @patch("tools.self_use_preflight.checkpoint.git")
+    @patch("tools.self_use_preflight.WORKER_RECORD")
+    @patch("tools.self_use_preflight.subprocess.run")
+    @patch("tools.self_use_preflight.read_projection")
+    def test_scope_uses_same_observed_revision_as_ancestry(self, read, run, record, git, verify):
+        record.read_text.return_value = '{"schema_version":1,"issue":96,"version":"v0.0.0.43","installed_sha":"' + "a"*40 + '"}'
+        git.side_effect = ["b"*40 + "\trefs/heads/Version-Issues-Hub", "c"*40]
+        read.return_value = "v0.0.0.43"
+        run.return_value = CompletedProcess([], 0)
+        with patch.dict("os.environ", {"VIB_PR_BASE_SHA": "d"*40}), patch("builtins.print") as output:
+            self.assertEqual(self_use_preflight.verify_checkpoint_branch("plan/checkpoint-v0.0.0.43"),
+                             ("a"*40, 96, "v0.0.0.43"))
+        output.assert_any_call(f"VIB observed canonical revision: {'b'*40}; Worker pin: {'a'*40}")
+        verify.assert_called_once_with("a"*40, 96, "v0.0.0.43", "c"*40, "b"*40, "d"*40)
+        run.assert_any_call(["git", "--no-replace-objects", "merge-base", "--is-ancestor", "a"*40, "b"*40], check=False)
+        self.assertEqual(git.call_count, 2)
+
+    @patch("tools.self_use_preflight.checkpoint.git")
+    @patch("tools.self_use_preflight.WORKER_RECORD")
+    @patch("tools.self_use_preflight.subprocess.run")
+    @patch("tools.self_use_preflight.read_projection")
+    def test_ls_remote_matches_exact_canonical_ref_only(self, read, run, record, git):
+        record.read_text.return_value = '{"schema_version":1,"issue":65,"version":"v0.0.0.31","installed_sha":"' + "a"*40 + '"}'
+        read.return_value = "v0.0.0.31"
+        run.return_value = CompletedProcess([],0)
+        exact = "b"*40 + "\trefs/heads/Version-Issues-Hub"
+        extra = "c"*40 + "\trefs/heads/x/refs/heads/Version-Issues-Hub"
+        git.return_value = extra + "\n" + exact
+        branch = "plan/checkpoint-v0.0.0.31"
+        self_use_preflight.verify_checkpoint_branch(branch)
+        run.assert_any_call(["git","fetch","--no-tags","--no-write-fetch-head","origin","b"*40],check=True)
+        for invalid in (extra, exact+"\n"+exact):
+            run.reset_mock()
+            git.return_value = invalid
+            with self.assertRaisesRegex(ValueError,"missing or ambiguous"):
+                self_use_preflight.verify_checkpoint_branch(branch)
+            run.assert_not_called()
+
+    @patch("tools.self_use_preflight.Path.read_text", side_effect=AssertionError("read working tree"))
+    @patch("tools.self_use_preflight.verify_scope")
+    @patch("tools.self_use_preflight.subprocess.run")
+    @patch("tools.self_use_preflight.checkpoint.git")
+    def test_strict_branch_reads_worker_and_projection_from_tested_commit(self, git, run, verify, read):
+        pin, current, tested = "a" * 40, "b" * 40, "c" * 40
+        worker = {"schema_version": 1, "issue": 96, "version": "v0.0.0.43", "installed_sha": pin}
+        self.ledger["issues"][0].update(issue=96, version="v0.0.0.43")
+        self.handoff["active"].update(issue=96, version="v0.0.0.43")
+        blobs = {tested + ":ledger/self-use-worker.json": worker,
+                 pin + ":ledger/issue-versions.json": self.ledger,
+                 pin + ":ledger/handoff.json": self.handoff,
+                 tested + ":ledger/issue-versions.json": copy.deepcopy(self.ledger)}
+
+        def read_git(*args):
+            if args == ("rev-parse", "HEAD"):
+                return tested
+            if args[0] == "ls-remote":
+                return current + "\trefs/heads/Version-Issues-Hub"
+            if args[0] == "show":
+                return json.dumps(blobs[args[1]])
+            raise AssertionError(args)
+
+        git.side_effect = read_git
+        run.return_value = CompletedProcess([], 0)
+        branch = "plan/checkpoint-v0.0.0.43"
+        with patch.dict("os.environ", {"VIB_PR_BASE_SHA": ""}):
+            self.assertEqual(self_use_preflight.verify_checkpoint_branch(
+                branch, require_recovery_authorization=True), (pin, 96, "v0.0.0.43"))
+            verify.assert_called_once_with(pin, 96, "v0.0.0.43", tested, current, None,
+                                           require_recovery_authorization=True)
+            blobs[tested + ":ledger/issue-versions.json"]["issues"][0]["acceptance"] = ["drift"]
+            with self.assertRaisesRegex(ValueError, "acceptance criteria differ"):
+                self_use_preflight.verify_checkpoint_branch(branch, require_recovery_authorization=True)
+        read.assert_not_called()

@@ -302,7 +302,7 @@ class ClosureTests(unittest.TestCase):
                                              owner_approved=True, apply=True)
                 self.assertEqual(session.inspect(self.api, pending)["pending_closure"]["issue"], 247)
                 self.assertEqual(session.inspect(self.api, pending)["status"], "closure_reconciliation_required")
-                with self.assertRaises(ValueError):
+                with self.assertRaisesRegex(ValueError, "Reconcile pending closure"):
                     session.claim(self.api, pending, 248, ["new"], "Next")
                 with self.assertRaises(ValueError):
                     session.cancel_closure_plan(self.api, pending, 247, self.policy, "Cancel")
@@ -337,9 +337,9 @@ class ClosureTests(unittest.TestCase):
                 self.assertEqual(self.api.writes, before)
                 self.assertFalse(any(method == "PATCH" and "/issues/" in path
                                      for method, path, _ in self.api.writes))
-                new_ledger, new_handoff = session.claim(self.api, final, 248, ["new"], "Next")
-                self.assertEqual(new_handoff["active"]["issue"], 248)
-                self.assertEqual(new_ledger["issues"][0], final["ledger"]["issues"][0])
+                # Clearing closure intent is not clearance of production integration debt.
+                with self.assertRaisesRegex(ValueError, "integration debt"):
+                    session.claim(self.api, final, 248, ["new"], "Next")
                 return
             second = session.complete_closure(self.api, pending, 247, self.policy,
                                                owner_approved=True, apply=True)
@@ -501,8 +501,8 @@ class ClosureTests(unittest.TestCase):
             self.assertIsNone(session.pending_closure(handoff))
             self.assertEqual(session.closure_records(handoff, 247)[-1]["execution_id"], "1" * 32)
             self.state.update(ledger=ledger, handoff=handoff)
-            _, claimed = session.claim(self.api, self.state, 248, ["new"], "Resume work")
-            self.assertEqual(claimed["active"]["issue"], 248)
+            with self.assertRaisesRegex(ValueError, "integration debt"):
+                session.claim(self.api, self.state, 248, ["new"], "Resume work")
         self.assertFalse(self.api.writes)
 
     def test_reserved_prefix_compatibility_fails_closed(self):

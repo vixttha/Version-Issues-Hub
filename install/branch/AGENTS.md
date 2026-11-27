@@ -8,7 +8,7 @@ This is the owner-approved standalone Version-Issues-Hub workflow, not a product
 4. Use the cooperative handoff commands in WORKFLOW.md. Re-read the branch after a stale write; no force updates. Record candidate/fix SHAs, exact public-runner attempts and acceptance results. A green VIB schema test is not product acceptance.
 5. Owner approval controls integration and release. Instructions are cooperative; only a separately enabled and proven GitHub gate can enforce a merge rule. Never claim the gate is active based on this file.
 
-If the host has no shell, use its GitHub read tools to open the exact branch and the files above. Read the current handoff first. A host without authorized GitHub write capability cannot claim or advance work. Do not ask for secrets in chat.
+If the host has no shell, use its GitHub read tools to open the exact branch and the files above. Read the current handoff first. Use the manifest's source SHA to select supported commands. The canonical active phase comes from the installed handoff; pull request review and CI progress are separate observations. A host without authorized GitHub write capability cannot claim or advance work. Do not ask for secrets in chat.
 
 ## Owner-locked interoperability
 
@@ -44,3 +44,5 @@ A compatible agent may enumerate the target repository's branch refs, resolve th
 Installation convention: human or agent selects a reviewed exact source SHA, checks the dedicated target branch and collisions, follows this product's own installation guide, and records source/target SHA and preserved product state. Never merge a template workspace wholesale into product source. Existing installations require explicit reviewed upgrades; preserve local records and prior receipts. Optional evidence links do not authorize writes. No mandatory coordinator or other ecosystem tool.
 
 For each session write, verify that the intended issue alone changes: preserve every other ledger row, active handoff, and prior archive. Use `advance --issue NUMBER` / `finish --issue NUMBER` when working from a known issue. A staged issue can be reconciled with an exact owner policy while a different issue is active; do not edit that active slot. Parallel mode requires owner-approved opt-in via claim --parallel; all subsequent mutations select the assigned issue explicitly.
+
+Product integration integrity (corrective candidate): the designated product branch is authoritative, not this installation branch. Treat unintegrated staged/deferred records as debt. Before unrelated work require current exact bounded owner authorization for every outstanding debt or reconcile it. Issue closure and engineering verification are not integration. Follow the installed WORKFLOW.md and retain all historical records; no automatic merge or release.

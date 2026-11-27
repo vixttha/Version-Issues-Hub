@@ -1,7 +1,7 @@
 name: Live read-only adoption acceptance
 on:
   push:
-    branches: ['plan/v0.0.0.1', 'plan/live-acceptance-isolation', 'plan/v0.0.1-licensing-review']
+    branches: [main, 'plan/v0.0.0.1', 'plan/live-acceptance-isolation', 'plan/v0.0.1-licensing-review']
   pull_request:
     branches: [main, 'plan/v0.0.0.1']
 permissions:
@@ -18,7 +18,7 @@ jobs:
     timeout-minutes: 8
     env:
       GH_TOKEN: ${{ github.token }}
-      VIB_TEST_SOURCE: ${{ github.event.pull_request.head.sha || github.sha }}
+      VIB_TEST_SOURCE: ${{ github.sha }}
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
@@ -29,6 +29,7 @@ jobs:
       - name: Live public read-only install planning and adopter recovery
         run: |
           set -o pipefail
+          test "$(git rev-parse HEAD)" = "$VIB_TEST_SOURCE"
           python -m tools.live_acceptance --scope "${{ matrix.scope }}" | tee "$RUNNER_TEMP/live-acceptance.json"
       - if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
