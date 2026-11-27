@@ -86,9 +86,74 @@ class GraphifyEvidenceTests(unittest.TestCase):
         introductions = git("log", "--format=%H", "--reverse", "-S",
                             "def require_integration_debt_clear(", prior + ".." + head,
                             "--", "tools/session.py").splitlines()
-        self.assertTrue(introductions)
+        self.assertEqual(introductions, ["f442a1c21386c6ac1734e8eb15ad48513284fcfd"])
         print("VIB-HISTORY debt-gate-change-commits", ",".join(introductions))
         print("VIB-HISTORY verified", len(pins), "historical source snapshots")
+
+        # Execute the narrow claim/defer reproducer in four immutable source
+        # checkouts, using only each revision's own simulated GitHub API.
+        import io
+        import sys
+        import tarfile
+        import tempfile
+        reproduce = r"""
+import json
+import sys
+from unittest.mock import patch
+from pathlib import Path
+sys.path[:0] = [str(Path.cwd()), str(Path.cwd() / "tests")]
+from tools import session
+from test_session import Fake, state
+api, s = Fake(), state()
+original = api.request
+def read_only(method, path, body=None):
+    assert method == "GET", (method, path)
+    return original(method, path, body)
+api.request = read_only
+s["ledger"], s["handoff"] = session.claim(api, s, 247, ["first"], "First")
+s["ledger"], s["handoff"] = session.advance(api, s, "Review", return_to_head=True)
+if sys.argv[1] == "legacy":
+    s["ledger"], s["handoff"] = session.finish(api, s, "deferred", "Unbounded")
+    _, next_handoff = session.claim(api, s, 248, ["second"], "Unrelated")
+    assert next_handoff["active"]["issue"] == 248
+    print("unbounded-unrelated-claim-reproduced")
+else:
+    from test_session import bounded_deferral
+    decision = bounded_deferral(s, api, 248)
+    expires = json.loads(decision[len(session.DEFERRAL_DECISION):])["expires_at"]
+    s["ledger"], s["handoff"] = session.finish(api, s, "deferred", decision, deferral_approved=True)
+    s["ledger"], s["handoff"] = session.claim(api, s, 248, ["second"], "Bounded")
+    s["ledger"], s["handoff"] = session.advance(api, s, "Review", return_to_head=True)
+    s["ledger"], s["handoff"] = session.finish(api, s, "deferred", "Unbounded second")
+    with patch.object(session.time, "time", return_value=expires):
+        for issue in (247, 248, 249):
+            try:
+                _, planned = session.claim(api, s, issue, [], "Recovery")
+            except ValueError:
+                assert issue == 249 or sys.argv[1] == "deadlock", issue
+            else:
+                assert sys.argv[1] == "broad-exemption" and issue in (247, 248), issue
+                assert planned["active"]["issue"] == issue
+    print(sys.argv[1] + "-reproduced")
+assert not api.writes
+"""
+        for revision, mode in (
+            ("1a53dc83cd578faa26b8253e0699646ea58e2dbb", "legacy"),
+            (prior, "legacy"),
+            ("f8eb6f42032664acfe50f063d29e401253fea2b0", "broad-exemption"),
+            ("974008907a2a3dd5bebb54faa901b34adeedb9b2", "deadlock"),
+        ):
+            with self.subTest(revision=revision, mode=mode), tempfile.TemporaryDirectory() as tmp:
+                archive = subprocess.check_output(["git", "--no-replace-objects", "-C",
+                    str(root), "archive", revision, "tools", "tests/test_session.py"])
+                with tarfile.open(fileobj=io.BytesIO(archive), mode="r:") as tf:
+                    tf.extractall(tmp, filter="data")
+                result = subprocess.run([sys.executable, "-I", "-B", "-c", reproduce, mode],
+                    cwd=tmp, text=True, capture_output=True, timeout=30)
+                self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+                self.assertIn("reproduced", result.stdout)
+                print("VIB-HISTORY executable", revision, mode, result.stdout.strip())
+
 
     def test_partition_preserves_every_feature_in_order(self):
         for count, sizes in ((1, [1]), (32, [32]), (33, [32, 1]), (65, [32, 32, 1])):

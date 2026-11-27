@@ -196,6 +196,17 @@ class IntegrationIntegrityTests(unittest.TestCase):
                             policy=policy, recovery_approved=True, operation_id="a"*64,
                             on_recovery_ticket=expire)
                 self.assertFalse(any(w[0] == "PATCH" for w in self.api.writes))
+                # Successful non-force publication on a fresh simulated API.
+                published_api = Fake()
+                published_api.product = self.api.product
+                result = session.save(published_api, self.state, *proposed, True, issue=number,
+                    policy=policy, recovery_approved=True)
+                self.assertEqual(result["installed_sha"], NEXT)
+                self.assertEqual([w[0] for w in published_api.writes], ["POST", "POST", "PATCH"])
+                blobs = {b["path"]: json.loads(b["content"]) for b in published_api.writes[0][2]["tree"]}
+                self.assertEqual(blobs[session.LEDGER], proposed[0])
+                self.assertEqual(blobs[session.HANDOFF], proposed[1])
+                self.assertEqual(blobs[session.HANDOFF]["history"], before["handoff"]["history"])
             self.assertEqual(self.state, before)
             with self.assertRaises(ValueError):
                 session.recovery_claim_binding(self.state, 249)

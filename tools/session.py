@@ -1433,8 +1433,9 @@ def recovery_claim_binding(state, number):
     if (state["handoff"]["schema_version"] != 1 or active_rows(state["handoff"])
             or pending_closure(state["handoff"]) is not None):
         raise ValueError("Recovery-only claim requires an idle singleton and no pending closure")
-    row = next((r for r in unresolved_integration_debt(state) if r["issue"] == number), None)
-    if (row is None or row["state"] not in ("staged", "deferred", "blocked", "assigned")
+    debt = unresolved_integration_debt(state)
+    row = next((r for r in debt if r["issue"] == number), None)
+    if (len(debt) < 2 or row is None or row["state"] not in ("staged", "deferred", "blocked", "assigned")
             or not outstanding_integration_records(state).get(number)):
         raise ValueError("Recovery-only claim requires an existing reclaimable indebted issue")
     return {"schema_version": 1, "outcome": RECOVERY_CLAIM,
