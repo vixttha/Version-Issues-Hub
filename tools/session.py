@@ -1050,6 +1050,55 @@ def inspect(api, state, requested=None):
             **({"active_issues": [a["issue"] for a in rows]}
                                   if handoff["schema_version"] == 2 else {})}
 
+def debt_first_plan(api, state, debt):
+    """Rank existing obligations for Head review, never grant claim authority."""
+    if not debt:
+        return {"status": "clear", "queue": [], "recommended_issue": None}
+    if (state["handoff"]["schema_version"] != 1 or active_rows(state["handoff"])
+            or pending_closure(state["handoff"]) is not None):
+        return {"status": "existing_lane_or_closure", "queue": [], "recommended_issue": None}
+    archives = outstanding_integration_records(state)
+    first = {id(record): index for index, record in enumerate(state["handoff"]["history"])}
+    queue = []
+    for row in sorted(debt, key=lambda r: (
+            min((first[id(a)] for a in archives.get(r["issue"], [])),
+                default=len(first)), r["issue"])):
+        number = row["issue"]
+        entry = {"issue": number, "version": row["version"], "state": row["state"],
+                 "outstanding_archives": len(archives.get(number, [])),
+                 "recovery_claim_binding": None, "action": "owner_reconciliation"}
+        try:
+            require_unheld_scope(state, [number])
+        except ValueError:
+            entry["action"] = "owner_hold"
+        else:
+            if (row["state"] in ("staged", "deferred", "blocked", "assigned")
+                    and archives.get(number)):
+                try:
+                    item = get_issue(api, state, number)
+                    if item.get("state") == "open":
+                        if len(debt) > 1:
+                            entry["recovery_claim_binding"] = recovery_claim_binding(state, number)
+                            entry["action"] = "review_recovery_only_claim"
+                        else:
+                            entry["action"] = "review_ordinary_recovery"
+                    elif item.get("state") == "closed":
+                        entry["action"] = "owner_reconcile_closed_issue"
+                    else:
+                        entry["action"] = "issue_state_unverified"
+                except (ValueError, KeyError, TypeError, install.ApiError, OSError) as exc:
+                    if isinstance(exc, install.ApiError) and exc.retry_after is not None:
+                        raise
+                    entry["action"] = "issue_state_unverified"
+        queue.append(entry)
+    # Advice is an unsigned proposal, not a feasibility proof. The normal
+    # claim/reconciliation planners still validate criteria, PR and lineage.
+    candidate = next((x["issue"] for x in queue if x["action"] in
+                      ("review_recovery_only_claim", "review_ordinary_recovery")), None)
+    return {"status": "debt_review_required", "queue": queue,
+            "recommended_issue": candidate}
+
+
 def recovery_plan(api, state, requested=None):
     """Read-only, lease-bound next step and same-issue evidence reuse advisory."""
     from tools import gate
@@ -1180,8 +1229,18 @@ def recovery_plan(api, state, requested=None):
             recovery_binding = recovery_claim_binding(state, number)
         except ValueError:
             pass
+    # Preserve explicit bounded continuation and the existing active lane.
+    # A blocked or unspecified claim gets a deterministic debt-first advisory.
+    scheduling = None
+    if status == "integration_debt_reconciliation_required" or (number is None and debt):
+        scheduling = debt_first_plan(api, state, debt)
+        if scheduling["status"] == "debt_review_required":
+            status = "integration_debt_reconciliation_required"
+            action = ("Head reviews outstanding debt in oldest-archive order; "
+                      "select an existing obligation for recovery or reconciliation. "
+                      "No automatic claim or authority.")
     require_lease()
-    return {**observed, "recovery_claim_binding": recovery_binding, "integration_debt": [{"issue": row["issue"], "version": row["version"],
+    return {**observed, "debt_first": scheduling, "recovery_claim_binding": recovery_binding, "integration_debt": [{"issue": row["issue"], "version": row["version"],
                   "state": row["state"]} for row in debt],
             "recovery_status": status, "recommended_next_action": action,
             "evidence_reuse": reuse, "read_only": True,
