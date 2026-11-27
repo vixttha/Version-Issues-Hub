@@ -724,8 +724,10 @@
       "associated_issue_candidates": [
         1
       ],
-      "diff_review": "pending",
-      "disposition": "pending_review"
+      "diff_review": "prior_full_patch_review_receipt",
+      "disposition": "provisional_retain_history_pending_final_audit",
+      "review_receipt": "https://github.com/vixttha/Version-Issues-Hub/issues/96#issuecomment-7207195843",
+      "review_notes": "original draft contract, one writer and owner integration, future gate explicitly not implemented; retain history, not current release authority."
     },
     {
       "sha": "a13f4b70e4f12220eecf8e2c38c72c99b16562c4",
@@ -748,8 +750,10 @@
       "associated_issue_candidates": [
         1
       ],
-      "diff_review": "pending",
-      "disposition": "pending_review"
+      "diff_review": "prior_full_patch_review_receipt",
+      "disposition": "provisional_retain_history_pending_final_audit",
+      "review_receipt": "https://github.com/vixttha/Version-Issues-Hub/issues/96#issuecomment-7207195843",
+      "review_notes": "baseline and target version semantics, tests; no integration claim."
     },
     {
       "sha": "fee90e84d981740938989c1a53f70a9570ae2293",
@@ -895,8 +899,10 @@
       "associated_issue_candidates": [
         13
       ],
-      "diff_review": "pending",
-      "disposition": "pending_review"
+      "diff_review": "prior_full_patch_review_receipt",
+      "disposition": "provisional_retain_history_pending_final_audit",
+      "review_receipt": "https://github.com/vixttha/Version-Issues-Hub/issues/96#issuecomment-7207195843",
+      "review_notes": "scope clarification and graph receipt; historical #7 acceptance wording changed, retain original commit and do not repeat under current immutability law."
     },
     {
       "sha": "c86cc915603b4bc21cca1679bea385a32824fcea",
@@ -986,8 +992,10 @@
         9,
         10
       ],
-      "diff_review": "pending",
-      "disposition": "pending_review"
+      "diff_review": "prior_full_patch_review_receipt",
+      "disposition": "provisional_retain_history_pending_final_audit",
+      "review_receipt": "https://github.com/vixttha/Version-Issues-Hub/issues/96#issuecomment-7207195843",
+      "review_notes": "read-only GitHub workflow and candidate packet; old source/preview mismatch risk is addressed by current live-acceptance workflow, not historical proof; no independent harness or release authorization."
     },
     {
       "sha": "3853cdc9b1a2b761378183d6dfd8463b0a983414",
@@ -1046,8 +1054,10 @@
       "associated_issue_candidates": [
         23
       ],
-      "diff_review": "pending",
-      "disposition": "pending_review"
+      "diff_review": "prior_full_patch_review_receipt",
+      "disposition": "provisional_retain_history_pending_final_audit",
+      "review_receipt": "https://github.com/vixttha/Version-Issues-Hub/issues/96#issuecomment-7207195843",
+      "review_notes": "literal AST historical package map, path restrictions and negative cases, no execution or upgrade implied."
     },
     {
       "sha": "c79217ea4c18d892cd49112bc30b7b28a2fb502b",
@@ -1070,8 +1080,10 @@
       "associated_issue_candidates": [
         24
       ],
-      "diff_review": "pending",
-      "disposition": "pending_review"
+      "diff_review": "prior_full_patch_review_receipt",
+      "disposition": "provisional_retain_history_pending_final_audit",
+      "review_receipt": "https://github.com/vixttha/Version-Issues-Hub/issues/96#issuecomment-7207195843",
+      "review_notes": "historical AlderVale exact source/tree/parent and read-only recovery; distinguishes connector install from CLI and independent LLM trial."
     },
     {
       "sha": "9a5931444a429bbe56fe0aa385a3618f5493ed30",
@@ -1281,8 +1293,10 @@
       "associated_issue_candidates": [
         33
       ],
-      "diff_review": "pending",
-      "disposition": "pending_review"
+      "diff_review": "prior_full_patch_review_receipt",
+      "disposition": "provisional_retain_history_pending_final_audit",
+      "review_receipt": "https://github.com/vixttha/Version-Issues-Hub/issues/96#issuecomment-7207195843",
+      "review_notes": "bounded GET timeout retry and redacted typed diagnostics; no replay of uncertain mutation."
     },
     {
       "sha": "dad94766a7462a67098be7408f49d0eeeadc3af0",
@@ -1329,8 +1343,10 @@
       "associated_issue_candidates": [
         36
       ],
-      "diff_review": "pending",
-      "disposition": "pending_review"
+      "diff_review": "prior_full_patch_review_receipt",
+      "disposition": "provisional_retain_history_pending_final_audit",
+      "review_receipt": "https://github.com/vixttha/Version-Issues-Hub/issues/96#issuecomment-7207195843",
+      "review_notes": "reload on demonstrated installed-ref advance, bounded three attempts, disagreement fails closed; independent process is not independent model."
     },
     {
       "sha": "4fc9ac47462101b941ea2f78fc939d42a9de0032",
@@ -1378,8 +1394,10 @@
       "associated_issue_candidates": [
         42
       ],
-      "diff_review": "pending",
-      "disposition": "pending_review"
+      "diff_review": "prior_full_patch_review_receipt",
+      "disposition": "provisional_retain_history_pending_final_audit",
+      "review_receipt": "https://github.com/vixttha/Version-Issues-Hub/issues/96#issuecomment-7207195843",
+      "review_notes": "singleton/orphan validation across claim, advance, finish, reconcile and save; no silent record removal."
     },
     {
       "sha": "af4ddbd797899d6c68ee7d8d1e92f03bda65f450",
@@ -1390,8 +1408,10 @@
       "associated_issue_candidates": [
         43
       ],
-      "diff_review": "pending",
-      "disposition": "pending_review"
+      "diff_review": "prior_full_patch_review_receipt",
+      "disposition": "provisional_retain_history_pending_final_audit",
+      "review_receipt": "https://github.com/vixttha/Version-Issues-Hub/issues/96#issuecomment-7207195843",
+      "review_notes": "explicit prior-line resume preserves original version and criteria and rejects ineligible rows; CLI approval required."
     },
     {
       "sha": "c65a872605250ee8b0a754a5e2a3ec7e286e0022",
@@ -1516,8 +1536,10 @@
         39,
         51
       ],
-      "diff_review": "pending",
-      "disposition": "pending_review"
+      "diff_review": "prior_full_patch_review_receipt",
+      "disposition": "provisional_retain_history_pending_final_audit",
+      "review_receipt": "https://github.com/vixttha/Version-Issues-Hub/issues/96#issuecomment-7207195843",
+      "review_notes": "retrospective review-only #39/#51 assignments with reserved #40 slot, explicit frozen/release boundaries; no canonical mutation inferred."
     },
     {
       "sha": "8e24a3a4145ba3e291d207477bfe95a7924cabc5",
@@ -2186,8 +2208,10 @@
       "associated_issue_candidates": [
         53
       ],
-      "diff_review": "pending",
-      "disposition": "pending_review"
+      "diff_review": "prior_full_patch_review_receipt",
+      "disposition": "provisional_retain_history_pending_final_audit",
+      "review_receipt": "https://github.com/vixttha/Version-Issues-Hub/issues/96#issuecomment-7207195843",
+      "review_notes": "inventory requires candidate SHA and propagates API throttle, regression no writes."
     },
     {
       "sha": "e02fc96aeba45060fea8b1027f4861dc26c7841a",
@@ -5583,17 +5607,18 @@
     }
   ],
   "review_progress": {
-    "reported_full_patch_reviews": 76,
-    "pending": 97,
+    "reported_full_patch_reviews": 88,
+    "pending": 85,
     "baseline": "3160df17f60b3eaa9a9e70e1ca13bffcfe2eb4e8",
-    "source": "Six permanent issue receipts matched to unique exact baseline positions; not an independent re-performance of all 76 reviews.",
+    "source": "Seven permanent issue receipts matched to unique exact baseline positions; not an independent re-performance of all 88 reviews.",
     "receipts": [
       "https://github.com/vixttha/Version-Issues-Hub/issues/96#issuecomment-7203734527",
       "https://github.com/vixttha/Version-Issues-Hub/issues/96#issuecomment-7203995977",
       "https://github.com/vixttha/Version-Issues-Hub/issues/96#issuecomment-7204818684",
       "https://github.com/vixttha/Version-Issues-Hub/issues/96#issuecomment-7204924883",
       "https://github.com/vixttha/Version-Issues-Hub/issues/96#issuecomment-7205031367",
-      "https://github.com/vixttha/Version-Issues-Hub/issues/96#issuecomment-7205212072"
+      "https://github.com/vixttha/Version-Issues-Hub/issues/96#issuecomment-7205212072",
+      "https://github.com/vixttha/Version-Issues-Hub/issues/96#issuecomment-7207195843"
     ]
   },
   "branch_review_current": {

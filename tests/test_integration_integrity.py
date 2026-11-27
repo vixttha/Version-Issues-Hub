@@ -649,7 +649,12 @@ class IntegrationIntegrityTests(unittest.TestCase):
         self.state["ledger"],self.state["handoff"] = session.finish(
             self.api,self.state,"staged","Original stage")
         original = copy.deepcopy(self.state["handoff"]["history"][0])
-        self.reach_head()
+        self.state["ledger"],self.state["handoff"] = session.claim(
+            self.api,self.state,247,["test"],"Revalidate original stage")
+        self.assertEqual(self.state["handoff"]["active"]["phase"],"Validate")
+        for kwargs in ({"evidence":[RUN]},{}):
+            self.state["ledger"],self.state["handoff"] = session.advance(
+                self.api,self.state,"Revalidate",**kwargs)
         decision = bounded_deferral(self.state,self.api,248)
         self.state["ledger"],self.state["handoff"] = session.finish(
             self.api,self.state,"deferred",decision,deferral_approved=True)

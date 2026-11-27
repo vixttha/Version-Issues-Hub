@@ -1733,11 +1733,22 @@ def recheck_historical_batch_runs(api, state, proofs):
         review = proof["review"]
         gate.check_ancestry(api, prefix, review["merge_sha"], product)
         preview_policy = {**review, "merge_sha": proof["premerge"]["merge_sha"]}
+        selected = state["handoff"]["history"][proof["archive_index"]]["handoff"]
+        candidate = {**selected, "fix_sha":review["issues"][0]["fix_sha"],
+                     "candidate_sha":review["head_sha"], "pull_request":review["pull_request"],
+                     "integration_base_sha":review["base_sha"],
+                     "integration_merge_sha":preview_policy["merge_sha"]}
+        invalidated = invalidated_archive_runs(state, candidate)
+        conflicting = invalidated_archive_runs(state, candidate, legacy_index=proof["archive_index"])
         for link in proof["premerge"]["evidence"]:
             run, attempt = evidence_run(state["ledger"]["repository"], link)
+            if run in conflicting:
+                raise ValueError("Historical batch archived run belongs to stale evidence")
             root = prefix + "/actions/runs/" + str(run)
             for suffix in ("/attempts/" + str(attempt), ""):
-                item = api.request("GET", root + suffix)
+                item = install.response_object(api.request("GET", root + suffix), "batch preview run")
+                if run in invalidated and item.get("head_sha") != preview_policy["merge_sha"]:
+                    raise ValueError("Historical batch legacy evidence requires exact preview")
                 standard.check_pr_run(item, preview_policy, run, attempt, api=api, prefix=prefix)
                 if not install.response_rows(item.get("pull_requests", []), "historical PR associations"):
                     raise ValueError("Historical batch preview association changed")
@@ -2205,7 +2216,8 @@ def save(api, state, ledger, handoff, apply=False, *, issue=None, operation_id=N
             {**state, "ledger": ledger, "handoff": handoff}))
         for row in ledger["issues"]:
             old = before.get(row["issue"])
-            if row["state"] == "retired" and row["issue"] in debt_numbers:
+            if (row["state"] == "retired" and (old is None or old["state"] != "retired")
+                    and row["issue"] in debt_numbers):
                 raise ValueError("Cannot retire issue with outstanding integration debt")
             if row["state"] == "integrated" and (old is None or old["state"] != "integrated"):
                 proof = [r for r in appended if r["handoff"]["issue"] == row["issue"]
