@@ -72,7 +72,7 @@ class GraphifyEvidenceTests(unittest.TestCase):
                 for ref in group[relation]:
                     lines = blob(ref["path"]).splitlines()
                     with self.subTest(feature=group["id"], relation=relation, path=ref["path"], anchor=ref["anchor"]):
-                        self.assertTrue(ref["anchor"] and ref["anchor"].strip() == ref["anchor"] and ref["anchor"].isprintable())
+                        self.assertTrue(1 <= len(ref["anchor"]) <= 500 and ref["anchor"].strip() == ref["anchor"] and ref["anchor"].isprintable())
                         key = (ref["path"], ref["anchor"])
                         self.assertNotIn(key, seen)
                         seen.add(key)

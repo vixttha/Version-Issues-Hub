@@ -887,7 +887,7 @@
       "implemented_in": [
         {
           "path": "tools/self_use_preflight.py",
-          "anchor": "def verify_checkpoint_branch(branch):"
+          "anchor": "def verify_checkpoint_branch(branch, *, require_recovery_authorization=False):"
         }
       ],
       "tested_by": [
@@ -1537,7 +1537,7 @@
       "changed_in": [
         {
           "path": "tools/self_use_preflight.py",
-          "anchor": "def verify_scope(pin, issue, version, head, current, pr_base=None):"
+          "anchor": "def verify_scope(pin, issue, version, head, current, pr_base=None, *, require_recovery_authorization=False):"
         },
         {
           "path": "tools/session.py",

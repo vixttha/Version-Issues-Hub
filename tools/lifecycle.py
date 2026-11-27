@@ -162,9 +162,10 @@ def upgrade(api, target, expected_sha, source_sha, *, apply=False, owner_approve
     plan = {"status":"planned", "operation":"upgrade", "repository":manifest["target_repository"],
             "from_source":old_source,"to_source":source_sha,"expected_sha":expected_sha,
             "changed_paths":sorted(changes),"product_sha":state["product_sha"]}
-    if session.unresolved_integration_debt(state):
+    debt = session.unresolved_integration_debt(state)
+    if debt:
         plan["integration_debt"] = [{"issue": row["issue"], "version": row["version"], "state": row["state"]}
-                                    for row in session.unresolved_integration_debt(state)]
+                                    for row in debt]
         plan["integration_debt_resolved"] = False
     if install.supports_designated_target(old_files) and not install.supports_designated_target(new_files):
         raise ValueError("Upgrade cannot remove reviewed integration integrity capability")

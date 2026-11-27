@@ -193,7 +193,7 @@ def verify_043_scope_genesis(revision, path, approval, successor, successor_revi
         raise ValueError("Malformed claim changed historical state or Worker identity")
 
 
-def verify_scope(pin, issue, version, head, current, pr_base=None):
+def verify_scope(pin, issue, version, head, current, pr_base=None, *, require_recovery_authorization=False):
     path = "ledger/scope-approvals/" + version + ".json"
     def read(revision):
         return checkpoint.parse_json(checkpoint.git("show", revision + ":" + path))
@@ -209,12 +209,14 @@ def verify_scope(pin, issue, version, head, current, pr_base=None):
     ancestor(approval["reviewed_sha"], head)
     cursor, child = pin, approval
     successor = None
+    recovered = False
     for _ in range(32):
         prior = child["previous_approval_sha"]
         if cursor == MALFORMED_043_SCOPE:
             if successor is None or pin == cursor:
                 raise ValueError("Malformed canonical scope requires independent recovery approval")
             verify_043_scope_genesis(cursor, path, child, successor[1], successor[0])
+            recovered = True
             break
         if approval_parent(cursor, path) != prior:
             raise ValueError("Scope approval predecessor does not match actual canonical history")
@@ -234,11 +236,19 @@ def verify_scope(pin, issue, version, head, current, pr_base=None):
     else:
         raise ValueError("Scope amendment chain exceeds bound")
     assert_scope_paths(approval, scope_paths(approval["base_sha"], head))
-    print(f"VIB owner scope verified: #{issue} {version} at {pin}; engineering-only ordinary qualification")
+    if recovered:
+        # The known recovery successor contains only a proposed authorization.
+        # Later continuation approvals explicitly exclude retrospective authority.
+        # Never convert structural proof into an owner-authorization receipt.
+        if require_recovery_authorization:
+            raise ValueError("Explicit owner authorization for malformed #96 recovery is not established")
+        print(f"VIB structural scope verified: #{issue} {version} at {pin}; OWNER AUTHORIZATION UNVERIFIED; engineering tests only")
+    else:
+        print(f"VIB scope record verified: #{issue} {version} at {pin}; engineering-only ordinary qualification")
     return approval
 
 
-def verify_checkpoint_branch(branch):
+def verify_checkpoint_branch(branch, *, require_recovery_authorization=False):
     record = checkpoint.parse_json(WORKER_RECORD.read_text(encoding="utf-8"))
     pin, issue, version = worker_record(record, branch)
     # Read the public installed ref; a historical pin must be in its ancestry.
@@ -258,7 +268,8 @@ def verify_checkpoint_branch(branch):
         raise ValueError("Worker record version differs from canonical assignment")
     if checkpoint.version_number(version) >= (0, 0, 0, 41):
         head = checkpoint.git("rev-parse", "HEAD")
-        verify_scope(pin, issue, version, head, current, os.environ.get("VIB_PR_BASE_SHA") or None)
+        options = {"require_recovery_authorization": True} if require_recovery_authorization else {}
+        verify_scope(pin, issue, version, head, current, os.environ.get("VIB_PR_BASE_SHA") or None, **options)
     return pin, issue, version
 
 
@@ -267,19 +278,24 @@ def main():
     parser.add_argument("--installed-ref")
     parser.add_argument("--issue", type=int)
     parser.add_argument("--worker-branch")
+    parser.add_argument("--require-recovery-authorization", action="store_true",
+                        help="Refuse the known #96 structurally recovered scope until authorization is established")
     args = parser.parse_args()
     try:
         if args.worker_branch is not None:
             if args.installed_ref is not None or args.issue is not None:
                 raise ValueError("Choose a Worker branch or an explicit installed ref and issue")
-            pin, issue, version = verify_checkpoint_branch(args.worker_branch)
+            options = {"require_recovery_authorization": True} if args.require_recovery_authorization else {}
+            pin, issue, version = verify_checkpoint_branch(args.worker_branch, **options)
         else:
+            if args.require_recovery_authorization:
+                raise ValueError("Recovery authorization check requires --worker-branch")
             pin = checkpoint.require(checkpoint.SHA, args.installed_ref, "installed revision")
             issue = session.issue_number(args.issue)
             version = read_projection(pin, issue)
             if checkpoint.version_number(version) >= (0, 0, 0, 41):
                 raise ValueError("Scope-controlled checkpoints require --worker-branch")
-        print(f"VIB self-use preflight passed: #{issue} {version} at {pin}")
+        print(f"VIB technical self-use preflight passed: #{issue} {version} at {pin}")
     except (ValueError, KeyError, OSError, TypeError, subprocess.CalledProcessError) as exc:
         parser.exit(1, f"VIB self-use preflight refused: {exc}\n")
 

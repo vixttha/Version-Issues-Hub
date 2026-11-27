@@ -168,6 +168,7 @@ class ScopeControlTests(unittest.TestCase):
                   "next_action":"Repair", "fix_sha":None, "candidate_sha":None,
                   "pull_request":None, "evidence":[]}
         after = {**before, "active":active}
+        real_approval_parent = scope.approval_parent
         def read(*args):
             if args[1] == "-s":
                 return scope.MALFORMED_043_PARENT
@@ -192,8 +193,18 @@ class ScopeControlTests(unittest.TestCase):
             with patch.object(scope.checkpoint,"git",side_effect=read_scope), \
                  patch.object(scope,"approval_change",side_effect=lambda rev,p:
                               "f"*40 if rev == "f"*40 else predecessor if rev == predecessor else None), \
-                 patch.object(scope,"ancestor"), patch.object(scope,"scope_paths",return_value={"tools/session.py"}):
-                self.assertEqual(scope.verify_scope("f"*40,96,"v0.0.0.43","d"*40,"f"*40),successor)
+                 patch.object(scope,"ancestor"), patch.object(scope,"scope_paths",return_value={"tools/session.py"}), \
+                 patch.object(scope,"approval_parent", wraps=real_approval_parent), \
+                 patch.object(scope,"changed_paths",side_effect=lambda base,head:
+                              {path} if head == "f"*40 else {path,"ledger/issue-versions.json","ledger/handoff.json"}):
+                with patch("builtins.print") as output:
+                    self.assertEqual(scope.verify_scope("f"*40,96,"v0.0.0.43","d"*40,"f"*40),successor)
+                    self.assertIn("OWNER AUTHORIZATION UNVERIFIED",output.call_args.args[0])
+                with self.assertRaisesRegex(ValueError,"authorization.*not established"):
+                    scope.verify_scope("f"*40,96,"v0.0.0.43","d"*40,"f"*40",require_recovery_authorization=True)
+                with patch.object(scope,"changed_paths",return_value={path,"ledger/issue-versions.json"}):
+                    with self.assertRaisesRegex(ValueError,"separate single-parent"):
+                        scope.verify_scope("f"*40,96,"v0.0.0.43","d"*40,"f"*40")
             with self.assertRaisesRegex(ValueError,"retain exact original scope"):
                 scope.verify_043_scope_genesis(predecessor,path,record,
                     {**successor,"allowed_paths":["new.py"]},"f"*40)
