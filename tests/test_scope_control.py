@@ -1,5 +1,6 @@
 """Focused owner-scope and experimental disposition controls; no remote writes."""
 import copy
+import hashlib
 import json
 import subprocess
 import tempfile
@@ -289,6 +290,52 @@ class ScopeControlTests(unittest.TestCase):
                                        require_recovery_authorization=True)
                 with self.assertRaisesRegex(ValueError, "Stale scope approval"):
                     scope.verify_scope(recovered, 96, "v0.0.0.43", engineering_head, current)
+                # Synthetic independent-Head source: a fixed decision is
+                # constructed before validation, never inferred from a request.
+                specification = b"synthetic reviewed recovery specification"
+                gate_a = b"synthetic independently reviewed Gate A receipt"
+                binding = {"repository": record["repository"], "issue": 96,
+                    "version": "v0.0.0.43", "incident_parent_sha": parent,
+                    "incident_sha": genesis, "recovery_successor_sha": recovered,
+                    "scope_approval_sha": current, "canonical_revision": current,
+                    "tested_head_sha": engineering_head, "engineering_base_sha": base,
+                    "scope_sha256": session.closure_digest(continuation),
+                    "specification_sha256": hashlib.sha256(specification).hexdigest(),
+                    "gate_a_sha256": hashlib.sha256(gate_a).hexdigest(),
+                    "operations": ["qualify_forward_recovery"]}
+                approved = {"schema_version": 1, "status": "approved",
+                            "decision_id": "synthetic-independent-head-decision",
+                            "binding": binding, "approved_at": 100, "expires_at": 200}
+                class SyntheticHead:
+                    def __init__(self, decision):
+                        self.decision = copy.deepcopy(decision)
+                    def resolve_verified_forward_decision(self, requested):
+                        return copy.deepcopy(self.decision)
+                def strict(source, spec=specification, evidence=gate_a):
+                    return scope.verify_scope(current, 96, "v0.0.0.43", engineering_head, current,
+                        require_recovery_authorization=True, recovery_authority_source=source,
+                        reviewed_specification=spec, gate_a_evidence=evidence)
+                with patch.object(scope.time, "time", return_value=150):
+                    self.assertEqual(strict(SyntheticHead(approved)), continuation)
+                    for forged in (True, "approved", approved, None, SyntheticHead(True),
+                                   SyntheticHead(None), SyntheticHead({"status": "approved"})):
+                        with self.subTest(forged=type(forged).__name__), self.assertRaises(ValueError):
+                            strict(forged)
+                    for key in binding:
+                        invalid = copy.deepcopy(approved)
+                        invalid["binding"][key] = ("integrate_product" if key != "operations"
+                                                   else ["qualify_forward_recovery", "integrate_product"])
+                        with self.subTest(binding=key), self.assertRaises(ValueError):
+                            strict(SyntheticHead(invalid))
+                    for key, value in (("status", "revoked"), ("status", "ambiguous"),
+                                       ("expires_at", 150), ("approved_at", 151),
+                                       ("schema_version", True), ("decision_id", "")):
+                        with self.subTest(receipt=key, value=value), self.assertRaises(ValueError):
+                            strict(SyntheticHead({**approved, key: value}))
+                    with self.assertRaises(ValueError):
+                        strict(SyntheticHead(approved), spec=b"unreviewed specification")
+                    with self.assertRaises(ValueError):
+                        strict(SyntheticHead(approved), evidence=b"changed Gate A")
                 self.assertEqual(git("show", genesis + ":" + path), json.dumps(record, sort_keys=True))
                 self.assertEqual(git("show", recovered + ":" + path), json.dumps(successor, sort_keys=True))
 

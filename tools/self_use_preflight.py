@@ -1,7 +1,10 @@
 """Project-local, read-only VIB self-use preflight (not an adopter dependency)."""
 import argparse
+import copy
+import hashlib
 import os
 import subprocess
+import time
 from pathlib import Path
 
 from tools import checkpoint, session
@@ -193,7 +196,51 @@ def verify_043_scope_genesis(revision, path, approval, successor, successor_revi
         raise ValueError("Malformed claim changed historical state or Worker identity")
 
 
-def verify_scope(pin, issue, version, head, current, pr_base=None, *, require_recovery_authorization=False):
+def verify_forward_recovery_authority(source, specification, gate_a_evidence, *,
+                                      pin, head, current, approval, successor_revision):
+    """Check exact receipt binding supplied by an independently operated Head.
+
+    Source trust is established outside the Worker and outside this candidate.
+    This is cooperative evidence validation, not authentication of arbitrary
+    Python callers. No CLI flag, policy file or Worker-generated record can
+    configure a trusted source. A trusted Head must independently resolve the
+    actual decision, including revocation/ambiguity, and Gate A evidence.
+    """
+    resolve = getattr(source, "resolve_verified_forward_decision", None)
+    if (not callable(resolve) or not isinstance(specification, bytes) or not specification
+            or not isinstance(gate_a_evidence, bytes) or not gate_a_evidence):
+        raise ValueError("Explicit owner authorization for malformed #96 recovery is not established")
+    binding = {
+        "repository": approval["repository"], "issue": approval["issue"],
+        "version": approval["version"], "incident_parent_sha": MALFORMED_043_PARENT,
+        "incident_sha": MALFORMED_043_SCOPE, "recovery_successor_sha": successor_revision,
+        "scope_approval_sha": pin, "canonical_revision": current, "tested_head_sha": head,
+        "engineering_base_sha": approval["base_sha"],
+        "scope_sha256": session.closure_digest(approval),
+        "specification_sha256": hashlib.sha256(specification).hexdigest(),
+        "gate_a_sha256": hashlib.sha256(gate_a_evidence).hexdigest(),
+        "operations": ["qualify_forward_recovery"],
+    }
+    # The resolver cannot mutate our comparison basis. A true/false answer
+    # or a bare policy document is never enough for this exact validation.
+    receipt = resolve(copy.deepcopy(binding))
+    if (not isinstance(receipt, dict)
+            or set(receipt) != {"schema_version", "status", "decision_id", "binding",
+                               "approved_at", "expires_at"}
+            or type(receipt["schema_version"]) is not int or receipt["schema_version"] != 1
+            or receipt["status"] != "approved"
+            or not isinstance(receipt["decision_id"], str) or not receipt["decision_id"].strip()
+            or not isinstance(receipt["binding"], dict)
+            or session.closure_digest(receipt["binding"]) != session.closure_digest(binding)
+            or type(receipt["approved_at"]) is not int or type(receipt["expires_at"]) is not int
+            or not receipt["approved_at"] <= time.time() < receipt["expires_at"]):
+        raise ValueError("Independent forward recovery authorization is missing, stale or invalid")
+    return receipt
+
+
+def verify_scope(pin, issue, version, head, current, pr_base=None, *,
+                 require_recovery_authorization=False, recovery_authority_source=None,
+                 reviewed_specification=None, gate_a_evidence=None):
     path = "ledger/scope-approvals/" + version + ".json"
     def read(revision):
         return checkpoint.parse_json(checkpoint.git("show", revision + ":" + path))
@@ -237,20 +284,33 @@ def verify_scope(pin, issue, version, head, current, pr_base=None, *, require_re
         raise ValueError("Scope amendment chain exceeds bound")
     assert_scope_paths(approval, scope_paths(approval["base_sha"], head))
     if recovered:
-        # The known recovery successor contains only a proposed authorization.
-        # Later continuation approvals explicitly exclude retrospective authority.
-        # Never convert structural proof into an owner-authorization receipt.
+        # Structural proof and a Worker-generated policy cannot confer authority.
         if require_recovery_authorization:
-            raise ValueError("Explicit owner authorization for malformed #96 recovery is not established")
-        print(f"VIB structural scope verified: #{issue} {version} at {pin}; OWNER AUTHORIZATION UNVERIFIED; engineering tests only")
+            verify_forward_recovery_authority(recovery_authority_source, reviewed_specification,
+                gate_a_evidence, pin=pin, head=head, current=current, approval=approval,
+                successor_revision=successor[0])
+            print(f"VIB independently supplied forward recovery disposition matched: #{issue} {version} at {pin}; read-only qualification only")
+        else:
+            if any(x is not None for x in (recovery_authority_source, reviewed_specification, gate_a_evidence)):
+                raise ValueError("Recovery authority inputs require strict recovery qualification")
+            print(f"VIB structural scope verified: #{issue} {version} at {pin}; OWNER AUTHORIZATION UNVERIFIED; engineering tests only")
     else:
+        if any(x is not None for x in (recovery_authority_source, reviewed_specification, gate_a_evidence)):
+            raise ValueError("Forward recovery authority applies only to the exact known incident")
         print(f"VIB scope record verified: #{issue} {version} at {pin}; engineering-only ordinary qualification")
     return approval
 
 
-def verify_checkpoint_branch(branch, *, require_recovery_authorization=False):
+def verify_checkpoint_branch(branch, *, require_recovery_authorization=False,
+                             recovery_authority_source=None, reviewed_specification=None,
+                             gate_a_evidence=None):
     record = checkpoint.parse_json(WORKER_RECORD.read_text(encoding="utf-8"))
     pin, issue, version = worker_record(record, branch)
+    supplied_authority = any(x is not None for x in (
+        recovery_authority_source, reviewed_specification, gate_a_evidence))
+    if supplied_authority and (not require_recovery_authorization
+                               or (issue, version) != (96, "v0.0.0.43")):
+        raise ValueError("Forward authority inputs require strict qualification of the known incident")
     # Read the public installed ref; a historical pin must be in its ancestry.
     # This is revision-bound evidence, not a claim that the Worker is still active.
     ref = "refs/heads/Version-Issues-Hub"
@@ -269,7 +329,17 @@ def verify_checkpoint_branch(branch, *, require_recovery_authorization=False):
     if checkpoint.version_number(version) >= (0, 0, 0, 41):
         head = checkpoint.git("rev-parse", "HEAD")
         options = {"require_recovery_authorization": True} if require_recovery_authorization else {}
+        if supplied_authority:
+            options.update(recovery_authority_source=recovery_authority_source,
+                           reviewed_specification=reviewed_specification,
+                           gate_a_evidence=gate_a_evidence)
         verify_scope(pin, issue, version, head, current, os.environ.get("VIB_PR_BASE_SHA") or None, **options)
+        if supplied_authority:
+            again = [line.split() for line in checkpoint.git(
+                "ls-remote", "--exit-code", "origin", ref).splitlines()]
+            if ([row for row in again if len(row) == 2 and row[1] == ref] != [[current, ref]]
+                    or checkpoint.git("rev-parse", "HEAD") != head):
+                raise ValueError("Canonical or tested revision changed during recovery authority review")
     print(f"VIB observed canonical revision: {current}; Worker pin: {pin}")
     return pin, issue, version
 
