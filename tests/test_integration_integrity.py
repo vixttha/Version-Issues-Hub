@@ -1000,8 +1000,11 @@ class IntegrationIntegrityTests(unittest.TestCase):
         second_run = {**self.api.run, "id": 126}
         second_jobs = [{**job, "id": job["id"] + 1, "run_id": 126} for job in self.api.jobs]
         request = self.api.request
+        latest_attempt_changed = False
 
         def distinct_runs(method, path, body=None):
+            if method == "GET" and path.endswith("/actions/runs/124") and latest_attempt_changed:
+                return {**self.api.run, "run_attempt": 2}
             if method == "GET" and "/actions/runs/126" in path:
                 if path.endswith("/jobs?per_page=100"):
                     return {"total_count": len(second_jobs), "jobs": second_jobs}
@@ -1024,9 +1027,10 @@ class IntegrationIntegrityTests(unittest.TestCase):
         policy = {"schema_version":1,"outcome":session.HISTORICAL_BATCH,"proofs":proofs}
         original = session.reconcile_historical_integration
         def change_after_second(*args,**kw):
+            nonlocal latest_attempt_changed
             result = original(*args,**kw)
             if args[4]["archive_index"] == 1:
-                self.api.run["run_attempt"] = 2
+                latest_attempt_changed = True
             return result
         with patch.object(session,"reconcile_historical_integration",side_effect=change_after_second):
             with self.assertRaisesRegex(ValueError,"batch post-merge run changed"):
@@ -1034,7 +1038,7 @@ class IntegrationIntegrityTests(unittest.TestCase):
         self.assertEqual(self.api.writes,[])
         # A later attempt change after the post-ticket batch recheck must
         # still prevent the final ref PATCH (unpublished Git objects are OK).
-        self.api.run["run_attempt"] = 1
+        latest_attempt_changed = False
         ledger, handoff = session.reconcile(self.api, self.state, 247, "Owner integrates", policy=policy)
         ticket_seen = False
         changed_attempt = False
@@ -1043,10 +1047,10 @@ class IntegrationIntegrityTests(unittest.TestCase):
             nonlocal ticket_seen
             ticket_seen = True
         def change_after_post_ticket_review(*args, **kwargs):
-            nonlocal changed_attempt
+            nonlocal changed_attempt, latest_attempt_changed
             original_recheck(*args, **kwargs)
             if ticket_seen and not changed_attempt:
-                self.api.run["run_attempt"] = 2
+                latest_attempt_changed = True
                 changed_attempt = True
         with patch.object(session, "recheck_historical_batch_runs", side_effect=change_after_post_ticket_review):
             with self.assertRaisesRegex(ValueError, "batch post-merge run changed"):

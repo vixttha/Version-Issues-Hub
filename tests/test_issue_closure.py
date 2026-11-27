@@ -302,7 +302,7 @@ class ClosureTests(unittest.TestCase):
                                              owner_approved=True, apply=True)
                 self.assertEqual(session.inspect(self.api, pending)["pending_closure"]["issue"], 247)
                 self.assertEqual(session.inspect(self.api, pending)["status"], "closure_reconciliation_required")
-                with self.assertRaises(ValueError):
+                with self.assertRaisesRegex(ValueError, "Reconcile pending closure"):
                     session.claim(self.api, pending, 248, ["new"], "Next")
                 with self.assertRaises(ValueError):
                     session.cancel_closure_plan(self.api, pending, 247, self.policy, "Cancel")
