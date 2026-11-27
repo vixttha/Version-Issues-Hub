@@ -1,0 +1,747 @@
+{
+  "title": "VIB #53 implementation candidate evidence",
+  "features": [
+    {
+      "id": "vib53-transaction-foundation",
+      "label": "Production session confirmation and throttle safety",
+      "documented_in": [
+        {
+          "path": "docs/vib53-implementation.md",
+          "anchor": "# #53 implementation candidate — transaction foundation"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "tools/session.py",
+          "anchor": "def confirm_handoff(api, prefix, old, new, tree, *, operation_id=None):"
+        }
+      ],
+      "implemented_in": [
+        {
+          "path": "tools/install.py",
+          "anchor": "def retry_delay(status, headers, now):"
+        },
+        {
+          "path": "tools/session.py",
+          "anchor": "def save(api, state, ledger, handoff, apply=False, *, issue=None, operation_id=None,"
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tests/test_transaction_confirmation.py",
+          "anchor": "def test_descendant_and_lost_response_confirm_once(self):"
+        },
+        {
+          "path": "tests/test_transaction_confirmation.py",
+          "anchor": "def test_unconfirmed_commit_never_resubmitted(self):"
+        },
+        {
+          "path": "tests/test_transaction_confirmation.py",
+          "anchor": "def test_denial_and_throttle_stop(self):"
+        },
+        {
+          "path": "tests/test_transaction_confirmation.py",
+          "anchor": "def test_retry_delay(self):"
+        },
+        {
+          "path": "tests/test_transaction_confirmation.py",
+          "anchor": "def test_throttle_header_never_retries_or_leaks(self):"
+        },
+        {
+          "path": "tests/test_transaction_confirmation.py",
+          "anchor": "def test_readback_throttle_retains_delay_and_candidate(self):"
+        },
+        {
+          "path": "tests/test_transaction_confirmation.py",
+          "anchor": "def test_real_git_descendant_preserves_both_transactions(self):"
+        },
+        {
+          "path": "tests/test_transaction_confirmation.py",
+          "anchor": "def test_malformed_retry_after_preserves_reset_bound(self):"
+        },
+        {
+          "path": "tests/test_transaction_confirmation.py",
+          "anchor": "def test_truncated_response_is_normalized_without_retry(self):"
+        },
+        {
+          "path": "tests/test_transaction_confirmation.py",
+          "anchor": "def test_truncated_patch_and_readback_preserve_candidate(self):"
+        }
+      ]
+    },
+    {
+      "id": "vib53-pr-integration-qualification",
+      "label": "PR merge history and stale-base risk characterization (not a production repair)",
+      "documented_in": [
+        {
+          "path": "docs/vib53-implementation.md",
+          "anchor": "## PR integration safety — qualification before runtime change"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "tests/test_merge_history.py",
+          "anchor": "class MergeHistoryTests(unittest.TestCase):"
+        }
+      ],
+      "implemented_in": [
+        {
+          "path": "tools/checkpoint.py",
+          "anchor": "def verify_fix_ancestry(version, fix, candidate):"
+        },
+        {
+          "path": "tools/session.py",
+          "anchor": "def finish(api, state, disposition, decision, *, policy=None, issue=None):"
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tests/test_merge_history.py",
+          "anchor": "def test_merge_commit_preserves_original_fix_and_tree(self):"
+        },
+        {
+          "path": "tests/test_merge_history.py",
+          "anchor": "def test_squash_and_rebase_preserve_content_not_fix_identity(self):"
+        },
+        {
+          "path": "tests/test_merge_history.py",
+          "anchor": "def test_stale_base_can_create_clean_semantic_conflict(self):"
+        },
+        {
+          "path": "tests/test_merge_history.py",
+          "anchor": "def test_textual_conflict_is_not_a_merge_candidate(self):"
+        },
+        {
+          "path": "tests/test_merge_history.py",
+          "anchor": "def test_conditional_ref_rejects_stale_base(self):"
+        }
+      ]
+    },
+    {
+      "id": "vib53-post-merge-acceptance",
+      "label": "Actual merged revision acceptance in both session paths",
+      "documented_in": [
+        {
+          "path": "docs/vib53-implementation.md",
+          "anchor": "## Post-merge acceptance repair"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "tools/session.py",
+          "anchor": "def finish(api, state, disposition, decision, *, policy=None, issue=None):"
+        },
+        {
+          "path": "tools/session.py",
+          "anchor": "def reconcile(api, state, number, decision, *, policy=None):"
+        }
+      ],
+      "implemented_in": [
+        {
+          "path": "tools/standard.py",
+          "anchor": "def verify_integration(api, state, active, pr, policy):"
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tests/test_post_merge.py",
+          "anchor": "def test_both_paths_require_policy_and_preserve_original_state(self):"
+        },
+        {
+          "path": "tests/test_post_merge.py",
+          "anchor": "def test_both_paths_archive_post_merge_evidence_and_exact_mapping(self):"
+        },
+        {
+          "path": "tests/test_post_merge.py",
+          "anchor": "def test_invalid_run_job_or_step_rejected_on_both_paths(self):"
+        },
+        {
+          "path": "tests/test_post_merge.py",
+          "anchor": "def test_wrong_scope_or_merge_history_rejected(self):"
+        },
+        {
+          "path": "tests/test_post_merge.py",
+          "anchor": "def test_rerun_during_job_read_is_not_accepted(self):"
+        },
+        {
+          "path": "tests/test_post_merge.py",
+          "anchor": "def test_dispatch_at_actual_revision_supported(self):"
+        },
+        {
+          "path": "tests/test_post_merge.py",
+          "anchor": "def test_earlier_mapped_run_rerun_during_later_mapping_rejected(self):"
+        }
+      ]
+    },
+    {
+      "id": "vib53-stale-integration-evidence",
+      "label": "Preserve fix and checkpoint across changed integration candidate",
+      "documented_in": [
+        {
+          "path": "docs/vib53-implementation.md",
+          "anchor": "## Stale integration evidence recovery"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "tools/session.py",
+          "anchor": "def integration_snapshot(api, state, active):"
+        }
+      ],
+      "implemented_in": [
+        {
+          "path": "tools/session.py",
+          "anchor": "def refresh_candidate(api, state, active, note):"
+        },
+        {
+          "path": "tools/standard.py",
+          "anchor": "def check_pr_run(item, policy, run, attempt):"
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tests/test_stale_integration.py",
+          "anchor": "def test_other_merge_invalidates_active_and_staged_without_mutation(self):"
+        },
+        {
+          "path": "tests/test_stale_integration.py",
+          "anchor": "def test_refresh_keeps_fix_version_and_history_and_rejects_old_run(self):"
+        },
+        {
+          "path": "tests/test_stale_integration.py",
+          "anchor": "def test_staged_reclaim_preserves_original_fix_and_slot(self):"
+        },
+        {
+          "path": "tests/test_stale_integration.py",
+          "anchor": "def test_changed_head_missing_fix_refuses_refresh(self):"
+        },
+        {
+          "path": "tests/test_stale_integration.py",
+          "anchor": "def test_legacy_active_without_pins_remains_readable_but_cannot_stage(self):"
+        },
+        {
+          "path": "tests/test_stale_integration.py",
+          "anchor": "def test_base_changes_during_run_read_cannot_advance(self):"
+        },
+        {
+          "path": "tests/test_stale_integration.py",
+          "anchor": "def test_unrelated_installed_state_is_not_product_base(self):"
+        },
+        {
+          "path": "tests/test_stale_integration.py",
+          "anchor": "def test_archived_run_cannot_be_relabelled_or_rerun(self):"
+        },
+        {
+          "path": "tests/test_stale_integration.py",
+          "anchor": "def test_staged_plan_rechecked_before_write_and_ref_publish(self):"
+        },
+        {
+          "path": "tests/test_stale_integration.py",
+          "anchor": "def test_real_git_other_merge_preserves_fix_but_invalidates_integration(self):"
+        },
+        {
+          "path": "tests/test_stale_integration.py",
+          "anchor": "def test_earlier_premerge_run_rerun_during_later_run_rejected(self):"
+        }
+      ]
+    },
+    {
+      "id": "vib53-issue-scoped-isolation",
+      "label": "Issue-local session mutations and evidence isolation",
+      "documented_in": [
+        {
+          "path": "docs/vib53-implementation.md",
+          "anchor": "## Issue-scoped evidence isolation"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "tools/session.py",
+          "anchor": "def save(api, state, ledger, handoff, apply=False, *, issue=None, operation_id=None,"
+        }
+      ],
+      "implemented_in": [
+        {
+          "path": "tools/session.py",
+          "anchor": "def check_issue_delta(state, ledger, handoff, number=None):"
+        },
+        {
+          "path": "tools/session.py",
+          "anchor": "def reconcile(api, state, number, decision, *, policy=None):"
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tests/test_issue_isolation.py",
+          "anchor": "def test_validate_refresh_block_defer_and_stage_preserve_other_issue(self):"
+        },
+        {
+          "path": "tests/test_issue_isolation.py",
+          "anchor": "def test_unrelated_ledger_tampering_rejected_before_any_write(self):"
+        },
+        {
+          "path": "tests/test_issue_isolation.py",
+          "anchor": "def test_unrelated_archive_append_or_rewrite_rejected(self):"
+        },
+        {
+          "path": "tests/test_issue_isolation.py",
+          "anchor": "def test_explicit_wrong_issue_and_active_slot_replacement_rejected(self):"
+        },
+        {
+          "path": "tests/test_issue_isolation.py",
+          "anchor": "def test_existing_criteria_and_new_unrelated_issue_rejected(self):"
+        },
+        {
+          "path": "tests/test_issue_isolation.py",
+          "anchor": "def test_reconcile_staged_issue_preserves_unrelated_active_worker(self):"
+        },
+        {
+          "path": "tests/test_issue_isolation.py",
+          "anchor": "def test_wrong_issue_post_merge_policy_rejected_without_mutation(self):"
+        },
+        {
+          "path": "tests/test_issue_isolation.py",
+          "anchor": "def test_stale_run_history_of_other_issue_does_not_poison_current_issue(self):"
+        },
+        {
+          "path": "tests/test_issue_isolation.py",
+          "anchor": "def test_serialized_write_preserves_unrelated_records(self):"
+        },
+        {
+          "path": "tests/test_issue_isolation.py",
+          "anchor": "def test_stale_writer_cannot_publish_after_unrelated_transaction(self):"
+        }
+      ]
+    },
+    {
+      "id": "vib53-isolated-evidence-reuse",
+      "label": "Distinct PR isolation and exact owner-policy renewal",
+      "documented_in": [
+        {
+          "path": "docs/vib53-implementation.md",
+          "anchor": "## Issue-scoped evidence isolation"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "tools/session.py",
+          "anchor": "def save(api, state, ledger, handoff, apply=False, *, issue=None, operation_id=None,"
+        }
+      ],
+      "implemented_in": [
+        {
+          "path": "tools/session.py",
+          "anchor": "def check_issue_delta(state, ledger, handoff, number=None):"
+        },
+        {
+          "path": "tools/standard.py",
+          "anchor": "def evaluate(api, target, policy):"
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tests/test_issue_isolation.py",
+          "anchor": "def test_distinct_pr_refresh_does_not_read_or_change_other_pr(self):"
+        },
+        {
+          "path": "tests/test_issue_isolation.py",
+          "anchor": "def test_terminal_issue_and_acceptance_cannot_be_reopened_by_save(self):"
+        },
+        {
+          "path": "tests/test_issue_isolation.py",
+          "anchor": "def test_legacy_save_can_infer_staged_reconciliation_without_touching_active(self):"
+        },
+        {
+          "path": "tests/test_issue_isolation.py",
+          "anchor": "def test_cli_wrong_issue_refuses_before_transition(self):"
+        },
+        {
+          "path": "tests/test_standard.py",
+          "anchor": "def test_unrelated_ledger_revision_requires_repin_not_new_run(self):"
+        }
+      ]
+    },
+    {
+      "id": "vib53-review-freshness",
+      "label": "Legacy candidate inspection and Standard final attempt checks",
+      "documented_in": [
+        {
+          "path": "docs/vib53-implementation.md",
+          "anchor": "## Review closure repairs"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "tools/session.py",
+          "anchor": "def inspect(api, state, requested=None):"
+        }
+      ],
+      "implemented_in": [
+        {
+          "path": "tools/standard.py",
+          "anchor": "def evaluate(api, target, policy):"
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tests/test_standard.py",
+          "anchor": "def test_rerun_during_standard_job_inspection_rejected(self):"
+        },
+        {
+          "path": "tests/test_standard.py",
+          "anchor": "def test_earlier_standard_run_changes_during_later_mapping(self):"
+        },
+        {
+          "path": "tests/test_stale_integration.py",
+          "anchor": "def test_unpinned_empty_validate_inspection_requires_refresh(self):"
+        }
+      ]
+    },
+    {
+      "id": "vib53-parallel-active",
+      "label": "Owner-enabled independent active handoffs",
+      "documented_in": [
+        {
+          "path": "docs/vib53-implementation.md",
+          "anchor": "## Parallel active handoff candidate"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "tools/session.py",
+          "anchor": "def claim(api, state, number, criteria, note, *, resume_prior_line=False, parallel=False,"
+        }
+      ],
+      "implemented_in": [
+        {
+          "path": "tools/session.py",
+          "anchor": "def active_rows(handoff):"
+        },
+        {
+          "path": "tools/session.py",
+          "anchor": "def select_active(handoff, number=None):"
+        },
+        {
+          "path": "tools/session.py",
+          "anchor": "def check_issue_delta(state, ledger, handoff, number=None):"
+        },
+        {
+          "path": "tools/session.py",
+          "anchor": "def supports_parallel_package(files):"
+        },
+        {
+          "path": "tools/lifecycle.py",
+          "anchor": "def upgrade(api, target, expected_sha, source_sha, *, apply=False, owner_approved=False, prepare_only=False):"
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tests/test_parallel_handoff.py",
+          "anchor": "def test_parallel_opt_in_keeps_legacy_solo_and_existing_assignment(self):"
+        },
+        {
+          "path": "tests/test_parallel_handoff.py",
+          "anchor": "def test_independent_transitions_and_completion(self):"
+        },
+        {
+          "path": "tests/test_parallel_handoff.py",
+          "anchor": "def test_explicit_selection_even_when_only_one_parallel_issue(self):"
+        },
+        {
+          "path": "tests/test_parallel_handoff.py",
+          "anchor": "def test_parallel_tampering_and_downgrade_refused_before_write(self):"
+        },
+        {
+          "path": "tests/test_parallel_handoff.py",
+          "anchor": "def test_stale_writer_rejected_and_fresh_claim_keeps_distinct_versions(self):"
+        },
+        {
+          "path": "tests/test_parallel_handoff.py",
+          "anchor": "def test_one_hundred_issue_records_without_global_slot(self):"
+        },
+        {
+          "path": "tests/test_parallel_handoff.py",
+          "anchor": "def test_parallel_reconcile_preserves_other_active(self):"
+        },
+        {
+          "path": "tests/test_parallel_handoff.py",
+          "anchor": "def test_parallel_claim_refuses_enabled_gate_and_lifecycle_busy(self):"
+        },
+        {
+          "path": "tests/test_parallel_handoff.py",
+          "anchor": "def test_standard_unrelated_parallel_active_does_not_block_same_pr_does(self):"
+        },
+        {
+          "path": "tests/test_parallel_handoff.py",
+          "anchor": "def test_legacy_package_cannot_be_promoted_by_newer_cli(self):"
+        },
+        {
+          "path": "tests/test_parallel_handoff.py",
+          "anchor": "def test_parallel_idle_upgrade_refuses_incompatible_reader(self):"
+        },
+        {
+          "path": "tests/test_parallel_handoff.py",
+          "anchor": "def test_real_git_parallel_conflict_preserves_winner_and_reloaded_loser(self):"
+        }
+      ]
+    },
+    {
+      "id": "vib53-contention-recovery",
+      "label": "Bounded issue-local contention recovery",
+      "documented_in": [
+        {
+          "path": "docs/vib53-implementation.md",
+          "anchor": "## Bounded automatic contention recovery (isolated candidate)"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "tools/session.py",
+          "anchor": "def recover_save(api, target, state, plan, issue, *, attempts=4, rounds=1, request=None,"
+        }
+      ],
+      "implemented_in": [
+        {
+          "path": "tools/session.py",
+          "anchor": "def retry_scope(api, previous, fresh, number, rejection, *, _history_cache=None):"
+        },
+        {
+          "path": "tools/session.py",
+          "anchor": "def issue_view(ledger, handoff, number):"
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tests/test_contention_recovery.py",
+          "anchor": "def test_automatic_real_git_conflict_preserves_both_claims(self):"
+        },
+        {
+          "path": "tests/test_contention_recovery.py",
+          "anchor": "def test_same_issue_change_stops_without_replaying(self):"
+        },
+        {
+          "path": "tests/test_contention_recovery.py",
+          "anchor": "def test_advance_replans_only_unchanged_issue(self):"
+        },
+        {
+          "path": "tests/test_contention_recovery.py",
+          "anchor": "def test_prepublication_conflict_recovers_without_repeating_old_patch(self):"
+        },
+        {
+          "path": "tests/test_contention_recovery.py",
+          "anchor": "def test_ambiguous_and_rate_limited_writes_never_replay(self):"
+        },
+        {
+          "path": "tests/test_contention_recovery.py",
+          "anchor": "def test_bounded_exhaustion_no_infinite_retry(self):"
+        },
+        {
+          "path": "tests/test_contention_recovery.py",
+          "anchor": "def test_unchanged_ref_rejects_422_not_contention(self):"
+        },
+        {
+          "path": "tests/test_contention_recovery.py",
+          "anchor": "def test_intermediate_change_then_revert_is_not_safe(self):"
+        },
+        {
+          "path": "tests/test_contention_recovery.py",
+          "anchor": "def test_exact_committed_candidate_not_replayed(self):"
+        },
+        {
+          "path": "tests/test_contention_recovery.py",
+          "anchor": "def test_replan_changed_intent_refused(self):"
+        }
+      ]
+    },
+    {
+      "id": "vib53-contention-repeat",
+      "label": "Repeated conflicts and completion safety",
+      "documented_in": [
+        {
+          "path": "docs/vib53-implementation.md",
+          "anchor": "## Bounded automatic contention recovery (isolated candidate)"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "tools/session.py",
+          "anchor": "def recover_save(api, target, state, plan, issue, *, attempts=4, rounds=1, request=None,"
+        }
+      ],
+      "implemented_in": [
+        {
+          "path": "tools/session.py",
+          "anchor": "def retry_scope(api, previous, fresh, number, rejection, *, _history_cache=None):"
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tests/test_contention_recovery.py",
+          "anchor": "def test_three_successive_real_git_conflicts_then_success(self):"
+        },
+        {
+          "path": "tests/test_contention_recovery.py",
+          "anchor": "def test_finish_archive_is_appended_once_after_conflict(self):"
+        },
+        {
+          "path": "tests/test_contention_recovery.py",
+          "anchor": "def test_product_change_refuses_replan(self):"
+        }
+      ]
+    },
+    {
+      "id": "vib53-qualification-repairs",
+      "label": "Review closure and throttle-safe recovery",
+      "documented_in": [
+        {
+          "path": "docs/vib53-implementation.md",
+          "anchor": "## Qualification review repairs"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "tools/session.py",
+          "anchor": "def retry_scope(api, previous, fresh, number, rejection, *, _history_cache=None):"
+        }
+      ],
+      "implemented_in": [
+        {
+          "path": "tools/install.py",
+          "anchor": "def cli_error(parser, label, exc):"
+        },
+        {
+          "path": "tools/install.py",
+          "anchor": "def raise_cli_delay(stderr):"
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tests/test_contention_recovery.py",
+          "anchor": "def test_unrelated_acceptance_change_refused(self):"
+        },
+        {
+          "path": "tests/test_contention_recovery.py",
+          "anchor": "def test_package_change_then_restore_refused(self):"
+        },
+        {
+          "path": "tests/test_transaction_confirmation.py",
+          "anchor": "def test_ambiguous_503_short_delay_confirm_after_wait(self):"
+        },
+        {
+          "path": "tests/test_transaction_confirmation.py",
+          "anchor": "def test_ambiguous_503_long_delay_preserves_candidate_without_polling(self):"
+        },
+        {
+          "path": "tests/test_live_acceptance.py",
+          "anchor": "def test_child_plan_throttle_stops_later_cases(self):"
+        },
+        {
+          "path": "tests/test_live_acceptance.py",
+          "anchor": "def test_cli_delay_receipt_round_trip_and_strict_types(self):"
+        },
+        {
+          "path": "tests/test_acceptance_snapshot.py",
+          "anchor": "def test_inspection_child_delay_propagates_without_ref_probe(self):"
+        }
+      ]
+    },
+    {
+      "id": "vib53-bounded-continuation",
+      "label": "Stable publication identity and bounded continuation",
+      "documented_in": [
+        {
+          "path": "docs/vib53-implementation.md",
+          "anchor": "## Bounded continuation qualification"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "tools/session.py",
+          "anchor": "def recover_save(api, target, state, plan, issue, *, attempts=4, rounds=1, request=None,"
+        }
+      ],
+      "implemented_in": [
+        {
+          "path": "tools/session.py",
+          "anchor": "def operation_identity(state, issue, intended, request=None):"
+        },
+        {
+          "path": "tools/session.py",
+          "anchor": "class HandoffDeferred(ValueError):"
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tests/test_contention_recovery.py",
+          "anchor": "def test_operation_identity_stable_across_replan_and_distinct_intent(self):"
+        },
+        {
+          "path": "tests/test_contention_recovery.py",
+          "anchor": "def test_final_rejection_confirms_existing_candidate(self):"
+        },
+        {
+          "path": "tests/test_contention_recovery.py",
+          "anchor": "def test_final_unclassified_rejection_is_not_contention(self):"
+        },
+        {
+          "path": "tests/test_contention_recovery.py",
+          "anchor": "def test_second_bounded_round_continues_after_four_wins(self):"
+        },
+        {
+          "path": "tests/test_contention_recovery.py",
+          "anchor": "def test_verified_exhaustion_preserves_identity_and_bound(self):"
+        },
+        {
+          "path": "tests/test_contention_recovery.py",
+          "anchor": "def test_intervening_unchanged_manifest_is_not_refetched(self):"
+        },
+        {
+          "path": "tests/test_contention_recovery.py",
+          "anchor": "def test_changed_blob_bytes_must_match_tree(self):"
+        },
+        {
+          "path": "tests/test_contention_recovery.py",
+          "anchor": "def test_final_candidate_with_mismatched_receipt_is_unconfirmed(self):"
+        },
+        {
+          "path": "tests/test_contention_recovery.py",
+          "anchor": "def test_operation_receipt_survives_process_restart(self):"
+        }
+      ]
+    },
+    {
+      "id": "vib53-continuation-matrix",
+      "label": "Two-round qualification and residual limitations",
+      "documented_in": [
+        {
+          "path": "docs/vib53-implementation.md",
+          "anchor": "## Repeated workload qualification"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "tests/test_vib53_qualification.py",
+          "anchor": "class QualificationTests(unittest.TestCase):"
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tests/test_vib53_qualification.py",
+          "anchor": "def test_bounded_concurrent_workloads(self):"
+        },
+        {
+          "path": "tests/test_vib53_qualification.py",
+          "anchor": "def test_starvation_counterexample_with_real_production_retry(self):"
+        },
+        {
+          "path": "tests/test_vib53_qualification.py",
+          "anchor": "def test_fresh_process_claim_replay_has_no_durable_pending_identity(self):"
+        },
+        {
+          "path": "tests/test_vib53_qualification.py",
+          "anchor": "def test_real_git_legacy_upgrade_and_parallel_opt_in(self):"
+        }
+      ]
+    }
+  ]
+}

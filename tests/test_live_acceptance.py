@@ -1,0 +1,152 @@
+"""Offline acceptance harness contract; no remote calls or writes."""
+import unittest
+from unittest.mock import Mock, patch
+from http.client import RemoteDisconnected
+from tools import live_acceptance as live
+
+SOURCE = "a" * 40
+REF = "b" * 40
+PRODUCT = "c" * 40
+
+class LiveIsolationTests(unittest.TestCase):
+    def test_core_never_invokes_external_adopters(self):
+        with patch.object(live, "verify_self_install", return_value={}), patch.object(live, "verify_templates", return_value={}), patch.object(live, "verify_live_cli_plan") as external, patch.object(live, "verify_aldervale_install") as alder, patch.object(live, "verify_bart") as bart:
+            result = live.run_cases(Mock(), SOURCE, "core")
+        self.assertEqual(result["status"], "passed")
+        self.assertEqual(set(result["cases"]), {"self_install", "templates"})
+        for m in (external, alder, bart):
+            m.assert_not_called()
+
+    def test_failed_external_does_not_suppress_other_evidence(self):
+        with patch.object(live, "verify_live_cli_plan", side_effect=live.install.ApiError(404)), patch.object(live, "verify_aldervale_install", return_value={"ok": True}), patch.object(live, "verify_bart", return_value={"ok": True}), patch.object(live, "verify_self_install") as core:
+            result = live.run_cases(Mock(), SOURCE, "external")
+        self.assertEqual(result["status"], "failed")
+        self.assertEqual(result["cases"]["readme_hq"], {"status": "failed", "error_type": "ApiError", "http_status": 404})
+        self.assertEqual(result["cases"]["bart"]["status"], "passed")
+        core.assert_not_called()
+
+    def test_all_scope_never_green_on_bad_proof(self):
+        with patch.object(live, "verify_self_install", return_value={}), patch.object(live, "verify_templates", side_effect=AssertionError("private details")), patch.object(live, "verify_live_cli_plan", return_value={}), patch.object(live, "verify_aldervale_install", return_value={}), patch.object(live, "verify_bart", return_value={}):
+            result = live.run_cases(Mock(), SOURCE, "all")
+        self.assertEqual(len(result["cases"]), 5)
+        self.assertEqual(result["status"], "failed")
+        self.assertNotIn("private details", str(result))
+
+    def test_get_disconnect_retries_bounded(self):
+        api = live.ReadOnlyGitHub(None)
+        with patch.object(live.install.GitHub, "request", side_effect=[RemoteDisconnected(), {"ok": True}]) as call, patch.object(live.time, "sleep"):
+            self.assertEqual(api.request("GET", "/test"), {"ok": True})
+            self.assertEqual(call.call_count, 2)
+        with patch.object(live.install.GitHub, "request", side_effect=RemoteDisconnected()) as call, patch.object(live.time, "sleep"):
+            with self.assertRaises(RemoteDisconnected):
+                api.request("GET", "/test")
+            self.assertEqual(call.call_count, 3)
+
+    def test_no_write_or_generic_retry(self):
+        api = live.ReadOnlyGitHub(None)
+        with patch.object(live.install.GitHub, "request", side_effect=ValueError("bad")) as call:
+            with self.assertRaises(AssertionError):
+                api.request("POST", "/test", {})
+            with self.assertRaises(AssertionError):
+                api.request("GET", "/test", {})
+            call.assert_not_called()
+            with self.assertRaises(ValueError):
+                api.request("GET", "/test")
+            self.assertEqual(call.call_count, 1)
+
+    def test_occupied_readme_is_not_a_new_plan(self):
+        api = Mock()
+        api.request.return_value = {"private": False, "id": 1463992109, "default_branch": "main"}
+        state = {"ref": REF, "product_sha": PRODUCT, "manifest": {"source_sha": SOURCE, "enforcement": "disabled"}}
+        report = {"repository": "vixttha/README-HQ", "owner_merge_required": True, "evidence_verified": False}
+        with patch.object(live.install, "read_ref", side_effect=[PRODUCT, REF, REF, PRODUCT]), patch.object(live, "recover_stable", return_value=(state, report)), patch.object(live, "verify_occupied") as occupied, patch.object(live.subprocess, "check_output") as cli:
+            result = live.verify_live_cli_plan(api, SOURCE)
+        self.assertEqual(result["mode"], "existing_install_verified")
+        self.assertIsNone(result["planned_files"])
+        self.assertFalse(result["branch_created"])
+        occupied.assert_called_once()
+        cli.assert_not_called()
+
+    def test_occupied_readme_rejects_drift(self):
+        api = Mock()
+        api.request.return_value = {"private": False, "id": 1463992109, "default_branch": "main"}
+        state = {"ref": REF, "product_sha": PRODUCT, "manifest": {"source_sha": SOURCE, "enforcement": "disabled"}}
+        report = {"repository": "vixttha/README-HQ", "owner_merge_required": True, "evidence_verified": False}
+        with patch.object(live.install, "read_ref", side_effect=[PRODUCT, REF, "d"*40]), patch.object(live, "recover_stable", return_value=(state, report)), patch.object(live, "verify_occupied"):
+            with self.assertRaises(live.SnapshotDrift):
+                live.verify_live_cli_plan(api, SOURCE)
+
+    def test_readme_recovery_advance_retries_complete_check(self):
+        api = Mock()
+        api.request.return_value = {"private": False, "id": 1463992109, "default_branch": "main"}
+        new = "d"*40
+        state = {"ref": new, "product_sha": PRODUCT, "manifest": {"source_sha": SOURCE, "enforcement": "disabled"}}
+        report = {"repository": "vixttha/README-HQ", "owner_merge_required": True, "evidence_verified": False}
+        with patch.object(live.install, "read_ref", side_effect=[PRODUCT, REF, PRODUCT, new, new, PRODUCT]), patch.object(live, "recover_stable", return_value=(state, report)) as recovery, patch.object(live, "verify_occupied") as occupied:
+            result = live.retry_snapshot(lambda: live.verify_live_cli_plan(api, SOURCE))
+        self.assertEqual(result["installed_sha"], new)
+        self.assertEqual(recovery.call_count, 2)
+        occupied.assert_called_once()
+
+    def test_invalid_readme_proof_is_not_retried(self):
+        api = Mock()
+        api.request.return_value = {"private": False, "id": 1463992109, "default_branch": "main"}
+        state = {"ref": REF, "product_sha": PRODUCT, "manifest": {"source_sha": SOURCE, "enforcement": "required"}}
+        with patch.object(live.install, "read_ref", side_effect=[PRODUCT, REF]), patch.object(live, "recover_stable", return_value=(state, {})) as recovery:
+            with self.assertRaises(AssertionError):
+                live.retry_snapshot(lambda: live.verify_live_cli_plan(api, SOURCE))
+        recovery.assert_called_once()
+
+    def test_rate_limit_retains_safe_diagnostics_and_stops_remaining_reads(self):
+        error = live.install.ApiError(403, "GET", "repository", 120)
+        with patch.object(live, "verify_self_install", side_effect=error), patch.object(live, "verify_templates") as other:
+            result = live.run_cases(Mock(), SOURCE, "core")
+        self.assertEqual(result["status"], "failed")
+        self.assertEqual(result["cases"]["self_install"], {"status":"failed","error_type":"ApiError",
+            "http_status":403,"operation":"repository","retry_after_seconds":120})
+        self.assertEqual(result["cases"]["templates"], {"status":"not_run","reason":"prior_rate_limit","retry_after_seconds":120})
+        other.assert_not_called()
+
+    def test_unclassified_denial_does_not_claim_rate_limit(self):
+        with patch.object(live, "verify_self_install", side_effect=live.install.ApiError(403, "GET", "repository")), patch.object(live, "verify_templates", return_value={}) as other:
+            result = live.run_cases(Mock(), SOURCE, "core")
+        self.assertEqual(result["status"], "failed")
+        self.assertNotIn("retry_after_seconds", result["cases"]["self_install"])
+        other.assert_called_once()
+
+    def test_child_plan_throttle_stops_later_cases(self):
+        import subprocess
+        import json
+        api=Mock()
+        api.request.return_value={"private":False,"id":1463992109,"default_branch":"main"}
+        err=subprocess.CalledProcessError(1,["install"],stderr=json.dumps(
+            {"kind":"vib_api_delay","status":403,"retry_after":120}))
+        with patch.object(live.install,"read_ref",side_effect=[PRODUCT,None]), \
+             patch.object(live.subprocess,"check_output",side_effect=err), \
+             patch.object(live,"verify_aldervale_install") as alder, \
+             patch.object(live,"verify_bart") as bart:
+            report=live.run_cases(api,SOURCE,"external")
+        self.assertEqual(report["status"],"failed")
+        self.assertEqual(report["cases"]["readme_hq"]["retry_after_seconds"],120)
+        self.assertEqual(report["cases"]["aldervale"]["status"],"not_run")
+        self.assertEqual(report["cases"]["bart"]["status"],"not_run")
+        alder.assert_not_called()
+        bart.assert_not_called()
+
+    def test_cli_delay_receipt_round_trip_and_strict_types(self):
+        import argparse
+        import contextlib
+        import io
+        err=io.StringIO()
+        with contextlib.redirect_stderr(err), self.assertRaises(SystemExit):
+            live.install.cli_error(argparse.ArgumentParser(),"Install stopped",
+                                   live.install.ApiError(429,"GET","repository",75))
+        with self.assertRaises(live.install.ApiError) as caught:
+            live.install.raise_cli_delay(err.getvalue())
+        self.assertEqual(caught.exception.status,429)
+        self.assertEqual(caught.exception.retry_after,75)
+        for bad in ('{"kind":"vib_api_delay","status":403,"retry_after":true}',
+                    '{"kind":"vib_api_delay","status":403,"retry_after":-1}',
+                    '{"kind":"vib_api_delay","status":403,"retry_after":20,"extra":"secret"}',
+                    "retry after 120 seconds"):
+            live.install.raise_cli_delay(bad)
