@@ -98,3 +98,7 @@ The original .36 review overlay is historical and superseded. The public retaine
 ### Engineering archive continuation (.40 correction through .42)
 
 See [the exact-version synchronization intake](archives/SYNC-40-43.md) and [retained graph index](archives/engineering-code-graphs-40-42/index.json). The `engineering` scope accepts the original and corrected .40 sources using their respective independently recorded digest pins. .41 and .42 are engineering snapshots, not releases. .43 is active and not represented as finalized evidence.
+
+## Active development graphs
+
+Use the separate [development graph workflow](docs/development-graphs.md) and [current requested source](development-graph-request.json). Development snapshots are exact source revisions, never finalized version evidence. Historical archives are unchanged.
