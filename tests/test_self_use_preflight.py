@@ -121,8 +121,10 @@ class SelfUsePreflightTests(unittest.TestCase):
         git.side_effect = ["b"*40 + "\trefs/heads/Version-Issues-Hub", "c"*40]
         read.return_value = "v0.0.0.43"
         run.return_value = CompletedProcess([], 0)
-        with patch.dict("os.environ", {"VIB_PR_BASE_SHA": "d"*40}):
-            self_use_preflight.verify_checkpoint_branch("plan/checkpoint-v0.0.0.43")
+        with patch.dict("os.environ", {"VIB_PR_BASE_SHA": "d"*40}), patch("builtins.print") as output:
+            self.assertEqual(self_use_preflight.verify_checkpoint_branch("plan/checkpoint-v0.0.0.43"),
+                             ("a"*40, 96, "v0.0.0.43"))
+        output.assert_any_call(f"VIB observed canonical revision: {'b'*40}; Worker pin: {'a'*40}")
         verify.assert_called_once_with("a"*40, 96, "v0.0.0.43", "c"*40, "b"*40, "d"*40)
         run.assert_any_call(["git", "merge-base", "--is-ancestor", "a"*40, "b"*40], check=False)
         self.assertEqual(git.call_count, 2)

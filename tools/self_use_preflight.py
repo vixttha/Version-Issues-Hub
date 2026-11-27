@@ -270,6 +270,7 @@ def verify_checkpoint_branch(branch, *, require_recovery_authorization=False):
         head = checkpoint.git("rev-parse", "HEAD")
         options = {"require_recovery_authorization": True} if require_recovery_authorization else {}
         verify_scope(pin, issue, version, head, current, os.environ.get("VIB_PR_BASE_SHA") or None, **options)
+    print(f"VIB observed canonical revision: {current}; Worker pin: {pin}")
     return pin, issue, version
 
 
