@@ -1154,6 +1154,9 @@ def recovery_plan(api, state, requested=None):
                 raise
             status = "product_lineage_reconciliation_required"
             action = "Verify target identity, baseline and historical product merge ancestry before claiming work."
+    if status == "head_scope_required" and info is not None and info["state"] != "open":
+        status = "issue_reconciliation_required"
+        action = actions[status]
     if status == "head_scope_required" and debt:
         try:
             if number is None:
@@ -1260,7 +1263,7 @@ def check_deferral(api, state, record, next_issue=None):
     return policy
 
 
-def outstanding_integration_records(state):
+def outstanding_integration_records(state, *, proof_basis=False):
     # An obligation follows its original fix, not merely the issue number.
     # Renew only bounded ordinary decisions for the exact same issue and
     # original fix (or both pinless). Preserve all archives.
@@ -1287,12 +1290,28 @@ def outstanding_integration_records(state):
                 records[:] = [prior for prior in records
                               if not (engineering_receipt(prior, state["ledger"]) is None
                                       and legacy_engineering_approval(prior) is None
-                                      and fix_of(prior) == fix)]
+                                      and fix_of(prior) == fix
+                                      and not (proof_basis and prior["disposition"] == "staged"))]
             records.append(record)
         elif record["disposition"] == "integrated":
             records[:] = [prior for prior in records
                           if fix_of(prior) not in (None, active["fix_sha"])]
     return {number: records for number, records in outstanding.items() if records}
+
+
+def renewed_staged_basis(state, number, index):
+    """A bounded renewal changes claim authority, not the original stage proof."""
+    history = state["handoff"]["history"]
+    latest = closure_archive_index(state["handoff"], number)
+    if latest is None or not 0 <= index < latest:
+        return False
+    prior, current = history[index], history[latest]
+    return (prior["handoff"]["issue"] == number and prior["disposition"] == "staged"
+            and current["disposition"] == "deferred" and deferral_record(current) is not None
+            and prior["handoff"]["fix_sha"] is not None
+            and prior["handoff"]["fix_sha"] == current["handoff"]["fix_sha"]
+            and any(prior is r for r in outstanding_integration_records(
+                state, proof_basis=True).get(number, [])))
 
 
 def unresolved_integration_debt(state):
@@ -1585,13 +1604,13 @@ def reconcile_historical_integration(api, state, number, decision, policy, *, al
     index = policy["archive_index"]
     history = state["handoff"]["history"]
     if (type(index) is not int or not 0 <= index < len(history)
-            or (not allow_older and index != latest)):
+            or (not allow_older and index != latest and not renewed_staged_basis(state, number, index))):
         raise ValueError("Historical integration archive occurrence changed")
     prior = history[index]
     if (prior["handoff"]["issue"] != number
             or prior["disposition"] not in ("staged", "deferred")
             or (index == latest and prior["disposition"] != row["state"])
-            or not any(prior is record for record in outstanding_integration_records(state).get(number, []))
+            or not any(prior is record for record in outstanding_integration_records(state, proof_basis=True).get(number, []))
             or policy["archive_digest"] != closure_digest(prior)):
         raise ValueError("Historical integration archive digest or disposition changed")
     if prior["disposition"] == "staged":
@@ -1704,6 +1723,44 @@ def reconcile_historical_integration(api, state, number, decision, policy, *, al
     return ledger, handoff
 
 
+def recheck_historical_batch_runs(api, state, proofs):
+    """Recheck every proof's latest and exact attempt after the complete batch review."""
+    from tools import standard, gate
+    prefix = state["prefix"]
+    branch = state["manifest"]["product_branch"]
+    product = install.require(install.SHA, install.read_ref(api, prefix, branch), "product revision")
+    for proof in proofs:
+        review = proof["review"]
+        gate.check_ancestry(api, prefix, review["merge_sha"], product)
+        preview_policy = {**review, "merge_sha": proof["premerge"]["merge_sha"]}
+        for link in proof["premerge"]["evidence"]:
+            run, attempt = evidence_run(state["ledger"]["repository"], link)
+            root = prefix + "/actions/runs/" + str(run)
+            for suffix in ("/attempts/" + str(attempt), ""):
+                item = api.request("GET", root + suffix)
+                standard.check_pr_run(item, preview_policy, run, attempt, api=api, prefix=prefix)
+                if not install.response_rows(item.get("pull_requests", []), "historical PR associations"):
+                    raise ValueError("Historical batch preview association changed")
+        mappings = {(t["run"], t["attempt"], t["workflow_id"])
+                    for row in review["issues"] for criterion in row["criteria"] for t in criterion["checks"]}
+        for run, attempt, workflow in sorted(mappings):
+            root = prefix + "/actions/runs/" + str(run)
+            for suffix in ("/attempts/" + str(attempt), ""):
+                item = install.response_object(api.request("GET", root + suffix), "batch post-merge run")
+                if (not install.same_id(item.get("id"), run)
+                        or not install.same_id(item.get("run_attempt"), attempt)
+                        or not install.same_id(item.get("workflow_id"), workflow)
+                        or not install.same_id(install.response_object(item.get("repository"), "run repository").get("id"), review["repository_id"])
+                        or not install.same_id(install.response_object(item.get("head_repository"), "run head repository").get("id"), review["repository_id"])
+                        or item.get("head_sha") != review["merge_sha"] or item.get("head_branch") != branch
+                        or item.get("event") not in ("push", "workflow_dispatch")
+                        or item.get("status") != "completed" or item.get("conclusion") != "success"):
+                    raise ValueError("Historical batch post-merge run changed during review")
+    if (install.read_ref(api, prefix, branch) != product
+            or install.read_ref(api, prefix, install.BRANCH) != state["ref"]):
+        raise ValueError("Historical batch product or installed state changed")
+
+
 HISTORICAL_BATCH = "historical_product_integration_batch"
 
 
@@ -1721,7 +1778,8 @@ def reconcile_historical_batch(api, state, number, decision, policy):
         raise ValueError("Historical integration batch requires separate exact occurrence proofs")
     number = issue_number(number)
     indices = [proof["archive_index"] for proof in proofs]
-    if (indices != sorted(set(indices)) or indices[-1] != closure_archive_index(state["handoff"], number)):
+    if (indices != sorted(set(indices)) or (indices[-1] != closure_archive_index(state["handoff"], number)
+            and not any(renewed_staged_basis(state, number, i) for i in indices))):
         raise ValueError("Historical integration batch occurrences must be unique, ordered and include the latest")
     ledger, handoff = copy.deepcopy(state["ledger"]), copy.deepcopy(state["handoff"])
     fixes = set()
@@ -1737,6 +1795,7 @@ def reconcile_historical_batch(api, state, number, decision, policy):
     if outstanding_integration_records({**state, "ledger": ledger, "handoff": handoff}).get(number):
         raise ValueError("Historical integration batch leaves a different historical fix unresolved")
     validate_handoff(handoff, ledger)
+    recheck_historical_batch_runs(api, state, proofs)
     return ledger, handoff
 
 
@@ -2141,8 +2200,13 @@ def save(api, state, ledger, handoff, apply=False, *, issue=None, operation_id=N
                     or prior["phase"] != "Head" or prior != proposed
                     or any(a["issue"] == proposed["issue"] for a in active_rows(handoff))):
                 raise ValueError("Staged archive must preserve the original active Head handoff")
+        debt_numbers = {row["issue"] for row in unresolved_integration_debt(state)}
+        debt_numbers.update(row["issue"] for row in unresolved_integration_debt(
+            {**state, "ledger": ledger, "handoff": handoff}))
         for row in ledger["issues"]:
             old = before.get(row["issue"])
+            if row["state"] == "retired" and row["issue"] in debt_numbers:
+                raise ValueError("Cannot retire issue with outstanding integration debt")
             if row["state"] == "integrated" and (old is None or old["state"] != "integrated"):
                 proof = [r for r in appended if r["handoff"]["issue"] == row["issue"]
                          and r["disposition"] == "integrated"]

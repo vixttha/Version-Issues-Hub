@@ -130,3 +130,20 @@ class RecoveryPlanTests(unittest.TestCase):
             result = self.plan()
         self.assertEqual(result["recovery_status"], "merged_reconciliation_required")
         self.assertEqual(result["evidence_reuse"]["links"], [])
+
+    def test_closed_deferred_issue_requires_disposition_reconciliation(self):
+        self.audited()
+        self.advance()
+        self.state["ledger"], self.state["handoff"] = session.finish(
+            self.api,self.state,"deferred","Review later")
+        self.assertIn("scoped recovery",self.plan(247)["recommended_next_action"])
+        original = self.api.request
+        def request(method,path,body=None):
+            result = original(method,path,body)
+            if method == "GET" and path.endswith("/issues/247"):
+                return {**result,"state":"closed","state_reason":"completed"}
+            return result
+        with patch.object(self.api,"request",side_effect=request):
+            self.assertEqual(self.plan(247)["recovery_status"],"issue_reconciliation_required")
+            with self.assertRaisesRegex(ValueError,"open GitHub issue"):
+                session.claim(self.api,self.state,247,["test"],"Recover")

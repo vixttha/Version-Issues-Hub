@@ -603,6 +603,15 @@ class IntegrationIntegrityTests(unittest.TestCase):
         corrupted[0]["review"]["issues"][0]["fix_sha"] = FIX2
         with self.assertRaisesRegex(ValueError,"original fix"):
             session.reconcile(self.api,self.state,247,"Owner integrates",policy=batch(corrupted))
+        # A valid two-proof shape must still reject an unresolved third fix.
+        middle = copy.deepcopy(self.state["handoff"]["history"][0])
+        middle["handoff"]["fix_sha"] = "9"*40
+        self.state["handoff"]["history"].insert(1,middle)
+        incomplete = copy.deepcopy(proofs)
+        incomplete[1]["archive_index"] = 2
+        with self.assertRaisesRegex(ValueError,"different historical fix unresolved"):
+            session.reconcile(self.api,self.state,247,"Owner integrates",policy=batch(incomplete))
+        self.state["handoff"]["history"].pop(1)
         policy = batch(proofs)
         ledger,handoff = session.reconcile(self.api,self.state,247,"Owner integrates",policy=policy)
         self.assertEqual(handoff["history"][:2],original["handoff"]["history"])
@@ -620,3 +629,72 @@ class IntegrationIntegrityTests(unittest.TestCase):
         self.assertEqual(session.save(self.api,self.state,ledger,handoff,True,issue=247,
                                       policy=policy)["installed_sha"],NEXT)
         self.assertEqual([w[0] for w in self.api.writes],["POST","POST","PATCH"])
+
+    def test_retirement_cannot_strand_integration_debt(self):
+        for disposition in ("staged","deferred"):
+            self.setUp()
+            self.reach_head()
+            self.state["ledger"],self.state["handoff"] = session.finish(
+                self.api,self.state,disposition,"Original debt")
+            ledger = copy.deepcopy(self.state["ledger"])
+            ledger["issues"][0]["state"] = "retired"
+            for apply in (False, True):
+                with self.assertRaisesRegex(ValueError,"retire issue with outstanding"):
+                    session.save(self.api,self.state,ledger,self.state["handoff"],apply,issue=247)
+            self.assertEqual(self.api.writes,[])
+
+    def test_renewed_deferral_retains_staged_reconciliation_basis(self):
+        from test_session import PROPOSED, post_policy
+        self.reach_head()
+        self.state["ledger"],self.state["handoff"] = session.finish(
+            self.api,self.state,"staged","Original stage")
+        original = copy.deepcopy(self.state["handoff"]["history"][0])
+        self.reach_head()
+        decision = bounded_deferral(self.state,self.api,248)
+        self.state["ledger"],self.state["handoff"] = session.finish(
+            self.api,self.state,"deferred",decision,deferral_approved=True)
+        self.assertEqual(session.outstanding_integration_records(self.state)[247],
+                         [self.state["handoff"]["history"][1]])
+        self.assertEqual(session.claim(self.api,self.state,248,["next"],"Approved")[1]["active"]["issue"],248)
+        self.api.pr.update(state="closed",merged=True,merge_commit_sha=NEXT)
+        self.api.product = NEXT
+        policy = {"schema_version":1,"outcome":"historical_product_integration",
+                  "archive_index":0,"archive_digest":session.closure_digest(original),
+                  "premerge":{"merge_sha":PROPOSED,"evidence":[RUN]},"review":post_policy(self.state)}
+        ledger,handoff = session.reconcile(self.api,self.state,247,"Owner integrates",policy=policy)
+        self.assertEqual(handoff["history"][0],original)
+        self.assertEqual(ledger["issues"][0]["state"],"integrated")
+        self.assertEqual(session.save(self.api,self.state,ledger,handoff,issue=247,
+                                      policy=policy)["status"],"planned")
+        self.assertEqual(self.api.writes,[])
+
+    def test_batch_rechecks_earlier_runs_after_later_proof(self):
+        from unittest.mock import patch
+        from test_session import FIX2, PROPOSED, post_policy
+        self.reach_head()
+        self.state["ledger"],self.state["handoff"] = session.finish(
+            self.api,self.state,"staged","First stage")
+        second = copy.deepcopy(self.state["handoff"]["history"][0])
+        second["handoff"]["fix_sha"] = FIX2
+        self.state["handoff"]["history"].append(second)
+        self.api.pr.update(state="closed",merged=True,merge_commit_sha=NEXT)
+        self.api.product = NEXT
+        proofs = []
+        for index, fix in enumerate((FIX,FIX2)):
+            review = post_policy(self.state)
+            review["issues"][0]["fix_sha"] = fix
+            proofs.append({"schema_version":1,"outcome":"historical_product_integration",
+                           "archive_index":index,"archive_digest":session.closure_digest(
+                               self.state["handoff"]["history"][index]),
+                           "premerge":{"merge_sha":PROPOSED,"evidence":[RUN]},"review":review})
+        policy = {"schema_version":1,"outcome":session.HISTORICAL_BATCH,"proofs":proofs}
+        original = session.reconcile_historical_integration
+        def change_after_second(*args,**kw):
+            result = original(*args,**kw)
+            if args[4]["archive_index"] == 1:
+                self.api.run["run_attempt"] = 2
+            return result
+        with patch.object(session,"reconcile_historical_integration",side_effect=change_after_second):
+            with self.assertRaisesRegex(ValueError,"batch post-merge run changed"):
+                session.reconcile(self.api,self.state,247,"Owner integrates",policy=policy)
+        self.assertEqual(self.api.writes,[])

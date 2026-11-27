@@ -1792,6 +1792,10 @@
         {
           "path": "docs/v0.0.0.43.md",
           "anchor": "## Exact historical installed-package transition fixture"
+        },
+        {
+          "path": "docs/v0.0.0.43.md",
+          "anchor": "## Review follow-up: preserve proof authority and reject stranded debt"
         }
       ],
       "changed_in": [
@@ -1812,6 +1816,14 @@
         {
           "path": "tools/session.py",
           "anchor": "def reconcile_historical_batch(api, state, number, decision, policy):"
+        },
+        {
+          "path": "tools/session.py",
+          "anchor": "def renewed_staged_basis(state, number, index):"
+        },
+        {
+          "path": "tools/session.py",
+          "anchor": "def recheck_historical_batch_runs(api, state, proofs):"
         }
       ],
       "tested_by": [
@@ -1838,6 +1850,22 @@
         {
           "path": "tests/test_lifecycle.py",
           "anchor": "def test_exact_041_package_reconciliation_then_idle_upgrade(self):"
+        },
+        {
+          "path": "tests/test_integration_integrity.py",
+          "anchor": "def test_retirement_cannot_strand_integration_debt(self):"
+        },
+        {
+          "path": "tests/test_integration_integrity.py",
+          "anchor": "def test_renewed_deferral_retains_staged_reconciliation_basis(self):"
+        },
+        {
+          "path": "tests/test_integration_integrity.py",
+          "anchor": "def test_batch_rechecks_earlier_runs_after_later_proof(self):"
+        },
+        {
+          "path": "tests/test_recovery_plan.py",
+          "anchor": "def test_closed_deferred_issue_requires_disposition_reconciliation(self):"
         }
       ]
     }
