@@ -50,6 +50,40 @@ class IntegrationIntegrityTests(unittest.TestCase):
         self.assertEqual(ledger["issues"][0]["version"], "v1.0.6.1")
         self.assertEqual(handoff["history"], self.state["handoff"]["history"])
 
+    def test_recovery_sequence_preserves_unrelated_deferral_authority(self):
+        from unittest.mock import patch
+
+        self.reach_head()
+        decision = bounded_deferral(self.state, self.api, 248)
+        expires = json.loads(decision[len(session.DEFERRAL_DECISION):])["expires_at"]
+        self.state["ledger"], self.state["handoff"] = session.finish(
+            self.api, self.state, "staged", decision, deferral_approved=True)
+        self.state["ledger"], self.state["handoff"] = session.claim(
+            self.api, self.state, 248, ["second obligation"], "Approved next issue")
+        self.state["ledger"], self.state["handoff"] = session.advance(
+            self.api, self.state, "Owner review", return_to_head=True)
+        self.state["ledger"], self.state["handoff"] = session.finish(
+            self.api, self.state, "deferred", "Preserve second issue for recovery")
+
+        before = copy.deepcopy(self.state)
+        with patch.object(session.time, "time", return_value=expires - 1):
+            proposed = session.claim(
+                self.api, self.state, 248, ["second obligation"], "Resume second issue")
+            self.assertEqual(proposed[1]["history"], before["handoff"]["history"])
+            self.assertEqual(session.save(self.api, self.state, *proposed, issue=248)["status"],
+                             "planned")
+
+        with patch.object(session.time, "time", return_value=expires):
+            with self.assertRaisesRegex(ValueError, "deferral expired"):
+                session.claim(self.api, self.state, 248, ["second obligation"], "Resume second issue")
+            with self.assertRaisesRegex(ValueError, "deferral expired"):
+                session.save(self.api, self.state, *proposed, issue=248)
+            self.assertEqual(session.recovery_plan(self.api, self.state, 248)["recovery_status"],
+                             "integration_debt_reconciliation_required")
+
+        self.assertEqual(self.state, before)
+        self.assertEqual(self.api.writes, [])
+
     def test_explicit_bounded_staging_authorizes_only_named_next_issue(self):
         self.reach_head()
         decision = bounded_deferral(self.state, self.api, 248)
