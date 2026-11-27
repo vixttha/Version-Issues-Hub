@@ -1,0 +1,149 @@
+name: Veraphify development graph snapshot
+on:
+  push:
+    branches: [Veraphify, review/veraphify-development-graphs]
+    paths: ['development-graph-request.json', 'docs/development-graphs.md', 'tools/development-graph.py', 'lib/code-graph.mjs', '.github/workflows/vib-development-graph.yml']
+permissions:
+  contents: read
+concurrency:
+  group: development-graph-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  generate:
+    if: github.repository == 'vixttha/Version-Issues-Hub' && github.event.repository.private == false
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      GRAPHIFY_QUERY_LOG_DISABLE: '1'
+      PYTHONHASHSEED: '0'
+      GH_TOKEN: ''
+      GITHUB_TOKEN: ''
+    outputs:
+      existing: ${{ steps.request.outputs.existing }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          path: vault
+          persist-credentials: false
+      - id: request
+        working-directory: vault
+        run: |
+          python3 - <<'PY'
+          import json, os, re
+          from pathlib import Path
+          r=json.loads(Path("development-graph-request.json").read_bytes())
+          assert re.fullmatch(r"v0\.0\.0\.[1-9][0-9]{0,8}",r["version"])
+          assert all(re.fullmatch("[0-9a-f]{40}",r[k]) for k in ("source","canonical","tree"))
+          with open(os.environ["GITHUB_OUTPUT"],"a") as f:
+              for k in ("source","canonical"): print(k+"="+r[k],file=f)
+              print("existing="+str((Path("archives/development-code-graphs")/r["version"]/r["source"]).exists()).lower(),file=f)
+          PY
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: '24.22.3'
+          package-manager-cache: false
+      - if: steps.request.outputs.existing == 'true'
+        working-directory: vault
+        run: python3 tools/development-graph.py existing
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        if: steps.request.outputs.existing == 'false'
+        with:
+          ref: ${{ steps.request.outputs.source }}
+          path: source
+          persist-credentials: false
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        if: steps.request.outputs.existing == 'false'
+        with:
+          ref: ${{ steps.request.outputs.canonical }}
+          path: canonical
+          persist-credentials: false
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        if: steps.request.outputs.existing == 'false'
+        with:
+          repository: vixttha/Blender-Agent-Refinement-Toolkit
+          ref: 6af3c2025be3f51e02dca4e4502088c526aae6d1
+          path: producer
+          persist-credentials: false
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
+        if: steps.request.outputs.existing == 'false'
+        with:
+          python-version: '3.12'
+      - if: steps.request.outputs.existing == 'false'
+        run: |
+          python -m pip install --require-hashes --no-deps --only-binary=:all: -r producer/versions/v0.0.8/requirements.txt
+          python -m pip check
+      - if: steps.request.outputs.existing == 'false'
+        working-directory: vault
+        run: python tools/development-graph.py build
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        if: steps.request.outputs.existing == 'false'
+        with:
+          name: development-graph-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/development-snapshot
+          if-no-files-found: error
+          retention-days: 30
+  verify:
+    needs: generate
+    if: github.repository == 'vixttha/Version-Issues-Hub' && github.event.repository.private == false
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [ubuntu-24.04, windows-latest]
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      actions: read
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: '24.22.3'
+          package-manager-cache: false
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
+        with:
+          python-version: '3.12'
+      - if: needs.generate.outputs.existing == 'false'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh run download "$GITHUB_RUN_ID" --name "development-graph-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" --dir "$RUNNER_TEMP/development-snapshot"
+      - if: needs.generate.outputs.existing == 'false'
+        run: python tools/development-graph.py verify
+      - if: needs.generate.outputs.existing == 'true'
+        run: python tools/development-graph.py existing
+  retain:
+    needs: [generate, verify]
+    if: needs.generate.outputs.existing == 'false' && github.repository == 'vixttha/Version-Issues-Hub' && github.event.repository.private == false && (github.ref == 'refs/heads/Veraphify' || github.ref == 'refs/heads/review/veraphify-development-graphs')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    permissions:
+      contents: write
+      actions: read
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: '24.22.3'
+          package-manager-cache: false
+      - env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh run download "$GITHUB_RUN_ID" --name "development-graph-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" --dir "$RUNNER_TEMP/development-snapshot"
+      - name: Verify and append only the requested snapshot
+        run: |
+          set -euo pipefail
+          python3 tools/development-graph.py retain
+          git add archives/development-code-graphs
+          test "$(git diff --cached --name-only | wc -l)" -eq 2
+          git diff --cached --name-status
+          test "$(git ls-remote origin "$GITHUB_REF" | cut -f1)" = "$GITHUB_SHA"
+          git -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' commit -m "Append verified development graph $GITHUB_RUN_ID/$GITHUB_RUN_ATTEMPT"
+          git push origin "HEAD:$GITHUB_REF"
+          test "$(git ls-remote origin "$GITHUB_REF" | cut -f1)" = "$(git rev-parse HEAD)"
+          git fetch --no-tags origin "$GITHUB_REF"
+          test "$(git rev-parse FETCH_HEAD)" = "$(git rev-parse HEAD)"
+          python3 tools/development-graph.py existing
