@@ -582,6 +582,35 @@ class SessionTests(unittest.TestCase):
                 self.assertEqual(session.save(self.api, self.state, ledger, handoff, True,
                                               policy=policy)["installed_sha"], NEXT)
 
+    def test_ordinary_publication_rechecks_lease_after_candidate_and_ticket(self):
+        for at_ticket in (False, True):
+            with self.subTest(at_ticket=at_ticket):
+                self.setUp()
+                self.claim()
+                ledger, handoff = session.advance(
+                    self.api, self.state, "Return to Head", return_to_head=True)
+                before = copy.deepcopy(self.state)
+                competing = "7"*40
+                original_request = self.api.request
+                tickets = []
+                def request(method, path, body=None):
+                    result = original_request(method, path, body)
+                    if not at_ticket and method == "POST" and path.endswith("/git/commits"):
+                        self.api.ref = competing
+                    return result
+                self.api.request = request
+                def sink(ticket):
+                    tickets.append(ticket)
+                    if at_ticket:
+                        self.api.ref = competing
+                with self.assertRaisesRegex(session.HandoffStale, "advanced before publication"):
+                    session.save(self.api, self.state, ledger, handoff, True, issue=247,
+                                 operation_id="a"*64, on_recovery_ticket=sink)
+                self.assertEqual(self.state, before)
+                self.assertEqual(self.api.ref, competing)
+                self.assertEqual(len(tickets), 1)
+                self.assertEqual([w[0] for w in self.api.writes], ["POST", "POST"])
+
     def test_staged_publication_rechecks_after_recovery_ticket_sink(self):
         self.claim()
         self.advance(fix=FIX, candidate=CANDIDATE, pr=8)

@@ -2394,7 +2394,12 @@ def save(api, state, ledger, handoff, apply=False, *, issue=None, operation_id=N
     for deferral in policies:
         if not deferral["approved_at"] <= time.time() < deferral["expires_at"]:
             raise ValueError("Integration debt deferral expired before publication")
-    # Fast-forward-only CAS: a divergent writer cannot overwrite a competing handoff.
+    # Recheck the lease even for ordinary transitions that have no PR or
+    # deferral proof. A ticket sink or object creation can outlast the lease.
+    if install.read_ref(api, prefix, install.BRANCH) != old:
+        raise HandoffStale("Installed branch advanced before publication; reload")
+    # Non-force REST update preserves fast-forward history. This is not a
+    # general expected-old CAS nor an atomic check of the product branch.
     ambiguous = False
     try:
         api.request("PATCH", prefix + "/git/refs/heads/" + install.BRANCH, {"sha": new, "force": False})
