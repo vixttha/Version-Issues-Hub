@@ -59,14 +59,16 @@ class GraphifyEvidenceTests(unittest.TestCase):
         from pathlib import Path
         root = Path(__file__).resolve().parents[1]
         revision = subprocess.check_output(["git", "-C", str(root), "rev-parse", "HEAD"], text=True).strip()
+        from functools import lru_cache
+        @lru_cache(maxsize=None)
         def blob(path):
             return subprocess.check_output(["git", "-C", str(root), "show", revision + ":" + path]).decode("utf-8")
         manifest = json.loads(blob("docs/receipt-evidence.json"))
-        expected = {"v0-0-0-43", "v0-0-0-43-review", "v0-0-0-43-publication"}
+        expected = {"v0-0-0-43", "v0-0-0-43-review", "v0-0-0-43-publication", "v0-0-0-43-cbr"}
         groups = [f for f in manifest["features"] if f["id"] in expected]
         self.assertEqual({f["id"] for f in groups}, expected)
         self.assertEqual(len(groups), len(expected))
-        for group in groups:
+        for group in manifest["features"]:
             for relation in ("documented_in", "changed_in", "implemented_in", "tested_by"):
                 seen = set()
                 for ref in group[relation]:

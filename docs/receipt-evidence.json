@@ -887,7 +887,7 @@
       "implemented_in": [
         {
           "path": "tools/self_use_preflight.py",
-          "anchor": "def verify_checkpoint_branch(branch, *, require_recovery_authorization=False):"
+          "anchor": "def verify_checkpoint_branch(branch, *, require_recovery_authorization=False,"
         }
       ],
       "tested_by": [
@@ -1537,7 +1537,7 @@
       "changed_in": [
         {
           "path": "tools/self_use_preflight.py",
-          "anchor": "def verify_scope(pin, issue, version, head, current, pr_base=None, *, require_recovery_authorization=False):"
+          "anchor": "def verify_scope(pin, issue, version, head, current, pr_base=None, *,"
         },
         {
           "path": "tools/session.py",
@@ -1866,6 +1866,82 @@
         {
           "path": "tests/test_recovery_plan.py",
           "anchor": "def test_closed_deferred_issue_requires_disposition_reconciliation(self):"
+        }
+      ]
+    },
+    {
+      "id": "v0-0-0-43-cbr",
+      "label": "Issue #96 · Controlled Bootstrap Recovery safeguards (candidate; no live authority)",
+      "documented_in": [
+        {
+          "path": "docs/v0.0.0.43.md",
+          "anchor": "## Controlled Bootstrap Recovery — bounded correction qualification"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "tools/self_use_preflight.py",
+          "anchor": "def verify_forward_recovery_authority(source, specification, gate_a_evidence, *,"
+        },
+        {
+          "path": "tools/standard.py",
+          "anchor": "def verify_active_head_recovery(api, state, active, pr, policy):"
+        }
+      ],
+      "implemented_in": [
+        {
+          "path": "tools/self_use_preflight.py",
+          "anchor": "print(f\"VIB observed canonical revision: {current}; Worker pin: {pin}\")"
+        },
+        {
+          "path": "tools/session.py",
+          "anchor": "def renewed_staged_basis(state, number, index):"
+        },
+        {
+          "path": "tools/session.py",
+          "anchor": "raise ValueError(\"Integration debt deferral must preserve the original active Head handoff\")"
+        },
+        {
+          "path": "tools/session.py",
+          "anchor": "raise HandoffStale(\"Installed branch advanced before publication; reload\")"
+        },
+        {
+          "path": "tools/standard.py",
+          "anchor": "def verify_active_head_recovery(api, state, active, pr, policy):"
+        }
+      ],
+      "tested_by": [
+        {
+          "path": "tests/test_scope_control.py",
+          "anchor": "def test_real_git_recovery_chain_retains_immediate_successor_and_later_scope(self):"
+        },
+        {
+          "path": "tests/test_self_use_preflight.py",
+          "anchor": "def test_scope_uses_same_observed_revision_as_ancestry(self, read, run, record, git, verify):"
+        },
+        {
+          "path": "tests/test_integration_integrity.py",
+          "anchor": "def test_ordinary_deferred_archive_preserves_exact_head(self):"
+        },
+        {
+          "path": "tests/test_integration_integrity.py",
+          "anchor": "def test_ordinary_pinless_head_deferral_remains_valid(self):"
+        },
+        {
+          "path": "tests/test_integration_integrity.py",
+          "anchor": "def test_renewed_stage_retains_earlier_same_fix_proof(self):"
+        },
+        {
+          "path": "tests/test_stale_integration.py",
+          "anchor": "def test_active_head_recovery_preserves_original_pins_and_accepts_fresh_proof(self):"
+        },
+        {
+          "path": "tests/test_stale_integration.py",
+          "anchor": "def test_active_head_recovery_rejects_invalid_or_stale_proof_before_publication(self):"
+        },
+        {
+          "path": "tests/test_session.py",
+          "anchor": "def test_ordinary_publication_rechecks_lease_after_candidate_and_ticket(self):"
         }
       ]
     }
