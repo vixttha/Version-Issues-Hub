@@ -201,7 +201,7 @@ class ScopeControlTests(unittest.TestCase):
                     self.assertEqual(scope.verify_scope("f"*40,96,"v0.0.0.43","d"*40,"f"*40),successor)
                     self.assertIn("OWNER AUTHORIZATION UNVERIFIED",output.call_args.args[0])
                 with self.assertRaisesRegex(ValueError,"authorization.*not established"):
-                    scope.verify_scope("f"*40,96,"v0.0.0.43","d"*40,"f"*40",require_recovery_authorization=True)
+                    scope.verify_scope("f"*40,96,"v0.0.0.43","d"*40,"f"*40,require_recovery_authorization=True)
                 with patch.object(scope,"changed_paths",return_value={path,"ledger/issue-versions.json"}):
                     with self.assertRaisesRegex(ValueError,"separate single-parent"):
                         scope.verify_scope("f"*40,96,"v0.0.0.43","d"*40,"f"*40")
