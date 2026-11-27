@@ -1876,6 +1876,10 @@
         {
           "path": "docs/v0.0.0.43.md",
           "anchor": "## Controlled Bootstrap Recovery — bounded correction qualification"
+        },
+        {
+          "path": "docs/v0.0.0.43.md",
+          "anchor": "## Restricted recovery-only authorization (Option C)"
         }
       ],
       "changed_in": [
@@ -1908,6 +1912,14 @@
         {
           "path": "tools/standard.py",
           "anchor": "def verify_active_head_recovery(api, state, active, pr, policy):"
+        },
+        {
+          "path": "tools/session.py",
+          "anchor": "def recovery_claim_binding(state, number):"
+        },
+        {
+          "path": "tools/session.py",
+          "anchor": "def check_recovery_claim(api, state, number, policy, owner_approved):"
         }
       ],
       "tested_by": [
@@ -1942,6 +1954,14 @@
         {
           "path": "tests/test_session.py",
           "anchor": "def test_ordinary_publication_rechecks_lease_after_candidate_and_ticket(self):"
+        },
+        {
+          "path": "tests/test_integration_integrity.py",
+          "anchor": "def test_owner_recovery_only_claim_breaks_expired_two_issue_cycle(self):"
+        },
+        {
+          "path": "tests/test_graphify_evidence.py",
+          "anchor": "def test_version_debt_gate_history_from_veraphify_pins(self):"
         }
       ]
     }
