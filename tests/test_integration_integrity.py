@@ -717,6 +717,62 @@ class IntegrationIntegrityTests(unittest.TestCase):
                     session.save(self.api,self.state,ledger,self.state["handoff"],apply,issue=247)
             self.assertEqual(self.api.writes,[])
 
+    def test_deferred_product_fix_reconciles_with_its_original_pins(self):
+        from test_session import PROPOSED, post_policy
+        self.reach_head()
+        decision = bounded_deferral(self.state, self.api, 248)
+        self.state["ledger"], self.state["handoff"] = session.finish(
+            self.api, self.state, "deferred", decision, deferral_approved=True)
+        original = copy.deepcopy(self.state["handoff"]["history"][0])
+        self.api.pr.update(state="closed", merged=True, merge_commit_sha=NEXT)
+        self.api.product = NEXT
+        policy = {"schema_version": 1, "outcome": "historical_product_integration",
+                  "archive_index": 0, "archive_digest": session.closure_digest(original),
+                  "premerge": {"merge_sha": PROPOSED, "evidence": [RUN]},
+                  "review": post_policy(self.state)}
+
+        altered = copy.deepcopy(policy)
+        altered["review"]["pull_request"] = 9
+        with self.assertRaisesRegex(ValueError, "preserve original product pins"):
+            session.reconcile(self.api, self.state, 247, "Owner integrates", policy=altered)
+        ledger, handoff = session.reconcile(
+            self.api, self.state, 247, "Owner integrates", policy=policy)
+        self.assertEqual(handoff["history"][0], original)
+        self.assertEqual(handoff["history"][-1]["handoff"]["fix_sha"], FIX)
+        self.assertEqual(ledger["issues"][0]["state"], "integrated")
+        self.assertEqual(session.save(self.api, self.state, ledger, handoff, issue=247,
+                                      policy=policy)["status"], "planned")
+        self.assertEqual(self.api.writes, [])
+
+    def test_pinless_deferral_preserves_older_staged_product_proof(self):
+        from test_session import PROPOSED, post_policy
+        self.reach_head()
+        self.state["ledger"], self.state["handoff"] = session.finish(
+            self.api, self.state, "staged", "Stage original fix")
+        self.api.pr.update(state="closed", merged=False)
+        self.state["ledger"], self.state["handoff"] = session.claim(
+            self.api, self.state, 247, ["test"], "Rework", rework_staged=True)
+        self.state["ledger"], self.state["handoff"] = session.advance(
+            self.api, self.state, "Owner review", return_to_head=True)
+        self.state["ledger"], self.state["handoff"] = session.finish(
+            self.api, self.state, "deferred", "Await owner disposition")
+        original = copy.deepcopy(self.state["handoff"]["history"])
+        self.api.pr.update(state="closed", merged=True, merge_commit_sha=NEXT)
+        self.api.product = NEXT
+        review = post_policy(self.state)
+        review["issues"][0]["fix_sha"] = FIX
+        policy = {"schema_version": 1, "outcome": "historical_product_integration",
+                  "archive_index": 0, "archive_digest": session.closure_digest(original[0]),
+                  "premerge": {"merge_sha": PROPOSED, "evidence": [RUN]}, "review": review}
+
+        ledger, handoff = session.reconcile(
+            self.api, self.state, 247, "Owner integrates original fix", policy=policy)
+        self.assertEqual(handoff["history"][:-1], original)
+        self.assertEqual(ledger["issues"][0]["state"], "integrated")
+        self.assertEqual(session.save(self.api, self.state, ledger, handoff, issue=247,
+                                      policy=policy)["status"], "planned")
+        self.assertEqual(self.api.writes, [])
+
     def test_renewed_deferral_retains_staged_reconciliation_basis(self):
         from test_session import PROPOSED, post_policy
         self.reach_head()

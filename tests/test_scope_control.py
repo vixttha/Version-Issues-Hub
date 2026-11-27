@@ -336,6 +336,15 @@ class ScopeControlTests(unittest.TestCase):
                         strict(SyntheticHead(approved), spec=b"unreviewed specification")
                     with self.assertRaises(ValueError):
                         strict(SyntheticHead(approved), evidence=b"changed Gate A")
+                with patch.object(scope.time, "time", side_effect=[150, 200]), \
+                     patch("builtins.print") as output:
+                    with self.assertRaisesRegex(ValueError, "authorization expired during final review"):
+                        scope.verify_scope(current, 96, "v0.0.0.43", engineering_head, current,
+                            require_recovery_authorization=True,
+                            recovery_authority_source=SyntheticHead(approved),
+                            reviewed_specification=specification, gate_a_evidence=gate_a,
+                            confirm_snapshot=lambda: None)
+                    output.assert_not_called()
                 self.assertEqual(git("show", genesis + ":" + path), json.dumps(record, sort_keys=True))
                 self.assertEqual(git("show", recovered + ":" + path), json.dumps(successor, sort_keys=True))
 

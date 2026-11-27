@@ -1,4 +1,5 @@
 import copy
+import json
 import unittest
 from unittest.mock import patch
 from subprocess import CompletedProcess
@@ -149,3 +150,39 @@ class SelfUsePreflightTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError,"missing or ambiguous"):
                 self_use_preflight.verify_checkpoint_branch(branch)
             run.assert_not_called()
+
+    @patch("tools.self_use_preflight.Path.read_text", side_effect=AssertionError("read working tree"))
+    @patch("tools.self_use_preflight.verify_scope")
+    @patch("tools.self_use_preflight.subprocess.run")
+    @patch("tools.self_use_preflight.checkpoint.git")
+    def test_strict_branch_reads_worker_and_projection_from_tested_commit(self, git, run, verify, read):
+        pin, current, tested = "a" * 40, "b" * 40, "c" * 40
+        worker = {"schema_version": 1, "issue": 96, "version": "v0.0.0.43", "installed_sha": pin}
+        self.ledger["issues"][0].update(issue=96, version="v0.0.0.43")
+        self.handoff["active"].update(issue=96, version="v0.0.0.43")
+        blobs = {tested + ":ledger/self-use-worker.json": worker,
+                 pin + ":ledger/issue-versions.json": self.ledger,
+                 pin + ":ledger/handoff.json": self.handoff,
+                 tested + ":ledger/issue-versions.json": copy.deepcopy(self.ledger)}
+
+        def read_git(*args):
+            if args == ("rev-parse", "HEAD"):
+                return tested
+            if args[0] == "ls-remote":
+                return current + "\trefs/heads/Version-Issues-Hub"
+            if args[0] == "show":
+                return json.dumps(blobs[args[1]])
+            raise AssertionError(args)
+
+        git.side_effect = read_git
+        run.return_value = CompletedProcess([], 0)
+        branch = "plan/checkpoint-v0.0.0.43"
+        with patch.dict("os.environ", {"VIB_PR_BASE_SHA": ""}):
+            self.assertEqual(self_use_preflight.verify_checkpoint_branch(
+                branch, require_recovery_authorization=True), (pin, 96, "v0.0.0.43"))
+            verify.assert_called_once_with(pin, 96, "v0.0.0.43", tested, current, None,
+                                           require_recovery_authorization=True)
+            blobs[tested + ":ledger/issue-versions.json"]["issues"][0]["acceptance"] = ["drift"]
+            with self.assertRaisesRegex(ValueError, "acceptance criteria differ"):
+                self_use_preflight.verify_checkpoint_branch(branch, require_recovery_authorization=True)
+        read.assert_not_called()

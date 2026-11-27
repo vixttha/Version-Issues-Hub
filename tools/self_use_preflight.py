@@ -50,10 +50,12 @@ def worker_record(record, branch):
     return pin, issue, version
 
 
-def read_projection(pin, issue):
+def read_projection(pin, issue, *, tested_head=None):
     installed = checkpoint.parse_json(checkpoint.git("show", pin + ":ledger/issue-versions.json"))
     handoff = checkpoint.parse_json(checkpoint.git("show", pin + ":ledger/handoff.json"))
-    projection = checkpoint.parse_json(Path(checkpoint.LEDGER).read_text(encoding="utf-8"))
+    raw = (Path(checkpoint.LEDGER).read_text(encoding="utf-8") if tested_head is None
+           else checkpoint.git("show", tested_head + ":" + Path(checkpoint.LEDGER).as_posix()))
+    projection = checkpoint.parse_json(raw)
     return validate_projection(installed, projection, handoff, issue)
 
 
@@ -240,7 +242,7 @@ def verify_forward_recovery_authority(source, specification, gate_a_evidence, *,
 
 def verify_scope(pin, issue, version, head, current, pr_base=None, *,
                  require_recovery_authorization=False, recovery_authority_source=None,
-                 reviewed_specification=None, gate_a_evidence=None):
+                 reviewed_specification=None, gate_a_evidence=None, confirm_snapshot=None):
     path = "ledger/scope-approvals/" + version + ".json"
     def read(revision):
         return checkpoint.parse_json(checkpoint.git("show", revision + ":" + path))
@@ -286,9 +288,13 @@ def verify_scope(pin, issue, version, head, current, pr_base=None, *,
     if recovered:
         # Structural proof and a Worker-generated policy cannot confer authority.
         if require_recovery_authorization:
-            verify_forward_recovery_authority(recovery_authority_source, reviewed_specification,
+            receipt = verify_forward_recovery_authority(recovery_authority_source, reviewed_specification,
                 gate_a_evidence, pin=pin, head=head, current=current, approval=approval,
                 successor_revision=successor[0])
+            if confirm_snapshot is not None:
+                confirm_snapshot()
+            if not receipt["approved_at"] <= time.time() < receipt["expires_at"]:
+                raise ValueError("Independent forward recovery authorization expired during final review")
             print(f"VIB independently supplied forward recovery disposition matched: #{issue} {version} at {pin}; read-only qualification only")
         else:
             if any(x is not None for x in (recovery_authority_source, reviewed_specification, gate_a_evidence)):
@@ -304,8 +310,12 @@ def verify_scope(pin, issue, version, head, current, pr_base=None, *,
 def verify_checkpoint_branch(branch, *, require_recovery_authorization=False,
                              recovery_authority_source=None, reviewed_specification=None,
                              gate_a_evidence=None):
-    record = checkpoint.parse_json(WORKER_RECORD.read_text(encoding="utf-8"))
-    pin, issue, version = worker_record(record, branch)
+    tested_head = None
+    if require_recovery_authorization:
+        tested_head = checkpoint.require(checkpoint.SHA, checkpoint.git("rev-parse", "HEAD"), "tested revision")
+    raw = (WORKER_RECORD.read_text(encoding="utf-8") if tested_head is None
+           else checkpoint.git("show", tested_head + ":" + WORKER_RECORD.as_posix()))
+    pin, issue, version = worker_record(checkpoint.parse_json(raw), branch)
     supplied_authority = any(x is not None for x in (
         recovery_authority_source, reviewed_specification, gate_a_evidence))
     if supplied_authority and (not require_recovery_authorization
@@ -324,22 +334,24 @@ def verify_checkpoint_branch(branch, *, require_recovery_authorization=False,
     if subprocess.run(["git", "merge-base", "--is-ancestor", pin, current],
                       check=False).returncode != 0:
         raise ValueError("Worker pin is not in canonical installed branch history")
-    if read_projection(pin, issue) != version:
+    projection_options = {"tested_head": tested_head} if tested_head is not None else {}
+    if read_projection(pin, issue, **projection_options) != version:
         raise ValueError("Worker record version differs from canonical assignment")
     if checkpoint.version_number(version) >= (0, 0, 0, 41):
-        head = checkpoint.git("rev-parse", "HEAD")
+        head = tested_head or checkpoint.git("rev-parse", "HEAD")
         options = {"require_recovery_authorization": True} if require_recovery_authorization else {}
         if supplied_authority:
+            def confirm_snapshot():
+                again = [line.split() for line in checkpoint.git(
+                    "ls-remote", "--exit-code", "origin", ref).splitlines()]
+                if ([row for row in again if len(row) == 2 and row[1] == ref] != [[current, ref]]
+                        or checkpoint.git("rev-parse", "HEAD") != head):
+                    raise ValueError("Canonical or tested revision changed during recovery authority review")
+
             options.update(recovery_authority_source=recovery_authority_source,
                            reviewed_specification=reviewed_specification,
-                           gate_a_evidence=gate_a_evidence)
+                           gate_a_evidence=gate_a_evidence, confirm_snapshot=confirm_snapshot)
         verify_scope(pin, issue, version, head, current, os.environ.get("VIB_PR_BASE_SHA") or None, **options)
-        if supplied_authority:
-            again = [line.split() for line in checkpoint.git(
-                "ls-remote", "--exit-code", "origin", ref).splitlines()]
-            if ([row for row in again if len(row) == 2 and row[1] == ref] != [[current, ref]]
-                    or checkpoint.git("rev-parse", "HEAD") != head):
-                raise ValueError("Canonical or tested revision changed during recovery authority review")
     print(f"VIB observed canonical revision: {current}; Worker pin: {pin}")
     return pin, issue, version
 

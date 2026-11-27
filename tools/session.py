@@ -1303,16 +1303,18 @@ def outstanding_integration_records(state, *, proof_basis=False):
 
 
 def renewed_staged_basis(state, number, index):
-    """A bounded renewal changes claim authority, not the original stage proof."""
+    """Keep a staged proof eligible after renewal or a pinless deferral."""
     history = state["handoff"]["history"]
     latest = closure_archive_index(state["handoff"], number)
     if latest is None or not 0 <= index < latest:
         return False
     prior, current = history[index], history[latest]
+    fix = current["handoff"]["fix_sha"]
+    pinless = current["disposition"] == "deferred" and fix is None
+    renewal = (current["disposition"] in ("staged", "deferred")
+               and fix == prior["handoff"]["fix_sha"] and deferral_record(current) is not None)
     return (prior["handoff"]["issue"] == number and prior["disposition"] == "staged"
-            and current["disposition"] in ("staged", "deferred") and deferral_record(current) is not None
-            and prior["handoff"]["fix_sha"] is not None
-            and prior["handoff"]["fix_sha"] == current["handoff"]["fix_sha"]
+            and prior["handoff"]["fix_sha"] is not None and (pinless or renewal)
             and any(prior is r for r in outstanding_integration_records(
                 state, proof_basis=True).get(number, [])))
 
@@ -1617,6 +1619,7 @@ def reconcile_historical_integration(api, state, number, decision, policy, *, al
             or not any(prior is record for record in outstanding_integration_records(state, proof_basis=True).get(number, []))
             or policy["archive_digest"] != closure_digest(prior)):
         raise ValueError("Historical integration archive digest or disposition changed")
+    archived_product = None
     if prior["disposition"] == "staged":
         fix = prior["handoff"]["fix_sha"]
     else:
@@ -1635,7 +1638,11 @@ def reconcile_historical_integration(api, state, number, decision, policy, *, al
                     raise ValueError("Historical engineering approval conflicts with archived handoff pin: " + key)
             fix = legacy.group(2)
         else:
-            raise ValueError("Deferred work lacks exact engineering approval; owner reconciliation required")
+            archived_product = prior["handoff"]
+            fix = archived_product["fix_sha"]
+            if (fix is None or not archived_product["candidate_sha"] or not archived_product["pull_request"]
+                    or any(not archived_product.get(key) for key in PIN_KEYS)):
+                raise ValueError("Deferred work lacks exact product pins or engineering approval; owner reconciliation required")
     review = policy["review"]
     standard.validate_policy(review)
     if (len(review["issues"]) != 1 or review["issues"][0]["issue"] != number
@@ -1646,6 +1653,12 @@ def reconcile_historical_integration(api, state, number, decision, policy, *, al
     if not isinstance(pre, dict) or set(pre) != {"merge_sha", "evidence"}:
         raise ValueError("Invalid historical pre-merge evidence")
     preview = install.require(install.SHA, pre["merge_sha"], "historical pre-merge revision")
+    if archived_product is not None and (
+            review["pull_request"] != archived_product["pull_request"]
+            or review["head_sha"] != archived_product["candidate_sha"]
+            or review["base_sha"] != archived_product["integration_base_sha"]
+            or preview != archived_product["integration_merge_sha"]):
+        raise ValueError("Historical deferred integration must preserve original product pins")
     evidence = evidence_links(state["ledger"]["repository"], pre["evidence"])
     if not evidence:
         raise ValueError("Historical integration requires fresh product PR evidence")
