@@ -253,6 +253,15 @@ class IntegrationIntegrityTests(unittest.TestCase):
                 self.assertEqual(queue["recommended_issue"], 248)
                 self.assertEqual(queue["queue"][0]["action"], "owner_reconcile_closed_issue")
                 self.assertIsNone(queue["queue"][0]["recovery_claim_binding"])
+            def moved(method, path, body=None):
+                result = original(method, path, body)
+                if method == "GET" and path.endswith("/issues/248"):
+                    self.api.product = NEXT
+                return result
+            with patch.object(self.api, "request", side_effect=moved):
+                with self.assertRaisesRegex(ValueError, "Product state advanced"):
+                    session.recovery_plan(self.api, self.state, 249)
+            self.api.product = before["product_sha"]
             with patch.object(session, "require_product_lineage", side_effect=ValueError("stale lineage")):
                 plan = session.recovery_plan(self.api, self.state)
                 self.assertEqual(plan["recovery_status"], "product_lineage_reconciliation_required")
@@ -270,6 +279,29 @@ class IntegrationIntegrityTests(unittest.TestCase):
             with patch.object(session, "pending_closure", return_value={"status": "executing"}):
                 self.assertEqual(session.debt_first_plan(self.api, self.state,
                     session.unresolved_integration_debt(self.state))["status"], "existing_lane_or_closure")
+        self.assertEqual(self.state, before)
+        self.assertEqual(self.api.writes, [])
+
+    def test_prior_line_staged_debt_is_reconciliation_only(self):
+        self.reach_head()
+        decision = bounded_deferral(self.state, self.api, 248)
+        self.state["ledger"], self.state["handoff"] = session.finish(
+            self.api, self.state, "staged", decision, deferral_approved=True)
+        self.state["ledger"], self.state["handoff"] = session.claim(
+            self.api, self.state, 248, ["second"], "Second")
+        self.state["ledger"], self.state["handoff"] = session.advance(
+            self.api, self.state, "Review", return_to_head=True)
+        self.state["ledger"], self.state["handoff"] = session.finish(
+            self.api, self.state, "deferred", "Unbounded second")
+        self.state["manifest"]["baseline_version"] = "v1.0.7"
+        before = copy.deepcopy(self.state)
+        queue = session.debt_first_plan(self.api, self.state,
+            session.unresolved_integration_debt(self.state))
+        self.assertEqual(queue["queue"][0]["action"], "owner_reconcile_prior_line_staged")
+        self.assertIsNone(queue["queue"][0]["recovery_claim_binding"])
+        self.assertEqual(queue["recommended_issue"], 248)
+        with self.assertRaisesRegex(ValueError, "Staged prior-line issue"):
+            session.recovery_claim_binding(self.state, 247)
         self.assertEqual(self.state, before)
         self.assertEqual(self.api.writes, [])
 
