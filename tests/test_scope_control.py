@@ -24,6 +24,13 @@ class ScopeControlTests(unittest.TestCase):
             "qualification": "ordinary", "disposition": "engineering_only",
             "owner_decision": "Approve bounded repair"}
 
+    def test_scope_walk_refuses_shallow_history_before_diff(self):
+        with patch.object(scope.subprocess, "check_output", return_value="true"), \
+                patch.object(scope, "changed_paths") as changed:
+            with self.assertRaisesRegex(ValueError, "requires complete Git history"):
+                scope.scope_paths("a" * 40, "b" * 40)
+            changed.assert_not_called()
+
     def test_exact_scope_and_criteria_refuse_unauthorized_expansion(self):
         scope.validate_scope(self.record, self.ledger, 92, "v0.0.0.41")
         scope.assert_scope_paths(self.record, ["tools/session.py"])

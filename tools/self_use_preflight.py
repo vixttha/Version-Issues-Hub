@@ -113,6 +113,10 @@ def changed_paths(base, head, cwd=None):
 
 def scope_paths(base, head, cwd=None):
     """Include all introduced commits, even a path added and then reverted."""
+    shallow = subprocess.check_output(["git", "--no-replace-objects", "rev-parse",
+                                       "--is-shallow-repository"], cwd=cwd, text=True).strip()
+    if shallow != "false":
+        raise ValueError("Scope verification requires complete Git history")
     paths = changed_paths(base, head, cwd)
     revisions = subprocess.check_output(["git", "--no-replace-objects", "rev-list", "--max-count=129",
                                          base + ".." + head], cwd=cwd, text=True).splitlines()

@@ -135,12 +135,37 @@ class SessionTests(unittest.TestCase):
     def test_fresh_session_recovers_active_issue(self):
         active = self.claim()
         self.assertEqual(active["version"], "v1.0.6.1")
-        self.assertEqual(session.inspect(self.api, self.state)["status"], "resume")
+        report = session.inspect(self.api, self.state)
+        self.assertEqual(report["status"], "resume")
+        self.assertEqual(report["installed_source_sha"], PIN)
+        self.assertEqual(report["product_branch"], "trunk")
+        self.assertEqual(report["canonical_active_phases"], {247: "Worker"})
         self.assertEqual(session.inspect(self.api, self.state, 248)["status"], "blocked_other_active_issue")
         with self.assertRaisesRegex(ValueError, "Another issue"):
             session.claim(self.api, self.state, 248, ["test"], "Fix")
         self.assertEqual(session.claim(self.api, self.state, 247, ["test"], "Retry"),
                          (self.state["ledger"], self.state["handoff"]))
+
+    def test_explicit_recovery_policy_rejects_json_null_before_claim(self):
+        import contextlib
+        import io
+        import sys
+        import tempfile
+        from pathlib import Path
+
+        with tempfile.TemporaryDirectory() as directory:
+            policy = Path(directory) / "policy.json"
+            policy.write_text("null", encoding="utf-8")
+            args = ["session", "--target", REPO, "claim", "247", "--note", "Recover",
+                    "--owner-approved", "--recovery-policy", str(policy)]
+            stderr = io.StringIO()
+            with patch.object(sys, "argv", args), patch.object(session, "load", return_value=self.state), \
+                    patch.object(session, "claim") as claim, contextlib.redirect_stderr(stderr):
+                with self.assertRaises(SystemExit) as error:
+                    session.main()
+            self.assertEqual(error.exception.code, 1)
+            self.assertIn("Recovery-only claim policy must be a JSON object", stderr.getvalue())
+            claim.assert_not_called()
 
     def test_handoff_loop_and_owner_integration(self):
         self.claim()

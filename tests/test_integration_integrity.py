@@ -528,9 +528,14 @@ class IntegrationIntegrityTests(unittest.TestCase):
                     session.reconcile(self.api,self.state,247,"Owner integration",policy=policy)
             self.assertEqual(reads[0], 2)
             self.api.product = NEXT
-            self.api.pre_run["run_attempt"] = 2
-            with self.assertRaises(ValueError):
-                session.reconcile(self.api,self.state,247,"Owner integration",policy=policy)
+            def rerun_current_only(method, path, body=None):
+                result = request(method, path, body)
+                if path.endswith("/actions/runs/123"):
+                    return {**result, "run_attempt": 2}
+                return result
+            with patch.object(self.api, "request", side_effect=rerun_current_only):
+                with self.assertRaisesRegex(ValueError, "Run is stale, unsuccessful or unrelated"):
+                    session.reconcile(self.api,self.state,247,"Owner integration",policy=policy)
         self.assertEqual(self.api.writes,[])
 
     def test_direct_integration_cannot_replace_archived_fix(self):
@@ -985,6 +990,46 @@ class IntegrationIntegrityTests(unittest.TestCase):
                     session.save(self.api,self.state,ledger,self.state["handoff"],apply,issue=247)
             self.assertEqual(self.api.writes,[])
 
+    def test_blocked_issue_can_reconcile_retained_proof(self):
+        from test_session import PROPOSED, post_policy
+        self.reach_head()
+        self.state["ledger"], self.state["handoff"] = session.finish(
+            self.api, self.state, "staged", "Stage original fix")
+        self.api.pr.update(state="closed", merged=False)
+        self.state["ledger"], self.state["handoff"] = session.claim(
+            self.api, self.state, 247, ["test"], "Rework", rework_staged=True)
+        self.state["ledger"], self.state["handoff"] = session.advance(
+            self.api, self.state, "Head disposition", return_to_head=True)
+        self.state["ledger"], self.state["handoff"] = session.finish(
+            self.api, self.state, "blocked", "Wait for product integration")
+        archive = copy.deepcopy(self.state["handoff"]["history"])
+        self.api.pr.update(state="closed", merged=True, merge_commit_sha=NEXT)
+        self.api.product = NEXT
+        review = post_policy(self.state)
+        review["issues"][0]["fix_sha"] = FIX
+        policy = {"schema_version": 1, "outcome": "historical_product_integration",
+                  "archive_index": 0, "archive_digest": session.closure_digest(archive[0]),
+                  "premerge": {"merge_sha": PROPOSED, "evidence": [RUN]},
+                  "review": review}
+        ledger, handoff = session.reconcile(
+            self.api, self.state, 247, "Owner reconciles", policy=policy)
+        self.assertEqual(ledger["issues"][0]["state"], "integrated")
+        self.assertEqual(handoff["history"][:-1], archive)
+        self.assertEqual(session.save(self.api, self.state, ledger, handoff, issue=247,
+                                      policy=policy)["status"], "planned")
+        self.assertEqual(self.api.writes, [])
+
+    def test_malformed_deferral_preserves_debt_without_authority(self):
+        self.reach_head()
+        self.state["ledger"], self.state["handoff"] = session.finish(
+            self.api, self.state, "deferred", "Unbounded deferral")
+        archive = self.state["handoff"]["history"][0]
+        archive["decision"] = session.DEFERRAL_DECISION + "{"
+        self.assertEqual(session.outstanding_integration_records(self.state), {247: [archive]})
+        with self.assertRaisesRegex(ValueError, "Invalid integration debt deferral record"):
+            session.require_integration_debt_clear(self.api, self.state, 248)
+        self.assertEqual(self.api.writes, [])
+
     def test_deferred_product_fix_reconciles_with_its_original_pins(self):
         from test_session import PROPOSED, post_policy
         self.reach_head()
@@ -1010,6 +1055,49 @@ class IntegrationIntegrityTests(unittest.TestCase):
         self.assertEqual(ledger["issues"][0]["state"], "integrated")
         self.assertEqual(session.save(self.api, self.state, ledger, handoff, issue=247,
                                       policy=policy)["status"], "planned")
+        self.assertEqual(self.api.writes, [])
+
+    def test_advanced_base_requires_new_evidence_for_same_deferred_pr(self):
+        from test_session import BASE, PROPOSED, TREE, post_policy
+        from unittest.mock import patch
+        self.reach_head()
+        decision = bounded_deferral(self.state, self.api, 248)
+        self.state["ledger"], self.state["handoff"] = session.finish(
+            self.api, self.state, "deferred", decision, deferral_approved=True)
+        prior = copy.deepcopy(self.state["handoff"]["history"][0])
+        new_base, new_preview = "a" * 40, "b" * 40
+        fresh_run = RUN.replace("/123/", "/125/")
+        self.api.pr.update(state="closed", merged=True, merge_commit_sha=NEXT)
+        self.api.pr["base"]["sha"] = new_base
+        self.api.product = NEXT
+        self.api.merge_parents = [{"sha": new_base}, {"sha": CANDIDATE}]
+        self.api.pre_run.update(id=125, head_sha=new_preview,
+            pull_requests=[{"number": 8, "head": {"sha": CANDIDATE}, "base": {"sha": new_base}}])
+        review = post_policy(self.state)
+        review.update(base_sha=new_base)
+        review["issues"][0]["fix_sha"] = FIX
+        policy = {"schema_version": 1, "outcome": "historical_product_integration",
+                  "archive_index": 0, "archive_digest": session.closure_digest(prior),
+                  "premerge": {"merge_sha": new_preview, "evidence": [fresh_run]}, "review": review}
+        request = self.api.request
+
+        def respond(method, path, body=None):
+            if path.endswith("/git/commits/" + new_preview):
+                return {"sha": new_preview, "tree": {"sha": TREE}, "parents": self.api.merge_parents}
+            if path.endswith(f"/compare/{BASE}...{new_base}"):
+                return {"status": "ahead", "merge_base_commit": {"sha": BASE}}
+            return request(method, path, body)
+
+        with patch.object(self.api, "request", side_effect=respond):
+            ledger, handoff = session.reconcile(
+                self.api, self.state, 247, "Owner reviews new product base", policy=policy)
+            self.assertEqual(ledger["issues"][0]["state"], "integrated")
+            self.assertEqual(handoff["history"][0], prior)
+            self.assertEqual(session.save(self.api, self.state, ledger, handoff, issue=247,
+                                          policy=policy)["status"], "planned")
+            stale = {**policy, "premerge": {**policy["premerge"], "evidence": [RUN]}}
+            with self.assertRaisesRegex(ValueError, "stale integration evidence"):
+                session.reconcile(self.api, self.state, 247, "Refuse stale evidence", policy=stale)
         self.assertEqual(self.api.writes, [])
 
     def test_pinless_deferral_preserves_older_staged_product_proof(self):

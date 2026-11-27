@@ -1042,6 +1042,9 @@ def inspect(api, state, requested=None):
     return {"status": status, "installed_sha": state["ref"], "product_sha": state["product_sha"],
             **({"pending_closure": pending} if pending is not None else {}),
             "repository": state["ledger"]["repository"], "baseline": state["manifest"]["baseline_version"],
+            "installed_source_sha": state["manifest"]["source_sha"],
+            "product_branch": state["manifest"]["product_branch"],
+            "canonical_active_phases": {a["issue"]: a["phase"] for a in rows},
             "target": state["manifest"]["target_version"], "issue": info, "active": active,
             "owner_merge_required": True, "evidence_verified": False,
             "staged": staged, **({"lifecycle": closure_status(state, item)} if info is not None else {}),
@@ -1276,15 +1279,22 @@ DEFERRAL_KEYS = {"schema_version", "repository", "repository_id", "product_branc
                  "authorized_next_issue", "reason", "review_trigger", "next_action"}
 
 
-def deferral_record(record):
+def deferral_record(record, *, historical=False):
     decision = record["decision"]
     if not decision.startswith(DEFERRAL_DECISION):
         return None
-    policy = checkpoint.parse_json(decision[len(DEFERRAL_DECISION):])
+    try:
+        policy = checkpoint.parse_json(decision[len(DEFERRAL_DECISION):])
+    except ValueError as exc:
+        if historical:
+            return None
+        raise ValueError("Invalid integration debt deferral record") from exc
     if (not isinstance(policy, dict) or set(policy) != DEFERRAL_KEYS
             or type(policy["schema_version"]) is not int or policy["schema_version"] != 1
             or record["disposition"] not in ("staged", "deferred")
             or record["merged_sha"] is not None):
+        if historical:
+            return None
         raise ValueError("Invalid integration debt deferral record")
     return policy
 
@@ -1372,7 +1382,8 @@ def outstanding_integration_records(state, *, proof_basis=False):
         active = record["handoff"]
         records = outstanding.setdefault(active["issue"], [])
         if record["disposition"] in ("staged", "deferred"):
-            if deferral_record(record) is not None:
+            # Unreadable authorization preserves the obligation without allowing renewal.
+            if deferral_record(record, historical=True) is not None:
                 fix = integration_record_fix(state, record)
                 records[:] = [prior for prior in records
                               if not (engineering_receipt(prior, state["ledger"]) is None
@@ -1396,7 +1407,8 @@ def renewed_staged_basis(state, number, index):
     fix = current["handoff"]["fix_sha"]
     pinless = current["disposition"] == "deferred" and fix is None
     renewal = (current["disposition"] in ("staged", "deferred")
-               and fix == prior["handoff"]["fix_sha"] and deferral_record(current) is not None)
+               and fix == prior["handoff"]["fix_sha"]
+               and deferral_record(current, historical=True) is not None)
     return (prior["handoff"]["issue"] == number and eligible_product_proof_basis(prior)
             and prior["handoff"]["fix_sha"] is not None and (pinless or renewal)
             and any(prior is r for r in outstanding_integration_records(
@@ -1765,13 +1777,15 @@ def reconcile_historical_integration(api, state, number, decision, policy, *, al
     if state["handoff"]["schema_version"] != 1:
         raise ValueError("Historical integration requires singleton state")
     row = next((r for r in state["ledger"]["issues"] if r["issue"] == number), None)
-    if row is None or row["state"] not in ("staged", "deferred"):
-        raise ValueError("Historical integration requires staged or deferred work")
+    if row is None or row["state"] not in ("staged", "deferred", "blocked"):
+        raise ValueError("Historical integration requires staged, deferred or blocked work")
+    was_blocked = row["state"] == "blocked"
     latest = closure_archive_index(state["handoff"], number)
     index = policy["archive_index"]
     history = state["handoff"]["history"]
     if (type(index) is not int or not 0 <= index < len(history)
-            or (not allow_older and index != latest and not renewed_staged_basis(state, number, index))):
+            or (not allow_older and not was_blocked and index != latest
+                and not renewed_staged_basis(state, number, index))):
         raise ValueError("Historical integration archive occurrence changed")
     prior = history[index]
     if (prior["handoff"]["issue"] != number
@@ -1814,12 +1828,18 @@ def reconcile_historical_integration(api, state, number, decision, policy, *, al
     if not isinstance(pre, dict) or set(pre) != {"merge_sha", "evidence"}:
         raise ValueError("Invalid historical pre-merge evidence")
     preview = install.require(install.SHA, pre["merge_sha"], "historical pre-merge revision")
-    if archived_product is not None and (
-            review["pull_request"] != archived_product["pull_request"]
-            or review["head_sha"] != archived_product["candidate_sha"]
-            or review["base_sha"] != archived_product["integration_base_sha"]
-            or preview != archived_product["integration_merge_sha"]):
-        raise ValueError("Historical deferred integration must preserve original product pins")
+    if archived_product is not None:
+        old_base = archived_product["integration_base_sha"]
+        old_preview = archived_product["integration_merge_sha"]
+        base_advanced = review["base_sha"] != old_base
+        preview_changed = preview != old_preview
+        if (review["pull_request"] != archived_product["pull_request"]
+                or review["head_sha"] != archived_product["candidate_sha"]
+                or preview_changed != base_advanced):
+            raise ValueError("Historical deferred integration must preserve original product pins")
+        if base_advanced:
+            from tools import gate
+            gate.check_ancestry(api, state["prefix"], old_base, review["base_sha"])
     evidence = evidence_links(state["ledger"]["repository"], pre["evidence"])
     if not evidence:
         raise ValueError("Historical integration requires fresh product PR evidence")
@@ -1969,7 +1989,10 @@ def reconcile_historical_batch(api, state, number, decision, policy):
         raise ValueError("Historical integration batch requires separate exact occurrence proofs")
     number = issue_number(number)
     indices = [proof["archive_index"] for proof in proofs]
-    if (indices != sorted(set(indices)) or (indices[-1] != closure_archive_index(state["handoff"], number)
+    was_blocked = any(row["issue"] == number and row["state"] == "blocked"
+                      for row in state["ledger"]["issues"])
+    if (indices != sorted(set(indices)) or (not was_blocked
+            and indices[-1] != closure_archive_index(state["handoff"], number)
             and not any(renewed_staged_basis(state, number, i) for i in indices))):
         raise ValueError("Historical integration batch occurrences must be unique, ordered and include the latest")
     ledger, handoff = copy.deepcopy(state["ledger"]), copy.deepcopy(state["handoff"])
@@ -3064,6 +3087,8 @@ def main():
                       if args.command in ("finish", "reconcile", "finish-engineering") and args.policy else None)
             if args.command == "claim" and args.recovery_policy:
                 policy = checkpoint.parse_json(Path(args.recovery_policy).read_text(encoding="utf-8"))
+                if not isinstance(policy, dict):
+                    raise ValueError("Recovery-only claim policy must be a JSON object")
             def plan(current):
                 if args.command == "claim":
                     return claim(api, current, args.issue, args.acceptance, args.note,

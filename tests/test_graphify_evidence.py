@@ -129,8 +129,14 @@ else:
         for issue in (247, 248, 249):
             try:
                 _, planned = session.claim(api, s, issue, [], "Recovery")
-            except ValueError:
+            except ValueError as refused:
                 assert issue == 249 or sys.argv[1] == "deadlock", issue
+                expected = {
+                    247: "Unbounded integration debt; owner reconciliation required",
+                    248: "Integration debt deferral expired or invalid",
+                    249: "Integration debt deferral scope or target differs",
+                }
+                assert str(refused) == expected[issue], (issue, str(refused))
             else:
                 assert sys.argv[1] == "broad-exemption" and issue in (247, 248), issue
                 assert planned["active"]["issue"] == issue
@@ -211,7 +217,7 @@ assert not api.writes
         from functools import lru_cache
         @lru_cache(maxsize=None)
         def blob(path):
-            return subprocess.check_output(["git", "-C", str(root), "show", revision + ":" + path]).decode("utf-8")
+            return subprocess.check_output(["git", "--no-replace-objects", "-C", str(root), "show", revision + ":" + path]).decode("utf-8")
         manifest = json.loads(blob("docs/receipt-evidence.json"))
         expected = {"v0-0-0-43", "v0-0-0-43-review", "v0-0-0-43-publication", "v0-0-0-43-cbr"}
         groups = [f for f in manifest["features"] if f["id"] in expected]
