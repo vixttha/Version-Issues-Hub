@@ -5347,8 +5347,8 @@
       "fix_sha": null,
       "production_target": "main",
       "production_revision": "1b11865f79464ae7db9a648467e8c2c1cb898a02",
-      "production_fix_ancestry": "not_applicable_operational_hold",
-      "action": "preserve existing hold; no automatic promotion; separate owner disposition",
+      "production_fix_ancestry": "unresolved_distinct_fix_obligations_archives_6_and_50",
+      "action": "preserve existing hold; archives 6 and 50 retain separate unresolved obligations under #40; hold alone cannot authorize unrelated claims; any owner disposition must cover both; no automatic promotion",
       "actual_record_changed": false
     },
     {

@@ -106,7 +106,7 @@ def changed_paths(base, head, cwd=None):
     """Raw NUL-separated diff includes deletions and both sides of renames."""
     for pin in (base, head):
         checkpoint.require(checkpoint.SHA, pin, "diff revision")
-    raw = subprocess.check_output(["git", "diff", "--name-only", "--no-renames",
+    raw = subprocess.check_output(["git", "--no-replace-objects", "diff", "--name-only", "--no-renames",
                                    "-z", base, head, "--"], cwd=cwd)
     return {p.decode("utf-8") for p in raw.split(b"\0") if p}
 
@@ -114,17 +114,17 @@ def changed_paths(base, head, cwd=None):
 def scope_paths(base, head, cwd=None):
     """Include all introduced commits, even a path added and then reverted."""
     paths = changed_paths(base, head, cwd)
-    revisions = subprocess.check_output(["git", "rev-list", "--max-count=129",
+    revisions = subprocess.check_output(["git", "--no-replace-objects", "rev-list", "--max-count=129",
                                          base + ".." + head], cwd=cwd, text=True).splitlines()
     if len(revisions) > 128:
         raise ValueError("Scope history exceeds bounded checkpoint review; return to Head")
     for revision in revisions:
         checkpoint.require(checkpoint.SHA, revision, "introduced revision")
-        raw = subprocess.check_output(["git", "diff-tree", "--root", "--no-commit-id",
+        raw = subprocess.check_output(["git", "--no-replace-objects", "diff-tree", "--root", "--no-commit-id",
                                        "-r", "-m", "--no-renames", "--name-only", "-z",
                                        revision], cwd=cwd)
         touched = {p.decode("utf-8") for p in raw.split(b"\0") if p}
-        parents = subprocess.check_output(["git", "show", "-s", "--format=%P", revision],
+        parents = subprocess.check_output(["git", "--no-replace-objects", "show", "-s", "--format=%P", revision],
                                           cwd=cwd, text=True).split()
         if len(parents) > 1:
             # A merge of an older side branch can report baseline-only files
@@ -137,7 +137,7 @@ def scope_paths(base, head, cwd=None):
 
 
 def ancestor(old, new):
-    if subprocess.run(["git", "merge-base", "--is-ancestor", old, new],
+    if subprocess.run(["git", "--no-replace-objects", "merge-base", "--is-ancestor", old, new],
                       check=False).returncode != 0:
         raise ValueError("Scope approval or reviewed revision is not an ancestor")
 
@@ -295,7 +295,10 @@ def verify_scope(pin, issue, version, head, current, pr_base=None, *,
                 confirm_snapshot()
             if not receipt["approved_at"] <= time.time() < receipt["expires_at"]:
                 raise ValueError("Independent forward recovery authorization expired during final review")
-            print(f"VIB independently supplied forward recovery disposition matched: #{issue} {version} at {pin}; read-only qualification only")
+            if confirm_snapshot is not None:
+                print(f"VIB independently supplied forward recovery disposition matched: #{issue} {version} at {pin}; read-only qualification only")
+            else:
+                print(f"VIB authority receipt matches supplied pins: #{issue} {version} at {pin}; LIVE SNAPSHOT UNCONFIRMED")
         else:
             if any(x is not None for x in (recovery_authority_source, reviewed_specification, gate_a_evidence)):
                 raise ValueError("Recovery authority inputs require strict recovery qualification")
@@ -331,7 +334,7 @@ def verify_checkpoint_branch(branch, *, require_recovery_authorization=False,
     current = checkpoint.require(checkpoint.SHA, observed[0][0], "observed canonical revision")
     subprocess.run(["git", "fetch", "--no-tags", "--no-write-fetch-head", "origin", current],
                    check=True)
-    if subprocess.run(["git", "merge-base", "--is-ancestor", pin, current],
+    if subprocess.run(["git", "--no-replace-objects", "merge-base", "--is-ancestor", pin, current],
                       check=False).returncode != 0:
         raise ValueError("Worker pin is not in canonical installed branch history")
     projection_options = {"tested_head": tested_head} if tested_head is not None else {}

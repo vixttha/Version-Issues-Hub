@@ -122,7 +122,7 @@ def register(ledger, issue, line, criteria):
 
 
 def git(*args):
-    return subprocess.check_output(["git", *args], text=True).strip()
+    return subprocess.check_output(["git", "--no-replace-objects", *args], text=True).strip()
 
 
 def previous_at(commit, path):

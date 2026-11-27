@@ -20,6 +20,42 @@ class SelfUsePreflightTests(unittest.TestCase):
                                    "fix_sha": None, "candidate_sha": None,
                                    "pull_request": None, "evidence": []}}
 
+    def test_committed_projection_rejects_replacement_object(self):
+        import tempfile
+        from pathlib import Path
+        from subprocess import check_output
+        from tools import checkpoint
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            def git(*args):
+                return check_output(["git", "-C", tmp, *args], text=True).strip()
+            git("init", "-q", "-b", "baseline")
+            git("config", "user.name", "VIB test")
+            git("config", "user.email", "vib@example.invalid")
+            (root / "ledger").mkdir()
+            path = root / "ledger/issue-versions.json"
+            path.write_text(json.dumps(self.ledger), encoding="utf-8")
+            (root / "ledger/handoff.json").write_text(json.dumps(self.handoff), encoding="utf-8")
+            git("add", ".")
+            git("commit", "-qm", "canonical")
+            pin = git("rev-parse", "HEAD")
+            bad = copy.deepcopy(self.ledger)
+            bad["issues"][0]["acceptance"] = ["drift"]
+            path.write_text(json.dumps(bad), encoding="utf-8")
+            git("add", ".")
+            git("commit", "-qm", "bad tested revision")
+            tested = git("rev-parse", "HEAD")
+            path.write_text(json.dumps(self.ledger), encoding="utf-8")
+            git("add", ".")
+            git("commit", "-qm", "replacement correction")
+            replacement = git("rev-parse", "HEAD")
+            git("replace", tested, replacement)
+            self.assertEqual(json.loads(git("show", tested + ":ledger/issue-versions.json")), self.ledger)
+            actual_git = checkpoint.git
+            with patch.object(checkpoint, "git", side_effect=lambda *args: actual_git("-C", tmp, *args)):
+                with self.assertRaisesRegex(ValueError, "acceptance criteria differ"):
+                    self_use_preflight.read_projection(pin, 65, tested_head=tested)
+
     def test_valid_projection(self):
         self.assertEqual(self_use_preflight.validate_projection(
             self.ledger, copy.deepcopy(self.ledger), self.handoff, 65), "v0.0.0.31")
@@ -101,7 +137,7 @@ class SelfUsePreflightTests(unittest.TestCase):
                          ("a" * 40, 65, "v0.0.0.31"))
         read.assert_called_once_with("a" * 40, 65)
         run.assert_any_call(["git", "fetch", "--no-tags", "--no-write-fetch-head", "origin", "b"*40], check=True)
-        run.assert_any_call(["git", "merge-base", "--is-ancestor", "a"*40, "b"*40], check=False)
+        run.assert_any_call(["git", "--no-replace-objects", "merge-base", "--is-ancestor", "a"*40, "b"*40], check=False)
         read.return_value = "v0.0.0.32"
         with self.assertRaisesRegex(ValueError, "differs"):
             self_use_preflight.verify_checkpoint_branch(branch)
@@ -127,7 +163,7 @@ class SelfUsePreflightTests(unittest.TestCase):
                              ("a"*40, 96, "v0.0.0.43"))
         output.assert_any_call(f"VIB observed canonical revision: {'b'*40}; Worker pin: {'a'*40}")
         verify.assert_called_once_with("a"*40, 96, "v0.0.0.43", "c"*40, "b"*40, "d"*40)
-        run.assert_any_call(["git", "merge-base", "--is-ancestor", "a"*40, "b"*40], check=False)
+        run.assert_any_call(["git", "--no-replace-objects", "merge-base", "--is-ancestor", "a"*40, "b"*40], check=False)
         self.assertEqual(git.call_count, 2)
 
     @patch("tools.self_use_preflight.checkpoint.git")
