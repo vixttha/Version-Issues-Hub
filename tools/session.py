@@ -1072,7 +1072,10 @@ def debt_first_plan(api, state, debt):
         except ValueError:
             entry["action"] = "owner_hold"
         else:
-            if (row["state"] in ("staged", "deferred", "blocked", "assigned")
+            if (row["state"] == "staged"
+                    and row["version"].rsplit(".", 1)[0] != state["manifest"]["baseline_version"]):
+                entry["action"] = "owner_reconcile_prior_line_staged"
+            elif (row["state"] in ("staged", "deferred", "blocked", "assigned")
                     and archives.get(number)):
                 try:
                     item = get_issue(api, state, number)
@@ -1239,6 +1242,11 @@ def recovery_plan(api, state, requested=None):
             action = ("Head reviews outstanding debt in oldest-archive order; "
                       "select an existing obligation for recovery or reconciliation. "
                       "No automatic claim or authority.")
+    if scheduling is not None or recovery_binding is not None:
+        # Queue issue lookups can outlast the earlier product-lineage check.
+        # Refuse the entire advisory, including unsigned recovery bindings.
+        if install.read_ref(api, state["prefix"], state["manifest"]["product_branch"]) != state["product_sha"]:
+            raise ValueError("Product state advanced; reload recovery plan")
     require_lease()
     return {**observed, "debt_first": scheduling, "recovery_claim_binding": recovery_binding, "integration_debt": [{"issue": row["issue"], "version": row["version"],
                   "state": row["state"]} for row in debt],
@@ -1497,6 +1505,9 @@ def recovery_claim_binding(state, number):
     if (len(debt) < 2 or row is None or row["state"] not in ("staged", "deferred", "blocked", "assigned")
             or not outstanding_integration_records(state).get(number)):
         raise ValueError("Recovery-only claim requires an existing reclaimable indebted issue")
+    if (row["state"] == "staged"
+            and row["version"].rsplit(".", 1)[0] != state["manifest"]["baseline_version"]):
+        raise ValueError("Staged prior-line issue requires owner reconciliation")
     return {"schema_version": 1, "outcome": RECOVERY_CLAIM,
             "repository": state["ledger"]["repository"],
             "repository_id": state["manifest"]["target_repository_id"],
