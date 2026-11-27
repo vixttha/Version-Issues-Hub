@@ -1192,8 +1192,10 @@
       "associated_issue_candidates": [
         30
       ],
-      "diff_review": "pending",
-      "disposition": "pending_review"
+      "diff_review": "prior_full_patch_review_receipt",
+      "disposition": "pending_review",
+      "review_receipt": "https://github.com/vixttha/Version-Issues-Hub/issues/96#issuecomment-7209846657",
+      "review_notes": "bounded GET-only ref confirmation, tolerate only known previous or absent ref, preserve failed live CLI install rather than infer success; pilot resume verifies parent/tree and source. No write replay."
     },
     {
       "sha": "ceb9500ce90f43c841e4f6429b8e7b531797d33a",
@@ -1216,8 +1218,10 @@
       "associated_issue_candidates": [
         31
       ],
-      "diff_review": "pending",
-      "disposition": "pending_review"
+      "diff_review": "prior_full_patch_review_receipt",
+      "disposition": "pending_review",
+      "review_receipt": "https://github.com/vixttha/Version-Issues-Hub/issues/96#issuecomment-7209846657",
+      "review_notes": "operation-class HTTP diagnostics, only bounded GET 5xx retries; fixture secrets redacted and write requests never automatically repeated."
     },
     {
       "sha": "95d5d03e5371a58906a73c67803155320ac7b3c9",
@@ -1382,8 +1386,10 @@
       "associated_issue_candidates": [
         41
       ],
-      "diff_review": "pending",
-      "disposition": "pending_review"
+      "diff_review": "prior_full_patch_review_receipt",
+      "disposition": "pending_review",
+      "review_receipt": "https://github.com/vixttha/Version-Issues-Hub/issues/96#issuecomment-7209846657",
+      "review_notes": "distinguishes merged, closed-unmerged, stale candidate and closed active issue; normal advances refuse closed issue/PR, return-to-Head remains. Current closed deferred advisory fix extends historical control."
     },
     {
       "sha": "bdceeb11eb4b33a36065d6db2a74eb48817804c6",
@@ -1499,8 +1505,10 @@
       "associated_issue_candidates": [
         47
       ],
-      "diff_review": "pending",
-      "disposition": "pending_review"
+      "diff_review": "prior_full_patch_review_receipt",
+      "disposition": "pending_review",
+      "review_receipt": "https://github.com/vixttha/Version-Issues-Hub/issues/96#issuecomment-7209846657",
+      "review_notes": "pins exact approved notice blob alongside official license and tests tampering; clearly distinguishes historical non-operative proposal. Technical license verification not legal-title/commercial clearance."
     },
     {
       "sha": "fc112a3830fb9281c7aa446986f73de6b9ed4946",
@@ -2248,8 +2256,10 @@
       "associated_issue_candidates": [
         53
       ],
-      "diff_review": "pending",
-      "disposition": "pending_review"
+      "diff_review": "prior_full_patch_review_receipt",
+      "disposition": "pending_review",
+      "review_receipt": "https://github.com/vixttha/Version-Issues-Hub/issues/96#issuecomment-7209846657",
+      "review_notes": "moves staging verification after recovery-ticket callback, no-op claim emits no journal, uncertain malformed recovery retains candidate. Later .43 snapshot freeze addresses caller mutability; retain historic evidence."
     },
     {
       "sha": "32e6ccb6517056b480f20481146e188767db5269",
@@ -2300,8 +2310,10 @@
       "associated_issue_candidates": [
         53
       ],
-      "diff_review": "pending",
-      "disposition": "pending_review"
+      "diff_review": "prior_full_patch_review_receipt",
+      "disposition": "pending_review",
+      "review_receipt": "https://github.com/vixttha/Version-Issues-Hub/issues/96#issuecomment-7209846657",
+      "review_notes": "verifies full bounded adjacent transaction chain even with confirmed candidate ancestry; rejects intervening package mutation reverted later, permits valid same-issue descendant. No independent identity or fairness claim."
     },
     {
       "sha": "e0c27981444d9d4da4a29b6b348332969fa52003",
@@ -2324,8 +2336,10 @@
       "associated_issue_candidates": [
         53
       ],
-      "diff_review": "pending",
-      "disposition": "pending_review"
+      "diff_review": "prior_full_patch_review_receipt",
+      "disposition": "pending_review",
+      "review_receipt": "https://github.com/vixttha/Version-Issues-Hub/issues/96#issuecomment-7209846657",
+      "review_notes": "exact Graphify recovery anchors, explicit immutable cache and bounded journal recovery documentation; experimental capability remains suspended, no activation."
     },
     {
       "sha": "a4684c3fd61e5d7a8472b1fa23831bec26341b80",
@@ -2336,8 +2350,10 @@
       "associated_issue_candidates": [
         53
       ],
-      "diff_review": "pending",
-      "disposition": "pending_review"
+      "diff_review": "prior_full_patch_review_receipt",
+      "disposition": "pending_review",
+      "review_receipt": "https://github.com/vixttha/Version-Issues-Hub/issues/96#issuecomment-7209846657",
+      "review_notes": "simulated explicit fresh authorized operation after eight definitive rejected writes, distinct operation ID and unchanged other lanes; not automatic replay or actual starvation guarantee."
     },
     {
       "sha": "bc81ff4767c9773c53173bad2a16727f881e78f6",
@@ -5607,10 +5623,10 @@
     }
   ],
   "review_progress": {
-    "reported_full_patch_reviews": 88,
-    "pending": 85,
+    "reported_full_patch_reviews": 96,
+    "pending": 77,
     "baseline": "3160df17f60b3eaa9a9e70e1ca13bffcfe2eb4e8",
-    "source": "Seven permanent issue receipts matched to unique exact baseline positions; not an independent re-performance of all 88 reviews.",
+    "source": "Eight permanent issue receipts matched to unique exact baseline positions; receipt consolidation does not independently re-perform all 96 reviews.",
     "receipts": [
       "https://github.com/vixttha/Version-Issues-Hub/issues/96#issuecomment-7203734527",
       "https://github.com/vixttha/Version-Issues-Hub/issues/96#issuecomment-7203995977",
@@ -5618,7 +5634,8 @@
       "https://github.com/vixttha/Version-Issues-Hub/issues/96#issuecomment-7204924883",
       "https://github.com/vixttha/Version-Issues-Hub/issues/96#issuecomment-7205031367",
       "https://github.com/vixttha/Version-Issues-Hub/issues/96#issuecomment-7205212072",
-      "https://github.com/vixttha/Version-Issues-Hub/issues/96#issuecomment-7207195843"
+      "https://github.com/vixttha/Version-Issues-Hub/issues/96#issuecomment-7207195843",
+      "https://github.com/vixttha/Version-Issues-Hub/issues/96#issuecomment-7209846657"
     ]
   },
   "branch_review_current": {

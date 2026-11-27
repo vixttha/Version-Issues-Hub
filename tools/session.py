@@ -2442,6 +2442,8 @@ def save(api, state, ledger, handoff, apply=False, *, issue=None, operation_id=N
     # deferral proof. A ticket sink or object creation can outlast the lease.
     if install.read_ref(api, prefix, install.BRANCH) != old:
         raise HandoffStale("Installed branch advanced before publication; reload")
+    if policies and install.read_ref(api, prefix, state["manifest"]["product_branch"]) != state["product_sha"]:
+        raise ValueError("Integration debt deferral target changed before publication")
     now = time.time()
     for deferral in policies:
         if not deferral["approved_at"] <= now < deferral["expires_at"]:

@@ -420,6 +420,40 @@ class IntegrationIntegrityTests(unittest.TestCase):
         self.assertEqual([w[0] for w in self.api.writes], ["POST","POST"])
         self.assertEqual(self.api.ref, self.state["ref"])
 
+    def test_final_installed_lease_cannot_outlast_deferral_target(self):
+        from unittest.mock import patch
+
+        self.reach_head()
+        decision = bounded_deferral(self.state, self.api, 248)
+        ledger, handoff = session.finish(self.api, self.state, "staged", decision,
+                                         deferral_approved=True)
+        read_ref = session.install.read_ref
+        verify = session.verify_candidate_runs
+        stage = {"journaled": False, "verified": 0}
+
+        def journal(_ticket):
+            stage["journaled"] = True
+
+        def verify_runs(*args):
+            result = verify(*args)
+            if stage["journaled"]:
+                stage["verified"] += 1
+            return result
+
+        def read(api, prefix, branch):
+            result = read_ref(api, prefix, branch)
+            if branch == session.install.BRANCH and stage["verified"] == 2:
+                api.product = NEXT
+            return result
+
+        with patch.object(session, "verify_candidate_runs", side_effect=verify_runs), \
+             patch.object(session.install, "read_ref", side_effect=read):
+            with self.assertRaisesRegex(ValueError, "target changed before publication"):
+                session.save(self.api, self.state, ledger, handoff, apply=True, issue=247,
+                             deferral_approved=True, operation_id="a"*64, on_recovery_ticket=journal)
+        self.assertEqual([method for method, _, _ in self.api.writes], ["POST", "POST"])
+        self.assertEqual(self.api.ref, self.state["ref"])
+
     def test_pinless_deferral_cannot_hide_earlier_pinned_debt(self):
         self.reach_head()
         self.state["ledger"], self.state["handoff"] = session.finish(

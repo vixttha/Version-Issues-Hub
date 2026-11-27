@@ -43,7 +43,7 @@ class ScopeControlTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             def git(*args):
                 return subprocess.check_output(["git", "-C", tmp, *args], text=True).strip()
-            git("init", "-q")
+            git("init", "-q", "-b", "baseline")
             git("config", "user.name", "VIB test")
             git("config", "user.email", "test@example.invalid")
             root = Path(tmp)
@@ -228,7 +228,7 @@ class ScopeControlTests(unittest.TestCase):
                 git("add", ".")
                 git("commit", "-qm", message)
                 return git("rev-parse", "HEAD")
-            git("init", "-q")
+            git("init", "-q", "-b", "baseline")
             git("config", "user.name", "VIB test")
             git("config", "user.email", "test@example.invalid")
             write("tools/session.py", "original")
