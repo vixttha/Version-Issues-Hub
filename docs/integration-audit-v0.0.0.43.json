@@ -773,8 +773,10 @@
         1,
         7
       ],
-      "diff_review": "pending",
-      "disposition": "pending_review"
+      "diff_review": "prior_full_patch_review_receipt",
+      "disposition": "provisional_retain_history_pending_final_audit",
+      "review_receipt": "https://github.com/vixttha/Version-Issues-Hub/issues/96#issuecomment-7203734527",
+      "review_notes": "Creates immutable .1/.2 receipt pins; no previous file overwritten."
     },
     {
       "sha": "624cb8fdb34b87af0c1f9dad06437d9ff42998d9",
@@ -783,8 +785,10 @@
       ],
       "subject": "Link the Provenistem catalog from the README",
       "associated_issue_candidates": [],
-      "diff_review": "pending",
-      "disposition": "pending_review"
+      "diff_review": "prior_full_patch_review_receipt",
+      "disposition": "provisional_retain_history_pending_final_audit",
+      "review_receipt": "https://github.com/vixttha/Version-Issues-Hub/issues/96#issuecomment-7203734527",
+      "review_notes": "README-only optional Provenistem catalog link; not a runtime dependency or brand approval."
     },
     {
       "sha": "fbb76a77f896fb39290a1b862e7dde1a74ae3a8a",
@@ -805,8 +809,10 @@
       ],
       "subject": "Pin v0.0.0.3 installer fix for receipt verification",
       "associated_issue_candidates": [],
-      "diff_review": "pending",
-      "disposition": "pending_review"
+      "diff_review": "prior_full_patch_review_receipt",
+      "disposition": "provisional_retain_history_pending_final_audit",
+      "review_receipt": "https://github.com/vixttha/Version-Issues-Hub/issues/96#issuecomment-7203734527",
+      "review_notes": "Adds .3 installer receipt pin and selection; prior pins unchanged."
     },
     {
       "sha": "1a53dc83cd578faa26b8253e0699646ea58e2dbb",
@@ -827,8 +833,10 @@
       ],
       "subject": "Pin v0.0.0.4 agent handoff fix for receipt verification",
       "associated_issue_candidates": [],
-      "diff_review": "pending",
-      "disposition": "pending_review"
+      "diff_review": "prior_full_patch_review_receipt",
+      "disposition": "provisional_retain_history_pending_final_audit",
+      "review_receipt": "https://github.com/vixttha/Version-Issues-Hub/issues/96#issuecomment-7203734527",
+      "review_notes": "Adds .4 handoff receipt pin and selection; prior pins unchanged."
     },
     {
       "sha": "87930df3c14b277cb4ab092ca672df7b0623b763",
@@ -849,8 +857,10 @@
       ],
       "subject": "Pin v0.0.0.5 batched handoff fix",
       "associated_issue_candidates": [],
-      "diff_review": "pending",
-      "disposition": "pending_review"
+      "diff_review": "prior_full_patch_review_receipt",
+      "disposition": "provisional_retain_history_pending_final_audit",
+      "review_receipt": "https://github.com/vixttha/Version-Issues-Hub/issues/96#issuecomment-7203734527",
+      "review_notes": "Adds .5 batching receipt pin and selection; prior pins unchanged."
     },
     {
       "sha": "cc5de51d5ca2e03622ac18d2c3bf0933f33e252e",
@@ -871,8 +881,10 @@
       ],
       "subject": "Pin v0.0.0.6 merge gate fix for receipt verification",
       "associated_issue_candidates": [],
-      "diff_review": "pending",
-      "disposition": "pending_review"
+      "diff_review": "prior_full_patch_review_receipt",
+      "disposition": "provisional_retain_history_pending_final_audit",
+      "review_receipt": "https://github.com/vixttha/Version-Issues-Hub/issues/96#issuecomment-7203734527",
+      "review_notes": "Adds .6 optional gate pin; historical evidence only, hold not lifted."
     },
     {
       "sha": "d6df358c67c4fecaefaa725dd7b4687a2f3b89cd",
@@ -893,8 +905,10 @@
       ],
       "subject": "Pin v0.0.0.7 receipt scope clarification",
       "associated_issue_candidates": [],
-      "diff_review": "pending",
-      "disposition": "pending_review"
+      "diff_review": "prior_full_patch_review_receipt",
+      "disposition": "provisional_retain_history_pending_final_audit",
+      "review_receipt": "https://github.com/vixttha/Version-Issues-Hub/issues/96#issuecomment-7203734527",
+      "review_notes": "Adds .7 receipt-scope clarification pin; prior pins unchanged."
     },
     {
       "sha": "32fd798cce1ec499122bf416adf757ecf695fafa",
@@ -905,8 +919,10 @@
       "associated_issue_candidates": [
         13
       ],
-      "diff_review": "pending",
-      "disposition": "pending_review"
+      "diff_review": "prior_full_patch_review_receipt",
+      "disposition": "provisional_retain_history_pending_final_audit",
+      "review_receipt": "https://github.com/vixttha/Version-Issues-Hub/issues/96#issuecomment-7203734527",
+      "review_notes": "Adds precise historical-pilot section and replaces partial Graphify anchor."
     },
     {
       "sha": "0de66fb8e9648955755e630e6d0a71c1c785bf78",
@@ -917,8 +933,10 @@
       "associated_issue_candidates": [
         13
       ],
-      "diff_review": "pending",
-      "disposition": "pending_review"
+      "diff_review": "prior_full_patch_review_receipt",
+      "disposition": "provisional_retain_history_pending_final_audit",
+      "review_receipt": "https://github.com/vixttha/Version-Issues-Hub/issues/96#issuecomment-7203734527",
+      "review_notes": "Replaces partial Graphify function anchor with whole function signature."
     },
     {
       "sha": "d5272dbfbe63f721820d01316d0e932503b53062",
@@ -939,8 +957,10 @@
       ],
       "subject": "Pin v0.0.0.8 gate hardening fix",
       "associated_issue_candidates": [],
-      "diff_review": "pending",
-      "disposition": "pending_review"
+      "diff_review": "prior_full_patch_review_receipt",
+      "disposition": "provisional_retain_history_pending_final_audit",
+      "review_receipt": "https://github.com/vixttha/Version-Issues-Hub/issues/96#issuecomment-7203734527",
+      "review_notes": "Adds .8 optional gate hardening pin; hold not lifted."
     },
     {
       "sha": "3b6951be81d2fc9468b5379aead57c7afc444754",
@@ -951,8 +971,10 @@
       "associated_issue_candidates": [
         21
       ],
-      "diff_review": "pending",
-      "disposition": "pending_review"
+      "diff_review": "prior_full_patch_review_receipt",
+      "disposition": "provisional_retain_history_pending_final_audit",
+      "review_receipt": "https://github.com/vixttha/Version-Issues-Hub/issues/96#issuecomment-7205212072",
+      "review_notes": "standalone docs preserve Provenistem independence and no implicit write authority; historical staging guidance superseded by new bounded debt law."
     },
     {
       "sha": "83deccb89f048e6aa11726837fff123bdb793e89",
@@ -974,8 +996,10 @@
       ],
       "subject": "Fix live Lydite check against actual root and verify BART installation parent",
       "associated_issue_candidates": [],
-      "diff_review": "pending",
-      "disposition": "pending_review"
+      "diff_review": "prior_full_patch_review_receipt",
+      "disposition": "provisional_retain_history_pending_final_audit",
+      "review_receipt": "https://github.com/vixttha/Version-Issues-Hub/issues/96#issuecomment-7204818684",
+      "review_notes": "read-only BART historical install parent and source checks; Lydite root and verifier evidence"
     },
     {
       "sha": "11beda07557c8bbc32fc05bf50ef3eaefcdae7f3",
@@ -984,8 +1008,10 @@
       ],
       "subject": "Validate actual Lydite receipt-verifier path, not undocumented README text",
       "associated_issue_candidates": [],
-      "diff_review": "pending",
-      "disposition": "pending_review"
+      "diff_review": "prior_full_patch_review_receipt",
+      "disposition": "provisional_retain_history_pending_final_audit",
+      "review_receipt": "https://github.com/vixttha/Version-Issues-Hub/issues/96#issuecomment-7204818684",
+      "review_notes": "corrects Lydite verifier path proof, checks actual pinned file nonempty, not execution evidence"
     },
     {
       "sha": "0bb2cae91c1673231645e6301c95d333a4a35afd",
@@ -1006,8 +1032,10 @@
       ],
       "subject": "Pin v0.0.0.9 standard validation fix",
       "associated_issue_candidates": [],
-      "diff_review": "pending",
-      "disposition": "pending_review"
+      "diff_review": "prior_full_patch_review_receipt",
+      "disposition": "provisional_retain_history_pending_final_audit",
+      "review_receipt": "https://github.com/vixttha/Version-Issues-Hub/issues/96#issuecomment-7203734527",
+      "review_notes": "Adds .9 Standard validation pin; prior pins unchanged."
     },
     {
       "sha": "65dc35530f98d489b15b0b4fbf147818e1bdf5eb",
@@ -1028,8 +1056,10 @@
       ],
       "subject": "Pin v0.0.0.10 historical compatibility fix",
       "associated_issue_candidates": [],
-      "diff_review": "pending",
-      "disposition": "pending_review"
+      "diff_review": "prior_full_patch_review_receipt",
+      "disposition": "provisional_retain_history_pending_final_audit",
+      "review_receipt": "https://github.com/vixttha/Version-Issues-Hub/issues/96#issuecomment-7203734527",
+      "review_notes": "Adds .10 historical package map pin; prior pins unchanged."
     },
     {
       "sha": "e3f5f917307f38372277b7aecae3652c85935f80",
@@ -1050,8 +1080,10 @@
       ],
       "subject": "Pin v0.0.0.11 adoption proof revision",
       "associated_issue_candidates": [],
-      "diff_review": "pending",
-      "disposition": "pending_review"
+      "diff_review": "prior_full_patch_review_receipt",
+      "disposition": "provisional_retain_history_pending_final_audit",
+      "review_receipt": "https://github.com/vixttha/Version-Issues-Hub/issues/96#issuecomment-7203734527",
+      "review_notes": "Adds .11 read-only adopter acceptance pin; not upgrade permission."
     },
     {
       "sha": "78decbe8d6ff4eb9ab7e19394cec8790a12ecfae",
@@ -1072,8 +1104,10 @@
       ],
       "subject": "Pin v0.0.0.12 lifecycle fix revision",
       "associated_issue_candidates": [],
-      "diff_review": "pending",
-      "disposition": "pending_review"
+      "diff_review": "prior_full_patch_review_receipt",
+      "disposition": "provisional_retain_history_pending_final_audit",
+      "review_receipt": "https://github.com/vixttha/Version-Issues-Hub/issues/96#issuecomment-7203734527",
+      "review_notes": "Adds .12 lifecycle upgrade/archive pin; not live authorization."
     },
     {
       "sha": "b6b9d281e55bfed85729533087838f202ae30530",
@@ -1094,8 +1128,10 @@
       ],
       "subject": "Pin v0.0.0.13 CLI recovery checkpoint",
       "associated_issue_candidates": [],
-      "diff_review": "pending",
-      "disposition": "pending_review"
+      "diff_review": "prior_full_patch_review_receipt",
+      "disposition": "provisional_retain_history_pending_final_audit",
+      "review_receipt": "https://github.com/vixttha/Version-Issues-Hub/issues/96#issuecomment-7203734527",
+      "review_notes": "Adds .13 CLI recovery pin; prior pins unchanged."
     },
     {
       "sha": "cf953f9b1d0445b07f6583305cae365c63bb5b3a",
@@ -1106,8 +1142,10 @@
       "associated_issue_candidates": [
         27
       ],
-      "diff_review": "pending",
-      "disposition": "pending_review"
+      "diff_review": "prior_full_patch_review_receipt",
+      "disposition": "provisional_retain_history_pending_final_audit",
+      "review_receipt": "https://github.com/vixttha/Version-Issues-Hub/issues/96#issuecomment-7205212072",
+      "review_notes": "identical full five-file patch confirmed; six-law documentation parity only, pinned checkout/read-only public Ubuntu, no runtime certification or merge permission."
     },
     {
       "sha": "9fdbd365702c52850cc6448c71684c9b130a4efd",
@@ -1128,8 +1166,10 @@
       ],
       "subject": "Pin v0.0.0.14 remote lifecycle pilot harness",
       "associated_issue_candidates": [],
-      "diff_review": "pending",
-      "disposition": "pending_review"
+      "diff_review": "prior_full_patch_review_receipt",
+      "disposition": "provisional_retain_history_pending_final_audit",
+      "review_receipt": "https://github.com/vixttha/Version-Issues-Hub/issues/96#issuecomment-7203734527",
+      "review_notes": "Adds .14 pilot harness pin; historical pilot evidence only."
     },
     {
       "sha": "cddcb935a2e71bcf167c2096674c4292ea72d232",
@@ -1150,8 +1190,10 @@
       ],
       "subject": "Pin v0.0.0.15 remote readback fix",
       "associated_issue_candidates": [],
-      "diff_review": "pending",
-      "disposition": "pending_review"
+      "diff_review": "prior_full_patch_review_receipt",
+      "disposition": "provisional_retain_history_pending_final_audit",
+      "review_receipt": "https://github.com/vixttha/Version-Issues-Hub/issues/96#issuecomment-7203734527",
+      "review_notes": "Adds .15 readback fix pin; prior pins unchanged."
     },
     {
       "sha": "f2b2620b4f34744f8422a509994547b471cdfc6b",
@@ -1172,8 +1214,10 @@
       ],
       "subject": "Pin v0.0.0.16 API diagnostic fix",
       "associated_issue_candidates": [],
-      "diff_review": "pending",
-      "disposition": "pending_review"
+      "diff_review": "prior_full_patch_review_receipt",
+      "disposition": "provisional_retain_history_pending_final_audit",
+      "review_receipt": "https://github.com/vixttha/Version-Issues-Hub/issues/96#issuecomment-7203734527",
+      "review_notes": "Adds .16 diagnostic fix pin; prior pins unchanged."
     },
     {
       "sha": "fe030545347678689ea31477b46aa0cae1e6e652",
@@ -1196,8 +1240,10 @@
       "associated_issue_candidates": [
         28
       ],
-      "diff_review": "pending",
-      "disposition": "pending_review"
+      "diff_review": "prior_full_patch_review_receipt",
+      "disposition": "provisional_retain_history_pending_final_audit",
+      "review_receipt": "https://github.com/vixttha/Version-Issues-Hub/issues/96#issuecomment-7205212072",
+      "review_notes": "identical full five-file patch confirmed; six-law documentation parity only, pinned checkout/read-only public Ubuntu, no runtime certification or merge permission."
     },
     {
       "sha": "0bc5e739e245fa9c04ba856a850503f0f473c707",
@@ -1206,8 +1252,10 @@
       ],
       "subject": "Document portable branch capability discovery and installation convention",
       "associated_issue_candidates": [],
-      "diff_review": "pending",
-      "disposition": "pending_review"
+      "diff_review": "prior_full_patch_review_receipt",
+      "disposition": "provisional_retain_history_pending_final_audit",
+      "review_receipt": "https://github.com/vixttha/Version-Issues-Hub/issues/96#issuecomment-7204818684",
+      "review_notes": "read-only capability discovery docs; no mandatory ecosystem dependency or implicit write authority"
     },
     {
       "sha": "3f426e4940ef37544520851980418c71c31e0b93",
@@ -1219,8 +1267,10 @@
       "associated_issue_candidates": [
         32
       ],
-      "diff_review": "pending",
-      "disposition": "pending_review"
+      "diff_review": "prior_full_patch_review_receipt",
+      "disposition": "provisional_retain_history_pending_final_audit",
+      "review_receipt": "https://github.com/vixttha/Version-Issues-Hub/issues/96#issuecomment-7205212072",
+      "review_notes": "read-only discovery marker and pinned install guidance, no mandatory coordinator."
     },
     {
       "sha": "15396556f7674f27b039520a7538fa76f7ac49c1",
@@ -1241,8 +1291,10 @@
       ],
       "subject": "Pin checkpoint v0.0.0.17 receipt and Graphify evidence; refresh owner review packet",
       "associated_issue_candidates": [],
-      "diff_review": "pending",
-      "disposition": "pending_review"
+      "diff_review": "prior_full_patch_review_receipt",
+      "disposition": "provisional_retain_history_pending_final_audit",
+      "review_receipt": "https://github.com/vixttha/Version-Issues-Hub/issues/96#issuecomment-7205212072",
+      "review_notes": "preserves prior fix pins, adds .17 evidence, review packet explicitly records failed upgrade transport and unresolved licensing/independent trial."
     },
     {
       "sha": "8b447acda070c288c8c546c02b041bd726befea1",
@@ -1263,8 +1315,10 @@
       ],
       "subject": "Pin v0.0.0.18 verified upgrade transport checkpoint",
       "associated_issue_candidates": [],
-      "diff_review": "pending",
-      "disposition": "pending_review"
+      "diff_review": "prior_full_patch_review_receipt",
+      "disposition": "provisional_retain_history_pending_final_audit",
+      "review_receipt": "https://github.com/vixttha/Version-Issues-Hub/issues/96#issuecomment-7203734527",
+      "review_notes": "Adds .18 verified upgrade preparation pin; prior pins unchanged."
     },
     {
       "sha": "733a4e51357df6acb8ffc2ddedaede664df22c35",
@@ -1285,8 +1339,10 @@
       ],
       "subject": "Pin v0.0.0.19 stable acceptance fix",
       "associated_issue_candidates": [],
-      "diff_review": "pending",
-      "disposition": "pending_review"
+      "diff_review": "prior_full_patch_review_receipt",
+      "disposition": "provisional_retain_history_pending_final_audit",
+      "review_receipt": "https://github.com/vixttha/Version-Issues-Hub/issues/96#issuecomment-7203734527",
+      "review_notes": "Adds .19 stable snapshot fix pin; prior pins unchanged."
     },
     {
       "sha": "114a22196eab578b3053002f8eb7af935b26fe89",
@@ -1347,8 +1403,10 @@
         41,
         43
       ],
-      "diff_review": "pending",
-      "disposition": "pending_review"
+      "diff_review": "prior_full_patch_review_receipt",
+      "disposition": "provisional_retain_history_pending_final_audit",
+      "review_receipt": "https://github.com/vixttha/Version-Issues-Hub/issues/96#issuecomment-7203734527",
+      "review_notes": "Adds three distinct issue rows, acceptance criteria, exact fix pins, docs and Graphify nodes for .20-.22; preserve per-issue distinctions. No production state asserted."
     },
     {
       "sha": "265e0e4724bc409b16d2605fc4d59d2f3f658eaf",
@@ -1359,8 +1417,10 @@
       "associated_issue_candidates": [
         41
       ],
-      "diff_review": "pending",
-      "disposition": "pending_review"
+      "diff_review": "prior_full_patch_review_receipt",
+      "disposition": "provisional_retain_history_pending_final_audit",
+      "review_receipt": "https://github.com/vixttha/Version-Issues-Hub/issues/96#issuecomment-7205212072",
+      "review_notes": "refuses rework on closed issue/merged or unknown PR; stale open or closed-unmerged permitted. Earlier reported test results not current proof."
     },
     {
       "sha": "2314165a0715a471e99e6bc0874e94c9aeaa40e0",
@@ -1466,8 +1526,10 @@
       ],
       "subject": "Verify scoped issue receipts on PR52 proposed merge as well as push",
       "associated_issue_candidates": [],
-      "diff_review": "pending",
-      "disposition": "pending_review"
+      "diff_review": "prior_full_patch_review_receipt",
+      "disposition": "provisional_retain_history_pending_final_audit",
+      "review_receipt": "https://github.com/vixttha/Version-Issues-Hub/issues/96#issuecomment-7203734527",
+      "review_notes": "Extends PR trigger to engineering branch without changing read-only workflow permissions. Does not solve main post-merge adoption/law trigger gap."
     },
     {
       "sha": "75a16c185f404400b453d3a8a4b5a7becfdea024",
@@ -1517,8 +1579,10 @@
       "associated_issue_candidates": [
         40
       ],
-      "diff_review": "pending",
-      "disposition": "pending_review"
+      "diff_review": "prior_full_patch_review_receipt",
+      "disposition": "provisional_retain_history_pending_final_audit",
+      "review_receipt": "https://github.com/vixttha/Version-Issues-Hub/issues/96#issuecomment-7204818684",
+      "review_notes": "historical non-operative licensing notice remains unchanged beneath supersession header; no commercial clearance; retain failed prior run evidence"
     },
     {
       "sha": "7ae6626e44d01d29b11968da28e6debd816f8c06",
@@ -1529,8 +1593,10 @@
       "associated_issue_candidates": [
         40
       ],
-      "diff_review": "pending",
-      "disposition": "pending_review"
+      "diff_review": "prior_full_patch_review_receipt",
+      "disposition": "provisional_retain_history_pending_final_audit",
+      "review_receipt": "https://github.com/vixttha/Version-Issues-Hub/issues/96#issuecomment-7204818684",
+      "review_notes": "bounded retry only on observed ref drift, tests deterministic failure/exhaustion; historical hard-coded self-use main assumption merits current designated-target review; pilot helper outside current 41-path scope; no unsupported edit or claim of general alternate-branch qualification"
     },
     {
       "sha": "82cfa7272ad83b044e7d4e9760133dc8a443f102",
@@ -1571,8 +1637,10 @@
       "associated_issue_candidates": [
         61
       ],
-      "diff_review": "pending",
-      "disposition": "pending_review"
+      "diff_review": "prior_full_patch_review_receipt",
+      "disposition": "provisional_retain_history_pending_final_audit",
+      "review_receipt": "https://github.com/vixttha/Version-Issues-Hub/issues/96#issuecomment-7205031367",
+      "review_notes": "duplicate keys and malformed response refusal; no mutation replay, diagnostics omit response values; escaped-key fixture corrected later."
     },
     {
       "sha": "a0039470d6742474232c050856a4be857f2360ac",
@@ -1583,8 +1651,10 @@
       "associated_issue_candidates": [
         60
       ],
-      "diff_review": "pending",
-      "disposition": "pending_review"
+      "diff_review": "prior_full_patch_review_receipt",
+      "disposition": "provisional_retain_history_pending_final_audit",
+      "review_receipt": "https://github.com/vixttha/Version-Issues-Hub/issues/96#issuecomment-7205031367",
+      "review_notes": "nonfinite constants/overflow rejected on parse and serialization, preserves original persistence bytes; no outgoing request on invalid body."
     },
     {
       "sha": "5667caca12a9b6ba21c9bc2e922a25533c8c901a",
@@ -1595,8 +1665,10 @@
       "associated_issue_candidates": [
         61
       ],
-      "diff_review": "pending",
-      "disposition": "pending_review"
+      "diff_review": "prior_full_patch_review_receipt",
+      "disposition": "provisional_retain_history_pending_final_audit",
+      "review_receipt": "https://github.com/vixttha/Version-Issues-Hub/issues/96#issuecomment-7203995977",
+      "review_notes": "escaped JSON duplicate-key fixture"
     },
     {
       "sha": "6e428f222c7aa7a35a8d398bde2846ac0e3b9657",
@@ -1607,8 +1679,10 @@
       "associated_issue_candidates": [
         61
       ],
-      "diff_review": "pending",
-      "disposition": "pending_review"
+      "diff_review": "prior_full_patch_review_receipt",
+      "disposition": "provisional_retain_history_pending_final_audit",
+      "review_receipt": "https://github.com/vixttha/Version-Issues-Hub/issues/96#issuecomment-7205031367",
+      "review_notes": "strict UTF-8 wire decoding and surrogate byte rejection; valid non-ASCII accepted."
     },
     {
       "sha": "449e4b493daa1f9906396dae49877a32333c418d",
@@ -1646,8 +1720,10 @@
       "associated_issue_candidates": [
         65
       ],
-      "diff_review": "pending",
-      "disposition": "pending_review"
+      "diff_review": "prior_full_patch_review_receipt",
+      "disposition": "provisional_retain_history_pending_final_audit",
+      "review_receipt": "https://github.com/vixttha/Version-Issues-Hub/issues/96#issuecomment-7205212072",
+      "review_notes": ".31 exact fix and conditional pinned canonical projection preflight; older special-case later generalized."
     },
     {
       "sha": "1d096ee297675d3bd039a7897e32d428feaff5cd",
@@ -1658,8 +1734,10 @@
       "associated_issue_candidates": [
         65
       ],
-      "diff_review": "pending",
-      "disposition": "pending_review"
+      "diff_review": "prior_full_patch_review_receipt",
+      "disposition": "provisional_retain_history_pending_final_audit",
+      "review_receipt": "https://github.com/vixttha/Version-Issues-Hub/issues/96#issuecomment-7205031367",
+      "review_notes": "replace fixed historical ledger counts with invariant/pin and graph coverage checks; no live migration; explicit held .23 remains."
     },
     {
       "sha": "686f93bdb7ed122f957941a512bca35cad518ade",
@@ -1670,8 +1748,10 @@
       "associated_issue_candidates": [
         65
       ],
-      "diff_review": "pending",
-      "disposition": "pending_review"
+      "diff_review": "prior_full_patch_review_receipt",
+      "disposition": "provisional_retain_history_pending_final_audit",
+      "review_receipt": "https://github.com/vixttha/Version-Issues-Hub/issues/96#issuecomment-7205212072",
+      "review_notes": "canonical product AGENTS entry point, repository identity/state drift refusal; pinned preflight not proof of live lease."
     },
     {
       "sha": "95e05af7b2a675491a01f8450fb20db8871b1f41",
@@ -1708,8 +1788,10 @@
       "associated_issue_candidates": [
         34
       ],
-      "diff_review": "pending",
-      "disposition": "pending_review"
+      "diff_review": "prior_full_patch_review_receipt",
+      "disposition": "provisional_retain_history_pending_final_audit",
+      "review_receipt": "https://github.com/vixttha/Version-Issues-Hub/issues/96#issuecomment-7203995977",
+      "review_notes": ".32 receipt pin and evidence, optional gate hold remains"
     },
     {
       "sha": "1e85153765c0ca908f2ee44f2973ba59b0669c23",
@@ -1734,8 +1816,10 @@
       "associated_issue_candidates": [
         68
       ],
-      "diff_review": "pending",
-      "disposition": "pending_review"
+      "diff_review": "prior_full_patch_review_receipt",
+      "disposition": "provisional_retain_history_pending_final_audit",
+      "review_receipt": "https://github.com/vixttha/Version-Issues-Hub/issues/96#issuecomment-7203995977",
+      "review_notes": ".33 Worker projection sync, preserve historical states, not authoritative canonical"
     },
     {
       "sha": "a8569d491bd93549dcd2011ca89e3e56d3ada50e",
@@ -1758,8 +1842,10 @@
       "associated_issue_candidates": [
         68
       ],
-      "diff_review": "pending",
-      "disposition": "pending_review"
+      "diff_review": "prior_full_patch_review_receipt",
+      "disposition": "provisional_retain_history_pending_final_audit",
+      "review_receipt": "https://github.com/vixttha/Version-Issues-Hub/issues/96#issuecomment-7203995977",
+      "review_notes": ".33 fix pin/graph"
     },
     {
       "sha": "a7ba4267f65a264c0c50c36bb2bedc3433f019ca",
@@ -1783,8 +1869,10 @@
       "associated_issue_candidates": [
         70
       ],
-      "diff_review": "pending",
-      "disposition": "pending_review"
+      "diff_review": "prior_full_patch_review_receipt",
+      "disposition": "provisional_retain_history_pending_final_audit",
+      "review_receipt": "https://github.com/vixttha/Version-Issues-Hub/issues/96#issuecomment-7203995977",
+      "review_notes": ".34 Worker projection sync"
     },
     {
       "sha": "a8facf5b7e809ee72230d9e109263e31da264346",
@@ -1795,8 +1883,10 @@
       "associated_issue_candidates": [
         70
       ],
-      "diff_review": "pending",
-      "disposition": "pending_review"
+      "diff_review": "prior_full_patch_review_receipt",
+      "disposition": "provisional_retain_history_pending_final_audit",
+      "review_receipt": "https://github.com/vixttha/Version-Issues-Hub/issues/96#issuecomment-7205031367",
+      "review_notes": "ordered acceptance criteria immutable, additions/state changes allowed; preserved historical assignments."
     },
     {
       "sha": "e9656d543febc4334a6b0232cc10e6945005336c",
@@ -1807,8 +1897,10 @@
       "associated_issue_candidates": [
         70
       ],
-      "diff_review": "pending",
-      "disposition": "pending_review"
+      "diff_review": "prior_full_patch_review_receipt",
+      "disposition": "provisional_retain_history_pending_final_audit",
+      "review_receipt": "https://github.com/vixttha/Version-Issues-Hub/issues/96#issuecomment-7203995977",
+      "review_notes": ".34 receipt pin/graph"
     },
     {
       "sha": "67bf97f311af67052ba92eeadcd78da9e2a03ed9",
@@ -1819,8 +1911,10 @@
       "associated_issue_candidates": [
         70
       ],
-      "diff_review": "pending",
-      "disposition": "pending_review"
+      "diff_review": "prior_full_patch_review_receipt",
+      "disposition": "provisional_retain_history_pending_final_audit",
+      "review_receipt": "https://github.com/vixttha/Version-Issues-Hub/issues/96#issuecomment-7205212072",
+      "review_notes": "ordered sharding at 32 features, unique IDs, digest and source binding; no historical records removed."
     },
     {
       "sha": "635377fbe9165859ad486469aef295e3052d5af9",
@@ -1844,8 +1938,10 @@
       "associated_issue_candidates": [
         71
       ],
-      "diff_review": "pending",
-      "disposition": "pending_review"
+      "diff_review": "prior_full_patch_review_receipt",
+      "disposition": "provisional_retain_history_pending_final_audit",
+      "review_receipt": "https://github.com/vixttha/Version-Issues-Hub/issues/96#issuecomment-7203995977",
+      "review_notes": ".35 Worker projection sync, prior states staged"
     },
     {
       "sha": "68aa26cf0353a5126be2a3acc1dad10be90ad2b8",
@@ -1856,8 +1952,10 @@
       "associated_issue_candidates": [
         71
       ],
-      "diff_review": "pending",
-      "disposition": "pending_review"
+      "diff_review": "prior_full_patch_review_receipt",
+      "disposition": "provisional_retain_history_pending_final_audit",
+      "review_receipt": "https://github.com/vixttha/Version-Issues-Hub/issues/96#issuecomment-7205031367",
+      "review_notes": "staged/integrated archive must have candidate/fix/PR/evidence, negative shape tests; not truth of CI evidence."
     },
     {
       "sha": "6dc2e782310e6c59c59fd6231611c5c627f5bbe3",
@@ -1868,8 +1966,10 @@
       "associated_issue_candidates": [
         71
       ],
-      "diff_review": "pending",
-      "disposition": "pending_review"
+      "diff_review": "prior_full_patch_review_receipt",
+      "disposition": "provisional_retain_history_pending_final_audit",
+      "review_receipt": "https://github.com/vixttha/Version-Issues-Hub/issues/96#issuecomment-7203995977",
+      "review_notes": ".35 receipt pin/graph"
     },
     {
       "sha": "07a73f55a2b1f7ecbf873a3921f1e397034a88e6",
@@ -1893,8 +1993,10 @@
       "associated_issue_candidates": [
         72
       ],
-      "diff_review": "pending",
-      "disposition": "pending_review"
+      "diff_review": "prior_full_patch_review_receipt",
+      "disposition": "provisional_retain_history_pending_final_audit",
+      "review_receipt": "https://github.com/vixttha/Version-Issues-Hub/issues/96#issuecomment-7203995977",
+      "review_notes": ".36 Worker projection sync"
     },
     {
       "sha": "11091c34e2436af21895aceb09e9ec7692345e3b",
@@ -1905,8 +2007,10 @@
       "associated_issue_candidates": [
         72
       ],
-      "diff_review": "pending",
-      "disposition": "pending_review"
+      "diff_review": "prior_full_patch_review_receipt",
+      "disposition": "provisional_retain_history_pending_final_audit",
+      "review_receipt": "https://github.com/vixttha/Version-Issues-Hub/issues/96#issuecomment-7205031367",
+      "review_notes": "validate entire explicit receipt selection before generating, unique/pinned versions and ordered singleton compatibility."
     },
     {
       "sha": "c5a0bb957cb77cfc3da945c2e572ab8960b3cacd",
@@ -1917,8 +2021,10 @@
       "associated_issue_candidates": [
         72
       ],
-      "diff_review": "pending",
-      "disposition": "pending_review"
+      "diff_review": "prior_full_patch_review_receipt",
+      "disposition": "provisional_retain_history_pending_final_audit",
+      "review_receipt": "https://github.com/vixttha/Version-Issues-Hub/issues/96#issuecomment-7203734527",
+      "review_notes": "Adds .36 pin and explicit receipt-selection graph node; preserves historical pins."
     },
     {
       "sha": "26e9fe8c019a33c5f84f77a37da70925505204e3",
@@ -1966,8 +2072,10 @@
       "associated_issue_candidates": [
         53
       ],
-      "diff_review": "pending",
-      "disposition": "pending_review"
+      "diff_review": "prior_full_patch_review_receipt",
+      "disposition": "provisional_retain_history_pending_final_audit",
+      "review_receipt": "https://github.com/vixttha/Version-Issues-Hub/issues/96#issuecomment-7204924883",
+      "review_notes": ".37 evidence/pin addition only, no runtime authorization"
     },
     {
       "sha": "c0664641b45b47bc1298acdcc44093bda9427f3f",
@@ -1978,8 +2086,10 @@
       "associated_issue_candidates": [
         53
       ],
-      "diff_review": "pending",
-      "disposition": "pending_review"
+      "diff_review": "prior_full_patch_review_receipt",
+      "disposition": "provisional_retain_history_pending_final_audit",
+      "review_receipt": "https://github.com/vixttha/Version-Issues-Hub/issues/96#issuecomment-7205031367",
+      "review_notes": "preserves stronger criteria/archived-success assertions; correct expected postmerge evidence, no new feature or activation."
     },
     {
       "sha": "e8b9a35192684d11d119da3b115d26836c65b53f",
@@ -2002,8 +2112,10 @@
       "associated_issue_candidates": [
         53
       ],
-      "diff_review": "pending",
-      "disposition": "pending_review"
+      "diff_review": "prior_full_patch_review_receipt",
+      "disposition": "provisional_retain_history_pending_final_audit",
+      "review_receipt": "https://github.com/vixttha/Version-Issues-Hub/issues/96#issuecomment-7203995977",
+      "review_notes": "recovery-ticket graph signatures, experimental evidence only"
     },
     {
       "sha": "98065189aed5b2b3b294b266e8b351957bf2e5af",
@@ -2098,8 +2210,10 @@
       "associated_issue_candidates": [
         53
       ],
-      "diff_review": "pending",
-      "disposition": "pending_review"
+      "diff_review": "prior_full_patch_review_receipt",
+      "disposition": "provisional_retain_history_pending_final_audit",
+      "review_receipt": "https://github.com/vixttha/Version-Issues-Hub/issues/96#issuecomment-7204924883",
+      "review_notes": "three regression anchors and partial signature correction"
     },
     {
       "sha": "8b2fe01bb78d3684c48a0d0793ac0396f86eaee9",
@@ -2134,8 +2248,10 @@
       "associated_issue_candidates": [
         53
       ],
-      "diff_review": "pending",
-      "disposition": "pending_review"
+      "diff_review": "prior_full_patch_review_receipt",
+      "disposition": "provisional_retain_history_pending_final_audit",
+      "review_receipt": "https://github.com/vixttha/Version-Issues-Hub/issues/96#issuecomment-7204924883",
+      "review_notes": "same-checkpoint graph split, preserves references, not a new version"
     },
     {
       "sha": "e8359a4acaf2e956332585aa69a109e3242dad50",
@@ -2146,8 +2262,10 @@
       "associated_issue_candidates": [
         53
       ],
-      "diff_review": "pending",
-      "disposition": "pending_review"
+      "diff_review": "prior_full_patch_review_receipt",
+      "disposition": "provisional_retain_history_pending_final_audit",
+      "review_receipt": "https://github.com/vixttha/Version-Issues-Hub/issues/96#issuecomment-7205212072",
+      "review_notes": "exact supplemental node and corrected pre-run attempt mutation in ticket-sink regression, not activation."
     },
     {
       "sha": "b68796db12681fe4d43b562c8647deca38fa819c",
@@ -2228,8 +2346,10 @@
       ],
       "subject": "test: reconcile explicit .37 API boundary evidence node without widening scope",
       "associated_issue_candidates": [],
-      "diff_review": "pending",
-      "disposition": "pending_review"
+      "diff_review": "prior_full_patch_review_receipt",
+      "disposition": "provisional_retain_history_pending_final_audit",
+      "review_receipt": "https://github.com/vixttha/Version-Issues-Hub/issues/96#issuecomment-7203995977",
+      "review_notes": "exact supplementary .37 allowlist"
     },
     {
       "sha": "ab03646daf4fee23e9857bd2ccbb4fd759891611",
@@ -2283,8 +2403,10 @@
       ],
       "subject": "Bind .38 receipt and Graphify evidence to exact scoped fix",
       "associated_issue_candidates": [],
-      "diff_review": "pending",
-      "disposition": "pending_review"
+      "diff_review": "prior_full_patch_review_receipt",
+      "disposition": "provisional_retain_history_pending_final_audit",
+      "review_receipt": "https://github.com/vixttha/Version-Issues-Hub/issues/96#issuecomment-7203995977",
+      "review_notes": ".38 suspension evidence/pin"
     },
     {
       "sha": "26243de4d616598989bdbc15ac74966241bd9a6c",
@@ -2318,8 +2440,10 @@
       ],
       "subject": "Bind .39 receipt and Graphify evidence to exact engineering fix",
       "associated_issue_candidates": [],
-      "diff_review": "pending",
-      "disposition": "pending_review"
+      "diff_review": "prior_full_patch_review_receipt",
+      "disposition": "provisional_retain_history_pending_final_audit",
+      "review_receipt": "https://github.com/vixttha/Version-Issues-Hub/issues/96#issuecomment-7203995977",
+      "review_notes": ".39 separation evidence/pin"
     },
     {
       "sha": "37dca21355fbd6c8c95f149c7649978b212e893a",
@@ -2330,8 +2454,10 @@
       "associated_issue_candidates": [
         84
       ],
-      "diff_review": "pending",
-      "disposition": "pending_review"
+      "diff_review": "prior_full_patch_review_receipt",
+      "disposition": "provisional_retain_history_pending_final_audit",
+      "review_receipt": "https://github.com/vixttha/Version-Issues-Hub/issues/96#issuecomment-7204924883",
+      "review_notes": "synthetic engineering-only publication/readback with distinct refs and no production integration"
     },
     {
       "sha": "998c5f4113cd22a6fab1a833ef006acdb0da918d",
@@ -2366,8 +2492,10 @@
       ],
       "subject": "v0.0.0.40: pin reviewed closure implementation receipt",
       "associated_issue_candidates": [],
-      "diff_review": "pending",
-      "disposition": "pending_review"
+      "diff_review": "prior_full_patch_review_receipt",
+      "disposition": "provisional_retain_history_pending_final_audit",
+      "review_receipt": "https://github.com/vixttha/Version-Issues-Hub/issues/96#issuecomment-7203995977",
+      "review_notes": ".40 pin, receipt selection narrowed to single version; earlier fix pins preserved"
     },
     {
       "sha": "12ed743d09ba0d818b0599da716b1b54868a5f82",
@@ -2386,8 +2514,10 @@
       ],
       "subject": "v0.0.0.40: reject conflicting archived closure pins",
       "associated_issue_candidates": [],
-      "diff_review": "pending",
-      "disposition": "pending_review"
+      "diff_review": "prior_full_patch_review_receipt",
+      "disposition": "provisional_retain_history_pending_final_audit",
+      "review_receipt": "https://github.com/vixttha/Version-Issues-Hub/issues/96#issuecomment-7205212072",
+      "review_notes": "refuses mismatched populated legacy archive pins; no closure solely from prose."
     },
     {
       "sha": "f4e4bef3f3f505526d301f16772457c05c43e7ce",
@@ -2446,8 +2576,10 @@
       ],
       "subject": "v0.0.0.40: recognize exact closure evidence subgroup in historical mapping guard",
       "associated_issue_candidates": [],
-      "diff_review": "pending",
-      "disposition": "pending_review"
+      "diff_review": "prior_full_patch_review_receipt",
+      "disposition": "provisional_retain_history_pending_final_audit",
+      "review_receipt": "https://github.com/vixttha/Version-Issues-Hub/issues/96#issuecomment-7203995977",
+      "review_notes": ".40 supplementary node"
     },
     {
       "sha": "a04278759de7338552393ac56a357aa0dde038d0",
@@ -2500,8 +2632,10 @@
       ],
       "subject": "v0.0.0.40: preserve cancelled intent alongside disposition conflict",
       "associated_issue_candidates": [],
-      "diff_review": "pending",
-      "disposition": "pending_review"
+      "diff_review": "prior_full_patch_review_receipt",
+      "disposition": "provisional_retain_history_pending_final_audit",
+      "review_receipt": "https://github.com/vixttha/Version-Issues-Hub/issues/96#issuecomment-7204924883",
+      "review_notes": "preserves cancellation separate from disposition conflict; introduced incorrect test indentation/expectation, corrected by next commit"
     },
     {
       "sha": "edf1602fdc99555d51736c07165d7ac73777eb0e",
@@ -2510,8 +2644,10 @@
       ],
       "subject": "v0.0.0.40: correct lost-response and stale-cancellation regression assertions",
       "associated_issue_candidates": [],
-      "diff_review": "pending",
-      "disposition": "pending_review"
+      "diff_review": "prior_full_patch_review_receipt",
+      "disposition": "provisional_retain_history_pending_final_audit",
+      "review_receipt": "https://github.com/vixttha/Version-Issues-Hub/issues/96#issuecomment-7204924883",
+      "review_notes": "distinguishes completed vs not_planned cancellation and fixes indentation"
     },
     {
       "sha": "8cbb4562fb2e2425eaae52b9145513e2f5927ba2",
@@ -2543,8 +2679,10 @@
       ],
       "subject": "Partition compatibility Graphify evidence within existing .40 checkpoint",
       "associated_issue_candidates": [],
-      "diff_review": "pending",
-      "disposition": "pending_review"
+      "diff_review": "prior_full_patch_review_receipt",
+      "disposition": "provisional_retain_history_pending_final_audit",
+      "review_receipt": "https://github.com/vixttha/Version-Issues-Hub/issues/96#issuecomment-7203995977",
+      "review_notes": "compatibility node separated within same version"
     },
     {
       "sha": "e963d92a09dabdf879b4808b65159a57a5348c51",
@@ -2553,8 +2691,10 @@
       ],
       "subject": "Recognize exact supplementary compatibility evidence node without allocating version",
       "associated_issue_candidates": [],
-      "diff_review": "pending",
-      "disposition": "pending_review"
+      "diff_review": "prior_full_patch_review_receipt",
+      "disposition": "provisional_retain_history_pending_final_audit",
+      "review_receipt": "https://github.com/vixttha/Version-Issues-Hub/issues/96#issuecomment-7203995977",
+      "review_notes": "exact compatibility node allowlist"
     },
     {
       "sha": "43ef2b660aae5ccee00009e900509158f0137d0f",
@@ -2608,8 +2748,10 @@
       ],
       "subject": "Pin permanent v0.0.0.41 fix and receipt scope",
       "associated_issue_candidates": [],
-      "diff_review": "pending",
-      "disposition": "pending_review"
+      "diff_review": "prior_full_patch_review_receipt",
+      "disposition": "provisional_retain_history_pending_final_audit",
+      "review_receipt": "https://github.com/vixttha/Version-Issues-Hub/issues/96#issuecomment-7203995977",
+      "review_notes": ".41 fix pin and singleton receipt selection"
     },
     {
       "sha": "15cb92275cbb8818f751faf18dfcb48e047285a8",
@@ -2618,8 +2760,10 @@
       ],
       "subject": "Bind scope amendments to actual canonical predecessor and refuse legacy preflight bypass",
       "associated_issue_candidates": [],
-      "diff_review": "pending",
-      "disposition": "pending_review"
+      "diff_review": "prior_full_patch_review_receipt",
+      "disposition": "provisional_retain_history_pending_final_audit",
+      "review_receipt": "https://github.com/vixttha/Version-Issues-Hub/issues/96#issuecomment-7205212072",
+      "review_notes": "actual first-parent scope predecessor, policy-only commit, legacy bypass refusal; historical malformed .43 genesis requires recorded separate recovery, not silent override."
     },
     {
       "sha": "58801802e98a3a8d119b2a2ce8454fe8fb8abbc8",
@@ -2628,8 +2772,10 @@
       ],
       "subject": "Normalize new Graphify source anchors to pinned mapper contract",
       "associated_issue_candidates": [],
-      "diff_review": "pending",
-      "disposition": "pending_review"
+      "diff_review": "prior_full_patch_review_receipt",
+      "disposition": "provisional_retain_history_pending_final_audit",
+      "review_receipt": "https://github.com/vixttha/Version-Issues-Hub/issues/96#issuecomment-7203995977",
+      "review_notes": "trimmed mapper anchors, holds not lifted"
     },
     {
       "sha": "f831ecf46aa3308fbaa732dc15e3eafeea35471f",
@@ -2684,8 +2830,10 @@
       ],
       "subject": "Pin permanent .42 fix and selected receipt scope",
       "associated_issue_candidates": [],
-      "diff_review": "pending",
-      "disposition": "pending_review"
+      "diff_review": "prior_full_patch_review_receipt",
+      "disposition": "provisional_retain_history_pending_final_audit",
+      "review_receipt": "https://github.com/vixttha/Version-Issues-Hub/issues/96#issuecomment-7203995977",
+      "review_notes": ".42 pin and singleton receipt selection"
     },
     {
       "sha": "2830bf94b366f3c53c9173a618127eab4ac2a6a3",
@@ -2694,8 +2842,10 @@
       ],
       "subject": "Re-pin .42 Worker to corrected canonical scope approval",
       "associated_issue_candidates": [],
-      "diff_review": "pending",
-      "disposition": "pending_review"
+      "diff_review": "prior_full_patch_review_receipt",
+      "disposition": "provisional_retain_history_pending_final_audit",
+      "review_receipt": "https://github.com/vixttha/Version-Issues-Hub/issues/96#issuecomment-7203995977",
+      "review_notes": ".42 Worker re-pin, no canonical write in this source commit"
     },
     {
       "sha": "8a2f6fb2f651493eee1dc08d9bae3d805208d5c3",
@@ -2704,8 +2854,10 @@
       ],
       "subject": "Refresh .42 recovery guidance after evidence revalidation (CodeRabbit)",
       "associated_issue_candidates": [],
-      "diff_review": "pending",
-      "disposition": "pending_review"
+      "diff_review": "prior_full_patch_review_receipt",
+      "disposition": "provisional_retain_history_pending_final_audit",
+      "review_receipt": "https://github.com/vixttha/Version-Issues-Hub/issues/96#issuecomment-7204924883",
+      "review_notes": ".42 fresh inspection suppresses stale evidence/advice on PR changes; follow-up throttle guard in .43 remains relevant"
     },
     {
       "sha": "3160df17f60b3eaa9a9e70e1ca13bffcfe2eb4e8",
@@ -5429,5 +5581,619 @@
       ],
       "qualification": "Both canonical preflights passed; full runs failed later on graph evidence. No integration or closure asserted."
     }
-  ]
+  ],
+  "review_progress": {
+    "reported_full_patch_reviews": 76,
+    "pending": 97,
+    "baseline": "3160df17f60b3eaa9a9e70e1ca13bffcfe2eb4e8",
+    "source": "Six permanent issue receipts matched to unique exact baseline positions; not an independent re-performance of all 76 reviews.",
+    "receipts": [
+      "https://github.com/vixttha/Version-Issues-Hub/issues/96#issuecomment-7203734527",
+      "https://github.com/vixttha/Version-Issues-Hub/issues/96#issuecomment-7203995977",
+      "https://github.com/vixttha/Version-Issues-Hub/issues/96#issuecomment-7204818684",
+      "https://github.com/vixttha/Version-Issues-Hub/issues/96#issuecomment-7204924883",
+      "https://github.com/vixttha/Version-Issues-Hub/issues/96#issuecomment-7205031367",
+      "https://github.com/vixttha/Version-Issues-Hub/issues/96#issuecomment-7205212072"
+    ]
+  },
+  "branch_review_current": {
+    "observed_worker": "730f3dccf9a6db5e8fa4f8c9d129e7e0376bde23",
+    "source": "https://github.com/vixttha/Version-Issues-Hub/issues/96#issuecomment-7205232651",
+    "previous_snapshot_preserved": true,
+    "refs": [
+      {
+        "name": "Brand-Identity",
+        "sha": "8ada6942a36ba1e830890dcc3f6cf2e557d94b45",
+        "open_prs": [
+          4
+        ],
+        "proposed_disposition": "keep_independent_foundation",
+        "ownership": "not independently established",
+        "deletion_authorized": false
+      },
+      {
+        "name": "Lydite-Test-Vault",
+        "sha": "7e7e453dd02638f070ab7d61a0a463e9060af58e",
+        "open_prs": [
+          6
+        ],
+        "proposed_disposition": "keep_independent_foundation",
+        "ownership": "not independently established",
+        "deletion_authorized": false
+      },
+      {
+        "name": "Provenistem",
+        "sha": "b090c1107f4f228f318ad3a2bb240d4f3da5a91e",
+        "open_prs": [
+          81
+        ],
+        "proposed_disposition": "keep_independent_foundation",
+        "ownership": "not independently established",
+        "deletion_authorized": false
+      },
+      {
+        "name": "VIB-Product-Direction",
+        "sha": "ce78ae38f20f8554ccf38b0c4930e813e1c0a1ad",
+        "open_prs": [],
+        "proposed_disposition": "keep_independent_foundation",
+        "ownership": "not independently established",
+        "deletion_authorized": false
+      },
+      {
+        "name": "Veraphify",
+        "sha": "d0f6bc345c1da2bde679e9e542af3bc706c2c801",
+        "open_prs": [
+          3
+        ],
+        "proposed_disposition": "keep_independent_foundation",
+        "ownership": "not independently established",
+        "deletion_authorized": false
+      },
+      {
+        "name": "Version-Issues-Hub",
+        "sha": "77b8d09d2471b20fe517bea35c6efc0bd047ddeb",
+        "open_prs": [],
+        "proposed_disposition": "keep_canonical_installation_separate",
+        "ownership": "not independently established",
+        "deletion_authorized": false
+      },
+      {
+        "name": "adopt/provenistem-brand-identity",
+        "sha": "c0334e326c0e9e839c72be079a8f06099f85f2a2",
+        "open_prs": [
+          4
+        ],
+        "proposed_disposition": "retain_open_PR_dependency",
+        "ownership": "not independently established",
+        "deletion_authorized": false
+      },
+      {
+        "name": "adopt/provenistem-lydite-test-vault",
+        "sha": "2695aeb966f77f608905b8bdd7c4749fb7e6c3c2",
+        "open_prs": [
+          6
+        ],
+        "proposed_disposition": "retain_open_PR_dependency",
+        "ownership": "not independently established",
+        "deletion_authorized": false
+      },
+      {
+        "name": "adopt/provenistem-readme-hq",
+        "sha": "d824ae6bb99b131448f4c2a5d3b26cb4f2c3e28b",
+        "open_prs": [
+          5
+        ],
+        "proposed_disposition": "retain_open_PR_dependency",
+        "ownership": "not independently established",
+        "deletion_authorized": false
+      },
+      {
+        "name": "adopt/provenistem-veraphify",
+        "sha": "59e7b4db89c070255d129719f5d45da4c5b1b20a",
+        "open_prs": [
+          3
+        ],
+        "proposed_disposition": "retain_open_PR_dependency",
+        "ownership": "not independently established",
+        "deletion_authorized": false
+      },
+      {
+        "name": "audit/ecosystem-dogfooding",
+        "sha": "d127f4e642fcaea76cafa488f6448a1bf0870d59",
+        "open_prs": [],
+        "proposed_disposition": "retain_unmerged_or_external_history_pending_dependency_review",
+        "ownership": "not independently established",
+        "deletion_authorized": false
+      },
+      {
+        "name": "audit/mr-042-001-prepared",
+        "sha": "b1aac7dc2daba811a22abe3f431d29bc7922d27f",
+        "open_prs": [],
+        "proposed_disposition": "retain_unmerged_or_external_history_pending_dependency_review",
+        "ownership": "not independently established",
+        "deletion_authorized": false
+      },
+      {
+        "name": "audit/vib-final-ecosystem-20261124",
+        "sha": "89255a82c598075ff18350313a7d07631afc6667",
+        "open_prs": [],
+        "proposed_disposition": "retain_unmerged_or_external_history_pending_dependency_review",
+        "ownership": "not independently established",
+        "deletion_authorized": false
+      },
+      {
+        "name": "impl/vib-53-contention-recovery",
+        "sha": "0a164f9357be3d2ca7ada0d8e208de7f3e7828dd",
+        "open_prs": [
+          59
+        ],
+        "proposed_disposition": "retain_open_PR_dependency",
+        "ownership": "not independently established",
+        "deletion_authorized": false
+      },
+      {
+        "name": "impl/vib-53-durable-recovery",
+        "sha": "c2ea9cacf01cfdcd5e4eecae6b62d84c7c514d89",
+        "open_prs": [
+          64
+        ],
+        "proposed_disposition": "retain_open_PR_dependency",
+        "ownership": "not independently established",
+        "deletion_authorized": false
+      },
+      {
+        "name": "impl/vib-53-independent-transactions",
+        "sha": "2ca71c5f29c93550db57bae534ad51b1fd8d63a7",
+        "open_prs": [
+          59,
+          55
+        ],
+        "proposed_disposition": "retain_open_PR_dependency",
+        "ownership": "not independently established",
+        "deletion_authorized": false
+      },
+      {
+        "name": "main",
+        "sha": "1b11865f79464ae7db9a648467e8c2c1cb898a02",
+        "open_prs": [
+          49,
+          2
+        ],
+        "proposed_disposition": "keep_authoritative_product",
+        "ownership": "not independently established",
+        "deletion_authorized": false
+      },
+      {
+        "name": "ops/vib-adopter-audit-20261124",
+        "sha": "f390adc193a0f372fba0782886600a9db229791f",
+        "open_prs": [],
+        "proposed_disposition": "retain_unmerged_or_external_history_pending_dependency_review",
+        "ownership": "not independently established",
+        "deletion_authorized": false
+      },
+      {
+        "name": "ops/vib-fresh-cli-self-pilot",
+        "sha": "149df88f5be082bce5646723c516edca4d142a9c",
+        "open_prs": [],
+        "proposed_disposition": "retain_unmerged_or_external_history_pending_dependency_review",
+        "ownership": "not independently established",
+        "deletion_authorized": false
+      },
+      {
+        "name": "ops/vib-v0.0.1-release-pipeline",
+        "sha": "a472e04f4c2cc781c654000d6c0567e703f32791",
+        "open_prs": [
+          49
+        ],
+        "proposed_disposition": "retain_open_PR_dependency",
+        "ownership": "not independently established",
+        "deletion_authorized": false
+      },
+      {
+        "name": "plan/audit-mr-042-001-native",
+        "sha": "0dce28f8bf48d884baf7b7c2ddee05e278e5b43f",
+        "open_prs": [],
+        "proposed_disposition": "retain_unmerged_or_external_history_pending_dependency_review",
+        "ownership": "not independently established",
+        "deletion_authorized": false
+      },
+      {
+        "name": "plan/checkpoint-v0.0.0.33",
+        "sha": "b64b73ba8bcf9b3ebab84c662637f9edcb0cab5d",
+        "open_prs": [],
+        "proposed_disposition": "archive_or_retire_candidate_after_dependency_and_receipt_review",
+        "ownership": "not independently established",
+        "deletion_authorized": false
+      },
+      {
+        "name": "plan/checkpoint-v0.0.0.34",
+        "sha": "67bf97f311af67052ba92eeadcd78da9e2a03ed9",
+        "open_prs": [],
+        "proposed_disposition": "archive_or_retire_candidate_after_dependency_and_receipt_review",
+        "ownership": "not independently established",
+        "deletion_authorized": false
+      },
+      {
+        "name": "plan/checkpoint-v0.0.0.35",
+        "sha": "6dc2e782310e6c59c59fd6231611c5c627f5bbe3",
+        "open_prs": [],
+        "proposed_disposition": "archive_or_retire_candidate_after_dependency_and_receipt_review",
+        "ownership": "not independently established",
+        "deletion_authorized": false
+      },
+      {
+        "name": "plan/checkpoint-v0.0.0.36",
+        "sha": "c5a0bb957cb77cfc3da945c2e572ab8960b3cacd",
+        "open_prs": [],
+        "proposed_disposition": "archive_or_retire_candidate_after_dependency_and_receipt_review",
+        "ownership": "not independently established",
+        "deletion_authorized": false
+      },
+      {
+        "name": "plan/checkpoint-v0.0.0.37",
+        "sha": "041e187dc1d383082c1a4805e6d4743eec97e535",
+        "open_prs": [],
+        "proposed_disposition": "archive_or_retire_candidate_after_dependency_and_receipt_review",
+        "ownership": "not independently established",
+        "deletion_authorized": false
+      },
+      {
+        "name": "plan/checkpoint-v0.0.0.38",
+        "sha": "05716f8f14e7aa33c2f95d4c867fddd83e082c9c",
+        "open_prs": [],
+        "proposed_disposition": "archive_or_retire_candidate_after_dependency_and_receipt_review",
+        "ownership": "not independently established",
+        "deletion_authorized": false
+      },
+      {
+        "name": "plan/checkpoint-v0.0.0.39",
+        "sha": "37dca21355fbd6c8c95f149c7649978b212e893a",
+        "open_prs": [],
+        "proposed_disposition": "archive_or_retire_candidate_after_dependency_and_receipt_review",
+        "ownership": "not independently established",
+        "deletion_authorized": false
+      },
+      {
+        "name": "plan/checkpoint-v0.0.0.40",
+        "sha": "e963d92a09dabdf879b4808b65159a57a5348c51",
+        "open_prs": [],
+        "proposed_disposition": "archive_or_retire_candidate_after_dependency_and_receipt_review",
+        "ownership": "not independently established",
+        "deletion_authorized": false
+      },
+      {
+        "name": "plan/checkpoint-v0.0.0.41",
+        "sha": "b1c60dd6680ce99726a7b2fa1349cd9d9e3a04f4",
+        "open_prs": [],
+        "proposed_disposition": "archive_or_retire_candidate_after_dependency_and_receipt_review",
+        "ownership": "not independently established",
+        "deletion_authorized": false
+      },
+      {
+        "name": "plan/checkpoint-v0.0.0.42",
+        "sha": "8a2f6fb2f651493eee1dc08d9bae3d805208d5c3",
+        "open_prs": [],
+        "proposed_disposition": "archive_or_retire_candidate_after_dependency_and_receipt_review",
+        "ownership": "not independently established",
+        "deletion_authorized": false
+      },
+      {
+        "name": "plan/checkpoint-v0.0.0.43",
+        "sha": "730f3dccf9a6db5e8fa4f8c9d129e7e0376bde23",
+        "open_prs": [
+          97
+        ],
+        "proposed_disposition": "retain_active_worker",
+        "ownership": "not independently established",
+        "deletion_authorized": false
+      },
+      {
+        "name": "plan/individual-v0.0.0.1",
+        "sha": "e99e66deaa4ff8e36e407457a20866159473798a",
+        "open_prs": [],
+        "proposed_disposition": "retain_unmerged_or_external_history_pending_dependency_review",
+        "ownership": "not independently established",
+        "deletion_authorized": false
+      },
+      {
+        "name": "plan/itqs-37-coverage-catalog",
+        "sha": "c364832b66ba0bfc834e8c56e669ea00e3e77e05",
+        "open_prs": [],
+        "proposed_disposition": "retain_unmerged_or_external_history_pending_dependency_review",
+        "ownership": "not independently established",
+        "deletion_authorized": false
+      },
+      {
+        "name": "plan/live-acceptance-isolation",
+        "sha": "8e24a3a4145ba3e291d207477bfe95a7924cabc5",
+        "open_prs": [],
+        "proposed_disposition": "retain_workflow_dependency",
+        "ownership": "not independently established",
+        "deletion_authorized": false
+      },
+      {
+        "name": "plan/optional-hard-gate-34",
+        "sha": "588f8d25d2bced7bb9dcf18ab13acf3cdd0b7d0e",
+        "open_prs": [],
+        "proposed_disposition": "retain_workflow_dependency",
+        "ownership": "not independently established",
+        "deletion_authorized": false
+      },
+      {
+        "name": "plan/qualification-53-batch2",
+        "sha": "3610e00263b7fcce21de4c678d4d4ba61475e1b9",
+        "open_prs": [
+          64
+        ],
+        "proposed_disposition": "retain_open_PR_dependency",
+        "ownership": "not independently established",
+        "deletion_authorized": false
+      },
+      {
+        "name": "plan/repair-56-57-54",
+        "sha": "82cfa7272ad83b044e7d4e9760133dc8a443f102",
+        "open_prs": [],
+        "proposed_disposition": "archive_or_retire_candidate_after_dependency_and_receipt_review",
+        "ownership": "not independently established",
+        "deletion_authorized": false
+      },
+      {
+        "name": "plan/repair-61-60-json",
+        "sha": "6e428f222c7aa7a35a8d398bde2846ac0e3b9657",
+        "open_prs": [],
+        "proposed_disposition": "archive_or_retire_candidate_after_dependency_and_receipt_review",
+        "ownership": "not independently established",
+        "deletion_authorized": false
+      },
+      {
+        "name": "plan/self-use-recovery-65",
+        "sha": "686f93bdb7ed122f957941a512bca35cad518ade",
+        "open_prs": [],
+        "proposed_disposition": "retain_workflow_dependency",
+        "ownership": "not independently established",
+        "deletion_authorized": false
+      },
+      {
+        "name": "plan/v0.0.0.1",
+        "sha": "3160df17f60b3eaa9a9e70e1ca13bffcfe2eb4e8",
+        "open_prs": [
+          97,
+          55,
+          2
+        ],
+        "proposed_disposition": "retain_until_approved_product_integration_then_review_retirement",
+        "ownership": "not independently established",
+        "deletion_authorized": false
+      },
+      {
+        "name": "plan/v0.0.1-licensing-review",
+        "sha": "70242433f07d49e9d78f900eccc7745aa7063838",
+        "open_prs": [],
+        "proposed_disposition": "retain_workflow_dependency",
+        "ownership": "not independently established",
+        "deletion_authorized": false
+      },
+      {
+        "name": "plan/vib-dedicated-branch",
+        "sha": "460d2313e1981d66b855b381709bb25c5214d8f0",
+        "open_prs": [],
+        "proposed_disposition": "retain_unmerged_or_external_history_pending_dependency_review",
+        "ownership": "not independently established",
+        "deletion_authorized": false
+      },
+      {
+        "name": "policy/capability-discovery-v1",
+        "sha": "0bc5e739e245fa9c04ba856a850503f0f473c707",
+        "open_prs": [],
+        "proposed_disposition": "archive_or_retire_candidate_after_dependency_and_receipt_review",
+        "ownership": "not independently established",
+        "deletion_authorized": false
+      },
+      {
+        "name": "policy/six-engineering-laws",
+        "sha": "fe030545347678689ea31477b46aa0cae1e6e652",
+        "open_prs": [],
+        "proposed_disposition": "retain_workflow_dependency",
+        "ownership": "not independently established",
+        "deletion_authorized": false
+      },
+      {
+        "name": "qualification/vib-53-20261125",
+        "sha": "a236b986c8f5c625f62021de3e72eb36cf074d75",
+        "open_prs": [],
+        "proposed_disposition": "retain_unmerged_or_external_history_pending_dependency_review",
+        "ownership": "not independently established",
+        "deletion_authorized": false
+      },
+      {
+        "name": "readme-hq",
+        "sha": "a9cdd97c4ad111ed4bb3eb1efa4c9bafc306a9b4",
+        "open_prs": [
+          5
+        ],
+        "proposed_disposition": "keep_independent_foundation",
+        "ownership": "not independently established",
+        "deletion_authorized": false
+      },
+      {
+        "name": "readme-hq-v0.0.1",
+        "sha": "990ffad5c1ede38bc7edac3a145499f0dbbc0788",
+        "open_prs": [],
+        "proposed_disposition": "retain_unmerged_or_external_history_pending_dependency_review",
+        "ownership": "not independently established",
+        "deletion_authorized": false
+      },
+      {
+        "name": "repair/lydite-vib-54-stale-pin",
+        "sha": "78943b6a7d14b19b29dca33e198e8ec2dea56f3e",
+        "open_prs": [],
+        "proposed_disposition": "retain_unmerged_or_external_history_pending_dependency_review",
+        "ownership": "not independently established",
+        "deletion_authorized": false
+      },
+      {
+        "name": "research/provenistem-vib-ideas-20261125",
+        "sha": "d4e5b8e926e8da5a1111814bcdd22eca4e8c1cc4",
+        "open_prs": [
+          81
+        ],
+        "proposed_disposition": "retain_open_PR_dependency",
+        "ownership": "not independently established",
+        "deletion_authorized": false
+      },
+      {
+        "name": "research/vib-53-transaction-contract",
+        "sha": "1cbb0f505bdc2ffe3b324bbbddcbce99b40764d5",
+        "open_prs": [],
+        "proposed_disposition": "retain_unmerged_or_external_history_pending_dependency_review",
+        "ownership": "not independently established",
+        "deletion_authorized": false
+      },
+      {
+        "name": "review/veraphify-sync-40-42",
+        "sha": "492321e95a5dbc7146dca704fed23ff6ddbefa8f",
+        "open_prs": [],
+        "proposed_disposition": "retain_new_ref_pending_dependency_review",
+        "ownership": "not independently established",
+        "deletion_authorized": false
+      },
+      {
+        "name": "review/vib-37-freeze-boundaries",
+        "sha": "5420ee92984e79e3c6716a1ada85b4fe5ed9a077",
+        "open_prs": [],
+        "proposed_disposition": "retain_unmerged_or_external_history_pending_dependency_review",
+        "ownership": "not independently established",
+        "deletion_authorized": false
+      },
+      {
+        "name": "review/vib-37-repair-qualification",
+        "sha": "da8aa012cdc07cd8dbdf1c5f59c3df92769da044",
+        "open_prs": [],
+        "proposed_disposition": "retain_unmerged_or_external_history_pending_dependency_review",
+        "ownership": "not independently established",
+        "deletion_authorized": false
+      },
+      {
+        "name": "review/vib-53-independent-audit",
+        "sha": "d7565b9c07659cd80f50edd484d8c3adcd83fc17",
+        "open_prs": [],
+        "proposed_disposition": "retain_unmerged_or_external_history_pending_dependency_review",
+        "ownership": "not independently established",
+        "deletion_authorized": false
+      },
+      {
+        "name": "review/vib-63-recovery-pilot",
+        "sha": "11f77d9f4bf21ac22406890ac9a2e3a298d127cb",
+        "open_prs": [],
+        "proposed_disposition": "retain_unmerged_or_external_history_pending_dependency_review",
+        "ownership": "not independently established",
+        "deletion_authorized": false
+      },
+      {
+        "name": "review/vib-77-code-graphs",
+        "sha": "47c630afb87b6eb1216d319c8ca81d78da91ad7d",
+        "open_prs": [],
+        "proposed_disposition": "retain_unmerged_or_external_history_pending_dependency_review",
+        "ownership": "not independently established",
+        "deletion_authorized": false
+      },
+      {
+        "name": "review/vib-80-engineering-graphs-37-40",
+        "sha": "0ff3e8a94ace13bfba2ee551949befbd821d076c",
+        "open_prs": [],
+        "proposed_disposition": "retain_unmerged_or_external_history_pending_dependency_review",
+        "ownership": "not independently established",
+        "deletion_authorized": false
+      },
+      {
+        "name": "review/vib-homepage-final-draft",
+        "sha": "9e4f997c0df141ab3c547b98da7ad9273acf96ca",
+        "open_prs": [],
+        "proposed_disposition": "retain_unmerged_or_external_history_pending_dependency_review",
+        "ownership": "not independently established",
+        "deletion_authorized": false
+      },
+      {
+        "name": "review/vib-homepage-preflight",
+        "sha": "15868e46c97c0b93d132dc02492e6b7b046e244f",
+        "open_prs": [],
+        "proposed_disposition": "retain_unmerged_or_external_history_pending_dependency_review",
+        "ownership": "not independently established",
+        "deletion_authorized": false
+      },
+      {
+        "name": "review/vib-homepage-root-rehearsal",
+        "sha": "41c5007a7b51621ad1ef1735beac4930cef266f7",
+        "open_prs": [],
+        "proposed_disposition": "retain_unmerged_or_external_history_pending_dependency_review",
+        "ownership": "not independently established",
+        "deletion_authorized": false
+      },
+      {
+        "name": "review/vib-homepage-v36",
+        "sha": "dbf75cbdda5fd32be7bdad997711bbc65285fbcf",
+        "open_prs": [],
+        "proposed_disposition": "retain_unmerged_or_external_history_pending_dependency_review",
+        "ownership": "not independently established",
+        "deletion_authorized": false
+      },
+      {
+        "name": "review/vib-homepage-v40",
+        "sha": "a3bcd9bd111fe4bb3fe697fb9f625f2c972cdc92",
+        "open_prs": [],
+        "proposed_disposition": "retain_unmerged_or_external_history_pending_dependency_review",
+        "ownership": "not independently established",
+        "deletion_authorized": false
+      },
+      {
+        "name": "review/vib-release-preflight-refresh",
+        "sha": "6f80ab87452b9148fa7817faa9e3ba38f0fe6199",
+        "open_prs": [],
+        "proposed_disposition": "retain_unmerged_or_external_history_pending_dependency_review",
+        "ownership": "not independently established",
+        "deletion_authorized": false
+      },
+      {
+        "name": "review/vib-v0.0.1-aggregate",
+        "sha": "75617d4226620455cc4ab1d895bc5d268eea87fd",
+        "open_prs": [],
+        "proposed_disposition": "retain_unmerged_or_external_history_pending_dependency_review",
+        "ownership": "not independently established",
+        "deletion_authorized": false
+      },
+      {
+        "name": "review/vib-v0.0.1-final-candidate",
+        "sha": "896ce5576974e0881ac9438b4200347aa79018a8",
+        "open_prs": [],
+        "proposed_disposition": "retain_unmerged_or_external_history_pending_dependency_review",
+        "ownership": "not independently established",
+        "deletion_authorized": false
+      },
+      {
+        "name": "review/vib-v0.0.1-isolated-aggregate",
+        "sha": "7a6647723cde34f7a01af6c7879dd065ab3a2a66",
+        "open_prs": [],
+        "proposed_disposition": "retain_unmerged_or_external_history_pending_dependency_review",
+        "ownership": "not independently established",
+        "deletion_authorized": false
+      },
+      {
+        "name": "test/ecosystem-discovery-v1",
+        "sha": "9d4699fb5dc8c6fb6b2fe31af0a1bc554f862cf1",
+        "open_prs": [],
+        "proposed_disposition": "retain_unmerged_or_external_history_pending_dependency_review",
+        "ownership": "not independently established",
+        "deletion_authorized": false
+      },
+      {
+        "name": "test/vib-install-lifecycle",
+        "sha": "2d19c4c00d78fb20b5bb98bef6a39453a1c0d1ea",
+        "open_prs": [],
+        "proposed_disposition": "retain_unmerged_or_external_history_pending_dependency_review",
+        "ownership": "not independently established",
+        "deletion_authorized": false
+      }
+    ],
+    "limits": "Current refs and PRs observed; prior dependency assessment provisional, no retirement authorized. Historical snapshot remains unchanged."
+  }
 }
