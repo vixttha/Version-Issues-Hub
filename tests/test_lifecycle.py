@@ -261,6 +261,28 @@ class LifecycleTests(unittest.TestCase):
         self.assertEqual(api.read(pin, session.HANDOFF), original)
         self.assertEqual(api.ref("main"), api.product)
 
+    def test_upgrade_refuses_terminal_integrated_distinct_historical_fix(self):
+        api = self.api
+        handoff = json.loads(api.handoff)
+        earlier = copy.deepcopy(handoff["history"][0])
+        fix = api.commit(api.tree({"product.txt": "unintegrated older fix\n"}), [api.product])
+        earlier["handoff"].update(fix_sha=fix, candidate_sha=fix)
+        earlier.update(disposition="staged", merged_sha=None, decision="Earlier distinct fix staged")
+        handoff["history"].insert(0, earlier)
+        pin = self.change(session.HANDOFF, install.render(handoff))
+        plan = lifecycle.upgrade(api, REPO, pin, NEW)
+        self.assertEqual(plan["integration_debt_upgrade_blockers"], [7])
+        self.assertEqual(plan["integration_debt_archive_blockers"], [{"issue": 7,
+            "archive_sha256": session.closure_digest(earlier), "fix_sha": fix}])
+        for prepare in (False, True):
+            with self.assertRaisesRegex(ValueError, "Reconcile unverified integration debt"):
+                lifecycle.upgrade(api, REPO, pin, NEW, apply=True, owner_approved=True,
+                                  prepare_only=prepare)
+        self.assertEqual(api.writes, [])
+        self.assertEqual(api.ref(install.BRANCH), pin)
+        self.assertEqual(api.ref("main"), api.product)
+        self.assertEqual(api.read(pin, session.HANDOFF), install.render(handoff))
+
     def staged_upgrade_fixture(self):
         api = self.api
         ledger = json.loads(api.ledger)

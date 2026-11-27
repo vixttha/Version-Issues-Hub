@@ -2478,6 +2478,11 @@ def save(api, state, ledger, handoff, apply=False, *, issue=None, operation_id=N
         raise HandoffStale("Installed branch advanced before publication; reload")
     if policies and install.read_ref(api, prefix, state["manifest"]["product_branch"]) != state["product_sha"]:
         raise ValueError("Integration debt deferral target changed before publication")
+    if batch:
+        # Final bounded recheck after the ordinary publication lease reads.
+        # This checks both refs at the end, but cannot make remote evidence
+        # reads and the subsequent PATCH a shared transaction.
+        recheck_historical_batch_runs(api, state, policy["proofs"])
     now = time.time()
     for deferral in policies:
         if not deferral["approved_at"] <= now < deferral["expires_at"]:

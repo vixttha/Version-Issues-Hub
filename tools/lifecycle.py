@@ -178,6 +178,10 @@ def upgrade(api, target, expected_sha, source_sha, *, apply=False, owner_approve
                 unverified.append(number)
         if unverified:
             plan["integration_debt_upgrade_blockers"] = unverified
+            plan["integration_debt_archive_blockers"] = [
+                {"issue": number, "archive_sha256": session.closure_digest(record),
+                 "fix_sha": record["handoff"]["fix_sha"]}
+                for number in unverified for record in archives.get(number, [])]
             if apply:
                 raise ValueError("Reconcile unverified integration debt before upgrading: "
                                  + ", ".join(map(str, unverified)))

@@ -70,7 +70,7 @@ def check_pr_run(item, policy, run, attempt, *, api=None, prefix=None):
             tree = install.response_object(commit.get("tree"), "run/preview tree")
             return install.require(install.SHA, tree.get("sha"), "run/preview tree")
         if tree_at(item["head_sha"]) != tree_at(policy["merge_sha"]):
-            raise ValueError("Run head tree differs from exact merge preview; fresh preview evidence required")
+            raise ValueError("Run head tree differs from exact merge preview; head-only metadata cannot qualify a different tree. Require an exact-preview run or an independently reviewed updated head/base with identical trees; rerunning an unchanged head-only PR is insufficient")
 
 def check_test(api, prefix, policy, evidence, test, *, post_merge=False):
     run, attempt = test["run"], test["attempt"]

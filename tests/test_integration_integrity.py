@@ -978,3 +978,25 @@ class IntegrationIntegrityTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError,"batch post-merge run changed"):
                 session.reconcile(self.api,self.state,247,"Owner integrates",policy=policy)
         self.assertEqual(self.api.writes,[])
+        # A later attempt change after the post-ticket batch recheck must
+        # still prevent the final ref PATCH (unpublished Git objects are OK).
+        self.api.run["run_attempt"] = 1
+        ledger, handoff = session.reconcile(self.api, self.state, 247, "Owner integrates", policy=policy)
+        ticket_seen = False
+        changed_attempt = False
+        original_recheck = session.recheck_historical_batch_runs
+        def sink(ticket):
+            nonlocal ticket_seen
+            ticket_seen = True
+        def change_after_post_ticket_review(*args, **kwargs):
+            nonlocal changed_attempt
+            original_recheck(*args, **kwargs)
+            if ticket_seen and not changed_attempt:
+                self.api.run["run_attempt"] = 2
+                changed_attempt = True
+        with patch.object(session, "recheck_historical_batch_runs", side_effect=change_after_post_ticket_review):
+            with self.assertRaisesRegex(ValueError, "batch post-merge run changed"):
+                session.save(self.api, self.state, ledger, handoff, True, issue=247,
+                             policy=policy, operation_id="a"*64, on_recovery_ticket=sink)
+        self.assertTrue(ticket_seen and changed_attempt)
+        self.assertEqual([w[0] for w in self.api.writes], ["POST", "POST"])
