@@ -1154,9 +1154,12 @@ def recovery_plan(api, state, requested=None):
                 raise
             status = "product_lineage_reconciliation_required"
             action = "Verify target identity, baseline and historical product merge ancestry before claiming work."
-    if status == "head_scope_required" and info is not None and info["state"] != "open":
-        status = "issue_reconciliation_required"
-        action = actions[status]
+    if status == "head_scope_required" and info is not None:
+        terminal = any(row["issue"] == number and row["state"] in ("integrated", "retired")
+                       for row in state["ledger"]["issues"])
+        if terminal or info["state"] != "open":
+            status = "issue_reconciliation_required"
+            action = actions[status]
     if status == "head_scope_required" and debt:
         try:
             if number is None:
@@ -1375,11 +1378,12 @@ def require_integration_debt_clear(api, state, number):
     if state["handoff"]["schema_version"] != 1:
         return
     debt = unresolved_integration_debt(state)
-    if any(row["issue"] == number for row in debt):
-        return
+    archives = outstanding_integration_records(state)
     policies = []
     for row in debt:
-        outstanding = outstanding_integration_records(state).get(row["issue"], [])
+        if row["issue"] == number:
+            continue
+        outstanding = archives.get(row["issue"], [])
         latest = next((record for record in reversed(state["handoff"]["history"])
                        if record["handoff"]["issue"] == row["issue"]
                        and closure_receipt(record) is None), None)
@@ -2391,13 +2395,14 @@ def save(api, state, ledger, handoff, apply=False, *, issue=None, operation_id=N
     # A journal sink can take time. Check proof after it completes, as close
     # to the actual ref update as possible (the API is not a shared transaction).
     policies = revalidate_publication()
-    for deferral in policies:
-        if not deferral["approved_at"] <= time.time() < deferral["expires_at"]:
-            raise ValueError("Integration debt deferral expired before publication")
     # Recheck the lease even for ordinary transitions that have no PR or
     # deferral proof. A ticket sink or object creation can outlast the lease.
     if install.read_ref(api, prefix, install.BRANCH) != old:
         raise HandoffStale("Installed branch advanced before publication; reload")
+    now = time.time()
+    for deferral in policies:
+        if not deferral["approved_at"] <= now < deferral["expires_at"]:
+            raise ValueError("Integration debt deferral expired before publication")
     # Non-force REST update preserves fast-forward history. This is not a
     # general expected-old CAS nor an atomic check of the product branch.
     ambiguous = False
