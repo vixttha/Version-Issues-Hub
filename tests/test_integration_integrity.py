@@ -567,3 +567,56 @@ class IntegrationIntegrityTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError,"stale integration evidence"):
             session.reconcile(self.api,self.state,247,"Owner integrates",policy=policy())
         self.assertEqual(self.api.writes,[])
+
+    def test_historical_batch_requires_every_distinct_fix(self):
+        from test_session import FIX2, PROPOSED, post_policy
+        self.reach_head()
+        self.state["ledger"],self.state["handoff"] = session.finish(
+            self.api,self.state,"staged","First fix staged")
+        # Two separate reviewed historical fixes for one issue, with unchanged
+        # acceptance criteria; synthesize the second archive in this fixture.
+        second = copy.deepcopy(self.state["handoff"]["history"][0])
+        second["handoff"]["fix_sha"] = FIX2
+        second["decision"] = "Second fix staged"
+        self.state["handoff"]["history"].append(second)
+        original = copy.deepcopy(self.state)
+        self.api.pr.update(state="closed",merged=True,merge_commit_sha=NEXT)
+        self.api.product = NEXT
+        proofs = []
+        for index, fix in enumerate((FIX,FIX2)):
+            review = post_policy(self.state)
+            review["issues"][0]["fix_sha"] = fix
+            proofs.append({"schema_version":1,"outcome":"historical_product_integration",
+                           "archive_index":index,"archive_digest":session.closure_digest(
+                               self.state["handoff"]["history"][index]),
+                           "premerge":{"merge_sha":PROPOSED,"evidence":[RUN]},"review":review})
+        def batch(items):
+            return {"schema_version":1,"outcome":session.HISTORICAL_BATCH,"proofs":items}
+        for items in ([proofs[1]], list(reversed(proofs)), [proofs[1],proofs[1]]):
+            with self.assertRaises(ValueError):
+                session.reconcile(self.api,self.state,247,"Owner integrates",policy=batch(items))
+        corrupted = copy.deepcopy(proofs)
+        corrupted[0]["archive_digest"] = "0"*64
+        with self.assertRaisesRegex(ValueError,"digest"):
+            session.reconcile(self.api,self.state,247,"Owner integrates",policy=batch(corrupted))
+        corrupted = copy.deepcopy(proofs)
+        corrupted[0]["review"]["issues"][0]["fix_sha"] = FIX2
+        with self.assertRaisesRegex(ValueError,"original fix"):
+            session.reconcile(self.api,self.state,247,"Owner integrates",policy=batch(corrupted))
+        policy = batch(proofs)
+        ledger,handoff = session.reconcile(self.api,self.state,247,"Owner integrates",policy=policy)
+        self.assertEqual(handoff["history"][:2],original["handoff"]["history"])
+        self.assertEqual([r["handoff"]["fix_sha"] for r in handoff["history"][2:]],[FIX,FIX2])
+        self.assertEqual(ledger["issues"][0]["state"],"integrated")
+        self.assertEqual(session.save(self.api,self.state,ledger,handoff,issue=247,
+                                      policy=policy)["status"],"planned")
+        forged = copy.deepcopy(handoff)
+        forged["history"][2]["decision"] = forged["history"][3]["decision"]
+        for apply in (False,True):
+            with self.assertRaisesRegex(ValueError,"differs from reviewed intent"):
+                session.save(self.api,self.state,ledger,forged,apply,issue=247,policy=policy)
+        self.assertEqual(self.state,original)
+        self.assertEqual(self.api.writes,[])
+        self.assertEqual(session.save(self.api,self.state,ledger,handoff,True,issue=247,
+                                      policy=policy)["installed_sha"],NEXT)
+        self.assertEqual([w[0] for w in self.api.writes],["POST","POST","PATCH"])

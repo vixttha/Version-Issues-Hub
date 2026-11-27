@@ -1647,7 +1647,7 @@
         },
         {
           "path": "tools/session.py",
-          "anchor": "def reconcile_historical_integration(api, state, number, decision, policy):"
+          "anchor": "def reconcile_historical_integration(api, state, number, decision, policy, *, allow_older=False):"
         },
         {
           "path": "tools/install.py",
@@ -1804,6 +1804,10 @@
         {
           "path": "tools/session.py",
           "anchor": "raise ValueError(\"Legacy missing preview pins require exact preview run evidence\")"
+        },
+        {
+          "path": "tools/session.py",
+          "anchor": "def reconcile_historical_batch(api, state, number, decision, policy):"
         }
       ],
       "tested_by": [
@@ -1822,6 +1826,10 @@
         {
           "path": "tests/test_integration_integrity.py",
           "anchor": "def test_legacy_missing_preview_requires_exact_reported_preview(self):"
+        },
+        {
+          "path": "tests/test_integration_integrity.py",
+          "anchor": "def test_historical_batch_requires_every_distinct_fix(self):"
         }
       ]
     }

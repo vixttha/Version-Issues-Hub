@@ -1333,13 +1333,14 @@ def require_product_lineage(api, state, *, allow_stale_plan=False):
     archives = {}
     for record in state["handoff"]["history"]:
         if record["disposition"] == "integrated":
-            archives[record["handoff"]["issue"]] = record
+            archives.setdefault(record["handoff"]["issue"], []).append(record)
     for row in state["ledger"]["issues"]:
         if row["state"] == "integrated":
             prior = archives.get(row["issue"])
             if prior is None:
                 raise ValueError("Product lineage lacks historical integration archive")
-            revisions.add(install.require(install.SHA, prior["merged_sha"], "historical product merge"))
+            revisions.update(install.require(install.SHA, record["merged_sha"], "historical product merge")
+                             for record in prior)
     for revision in sorted(revisions):
         if revision != current:
             try:
@@ -1564,7 +1565,7 @@ def integration_decision(decision, policy):
 HISTORICAL_INTEGRATION_DECISION = "VIB-HISTORICAL-INTEGRATION-1: "
 
 
-def reconcile_historical_integration(api, state, number, decision, policy):
+def reconcile_historical_integration(api, state, number, decision, policy, *, allow_older=False):
     """Append one exact product integration without rewriting earlier evidence."""
     from tools import standard
     if (not isinstance(policy, dict)
@@ -1580,13 +1581,20 @@ def reconcile_historical_integration(api, state, number, decision, policy):
     row = next((r for r in state["ledger"]["issues"] if r["issue"] == number), None)
     if row is None or row["state"] not in ("staged", "deferred"):
         raise ValueError("Historical integration requires staged or deferred work")
-    index = closure_archive_index(state["handoff"], number)
-    if (index is None or type(policy["archive_index"]) is not int or policy["archive_index"] != index):
+    latest = closure_archive_index(state["handoff"], number)
+    index = policy["archive_index"]
+    history = state["handoff"]["history"]
+    if (type(index) is not int or not 0 <= index < len(history)
+            or (not allow_older and index != latest)):
         raise ValueError("Historical integration archive occurrence changed")
-    prior = state["handoff"]["history"][index]
-    if prior["disposition"] != row["state"] or policy["archive_digest"] != closure_digest(prior):
+    prior = history[index]
+    if (prior["handoff"]["issue"] != number
+            or prior["disposition"] not in ("staged", "deferred")
+            or (index == latest and prior["disposition"] != row["state"])
+            or not any(prior is record for record in outstanding_integration_records(state).get(number, []))
+            or policy["archive_digest"] != closure_digest(prior)):
         raise ValueError("Historical integration archive digest or disposition changed")
-    if row["state"] == "staged":
+    if prior["disposition"] == "staged":
         fix = prior["handoff"]["fix_sha"]
     else:
         engineering = engineering_receipt(prior, state["ledger"])
@@ -1696,10 +1704,48 @@ def reconcile_historical_integration(api, state, number, decision, policy):
     return ledger, handoff
 
 
+HISTORICAL_BATCH = "historical_product_integration_batch"
+
+
+def reconcile_historical_batch(api, state, number, decision, policy):
+    """Prove every distinct historical fix before one atomic terminal transition."""
+    if (not isinstance(policy, dict) or set(policy) != {"schema_version", "outcome", "proofs"}
+            or type(policy["schema_version"]) is not int or policy["schema_version"] != 1
+            or policy["outcome"] != HISTORICAL_BATCH):
+        raise ValueError("Invalid historical integration batch")
+    proofs = policy["proofs"]
+    history = state["handoff"]["history"]
+    if (not isinstance(proofs, list) or not 2 <= len(proofs) <= len(history)
+            or any(not isinstance(proof, dict) or type(proof.get("archive_index")) is not int
+                   for proof in proofs)):
+        raise ValueError("Historical integration batch requires separate exact occurrence proofs")
+    number = issue_number(number)
+    indices = [proof["archive_index"] for proof in proofs]
+    if (indices != sorted(set(indices)) or indices[-1] != closure_archive_index(state["handoff"], number)):
+        raise ValueError("Historical integration batch occurrences must be unique, ordered and include the latest")
+    ledger, handoff = copy.deepcopy(state["ledger"]), copy.deepcopy(state["handoff"])
+    fixes = set()
+    for proof in proofs:
+        _, planned = reconcile_historical_integration(api, state, number, decision, proof, allow_older=True)
+        record = planned["history"][-1]
+        fix = record["handoff"]["fix_sha"]
+        if fix in fixes:
+            raise ValueError("Historical integration batch repeats a fix")
+        fixes.add(fix)
+        handoff["history"].append(record)
+    next(row for row in ledger["issues"] if row["issue"] == number)["state"] = "integrated"
+    if outstanding_integration_records({**state, "ledger": ledger, "handoff": handoff}).get(number):
+        raise ValueError("Historical integration batch leaves a different historical fix unresolved")
+    validate_handoff(handoff, ledger)
+    return ledger, handoff
+
+
 def reconcile(api, state, number, decision, *, policy=None):
     validate_handoff(state["handoff"], state["ledger"])
     if pending_closure(state["handoff"]) is not None:
         raise ValueError("Reconcile unresolved closure before integration reconciliation")
+    if isinstance(policy, dict) and policy.get("outcome") == HISTORICAL_BATCH:
+        return reconcile_historical_batch(api, state, number, decision, policy)
     if isinstance(policy, dict) and policy.get("outcome") == "historical_product_integration":
         return reconcile_historical_integration(api, state, number, decision, policy)
     ledger = copy.deepcopy(state["ledger"])
@@ -2057,6 +2103,7 @@ def save(api, state, ledger, handoff, apply=False, *, issue=None, operation_id=N
                 or appended_closure[0]["handoff"]["issue"] != unresolved["issue"]
                 or closure_receipt(appended_closure[0]) is None):
             raise ValueError("Reconcile unresolved closure before unrelated state publication")
+    batch = isinstance(policy, dict) and policy.get("outcome") == HISTORICAL_BATCH
     def revalidate_claim_and_deferrals():
         policies = []
         previous = {a["issue"] for a in active_rows(state["handoff"])}
@@ -2073,6 +2120,8 @@ def save(api, state, ledger, handoff, apply=False, *, issue=None, operation_id=N
                               if r["disposition"] == "integrated"]
         if set(integrated_records) - transitions:
             raise ValueError("Integration archive requires a matching integrated row transition")
+        if batch and (len(transitions) != 1 or set(integrated_records) != transitions):
+            raise ValueError("Historical integration batch requires one terminal issue transition")
         staged_transitions = {row["issue"] for row in ledger["issues"]
                               if row["state"] == "staged" and
                               before.get(row["issue"], {}).get("state") != "staged"}
@@ -2097,10 +2146,20 @@ def save(api, state, ledger, handoff, apply=False, *, issue=None, operation_id=N
             if row["state"] == "integrated" and (old is None or old["state"] != "integrated"):
                 proof = [r for r in appended if r["handoff"]["issue"] == row["issue"]
                          and r["disposition"] == "integrated"]
-                if len(proof) != 1:
+                if not batch and len(proof) != 1:
                     raise ValueError("Integration debt cannot clear without exact integration archive")
                 dispositions = [r for r in appended if r["handoff"]["issue"] == row["issue"]
                                 and closure_receipt(r) is None]
+                if batch:
+                    if len(proof) < 2 or appended != proof or any(
+                            not r["decision"].startswith(HISTORICAL_INTEGRATION_DECISION) for r in proof):
+                        raise ValueError("Historical integration batch requires only exact integration archives")
+                    first = checkpoint.parse_json(proof[0]["decision"][len(HISTORICAL_INTEGRATION_DECISION):])
+                    if (not isinstance(first, dict) or set(first) != {"owner_decision", "policy"}
+                            or reconcile(api, state, row["issue"], first["owner_decision"],
+                                         policy=policy) != (ledger, handoff)):
+                        raise ValueError("Historical integration batch publication differs from reviewed intent")
+                    continue
                 if dispositions[-1] != proof[0]:
                     raise ValueError("Final archive disposition must match integrated row")
                 record = proof[0]
@@ -2184,6 +2243,10 @@ def save(api, state, ledger, handoff, apply=False, *, issue=None, operation_id=N
             elif record["disposition"] == "staged":
                 verify_candidate_runs(api, state, active, active["evidence"])
             elif record["disposition"] == "integrated":
+                if batch:
+                    # The entire batch was re-derived and compared above, including
+                    # every exact occurrence, run, criterion and final containment.
+                    continue
                 if record["decision"].startswith(HISTORICAL_INTEGRATION_DECISION):
                     receipt = checkpoint.parse_json(record["decision"][len(HISTORICAL_INTEGRATION_DECISION):])
                     if (not isinstance(receipt, dict) or set(receipt) != {"owner_decision", "policy"}
