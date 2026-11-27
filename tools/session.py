@@ -2601,8 +2601,9 @@ def save(api, state, ledger, handoff, apply=False, *, issue=None, operation_id=N
     now = time.time()
     for deferral in policies:
         if not deferral["approved_at"] <= now < deferral["expires_at"]:
-            raise ValueError("Recovery-only claim authorization expired before publication" if recovery
-                             else "Integration debt deferral expired before publication")
+            if recovery:
+                raise ValueError("Recovery-only claim authorization expired before publication")
+            raise ValueError("Integration debt deferral expired before publication")
     # Non-force REST update preserves fast-forward history. This is not a
     # general expected-old CAS nor an atomic check of the product branch.
     ambiguous = False
