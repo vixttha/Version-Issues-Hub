@@ -360,6 +360,7 @@ class IntegrationIntegrityTests(unittest.TestCase):
         self.assertEqual(self.api.writes, [])
 
     def test_recovery_plan_reports_outstanding_integration_debt(self):
+        self.state["product_sha"] = self.api.product
         self.reach_head()
         self.state["ledger"], self.state["handoff"] = session.finish(
             self.api, self.state, "deferred", "Legacy unbounded decision")
