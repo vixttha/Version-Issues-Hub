@@ -488,3 +488,52 @@ class IntegrationIntegrityTests(unittest.TestCase):
                 session.save(self.api,self.state,ledger,handoff,apply,issue=247,deferral_approved=True)
         self.assertEqual(self.state,original)
         self.assertEqual(self.api.writes,[])
+
+    def test_stage_cannot_substitute_reviewed_fix_or_pins(self):
+        from test_session import FIX2
+        self.reach_head()
+        ledger, handoff = session.finish(self.api,self.state,"staged","Owner stages")
+        self.assertEqual(session.save(self.api,self.state,ledger,handoff,issue=247)["status"],"planned")
+        for key, value in (("fix_sha",FIX2),("candidate_sha","2"*40),
+                           ("integration_merge_sha","2"*40),("next_action","Changed")):
+            forged = copy.deepcopy(handoff)
+            forged["history"][-1]["handoff"][key] = value
+            for apply in (False,True):
+                with self.assertRaisesRegex(ValueError,"preserve the original active Head handoff"):
+                    session.save(self.api,self.state,ledger,forged,apply,issue=247)
+        self.assertEqual(self.api.writes,[])
+
+    def test_bounded_same_fix_supersedes_ordinary_debt(self):
+        self.reach_head()
+        self.state["ledger"],self.state["handoff"] = session.finish(
+            self.api,self.state,"deferred","Ordinary prior decision")
+        old = copy.deepcopy(self.state["handoff"]["history"])
+        self.reach_head()
+        decision = bounded_deferral(self.state,self.api,248)
+        ledger,handoff = session.finish(self.api,self.state,"deferred",decision,deferral_approved=True)
+        self.assertEqual(session.save(self.api,self.state,ledger,handoff,issue=247,
+                                      deferral_approved=True)["status"],"planned")
+        self.state.update(ledger=ledger,handoff=handoff)
+        self.assertEqual(session.outstanding_integration_records(self.state)[247],[handoff["history"][-1]])
+        self.assertEqual(handoff["history"][:len(old)],old)
+        _,new_handoff = session.claim(self.api,self.state,248,["next"],"Approved")
+        self.assertEqual(new_handoff["active"]["issue"],248)
+        self.assertEqual(self.api.writes,[])
+
+    def test_callback_cannot_replace_expired_serialized_deferral(self):
+        from unittest.mock import patch
+        self.reach_head()
+        decision = bounded_deferral(self.state,self.api,248)
+        approved = json.loads(decision[len(session.DEFERRAL_DECISION):])
+        ledger,handoff = session.finish(self.api,self.state,"staged",decision,deferral_approved=True)
+        clock = [approved["approved_at"]]
+        def ticket(_):
+            clock[0] = approved["expires_at"]
+            renewed = {**approved,"approved_at":clock[0],"expires_at":clock[0]+3600}
+            handoff["history"][-1]["decision"] = session.DEFERRAL_DECISION + json.dumps(renewed)
+        with patch.object(session.time,"time",side_effect=lambda:clock[0]):
+            with self.assertRaisesRegex(ValueError,"expired"):
+                session.save(self.api,self.state,ledger,handoff,True,issue=247,
+                             deferral_approved=True,operation_id="a"*64,on_recovery_ticket=ticket)
+        self.assertEqual([w[0] for w in self.api.writes],["POST","POST"])
+        self.assertEqual(self.api.ref,self.state["ref"])

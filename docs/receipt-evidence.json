@@ -1778,6 +1778,18 @@
         {
           "path": "tests/test_standard.py",
           "anchor": "def test_missing_preview_tree_rejected(self):"
+        },
+        {
+          "path": "tests/test_integration_integrity.py",
+          "anchor": "def test_stage_cannot_substitute_reviewed_fix_or_pins(self):"
+        },
+        {
+          "path": "tests/test_integration_integrity.py",
+          "anchor": "def test_bounded_same_fix_supersedes_ordinary_debt(self):"
+        },
+        {
+          "path": "tests/test_integration_integrity.py",
+          "anchor": "def test_callback_cannot_replace_expired_serialized_deferral(self):"
         }
       ]
     }

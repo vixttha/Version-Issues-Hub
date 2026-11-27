@@ -1280,7 +1280,8 @@ def outstanding_integration_records(state):
             if deferral_record(record) is not None:
                 fix = fix_of(record)
                 records[:] = [prior for prior in records
-                              if not (deferral_record(prior) is not None
+                              if not (engineering_receipt(prior, state["ledger"]) is None
+                                      and legacy_engineering_approval(prior) is None
                                       and fix_of(prior) == fix)]
             records.append(record)
         elif record["disposition"] == "integrated":
@@ -2036,6 +2037,8 @@ def save(api, state, ledger, handoff, apply=False, *, issue=None, operation_id=N
     if operation_id is not None and (not isinstance(operation_id, str)
             or not re.fullmatch(r"[0-9a-f]{64}", operation_id)):
         raise ValueError("Invalid operation identity")
+    # Freeze caller-owned publication inputs before any callback or validation.
+    state, ledger, handoff, policy = copy.deepcopy((state, ledger, handoff, policy))
     check_issue_delta(state, ledger, handoff, issue)
     if ledger == state["ledger"] and handoff == state["handoff"]:
         return {"status": "unchanged", "installed_sha": state["ref"]}
@@ -2071,6 +2074,16 @@ def save(api, state, ledger, handoff, apply=False, *, issue=None, operation_id=N
             if (not dispositions or dispositions[-1]["disposition"] != "staged"
                     or sum(r["disposition"] == "staged" for r in dispositions) != 1):
                 raise ValueError("Staged row requires a matching final staged archive")
+        for record in appended:
+            if record["disposition"] != "staged":
+                continue
+            proposed = record["handoff"]
+            prior = next((a for a in active_rows(state["handoff"])
+                          if a["issue"] == proposed["issue"]), None)
+            if (proposed["issue"] not in staged_transitions or prior is None
+                    or prior["phase"] != "Head" or prior != proposed
+                    or any(a["issue"] == proposed["issue"] for a in active_rows(handoff))):
+                raise ValueError("Staged archive must preserve the original active Head handoff")
         for row in ledger["issues"]:
             old = before.get(row["issue"])
             if row["state"] == "integrated" and (old is None or old["state"] != "integrated"):
