@@ -167,6 +167,20 @@ def upgrade(api, target, expected_sha, source_sha, *, apply=False, owner_approve
         plan["integration_debt"] = [{"issue": row["issue"], "version": row["version"], "state": row["state"]}
                                     for row in debt]
         plan["integration_debt_resolved"] = False
+        staged = {item["issue"]: item["archive_sha256"] for item in scope["staged"]} if scope else {}
+        archives = session.outstanding_integration_records(state, proof_basis=True)
+        unverified = []
+        for row in debt:
+            number = row["issue"]
+            records = archives.get(number, [])
+            if (number not in staged or not records
+                    or any(session.closure_digest(record) != staged[number] for record in records)):
+                unverified.append(number)
+        if unverified:
+            plan["integration_debt_upgrade_blockers"] = unverified
+            if apply:
+                raise ValueError("Reconcile unverified integration debt before upgrading: "
+                                 + ", ".join(map(str, unverified)))
     if install.supports_designated_target(old_files) and not install.supports_designated_target(new_files):
         raise ValueError("Upgrade cannot remove reviewed integration integrity capability")
     if scope is not None:
@@ -206,6 +220,8 @@ def upgrade(api, target, expected_sha, source_sha, *, apply=False, owner_approve
 
 def prepare_retirement(api, target, expected_sha, *, apply=False, owner_approved=False):
     state = idle_state(api,target,expected_sha)
+    if session.unresolved_integration_debt(state):
+        raise ValueError("Reconcile outstanding integration debt before retirement")
     prefix = state["prefix"]
     archive = "archive/vib/" + expected_sha
     if archive == state["manifest"]["product_branch"]:

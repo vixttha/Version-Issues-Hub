@@ -239,6 +239,28 @@ class LifecycleTests(unittest.TestCase):
             lifecycle.upgrade(api,REPO,new,NEW)
         self.assertEqual(api.writes,[])
 
+    def test_upgrade_and_retirement_refuse_unverified_legacy_debt(self):
+        api = self.api
+        ledger, handoff = json.loads(api.ledger), json.loads(api.handoff)
+        ledger["issues"][0]["state"] = "deferred"
+        archive = handoff["history"][0]
+        archive.update(disposition="deferred", merged_sha=None, decision="Legacy deferral")
+        self.change(session.LEDGER, install.render(ledger))
+        pin = self.change(session.HANDOFF, install.render(handoff))
+        original = api.read(pin, session.HANDOFF)
+
+        plan = lifecycle.upgrade(api, REPO, pin, NEW)
+        self.assertEqual(plan["integration_debt_upgrade_blockers"], [7])
+        self.assertFalse(plan["integration_debt_resolved"])
+        with self.assertRaisesRegex(ValueError, "Reconcile unverified integration debt"):
+            lifecycle.upgrade(api, REPO, pin, NEW, apply=True, owner_approved=True)
+        with self.assertRaisesRegex(ValueError, "integration debt before retirement"):
+            lifecycle.prepare_retirement(api, REPO, pin)
+        self.assertEqual(api.writes, [])
+        self.assertEqual(api.ref(install.BRANCH), pin)
+        self.assertEqual(api.read(pin, session.HANDOFF), original)
+        self.assertEqual(api.ref("main"), api.product)
+
     def staged_upgrade_fixture(self):
         api = self.api
         ledger = json.loads(api.ledger)

@@ -2160,6 +2160,35 @@ def check_issue_delta(state, ledger, handoff, number=None, *, historical=False):
         raise ValueError("Issue scope violation: terminal issue history appended")
 
 
+def verify_active_transition(api, state, ledger, handoff):
+    """Reconstruct a singleton active-to-active change using the normal planner."""
+    if state["handoff"]["schema_version"] != 1 or handoff["schema_version"] != 1:
+        return
+    prior, proposed = state["handoff"]["active"], handoff["active"]
+    if prior is None or proposed is None or prior == proposed:
+        return
+    if prior["issue"] != proposed["issue"]:
+        raise ValueError("Active handoff cannot transfer directly to another issue")
+    before, after = prior["phase"], proposed["phase"]
+    if len(handoff["history"]) > len(state["handoff"]["history"]):
+        if after not in ("Worker", "Validate"):
+            raise ValueError("Invalid archived active transition")
+        options = {"refresh": after == "Validate", "rework": after == "Worker"}
+    elif after == "Head" and before != "Head":
+        # Return to Head can route stale or incomplete evidence for owner review.
+        options = {"return_to_head": True}
+    elif (before, after) == ("Worker", "Validate"):
+        options = {"fix": proposed["fix_sha"], "candidate": proposed["candidate_sha"],
+                   "pr": proposed["pull_request"]}
+    elif (before, after) == ("Validate", "Internal Auditor"):
+        options = {"evidence": proposed["evidence"]}
+    else:
+        raise ValueError("Invalid active phase transition for publication")
+    expected = advance(api, state, proposed["next_action"], issue=prior["issue"], **options)
+    if expected != (ledger, handoff):
+        raise ValueError("Active handoff publication differs from the planned transition")
+
+
 class HandoffStale(ValueError):
     """A known pre-publication conflict: no ref PATCH was sent."""
 
@@ -2192,6 +2221,7 @@ def save(api, state, ledger, handoff, apply=False, *, issue=None, operation_id=N
             raise ValueError("Reconcile unresolved closure before unrelated state publication")
     batch = isinstance(policy, dict) and policy.get("outcome") == HISTORICAL_BATCH
     def revalidate_claim_and_deferrals():
+        verify_active_transition(api, state, ledger, handoff)
         policies = []
         previous = {a["issue"] for a in active_rows(state["handoff"])}
         for active in active_rows(handoff):

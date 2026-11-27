@@ -20,6 +20,37 @@ class IntegrationIntegrityTests(unittest.TestCase):
             self.state["ledger"], self.state["handoff"] = session.advance(
                 self.api, self.state, "next", **kwargs)
 
+    def test_independent_phase_model_agrees_with_planning_and_publication(self):
+        # The expected phase sequence is the workflow contract, independent of
+        # the active records constructed by the production planner.
+        contract = (
+            ("Worker", "Validate", {"fix": FIX, "candidate": CANDIDATE, "pr": 8}),
+            ("Validate", "Internal Auditor", {"evidence": [RUN]}),
+            ("Internal Auditor", "Head", {}),
+        )
+        self.state["ledger"], self.state["handoff"] = session.claim(
+            self.api, self.state, 247, ["test"], "Implement")
+        for before, after, inputs in contract:
+            with self.subTest(before=before, after=after):
+                self.assertEqual(self.state["handoff"]["active"]["phase"], before)
+                ledger, handoff = session.advance(self.api, self.state, "Advance", **inputs)
+                self.assertEqual(handoff["active"]["phase"], after)
+                self.assertEqual(ledger, self.state["ledger"])
+                self.assertEqual(handoff["history"], self.state["handoff"]["history"])
+                self.assertEqual(session.save(self.api, self.state, ledger, handoff, issue=247)["status"],
+                                 "planned")
+                if before == "Worker":
+                    # Construct a structurally valid later phase via the public
+                    # planner, then check it cannot be published from Worker.
+                    _, skipped = session.advance(
+                        self.api, {**self.state, "ledger": ledger, "handoff": handoff},
+                        "Verify", evidence=[RUN])
+                    for apply in (False, True):
+                        with self.assertRaisesRegex(ValueError, "Invalid active phase transition"):
+                            session.save(self.api, self.state, ledger, skipped, apply=apply, issue=247)
+                self.state.update(ledger=ledger, handoff=handoff)
+        self.assertEqual(self.api.writes, [])
+
     def test_unbounded_deferred_work_blocks_unrelated_claim(self):
         self.reach_head()
         self.state["ledger"], self.state["handoff"] = session.finish(
@@ -856,10 +887,26 @@ class IntegrationIntegrityTests(unittest.TestCase):
         self.state["handoff"]["history"].append(second)
         self.api.pr.update(state="closed",merged=True,merge_commit_sha=NEXT)
         self.api.product = NEXT
+        second_run = {**self.api.run, "id": 126}
+        second_jobs = [{**job, "id": job["id"] + 1, "run_id": 126} for job in self.api.jobs]
+        request = self.api.request
+
+        def distinct_runs(method, path, body=None):
+            if method == "GET" and "/actions/runs/126" in path:
+                if path.endswith("/jobs?per_page=100"):
+                    return {"total_count": len(second_jobs), "jobs": second_jobs}
+                return second_run
+            return request(method, path, body)
+
+        self.api.request = distinct_runs
         proofs = []
         for index, fix in enumerate((FIX,FIX2)):
             review = post_policy(self.state)
             review["issues"][0]["fix_sha"] = fix
+            if index == 1:
+                for criterion in review["issues"][0]["criteria"]:
+                    for check in criterion["checks"]:
+                        check["run"] = 126
             proofs.append({"schema_version":1,"outcome":"historical_product_integration",
                            "archive_index":index,"archive_digest":session.closure_digest(
                                self.state["handoff"]["history"][index]),
