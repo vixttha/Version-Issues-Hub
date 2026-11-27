@@ -277,7 +277,7 @@ class ScopeControlTests(unittest.TestCase):
                  patch.object(scope, "MALFORMED_043_PARENT", parent), \
                  patch.object(scope.checkpoint, "git", side_effect=git), \
                  patch.object(scope, "ancestor", side_effect=ancestor), \
-                 patch.object(scope, "changed_paths", side_effect=lambda a,b: real_changed(a,b,tmp)), \
+                 patch.object(scope, "changed_paths", side_effect=lambda a,b,cwd=None: real_changed(a,b,tmp)), \
                  patch.object(scope, "scope_paths", side_effect=lambda a,b: real_scope(a,b,tmp)), \
                  patch.object(scope, "verify_043_scope_genesis",
                               wraps=scope.verify_043_scope_genesis) as incident:
