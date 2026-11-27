@@ -542,9 +542,15 @@ class IntegrationIntegrityTests(unittest.TestCase):
         self.api.pr.update(state="closed",merged=True,merge_commit_sha=NEXT)
         self.api.product=NEXT
         policy=post_policy(self.state)
-        ledger,handoff=session.reconcile(self.api,self.state,247,"Integrate second fix",policy=policy)
-        proposed={**self.state,"ledger":ledger,"handoff":handoff}
-        self.assertEqual(session.outstanding_integration_records(proposed)[247],[old])
+        with self.assertRaisesRegex(ValueError, "different historical fix unresolved"):
+            session.reconcile(self.api, self.state, 247, "Integrate second fix", policy=policy)
+        # Verify the publication guard even when a valid proposal was made
+        # against a different, single-fix snapshot.
+        single_fix_state = copy.deepcopy(self.state)
+        single_fix_state["handoff"]["history"].pop(0)
+        ledger, handoff = session.reconcile(
+            self.api, single_fix_state, 247, "Integrate second fix", policy=policy)
+        handoff["history"].insert(0, old)
         for apply in (False,True):
             with self.assertRaisesRegex(ValueError,"different historical fix unresolved"):
                 session.save(self.api,self.state,ledger,handoff,apply,issue=247,policy=policy)

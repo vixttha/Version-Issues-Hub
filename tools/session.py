@@ -1325,6 +1325,12 @@ def unresolved_integration_debt(state):
             if r["state"] in ("staged", "deferred") or r["issue"] in outstanding]
 
 
+def require_all_fixes_resolved(state, ledger, handoff, number):
+    proposed = {**state, "ledger": ledger, "handoff": handoff}
+    if outstanding_integration_records(proposed).get(number):
+        raise ValueError("Integration proof leaves a different historical fix unresolved; owner reconciliation required")
+
+
 def require_product_lineage(api, state, *, allow_stale_plan=False):
     """Check baseline and recorded product merges, never infer content from closure."""
     from tools import gate
@@ -1578,6 +1584,8 @@ def finish(api, state, disposition, decision, *, policy=None, issue=None, deferr
     handoff["history"].append(record)
     next(x for x in ledger["issues"] if x["issue"] == active["issue"])["state"] = disposition
     put_active(handoff, active["issue"], None)
+    if disposition == "integrated":
+        require_all_fixes_resolved(state, ledger, handoff, active["issue"])
     validate_handoff(handoff, ledger)
     return ledger, handoff
 
@@ -1736,6 +1744,8 @@ def reconcile_historical_integration(api, state, number, decision, policy, *, al
             {"owner_decision": text(decision, "owner decision"), "policy": policy},
             sort_keys=True, separators=(",", ":"), ensure_ascii=True, allow_nan=False),
         "merged_sha": merged})
+    if not allow_older:
+        require_all_fixes_resolved(state, ledger, handoff, number)
     validate_handoff(handoff, ledger)
     return ledger, handoff
 
@@ -1820,8 +1830,7 @@ def reconcile_historical_batch(api, state, number, decision, policy):
         fixes.add(fix)
         handoff["history"].append(record)
     next(row for row in ledger["issues"] if row["issue"] == number)["state"] = "integrated"
-    if outstanding_integration_records({**state, "ledger": ledger, "handoff": handoff}).get(number):
-        raise ValueError("Historical integration batch leaves a different historical fix unresolved")
+    require_all_fixes_resolved(state, ledger, handoff, number)
     validate_handoff(handoff, ledger)
     recheck_historical_batch_runs(api, state, proofs)
     return ledger, handoff
@@ -1857,6 +1866,7 @@ def reconcile(api, state, number, decision, *, policy=None):
     handoff["history"].append({"handoff": active, "disposition": "integrated",
         "decision": integration_decision(decision, policy), "merged_sha": merged})
     row["state"] = "integrated"
+    require_all_fixes_resolved(state, ledger, handoff, number)
     return ledger, handoff
 
 
@@ -2317,8 +2327,7 @@ def save(api, state, ledger, handoff, apply=False, *, issue=None, operation_id=N
                         if (proposed != expected or record["merged_sha"] != merged
                                 or not record["decision"].endswith(suffix)):
                             raise ValueError("Active Head recovery publication differs from reviewed proof")
-                if outstanding_integration_records({**state, "ledger": ledger, "handoff": handoff}).get(row["issue"]):
-                    raise ValueError("Integration proof leaves a different historical fix unresolved; owner reconciliation required")
+                require_all_fixes_resolved(state, ledger, handoff, row["issue"])
         deferred_transitions = {row["issue"] for row in ledger["issues"]
                                 if row["state"] == "deferred" and
                                 before.get(row["issue"], {}).get("state") != "deferred"}
