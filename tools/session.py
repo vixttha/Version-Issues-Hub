@@ -2170,6 +2170,22 @@ def check_issue_delta(state, ledger, handoff, number=None, *, historical=False):
         raise ValueError("Issue scope violation: terminal issue history appended")
 
 
+def verify_initial_claim(api, state, ledger, handoff, active):
+    """Replay a new singleton claim, preserving criteria and staged recovery mode."""
+    if handoff["schema_version"] != 1:
+        return
+    number = active["issue"]
+    prior = next((row for row in state["ledger"]["issues"] if row["issue"] == number), None)
+    row = next(row for row in ledger["issues"] if row["issue"] == number)
+    prior_line = (prior is not None
+                  and prior["version"].rsplit(".", 1)[0] != state["manifest"]["baseline_version"])
+    rework_staged = prior is not None and prior["state"] == "staged" and active["phase"] == "Worker"
+    planned = claim(api, state, number, row["acceptance"], active["next_action"],
+                    resume_prior_line=prior_line, rework_staged=rework_staged)
+    if planned != (ledger, handoff):
+        raise ValueError("New active handoff differs from the planned claim")
+
+
 def verify_active_transition(api, state, ledger, handoff):
     """Reconstruct a singleton active-to-active change using the normal planner."""
     if state["handoff"]["schema_version"] != 1 or handoff["schema_version"] != 1:
@@ -2238,6 +2254,7 @@ def save(api, state, ledger, handoff, apply=False, *, issue=None, operation_id=N
             if active["issue"] not in previous:
                 require_product_lineage(api, state)
                 policies.extend(require_integration_debt_clear(api, state, active["issue"]) or [])
+                verify_initial_claim(api, state, ledger, handoff, active)
         appended = handoff["history"][len(state["handoff"]["history"]):]
         before = {row["issue"]: row for row in state["ledger"]["issues"]}
         transitions = {row["issue"] for row in ledger["issues"]
@@ -2328,6 +2345,14 @@ def save(api, state, ledger, handoff, apply=False, *, issue=None, operation_id=N
                                 or not record["decision"].endswith(suffix)):
                             raise ValueError("Active Head recovery publication differs from reviewed proof")
                 require_all_fixes_resolved(state, ledger, handoff, row["issue"])
+        blocked = [r for r in appended if r["disposition"] == "blocked" and closure_receipt(r) is None]
+        enters_blocked = any(row["state"] == "blocked" and before.get(row["issue"], {}).get("state") != "blocked"
+                             for row in ledger["issues"])
+        if blocked or enters_blocked:
+            if len(blocked) != 1 or not enters_blocked or finish(
+                    api, state, "blocked", blocked[0]["decision"],
+                    issue=blocked[0]["handoff"]["issue"]) != (ledger, handoff):
+                raise ValueError("Blocked publication differs from the planned Head disposition")
         deferred_transitions = {row["issue"] for row in ledger["issues"]
                                 if row["state"] == "deferred" and
                                 before.get(row["issue"], {}).get("state") != "deferred"}

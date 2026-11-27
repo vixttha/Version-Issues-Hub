@@ -51,6 +51,22 @@ class IntegrationIntegrityTests(unittest.TestCase):
                 self.state.update(ledger=ledger, handoff=handoff)
         self.assertEqual(self.api.writes, [])
 
+    def test_claim_and_block_publication_replay_their_own_planners(self):
+        initial = copy.deepcopy(self.state)
+        worker = session.claim(self.api, initial, 247, ["test"], "Implement")
+        self.state.update(ledger=worker[0], handoff=worker[1])
+        head = session.advance(self.api, self.state, "Owner review", return_to_head=True)
+        with self.assertRaisesRegex(ValueError, "planned claim"):
+            session.save(self.api, initial, *head, issue=247)
+
+        reviewed = {**self.state, "ledger": head[0], "handoff": head[1]}
+        blocked = session.finish(self.api, reviewed, "blocked", "Owner holds")
+        for apply in (False, True):
+            with self.assertRaisesRegex(ValueError, "Return to Head"):
+                session.save(self.api, self.state, *blocked, apply=apply, issue=247)
+        self.assertEqual(session.save(self.api, reviewed, *blocked, issue=247)["status"], "planned")
+        self.assertEqual(self.api.writes, [])
+
     def test_unbounded_deferred_work_blocks_unrelated_claim(self):
         self.reach_head()
         self.state["ledger"], self.state["handoff"] = session.finish(
