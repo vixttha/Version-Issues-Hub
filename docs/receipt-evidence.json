@@ -1880,6 +1880,10 @@
         {
           "path": "docs/v0.0.0.43.md",
           "anchor": "## Restricted recovery-only authorization (Option C)"
+        },
+        {
+          "path": "docs/v0.0.0.43.md",
+          "anchor": "## Debt-first recovery advisory (owner-approved Solutions 2 + 3)"
         }
       ],
       "changed_in": [
@@ -1920,6 +1924,10 @@
         {
           "path": "tools/session.py",
           "anchor": "def check_recovery_claim(api, state, number, policy, owner_approved):"
+        },
+        {
+          "path": "tools/session.py",
+          "anchor": "def debt_first_plan(api, state, debt):"
         }
       ],
       "tested_by": [
@@ -1962,6 +1970,10 @@
         {
           "path": "tests/test_graphify_evidence.py",
           "anchor": "def test_version_debt_gate_history_from_veraphify_pins(self):"
+        },
+        {
+          "path": "tests/test_integration_integrity.py",
+          "anchor": "def test_debt_first_advisory_prioritizes_existing_recovery_without_authorizing(self):"
         }
       ]
     }

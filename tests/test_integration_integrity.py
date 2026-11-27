@@ -211,6 +211,68 @@ class IntegrationIntegrityTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 session.recovery_claim_binding(self.state, 249)
 
+    def test_debt_first_advisory_prioritizes_existing_recovery_without_authorizing(self):
+        from unittest.mock import patch
+        self.state["product_sha"] = self.api.product
+        self.state["ledger"], self.state["handoff"] = session.claim(
+            self.api, self.state, 247, ["first"], "First")
+        self.state["ledger"], self.state["handoff"] = session.advance(
+            self.api, self.state, "Review", return_to_head=True)
+        decision = bounded_deferral(self.state, self.api, 248)
+        expires = json.loads(decision[len(session.DEFERRAL_DECISION):])["expires_at"]
+        self.state["ledger"], self.state["handoff"] = session.finish(
+            self.api, self.state, "deferred", decision, deferral_approved=True)
+        self.state["ledger"], self.state["handoff"] = session.claim(
+            self.api, self.state, 248, ["second"], "Second")
+        self.state["ledger"], self.state["handoff"] = session.advance(
+            self.api, self.state, "Review", return_to_head=True)
+        self.state["ledger"], self.state["handoff"] = session.finish(
+            self.api, self.state, "deferred", "Unbounded second")
+        before = copy.deepcopy(self.state)
+        with patch.object(session.time, "time", return_value=expires):
+            for requested in (None, 249):
+                plan = session.recovery_plan(self.api, self.state, requested)
+                queue = plan["debt_first"]
+                self.assertEqual(plan["recovery_status"], "integration_debt_reconciliation_required")
+                self.assertEqual(queue["recommended_issue"], 247)
+                self.assertEqual([x["issue"] for x in queue["queue"]], [247, 248])
+                self.assertEqual(queue["queue"][0]["recovery_claim_binding"],
+                                 session.recovery_claim_binding(self.state, 247))
+                self.assertTrue(plan["owner_decision_required"])
+                self.assertTrue(plan["read_only"])
+            with self.assertRaises(ValueError):
+                session.claim(self.api, self.state, 249, [], "Unrelated")
+            original = self.api.request
+            def closed(method, path, body=None):
+                result = original(method, path, body)
+                if method == "GET" and path.endswith("/issues/247"):
+                    return {**result, "state": "closed"}
+                return result
+            with patch.object(self.api, "request", side_effect=closed):
+                queue = session.recovery_plan(self.api, self.state, 249)["debt_first"]
+                self.assertEqual(queue["recommended_issue"], 248)
+                self.assertEqual(queue["queue"][0]["action"], "owner_reconcile_closed_issue")
+                self.assertIsNone(queue["queue"][0]["recovery_claim_binding"])
+            with patch.object(session, "require_product_lineage", side_effect=ValueError("stale lineage")):
+                plan = session.recovery_plan(self.api, self.state)
+                self.assertEqual(plan["recovery_status"], "product_lineage_reconciliation_required")
+                self.assertIsNone(plan["debt_first"])
+            binding = session.recovery_claim_binding(self.state, 247)
+            policy = {**binding, "approved_at": expires, "expires_at": expires + 60,
+                      "reason": "Recover oldest obligation"}
+            with self.assertRaises(ValueError):
+                session.claim(self.api, self.state, 247, [], "Recover", recovery_policy=policy)
+            ledger, handoff = session.claim(self.api, self.state, 247, [], "Recover",
+                                           recovery_policy=policy, recovery_approved=True)
+            active = {**self.state, "ledger": ledger, "handoff": handoff}
+            self.assertEqual(session.debt_first_plan(self.api, active,
+                session.unresolved_integration_debt(active))["status"], "existing_lane_or_closure")
+            with patch.object(session, "pending_closure", return_value={"status": "executing"}):
+                self.assertEqual(session.debt_first_plan(self.api, self.state,
+                    session.unresolved_integration_debt(self.state))["status"], "existing_lane_or_closure")
+        self.assertEqual(self.state, before)
+        self.assertEqual(self.api.writes, [])
+
     def test_explicit_bounded_staging_authorizes_only_named_next_issue(self):
         self.reach_head()
         decision = bounded_deferral(self.state, self.api, 248)
