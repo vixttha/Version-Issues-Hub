@@ -1709,7 +1709,7 @@
       "changed_in": [
         {
           "path": "tools/session.py",
-          "anchor": "def invalidated_archive_runs(state, active):"
+          "anchor": "def invalidated_archive_runs(state, active, *, legacy_index=None):"
         },
         {
           "path": "tools/install.py",
@@ -1778,7 +1778,35 @@
         {
           "path": "tests/test_standard.py",
           "anchor": "def test_missing_preview_tree_rejected(self):"
+        }
+      ]
+    },
+    {
+      "id": "v0-0-0-43-publication",
+      "label": "Issue #96 · exact publication input and legacy preview safeguards (candidate)",
+      "documented_in": [
+        {
+          "path": "docs/v0.0.0.43.md",
+          "anchor": "## Further review-driven publication safeguards"
+        }
+      ],
+      "changed_in": [
+        {
+          "path": "tools/session.py",
+          "anchor": "def invalidated_archive_runs(state, active, *, legacy_index=None):"
+        }
+      ],
+      "implemented_in": [
+        {
+          "path": "tools/session.py",
+          "anchor": "raise ValueError(\"Staged archive must preserve the original active Head handoff\")"
         },
+        {
+          "path": "tools/session.py",
+          "anchor": "raise ValueError(\"Legacy missing preview pins require exact preview run evidence\")"
+        }
+      ],
+      "tested_by": [
         {
           "path": "tests/test_integration_integrity.py",
           "anchor": "def test_stage_cannot_substitute_reviewed_fix_or_pins(self):"
@@ -1790,6 +1818,10 @@
         {
           "path": "tests/test_integration_integrity.py",
           "anchor": "def test_callback_cannot_replace_expired_serialized_deferral(self):"
+        },
+        {
+          "path": "tests/test_integration_integrity.py",
+          "anchor": "def test_legacy_missing_preview_requires_exact_reported_preview(self):"
         }
       ]
     }

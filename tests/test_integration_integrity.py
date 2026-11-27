@@ -537,3 +537,33 @@ class IntegrationIntegrityTests(unittest.TestCase):
                              deferral_approved=True,operation_id="a"*64,on_recovery_ticket=ticket)
         self.assertEqual([w[0] for w in self.api.writes],["POST","POST"])
         self.assertEqual(self.api.ref,self.state["ref"])
+
+    def test_legacy_missing_preview_requires_exact_reported_preview(self):
+        from test_session import BASE, PROPOSED, post_policy
+        self.reach_head()
+        self.state["ledger"],self.state["handoff"] = session.finish(
+            self.api,self.state,"staged","Legacy stages")
+        archive = self.state["handoff"]["history"][0]
+        for key in session.PIN_KEYS:
+            archive["handoff"].pop(key)
+        self.api.pr.update(state="closed",merged=True,merge_commit_sha=NEXT)
+        self.api.product = NEXT
+        review = post_policy(self.state)
+        def policy():
+            return {"schema_version":1,"outcome":"historical_product_integration",
+                    "archive_index":0,"archive_digest":session.closure_digest(archive),
+                    "premerge":{"merge_sha":PROPOSED,"evidence":[RUN]},"review":review}
+        with self.assertRaisesRegex(ValueError,"exact preview run evidence"):
+            session.reconcile(self.api,self.state,247,"Owner integrates",policy=policy())
+        self.api.pre_run["head_sha"] = PROPOSED
+        original = copy.deepcopy(self.state["handoff"]["history"])
+        ledger,handoff = session.reconcile(self.api,self.state,247,"Owner integrates",policy=policy())
+        self.assertEqual(ledger["issues"][0]["state"],"integrated")
+        self.assertEqual(handoff["history"][:-1],original)
+        self.assertEqual(session.save(self.api,self.state,ledger,handoff,issue=247,
+                                      policy=policy())["status"],"planned")
+        archive["handoff"]["integration_base_sha"] = BASE
+        archive["handoff"]["integration_merge_sha"] = "1"*40
+        with self.assertRaisesRegex(ValueError,"stale integration evidence"):
+            session.reconcile(self.api,self.state,247,"Owner integrates",policy=policy())
+        self.assertEqual(self.api.writes,[])

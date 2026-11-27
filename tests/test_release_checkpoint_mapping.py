@@ -51,7 +51,7 @@ class ReleaseCheckpointMappingTests(unittest.TestCase):
         if "v0-0-0-40" in expected:
             expected.update({"v0-0-0-40-execution", "v0-0-0-40-installed-compatibility"})
         if "v0-0-0-43" in expected:
-            expected.add("v0-0-0-43-review")
+            expected.update({"v0-0-0-43-review", "v0-0-0-43-publication"})
         self.assertEqual(set(ids), expected)
 
 

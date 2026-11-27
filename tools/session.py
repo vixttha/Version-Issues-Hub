@@ -968,13 +968,18 @@ def verify_candidate_runs(api, state, active, links):
     require_fresh_snapshot(api, state, active)
 
 
-def invalidated_archive_runs(state, active):
+def invalidated_archive_runs(state, active, *, legacy_index=None):
     # Never relabel an archived run as fresh for different candidate or preview pins.
+    # Only the specifically selected legacy archive may have absent preview pins.
     invalidated = set()
-    for record in state["handoff"]["history"]:
+    for index, record in enumerate(state["handoff"]["history"]):
         old = record["handoff"]
         if (old["issue"] == active["issue"] and
                 any(old.get(k) != active.get(k) for k in PIN_KEYS | {"candidate_sha", "pull_request"})):
+            if (legacy_index == index and record["disposition"] == "staged"
+                    and all(old[k] == active[k] for k in ("fix_sha", "candidate_sha", "pull_request"))
+                    and all(old.get(k) in (None, active.get(k)) for k in PIN_KEYS)):
+                continue
             invalidated.update(evidence_run(state["ledger"]["repository"], link)[0]
                                for link in old["evidence"])
     return invalidated
@@ -1632,13 +1637,16 @@ def reconcile_historical_integration(api, state, number, decision, policy):
                                install.response_object(commit.get("tree"), "historical preview tree").get("sha"),
                                "historical preview tree")
         invalidated = invalidated_archive_runs(state, candidate)
+        conflicting = invalidated_archive_runs(state, candidate, legacy_index=index)
         for link in evidence:
             run, attempt = evidence_run(state["ledger"]["repository"], link)
-            if run in invalidated:
+            if run in conflicting:
                 raise ValueError("Archived run belongs to stale integration evidence; use a new run")
             root = prefix + "/actions/runs/" + str(run)
             for suffix in ("", "/attempts/" + str(attempt)):
                 item = install.response_object(api.request("GET", root + suffix), "historical preview run")
+                if run in invalidated and item.get("head_sha") != preview:
+                    raise ValueError("Legacy missing preview pins require exact preview run evidence")
                 standard.check_pr_run(item, preview_policy, run, attempt, api=api, prefix=prefix)
                 # A historical preview is no longer available from the live PR.
                 # Even an exact reported preview SHA needs the recorded PR association.

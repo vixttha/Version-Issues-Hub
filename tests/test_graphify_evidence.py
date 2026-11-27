@@ -62,7 +62,7 @@ class GraphifyEvidenceTests(unittest.TestCase):
         def blob(path):
             return subprocess.check_output(["git", "-C", str(root), "show", revision + ":" + path]).decode("utf-8")
         manifest = json.loads(blob("docs/receipt-evidence.json"))
-        expected = {"v0-0-0-43", "v0-0-0-43-review"}
+        expected = {"v0-0-0-43", "v0-0-0-43-review", "v0-0-0-43-publication"}
         groups = [f for f in manifest["features"] if f["id"] in expected]
         self.assertEqual({f["id"] for f in groups}, expected)
         self.assertEqual(len(groups), len(expected))
