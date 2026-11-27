@@ -139,7 +139,8 @@ class SessionTests(unittest.TestCase):
         self.assertEqual(report["status"], "resume")
         self.assertEqual(report["installed_source_sha"], PIN)
         self.assertEqual(report["product_branch"], "trunk")
-        self.assertEqual(report["canonical_active_phases"], {247: "Worker"})
+        self.assertEqual(json.loads(install.render(report)), report)
+        self.assertEqual(report["canonical_active_phases"], {"247": "Worker"})
         self.assertEqual(session.inspect(self.api, self.state, 248)["status"], "blocked_other_active_issue")
         with self.assertRaisesRegex(ValueError, "Another issue"):
             session.claim(self.api, self.state, 248, ["test"], "Fix")

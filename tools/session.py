@@ -1044,7 +1044,7 @@ def inspect(api, state, requested=None):
             "repository": state["ledger"]["repository"], "baseline": state["manifest"]["baseline_version"],
             "installed_source_sha": state["manifest"]["source_sha"],
             "product_branch": state["manifest"]["product_branch"],
-            "canonical_active_phases": {a["issue"]: a["phase"] for a in rows},
+            "canonical_active_phases": {str(a["issue"]): a["phase"] for a in rows},
             "target": state["manifest"]["target_version"], "issue": info, "active": active,
             "owner_merge_required": True, "evidence_verified": False,
             "staged": staged, **({"lifecycle": closure_status(state, item)} if info is not None else {}),
