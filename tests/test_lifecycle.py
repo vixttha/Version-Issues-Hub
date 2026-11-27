@@ -451,3 +451,148 @@ class LifecycleTests(unittest.TestCase):
                 self.assertEqual(api.writes, [])
                 self.assertEqual(api.ref(install.BRANCH), pin)
                 self.assertEqual(api.ref("main"), api.product)
+
+    def test_exact_041_package_reconciliation_then_idle_upgrade(self):
+        # Disposable Git objects only; the real installed branch is never written.
+        root = Path(__file__).resolve().parents[1]
+        old_pin = "c7a4995c99fed8d1e87970a744c4cde378ebed1e"
+        def git_blob(pin, path):
+            return subprocess.check_output(["git","-C",str(root),"show",pin+":"+path]).decode("utf-8")
+        available = subprocess.run(["git","-C",str(root),"cat-file","-e",old_pin+"^{commit}"],
+                                   capture_output=True).returncode == 0
+        if not available:
+            if (os.environ.get("GITHUB_ACTIONS") != "true"
+                    or os.environ.get("GITHUB_REPOSITORY") != install.SOURCE):
+                self.skipTest("Exact historical source not present in shallow checkout")
+            # Windows public CI uses a shallow checkout. Fetch only the immutable
+            # historical pin, no branch/tag update or user-owned host dependency.
+            subprocess.run(["git","-C",str(root),"fetch","--depth=1","--no-tags",
+                            "--no-write-fetch-head","https://github.com/"+install.SOURCE+".git",old_pin],
+                           check=True,timeout=60)
+        old_map = install.pinned_package(git_blob(old_pin,"tools/install.py"))
+        old_package = {dest:git_blob(old_pin,src) for src,dest in old_map.items()}
+        new_pin = subprocess.check_output(["git","-C",str(root),"rev-parse","HEAD"],text=True).strip()
+        new_package = {dest:git_blob(new_pin,src) for src,dest in install.PACKAGE.items()}
+        self.assertEqual(len(old_package),14)
+        self.assertEqual(set(old_package),set(new_package))
+        api = self.api
+        base = api.product
+        tree = api.tree({"product.txt":"reviewed product\n"})
+        candidate = api.commit(tree,[base])
+        preview = api.commit(tree,[base,candidate])
+        merged = api.git("commit-tree",tree,"-p",base,"-p",candidate,data="actual product merge\n")
+        run_link = "https://github.com/"+REPO+"/actions/runs/123/attempts/1"
+        prior = json.loads(api.handoff)["history"][0]
+        prior["handoff"].update(fix_sha=candidate,candidate_sha=candidate,evidence=[run_link])
+        prior.update(disposition="staged",merged_sha=None)
+        active = {**copy.deepcopy(prior["handoff"]),"issue":8,"version":"v1.0.6.2",
+                  "integration_base_sha":base,"integration_merge_sha":preview}
+        ledger = json.loads(api.ledger)
+        ledger["issues"][0]["state"] = "staged"
+        ledger["issues"].append({"issue":8,"version":"v1.0.6.2","state":"in_progress","acceptance":["test"]})
+        handoff = {"schema_version":1,"active":active,"history":[prior]}
+        manifest = {**api.manifest,"source_sha":old_pin,"package_files_sha256":lifecycle.digest_files(old_package)}
+        pin = api.commit(api.tree({**old_package,"vib-install.json":install.render(manifest),
+                    session.LEDGER:install.render(ledger),session.HANDOFF:install.render(handoff),
+                    "notes/custom.md":"keep me\n"}),[api.old])
+        api.ref(install.BRANCH,pin)
+        pr = {"number":8,"state":"closed","merged":True,"merge_commit_sha":merged,
+              "head":{"sha":candidate,"repo":{"id":42}},
+              "base":{"sha":base,"ref":"main","repo":{"id":42}}}
+        pre = {"id":123,"run_attempt":1,"repository":{"id":42},"event":"pull_request",
+               "head_sha":preview,"status":"completed","conclusion":"success",
+               "pull_requests":[{"number":8,"head":{"sha":candidate},"base":{"sha":base}}]}
+        post = {"id":124,"run_attempt":1,"repository":{"id":42},"head_repository":{"id":42},
+                "workflow_id":52,"event":"push","head_branch":"main","head_sha":merged,
+                "status":"completed","conclusion":"success"}
+        jobs = [{"id":987,"name":"test","run_id":124,"run_attempt":1,"head_sha":merged,
+                 "status":"completed","conclusion":"success",
+                 "steps":[{"name":"Run acceptance","status":"completed","conclusion":"success"}]}]
+        original = api.request
+        def scoped(method,path,body=None):
+            if method == "GET" and path == "/repos/"+install.SOURCE+"/compare/"+old_pin+"..."+new_pin:
+                return {"status":"ahead","merge_base_commit":{"sha":old_pin}}
+            if method == "GET" and path.startswith(PREFIX+"/compare/"):
+                a,b = path.rsplit("/",1)[1].split("...")
+                ancestor = api.git("merge-base",a,b)
+                return {"status":"identical" if a == b else "ahead" if ancestor == a else "diverged",
+                        "merge_base_commit":{"sha":ancestor}}
+            if method == "GET" and path == PREFIX+"/pulls/8":
+                return copy.deepcopy(pr)
+            if method == "GET" and path.endswith("/attempts/1/jobs?per_page=100"):
+                return {"total_count":len(jobs),"jobs":copy.deepcopy(jobs)}
+            if method == "GET" and "/actions/runs/" in path:
+                run = int(path.split("/actions/runs/",1)[1].split("/")[0])
+                return copy.deepcopy({123:pre,124:post}[run])
+            result = original(method,path,body)
+            if method == "GET" and path.startswith(PREFIX+"/git/commits/"):
+                sha = path.rsplit("/",1)[1]
+                result["parents"] = [{"sha":p} for p in api.git("rev-list","--parents","-n","1",sha).split()[1:]]
+            return result
+        def review(s, number, version):
+            return {"schema_version":1,"repository":REPO,"repository_id":42,"product_branch":"main",
+                    "source_sha":old_pin,"installed_sha":s["ref"],"pull_request":8,
+                    "head_sha":candidate,"base_sha":base,"merge_sha":merged,
+                    "issues":[{"issue":number,"version":version,"fix_sha":candidate,
+                        "criteria":[{"text":"test","checks":[{"run":124,"attempt":1,"workflow_id":52,
+                                        "job_name":"test","steps":["Run acceptance"]}]}]}]}
+        def old_reader(s):
+            # Run the exact .41 validator in an isolated import root, not the
+            # candidate module. The subprocess has no API or credential use.
+            with tempfile.TemporaryDirectory() as directory:
+                folder = Path(directory)
+                for path, content in old_package.items():
+                    dest = folder/path
+                    dest.parent.mkdir(parents=True,exist_ok=True)
+                    dest.write_bytes(content.encode("utf-8"))
+                (folder/"tools"/"__init__.py").write_text("",encoding="utf-8")
+                code = ("import json,sys; from tools import session; "
+                        "assert session.__file__.startswith(sys.argv[1]); "
+                        "data=json.load(sys.stdin); session.validate_handoff(data['handoff'],data['ledger'])")
+                subprocess.run([sys.executable,"-B","-c",code,str(folder)],cwd=folder,
+                    input=json.dumps({"ledger":s["ledger"],"handoff":s["handoff"]}),
+                    text=True,check=True,capture_output=True,timeout=60)
+        with patch.object(api,"request",side_effect=scoped), patch.object(install,"source_files",
+                side_effect=lambda _,sha:dict({old_pin:old_package,new_pin:new_package}[sha])):
+            before = session.load(api,REPO,pin)
+            old_reader(before)
+            with self.assertRaisesRegex(ValueError,"active work"):
+                lifecycle.upgrade(api,REPO,pin,new_pin)
+            self.assertEqual(api.writes,[])
+            api.ref("main",merged)  # simulate a separately approved product merge
+            state = session.load(api,REPO,pin)
+            policy = {"schema_version":1,"outcome":"historical_product_integration",
+                      "archive_index":0,"archive_digest":session.closure_digest(prior),
+                      "premerge":{"merge_sha":preview,"evidence":[run_link]},
+                      "review":review(state,7,"v1.0.6.1")}
+            l,h = session.reconcile(api,state,7,"Fixture owner reconciliation",policy=policy)
+            self.assertEqual(h["active"],active)
+            self.assertEqual(h["history"][0],prior)
+            reconciled = session.save(api,state,l,h,True,issue=7,policy=policy)["installed_sha"]
+            state = session.load(api,REPO,reconciled)
+            self.assertEqual(state["handoff"]["active"],active)
+            self.assertEqual(state["manifest"],manifest)
+            for p,value in old_package.items():
+                self.assertEqual(api.read(reconciled,p),value)
+            old_reader(state)
+            with self.assertRaisesRegex(ValueError,"active work"):
+                lifecycle.upgrade(api,REPO,reconciled,new_pin)
+            p = review(state,8,"v1.0.6.2")
+            l,h = session.finish(api,state,"integrated","Fixture owner integrates",policy=p)
+            idle = session.save(api,state,l,h,True,issue=8,policy=p)["installed_sha"]
+            finished = session.load(api,REPO,idle)
+            self.assertIsNone(finished["handoff"]["active"])
+            self.assertEqual([row["state"] for row in finished["ledger"]["issues"]],["integrated","integrated"])
+            old_reader(finished)
+            plan = lifecycle.upgrade(api,REPO,idle,new_pin)
+            self.assertEqual(plan["status"],"planned")
+            self.assertNotIn("integration_debt",plan)
+            upgraded = lifecycle.upgrade(api,REPO,idle,new_pin,apply=True,owner_approved=True)["installed_sha"]
+            self.assertEqual(api.ref("main"),merged)
+            for path in (session.LEDGER,session.HANDOFF,"notes/custom.md"):
+                self.assertEqual(api.read(upgraded,path),api.read(idle,path))
+            for path,value in new_package.items():
+                self.assertEqual(api.read(upgraded,path),value)
+            observed = session.load(api,REPO,upgraded)
+            self.assertEqual(observed["manifest"]["source_sha"],new_pin)
+            self.assertEqual(observed["handoff"],finished["handoff"])

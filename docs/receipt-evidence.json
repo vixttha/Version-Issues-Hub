@@ -1788,6 +1788,10 @@
         {
           "path": "docs/v0.0.0.43.md",
           "anchor": "## Further review-driven publication safeguards"
+        },
+        {
+          "path": "docs/v0.0.0.43.md",
+          "anchor": "## Exact historical installed-package transition fixture"
         }
       ],
       "changed_in": [
@@ -1830,6 +1834,10 @@
         {
           "path": "tests/test_integration_integrity.py",
           "anchor": "def test_historical_batch_requires_every_distinct_fix(self):"
+        },
+        {
+          "path": "tests/test_lifecycle.py",
+          "anchor": "def test_exact_041_package_reconciliation_then_idle_upgrade(self):"
         }
       ]
     }
