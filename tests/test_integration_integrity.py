@@ -253,6 +253,10 @@ class IntegrationIntegrityTests(unittest.TestCase):
                 self.assertEqual(queue["recommended_issue"], 248)
                 self.assertEqual(queue["queue"][0]["action"], "owner_reconcile_closed_issue")
                 self.assertIsNone(queue["queue"][0]["recovery_claim_binding"])
+            with patch.object(session, "require_product_lineage", side_effect=ValueError("stale lineage")):
+                plan = session.recovery_plan(self.api, self.state)
+                self.assertEqual(plan["recovery_status"], "product_lineage_reconciliation_required")
+                self.assertIsNone(plan["debt_first"])
             binding = session.recovery_claim_binding(self.state, 247)
             policy = {**binding, "approved_at": expires, "expires_at": expires + 60,
                       "reason": "Recover oldest obligation"}

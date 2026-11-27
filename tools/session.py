@@ -1232,7 +1232,7 @@ def recovery_plan(api, state, requested=None):
     # Preserve explicit bounded continuation and the existing active lane.
     # A blocked or unspecified claim gets a deterministic debt-first advisory.
     scheduling = None
-    if status == "integration_debt_reconciliation_required" or (number is None and debt):
+    if status == "integration_debt_reconciliation_required":
         scheduling = debt_first_plan(api, state, debt)
         if scheduling["status"] == "debt_review_required":
             status = "integration_debt_reconciliation_required"
