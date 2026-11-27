@@ -2,7 +2,7 @@ name: Veraphify development graph snapshot
 on:
   push:
     branches: [Veraphify, review/veraphify-development-graphs]
-    paths: ['development-graph-request.json', 'tools/development-graph.py', 'lib/code-graph.mjs', '.github/workflows/vib-development-graph.yml']
+    paths: ['development-graph-request.json', 'docs/development-graphs.md', 'tools/development-graph.py', 'lib/code-graph.mjs', '.github/workflows/vib-development-graph.yml']
 permissions:
   contents: read
 concurrency:

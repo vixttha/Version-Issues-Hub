@@ -14,3 +14,17 @@ Upstream [Veraphify #88](https://github.com/vixttha/Veraphify/issues/88). Separa
 node veraphifiy.mjs code-graph --archive archives --project vixttha/Version-Issues-Hub --version v0.0.0.43 --scope development --source FULL_SHA --graph-sha256 INDEPENDENT_DIGEST
 ```
 Use code-verify for receipt-only. Capture graph digest from a trusted run separately. Raw graph edges are structural hypotheses, not runtime proof. Archive grows with each requested revision; no silent pruning. Keep private source out of public storage. Initial request pins issue #96 at 0147d51eb7965034848ea623be55676149a74895; production integration remains unresolved.
+
+## First retained development snapshot
+
+The initial .43 snapshot was generated and retained on the review branch by [run 45994026036, attempt 1](https://github.com/vixttha/Version-Issues-Hub/actions/runs/45994026036/attempts/1). Ubuntu and Windows native retrieval and negative controls passed. The exact graph and receipt are committed under [v0.0.0.43/0147d51eb7965034848ea623be55676149a74895](../archives/development-code-graphs/v0.0.0.43/0147d51eb7965034848ea623be55676149a74895/).
+
+- Source: `0147d51eb7965034848ea623be55676149a74895`
+- Graph SHA-256: `c3a87f26b3a61ba746305382c98cb582fb03da128d87cbf59c2b3d004a4766ab`
+- 1,150 nodes; 3,683 edges; development only, not finalized.
+
+```sh
+node veraphifiy.mjs code-verify --archive archives --project vixttha/Version-Issues-Hub --version v0.0.0.43 --scope development --source 0147d51eb7965034848ea623be55676149a74895 --graph-sha256 c3a87f26b3a61ba746305382c98cb582fb03da128d87cbf59c2b3d004a4766ab
+```
+
+The documented first snapshot is historical, not a mutable latest pointer. A new exact source request creates a separate directory.
