@@ -131,6 +131,86 @@ class IntegrationIntegrityTests(unittest.TestCase):
         self.assertEqual(self.state, before)
         self.assertEqual(self.api.writes, [])
 
+    def test_owner_recovery_only_claim_breaks_expired_two_issue_cycle(self):
+        from unittest.mock import patch
+        self.state["product_sha"] = self.api.product
+        self.state["ledger"], self.state["handoff"] = session.claim(
+            self.api, self.state, 247, ["first"], "First")
+        self.state["ledger"], self.state["handoff"] = session.advance(
+            self.api, self.state, "Review", return_to_head=True)
+        decision = bounded_deferral(self.state, self.api, 248)
+        expires = json.loads(decision[len(session.DEFERRAL_DECISION):])["expires_at"]
+        self.state["ledger"], self.state["handoff"] = session.finish(
+            self.api, self.state, "deferred", decision, deferral_approved=True)
+        self.state["ledger"], self.state["handoff"] = session.claim(
+            self.api, self.state, 248, ["second"], "Second")
+        self.state["ledger"], self.state["handoff"] = session.advance(
+            self.api, self.state, "Review", return_to_head=True)
+        self.state["ledger"], self.state["handoff"] = session.finish(
+            self.api, self.state, "deferred", "Unbounded second obligation")
+        before = copy.deepcopy(self.state)
+        with patch.object(session.time, "time", return_value=expires):
+            for number in (247, 248, 249):
+                with self.assertRaises(ValueError):
+                    session.claim(self.api, self.state, number, [], "Ordinary claim")
+            for number in (247, 248):
+                binding = session.recovery_claim_binding(self.state, number)
+                policy = {**binding, "approved_at": expires, "expires_at": expires + 60,
+                          "reason": "Resolve existing obligation only"}
+                with self.assertRaisesRegex(ValueError, "Explicit owner approval"):
+                    session.claim(self.api, self.state, number, [], "Recover", recovery_policy=policy)
+                proposed = session.claim(self.api, self.state, number, [], "Recover",
+                                         recovery_policy=policy, recovery_approved=True)
+                self.assertEqual(proposed[1]["history"], before["handoff"]["history"])
+                self.assertEqual(proposed[1]["active"]["issue"], number)
+                self.assertEqual(proposed[1]["active"]["version"], binding["version"])
+                for row in before["ledger"]["issues"]:
+                    if row["issue"] != number:
+                        self.assertIn(row, proposed[0]["issues"])
+                with self.assertRaises(ValueError):
+                    session.save(self.api, self.state, *proposed, issue=number)
+                with self.assertRaisesRegex(ValueError, "Explicit owner approval"):
+                    session.save(self.api, self.state, *proposed, issue=number, policy=policy)
+                self.assertEqual(session.save(self.api, self.state, *proposed, issue=number,
+                    policy=policy, recovery_approved=True)["status"], "planned")
+                for bad in ({**policy, "issue": 249}, {**policy, "state_sha256": "0"*64},
+                            {**policy, "expires_at": expires}, {**policy, "installed_sha": "0"*40}):
+                    with self.assertRaises(ValueError):
+                        session.claim(self.api, self.state, number, [], "Recover",
+                            recovery_policy=bad, recovery_approved=True)
+                with self.assertRaises(ValueError):
+                    session.claim(self.api, self.state, 249, [], "Unrelated",
+                        recovery_policy=policy, recovery_approved=True)
+                with self.assertRaises(ValueError):
+                    session.claim(self.api, self.state, number, ["changed criteria"], "Recover",
+                        recovery_policy=policy, recovery_approved=True)
+                resumed = {**self.state, "ledger": proposed[0], "handoff": proposed[1]}
+                with self.assertRaises(ValueError):
+                    session.claim(self.api, resumed, 249, [], "New work")
+                # A ticket sink can outlast authorization. No ref publication.
+                def expire(_ticket):
+                    clock.return_value = expires + 60
+                with patch.object(session.time, "time", return_value=expires) as clock:
+                    with self.assertRaisesRegex(ValueError, "Recovery-only claim authorization expired"):
+                        session.save(self.api, self.state, *proposed, True, issue=number,
+                            policy=policy, recovery_approved=True, operation_id="a"*64,
+                            on_recovery_ticket=expire)
+                self.assertFalse(any(w[0] == "PATCH" for w in self.api.writes))
+                # Successful non-force publication on a fresh simulated API.
+                published_api = Fake()
+                published_api.product = self.api.product
+                result = session.save(published_api, self.state, *proposed, True, issue=number,
+                    policy=policy, recovery_approved=True)
+                self.assertEqual(result["installed_sha"], NEXT)
+                self.assertEqual([w[0] for w in published_api.writes], ["POST", "POST", "PATCH"])
+                blobs = {b["path"]: json.loads(b["content"]) for b in published_api.writes[0][2]["tree"]}
+                self.assertEqual(blobs[session.LEDGER], proposed[0])
+                self.assertEqual(blobs[session.HANDOFF], proposed[1])
+                self.assertEqual(blobs[session.HANDOFF]["history"], before["handoff"]["history"])
+            self.assertEqual(self.state, before)
+            with self.assertRaises(ValueError):
+                session.recovery_claim_binding(self.state, 249)
+
     def test_explicit_bounded_staging_authorizes_only_named_next_issue(self):
         self.reach_head()
         decision = bounded_deferral(self.state, self.api, 248)

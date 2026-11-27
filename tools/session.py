@@ -1173,8 +1173,15 @@ def recovery_plan(api, state, requested=None):
         else:
             if any(row["issue"] == number for row in debt):
                 action = "Owner may authorize scoped recovery of this existing issue; preserve its version and history."
+    recovery_binding = None
+    if status in ("head_scope_required", "integration_debt_reconciliation_required", "staged",
+                  "closed_pr_rework_required") and info is not None and info["state"] == "open":
+        try:
+            recovery_binding = recovery_claim_binding(state, number)
+        except ValueError:
+            pass
     require_lease()
-    return {**observed, "integration_debt": [{"issue": row["issue"], "version": row["version"],
+    return {**observed, "recovery_claim_binding": recovery_binding, "integration_debt": [{"issue": row["issue"], "version": row["version"],
                   "state": row["state"]} for row in debt],
             "recovery_status": status, "recommended_next_action": action,
             "evidence_reuse": reuse, "read_only": True,
@@ -1414,12 +1421,75 @@ def require_integration_debt_clear(api, state, number):
     return policies
 
 
+RECOVERY_CLAIM = "recovery_only_claim"
+RECOVERY_CLAIM_PREFIX = "VIB-RECOVERY-CLAIM-1: "
+RECOVERY_CLAIM_MAX_SECONDS = 24 * 60 * 60
+
+
+def recovery_claim_binding(state, number):
+    """Return a proposed exact scope, never an approval or a debt discharge."""
+    number = issue_number(number)
+    require_unheld_scope(state, [number])
+    if (state["handoff"]["schema_version"] != 1 or active_rows(state["handoff"])
+            or pending_closure(state["handoff"]) is not None):
+        raise ValueError("Recovery-only claim requires an idle singleton and no pending closure")
+    debt = unresolved_integration_debt(state)
+    row = next((r for r in debt if r["issue"] == number), None)
+    if (len(debt) < 2 or row is None or row["state"] not in ("staged", "deferred", "blocked", "assigned")
+            or not outstanding_integration_records(state).get(number)):
+        raise ValueError("Recovery-only claim requires an existing reclaimable indebted issue")
+    return {"schema_version": 1, "outcome": RECOVERY_CLAIM,
+            "repository": state["ledger"]["repository"],
+            "repository_id": state["manifest"]["target_repository_id"],
+            "product_branch": state["manifest"]["product_branch"],
+            "product_sha": install.require(install.SHA, state["product_sha"], "recovery product revision"),
+            "installed_sha": install.require(install.SHA, state["ref"], "recovery installed revision"),
+            "issue": number, "version": row["version"],
+            "state_sha256": closure_digest({"ledger": state["ledger"], "handoff": state["handoff"]})}
+
+
+def check_recovery_claim(api, state, number, policy, owner_approved):
+    if owner_approved is not True:
+        raise ValueError("Explicit owner approval of recovery-only claim required")
+    binding = recovery_claim_binding(state, number)
+    if (not isinstance(policy, dict) or set(policy) != set(binding) | {"approved_at", "expires_at", "reason"}
+            or any(type(policy[k]) is not type(v) or policy[k] != v for k, v in binding.items())):
+        raise ValueError("Recovery-only claim scope or exact state changed")
+    text(policy["reason"], "recovery-only owner reason")
+    approved, expires = policy["approved_at"], policy["expires_at"]
+    if (type(approved) is not int or type(expires) is not int
+            or not 0 < expires - approved <= RECOVERY_CLAIM_MAX_SECONDS
+            or not approved <= time.time() < expires):
+        raise ValueError("Recovery-only claim authorization expired or invalid")
+    prefix, manifest = state["prefix"], state["manifest"]
+    meta = install.response_object(api.request("GET", prefix), "recovery target repository")
+    if (meta.get("full_name") != binding["repository"]
+            or not install.same_id(meta.get("id"), binding["repository_id"])
+            or meta.get("archived") or meta.get("disabled")
+            or install.product_target(meta, manifest) != binding["product_branch"]
+            or install.read_ref(api, prefix, install.BRANCH) != binding["installed_sha"]
+            or install.read_ref(api, prefix, binding["product_branch"]) != binding["product_sha"]):
+        raise ValueError("Recovery-only claim target or lease changed")
+    if not approved <= time.time() < expires:
+        raise ValueError("Recovery-only claim authorization expired during review")
+    return copy.deepcopy(policy)
+
+
 def claim(api, state, number, criteria, note, *, resume_prior_line=False, parallel=False,
-          rework_staged=False):
+          rework_staged=False, recovery_policy=None, recovery_approved=False):
     validate_handoff(state["handoff"], state["ledger"])
     if pending_closure(state["handoff"]) is not None:
         raise ValueError("Reconcile pending closure before claiming work")
     require_unheld_scope(state, [number])
+    if recovery_policy is not None and parallel:
+        raise ValueError("Recovery-only claim cannot enable parallel mode")
+    if text(note, "next action").startswith(RECOVERY_CLAIM_PREFIX):
+        raise ValueError("Recovery-only claim receipt is reserved for verified publication")
+    if recovery_policy is not None:
+        verified_recovery = check_recovery_claim(api, state, number, recovery_policy, recovery_approved)
+        note = RECOVERY_CLAIM_PREFIX + json.dumps(
+            {"policy": verified_recovery, "note": note}, sort_keys=True, separators=(",", ":"),
+            ensure_ascii=True, allow_nan=False)
     if parallel or state["handoff"]["schema_version"] == 2:
         require_parallel_package(state)
         require_experimental_parallel()
@@ -1445,7 +1515,10 @@ def claim(api, state, number, criteria, note, *, resume_prior_line=False, parall
         raise ValueError("Another issue owns the active handoff")
     require_product_lineage(api, state,
                             allow_stale_plan=state["handoff"]["schema_version"] == 2)
-    require_integration_debt_clear(api, state, number)
+    if recovery_policy is None:
+        require_integration_debt_clear(api, state, number)
+    # Explicit recovery authorization permits only this existing issue; all
+    # other debt remains recorded and ordinary claims still use the gate.
     if handoff["schema_version"] == 2:
         require_parallel_package(state)
     baseline = state["manifest"]["baseline_version"]
@@ -2180,7 +2253,7 @@ def check_issue_delta(state, ledger, handoff, number=None, *, historical=False):
         raise ValueError("Issue scope violation: terminal issue history appended")
 
 
-def verify_initial_claim(api, state, ledger, handoff, active):
+def verify_initial_claim(api, state, ledger, handoff, active, *, recovery_policy=None, recovery_approved=False):
     """Replay a new singleton claim, preserving criteria and staged recovery mode."""
     if handoff["schema_version"] != 1:
         return
@@ -2190,8 +2263,18 @@ def verify_initial_claim(api, state, ledger, handoff, active):
     prior_line = (prior is not None
                   and prior["version"].rsplit(".", 1)[0] != state["manifest"]["baseline_version"])
     rework_staged = prior is not None and prior["state"] == "staged" and active["phase"] == "Worker"
-    planned = claim(api, state, number, row["acceptance"], active["next_action"],
-                    resume_prior_line=prior_line, rework_staged=rework_staged)
+    note = active["next_action"]
+    if recovery_policy is not None:
+        if not note.startswith(RECOVERY_CLAIM_PREFIX):
+            raise ValueError("Recovery-only claim receipt missing")
+        receipt = checkpoint.parse_json(note[len(RECOVERY_CLAIM_PREFIX):])
+        if (not isinstance(receipt, dict) or set(receipt) != {"policy", "note"}
+                or receipt["policy"] != recovery_policy):
+            raise ValueError("Recovery-only claim receipt differs from approved policy")
+        note = receipt["note"]
+    planned = claim(api, state, number, row["acceptance"], note,
+                    resume_prior_line=prior_line, rework_staged=rework_staged,
+                    recovery_policy=recovery_policy, recovery_approved=recovery_approved)
     if planned != (ledger, handoff):
         raise ValueError("New active handoff differs from the planned claim")
 
@@ -2239,7 +2322,7 @@ class HandoffRejected(install.ApiError):
 
 def save(api, state, ledger, handoff, apply=False, *, issue=None, operation_id=None,
          on_recovery_ticket=None, policy=None, engineering_approved=False, closure_approved=False,
-         deferral_approved=False):
+         deferral_approved=False, recovery_approved=False):
     if operation_id is not None and (not isinstance(operation_id, str)
             or not re.fullmatch(r"[0-9a-f]{64}", operation_id)):
         raise ValueError("Invalid operation identity")
@@ -2256,6 +2339,14 @@ def save(api, state, ledger, handoff, apply=False, *, issue=None, operation_id=N
                 or closure_receipt(appended_closure[0]) is None):
             raise ValueError("Reconcile unresolved closure before unrelated state publication")
     batch = isinstance(policy, dict) and policy.get("outcome") == HISTORICAL_BATCH
+    recovery = isinstance(policy, dict) and policy.get("outcome") == RECOVERY_CLAIM
+    if recovery:
+        proposed = active_rows(handoff)
+        if (active_rows(state["handoff"]) or len(proposed) != 1
+                or handoff["schema_version"] != 1
+                or handoff["history"] != state["handoff"]["history"]
+                or proposed[0]["issue"] != policy.get("issue")):
+            raise ValueError("Recovery-only policy applies only to a new exact singleton claim")
     def revalidate_claim_and_deferrals():
         verify_active_transition(api, state, ledger, handoff)
         policies = []
@@ -2263,8 +2354,13 @@ def save(api, state, ledger, handoff, apply=False, *, issue=None, operation_id=N
         for active in active_rows(handoff):
             if active["issue"] not in previous:
                 require_product_lineage(api, state)
-                policies.extend(require_integration_debt_clear(api, state, active["issue"]) or [])
-                verify_initial_claim(api, state, ledger, handoff, active)
+                if recovery:
+                    policies.append(check_recovery_claim(api, state, active["issue"], policy, recovery_approved))
+                    verify_initial_claim(api, state, ledger, handoff, active,
+                                         recovery_policy=policy, recovery_approved=recovery_approved)
+                else:
+                    policies.extend(require_integration_debt_clear(api, state, active["issue"]) or [])
+                    verify_initial_claim(api, state, ledger, handoff, active)
         appended = handoff["history"][len(state["handoff"]["history"]):]
         before = {row["issue"]: row for row in state["ledger"]["issues"]}
         transitions = {row["issue"] for row in ledger["issues"]
@@ -2506,6 +2602,8 @@ def save(api, state, ledger, handoff, apply=False, *, issue=None, operation_id=N
     now = time.time()
     for deferral in policies:
         if not deferral["approved_at"] <= now < deferral["expires_at"]:
+            if recovery:
+                raise ValueError("Recovery-only claim authorization expired before publication")
             raise ValueError("Integration debt deferral expired before publication")
     # Non-force REST update preserves fast-forward history. This is not a
     # general expected-old CAS nor an atomic check of the product branch.
@@ -2807,6 +2905,7 @@ def main():
     c.add_argument("--acceptance", action="append", default=[])
     c.add_argument("--note", required=True)
     c.add_argument("--owner-approved", action="store_true")
+    c.add_argument("--recovery-policy", help="Exact owner-reviewed recovery-only claim JSON; no automatic retry")
     c.add_argument("--parallel", action="store_true", help="Owner-approved opt-in to parallel handoffs when claiming a new active issue")
     c.add_argument("--rework-staged", action="store_true", help="Owner-approved rework of a staged issue with a closed unmerged PR")
     c.add_argument("--resume-prior-line", action="store_true", help="Resume an eligible unresolved historical checkpoint without renumbering")
@@ -2893,11 +2992,14 @@ def main():
             from pathlib import Path
             policy = (checkpoint.parse_json(Path(args.policy).read_text(encoding="utf-8"))
                       if args.command in ("finish", "reconcile", "finish-engineering") and args.policy else None)
+            if args.command == "claim" and args.recovery_policy:
+                policy = checkpoint.parse_json(Path(args.recovery_policy).read_text(encoding="utf-8"))
             def plan(current):
                 if args.command == "claim":
                     return claim(api, current, args.issue, args.acceptance, args.note,
                         resume_prior_line=args.resume_prior_line, parallel=args.parallel,
-                        rework_staged=args.rework_staged)
+                        rework_staged=args.rework_staged, recovery_policy=policy,
+                        recovery_approved=args.owner_approved)
                 if args.command == "advance":
                     return advance(api, current, args.note, fix=args.fix, candidate=args.candidate,
                         pr=args.pr, evidence=args.evidence, rework=args.rework,
@@ -2935,7 +3037,8 @@ def main():
                                   engineering_approved=args.owner_approved)
                 else:
                     result = save(api, state, ledger, handoff, args.apply, issue=scope, policy=policy,
-                                  deferral_approved=bounded_deferral and args.owner_approved)
+                                  deferral_approved=bounded_deferral and args.owner_approved,
+                                  recovery_approved=args.command == "claim" and args.owner_approved)
         print(install.render(result), end="")
     except (ValueError, KeyError, TypeError, OSError, install.ApiError) as exc:
         install.cli_error(p, "VIB session stopped", exc)
