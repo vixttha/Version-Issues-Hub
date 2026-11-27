@@ -204,7 +204,7 @@ class ScopeControlTests(unittest.TestCase):
                     scope.verify_scope("f"*40,96,"v0.0.0.43","d"*40,"f"*40,require_recovery_authorization=True)
                 with patch.object(scope,"changed_paths",return_value={path,"ledger/issue-versions.json"}):
                     with self.assertRaisesRegex(ValueError,"separate single-parent"):
-                        scope.verify_scope("f"*40,96,"v0.0.0.43","d"*40,"f"*40")
+                        scope.verify_scope("f"*40,96,"v0.0.0.43","d"*40,"f"*40)
             with self.assertRaisesRegex(ValueError,"retain exact original scope"):
                 scope.verify_043_scope_genesis(predecessor,path,record,
                     {**successor,"allowed_paths":["new.py"]},"f"*40)
