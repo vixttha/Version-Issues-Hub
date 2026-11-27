@@ -8,7 +8,7 @@ This is the owner-approved standalone Version-Issues-Hub workflow, not a product
 4. Use the cooperative handoff commands in WORKFLOW.md. Re-read the branch after a stale write; no force updates. Record candidate/fix SHAs, exact public-runner attempts and acceptance results. A green VIB schema test is not product acceptance.
 5. Owner approval controls integration and release. Instructions are cooperative; only a separately enabled and proven GitHub gate can enforce a merge rule. Never claim the gate is active based on this file.
 
-If the host has no shell, use its GitHub read tools to open the exact branch and the files above. Read the current handoff first. A host without authorized GitHub write capability cannot claim or advance work. Do not ask for secrets in chat.
+If the host has no shell, use its GitHub read tools to open the exact branch and the files above. Read the current handoff first. Use the manifest's source SHA to select supported commands. The canonical active phase comes from the installed handoff; pull request review and CI progress are separate observations. A host without authorized GitHub write capability cannot claim or advance work. Do not ask for secrets in chat.
 
 ## Owner-locked interoperability
 
